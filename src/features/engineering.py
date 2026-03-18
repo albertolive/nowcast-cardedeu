@@ -281,8 +281,9 @@ def _add_model_features(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def _add_radar_features(df: pd.DataFrame) -> pd.DataFrame:
-    """Features derivades del radar (RainViewer). Es passen com a columnes al df."""
+    """Features derivades del radar (RainViewer) — puntuals i espacials."""
     df = df.copy()
+    # Puntuals
     if "radar_dbz" in df.columns:
         df["radar_dbz"] = pd.to_numeric(df["radar_dbz"], errors="coerce").fillna(0)
         df["radar_has_echo"] = (df["radar_dbz"] > 5).astype(int)
@@ -292,6 +293,14 @@ def _add_radar_features(df: pd.DataFrame) -> pd.DataFrame:
         df["radar_approaching"] = df["radar_approaching"].astype(int)
     if "radar_frames_with_echo" in df.columns:
         df["radar_frames_with_echo"] = pd.to_numeric(df["radar_frames_with_echo"], errors="coerce").fillna(0)
+    # Espacials
+    for col in ["radar_nearest_echo_km", "radar_max_dbz_20km", "radar_coverage_20km",
+                "radar_upwind_nearest_echo_km", "radar_upwind_max_dbz",
+                "radar_storm_velocity_kmh"]:
+        if col in df.columns:
+            df[col] = pd.to_numeric(df[col], errors="coerce")
+    if "radar_storm_approaching" in df.columns:
+        df["radar_storm_approaching"] = df["radar_storm_approaching"].astype(int)
     return df
 
 
@@ -455,9 +464,13 @@ FEATURE_COLUMNS = [
     # model_predicts_showers: zero importance (redundant with weather_code)
     # Radiació solar
     "shortwave_radiation",
-    # Radar (RainViewer)
+    # Radar (RainViewer) — puntual + espacial
     "radar_dbz", "radar_rain_rate", "radar_has_echo",
     "radar_frames_with_echo", "radar_approaching", "radar_max_intensity_1h",
+    # Radar espacial (30km scan + tracking)
+    "radar_nearest_echo_km", "radar_max_dbz_20km", "radar_coverage_20km",
+    "radar_upwind_nearest_echo_km", "radar_upwind_max_dbz",
+    "radar_storm_velocity_kmh", "radar_storm_approaching",
     # Estació sentinella (Granollers) i pluviòmetre XEMA local
     "sentinel_temp_diff", "sentinel_humidity_diff",
     "sentinel_precip", "sentinel_raining",

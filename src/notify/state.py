@@ -6,6 +6,9 @@ per evitar spam de notificacions.
 Estats possibles:
   - clear: No es preveu pluja
   - rain_alert: S'ha enviat alerta de pluja
+
+També gestiona alertes de canvi de règim atmosfèric
+(Llevantada, Garbí, caiguda de pressió, backing wind).
 """
 import json
 import logging
@@ -23,10 +26,13 @@ STATE_FILE = os.path.join(config.PROJECT_ROOT, "data", "notification_state.json"
 DEFAULT_STATE = {
     "current_state": "clear",        # clear | rain_alert
     "last_alert_time": 0,            # Unix timestamp
-    "last_alert_type": None,         # rain_incoming | rain_clearing | daily_summary
+    "last_alert_type": None,         # rain_incoming | rain_clearing | daily_summary | regime_change
     "last_probability": 0.0,
     "consecutive_high": 0,           # Quantes prediccions seguides > threshold_up
     "consecutive_low": 0,            # Quantes prediccions seguides < threshold_down
+    "last_wind_regime": {},          # Últim règim eòlic detectat
+    "last_regime_alert_time": 0,     # Unix timestamp de l'última alerta de règim
+    "last_regime_alert_type": None,  # Tipus d'última alerta de règim
 }
 
 
@@ -91,7 +97,35 @@ def should_notify(probability: float, state: dict) -> str | None:
     return None
 
 
-def update_state(state: dict, notification_type: str, probability: float) -> dict:
+def should_notify_regime(regime_change: dict, state: dict) -> bool:
+    """
+    Determina si cal enviar una alerta de canvi de règim.
+    Respecta un cooldown independent (2h) per no spamejar.
+    """
+    if regime_change is None:
+        return False
+
+    now = time.time()
+    last_regime_time = state.get("last_regime_alert_time", 0)
+    cooldown_seconds = config.REGIME_COOLDOWN_MIN * 60
+
+    if now - last_regime_time < cooldown_seconds:
+        logger.info(
+            f"Cooldown de règim actiu ({int(now - last_regime_time)}s / {cooldown_seconds}s). "
+            f"No s'envia alerta de règim."
+        )
+        return False
+
+    # No repetir el mateix tipus de règim si ja l'hem alertat recentment
+    if regime_change["type"] == state.get("last_regime_alert_type"):
+        logger.info(f"Règim {regime_change['type']} ja alertat. No es repeteix.")
+        return False
+
+    return True
+
+
+def update_state(state: dict, notification_type: str, probability: float,
+                 wind_regime: dict = None, regime_alert_type: str = None) -> dict:
     """Actualitza l'estat després d'enviar una notificació."""
     now = time.time()
     state["last_alert_time"] = now
@@ -102,8 +136,15 @@ def update_state(state: dict, notification_type: str, probability: float) -> dic
         state["current_state"] = "rain_alert"
     elif notification_type == "rain_clearing":
         state["current_state"] = "clear"
+    elif notification_type == "regime_change":
+        state["last_regime_alert_time"] = now
+        state["last_regime_alert_type"] = regime_alert_type
     elif notification_type == "daily_summary":
         pass  # No canvia l'estat base
+
+    # Sempre actualitzar el règim eòlic actual
+    if wind_regime is not None:
+        state["last_wind_regime"] = wind_regime
 
     save_state(state)
     return state

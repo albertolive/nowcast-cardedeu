@@ -124,7 +124,8 @@ nowcast-cardedeu/
 │   │   ├── aemet.py          # API AEMET OpenData (probTormenta/probPrecip)
 │   │   └── meteocat.py       # API Meteocat XEMA (sentinella, gated by rain gate)
 │   ├── features/
-│   │   └── engineering.py    # Feature engineering (52 training / 75 real-time, incl. LI, wind shear, 700hPa)
+│   │   ├── engineering.py    # Feature engineering (52 training / 82 real-time, incl. radar espacial)
+│   │   └── regime.py         # Detecció de canvis de règim atmosfèric (Llevantada, Garbí, pressió)
 │   ├── model/
 │   │   ├── train.py          # Pipeline d'entrenament (XGBoost + TimeSeriesSplit)
 │   │   └── predict.py        # Predicció en temps real (fusió 6 fonts + rain gate)
@@ -185,7 +186,13 @@ El model defineix **75 features** per predicció en temps real (9 zero-importanc
 | [Meteocat XEMA](https://apidocs.meteocat.gencat.cat) | Estacions sentinella SMC (Granollers, ETAP Cardedeu) | Cada 30 min | Sí (gratuïta) |
 
 ### Radar RainViewer
-El sistema descarrega tiles de radar (zoom 8, tile 134/94) i extreu la intensitat al píxel exacte de Cardedeu. Converteix la intensitat del PNG a dBZ i mm/h (fórmula Marshall-Palmer). Analitza els últims 6 frames (~1h) per detectar si la precipitació s'aproxima.
+El sistema descarrega tiles de radar (zoom 8, tile 134/94) i fa dues coses:
+
+1. **Detecció puntual**: Extreu la intensitat al píxel exacte de Cardedeu (dBZ, mm/h).
+2. **Escaneig espacial (30 km)**: Analitza tots els píxels en un radi de 30 km, detectant ecos de pluja, la seva distància, direcció (punt cardinal), i cobertura. Amb el vent a 850 hPa, prioriza el sector de sobrevent (d'on esperem la pluja).
+3. **Tracking de tempesta**: Compara el centroide dels ecos entre 6 frames (~1h) per estimar la velocitat de les cel·les de pluja, si s'acosten i l'ETA a Cardedeu.
+
+Converteix intensitat PNG → dBZ → mm/h (Marshall-Palmer). Cada frame ≈ 10 minuts.
 
 ### Estacions sentinella Meteocat
 Utilitza l'estació de **Granollers (YM)** com a sentinella: si plou a Granollers (7 km al SO), és probable que arribi a Cardedeu en pocs minuts. També consulta el **pluviòmetre ETAP Cardedeu (KX)** a 1.5 km del centre. Les features de diferencial (temperatura, humitat) entre Granollers i Cardedeu detecten fronts que travessen la zona.
@@ -314,7 +321,41 @@ Les notificacions són basades en **transicions d'estat**, no en cada predicció
 |-------|-------------|----------|
 | 🌧️ **Pluja imminent** | Probabilitat puja per sobre del **65%** | "⚠️ ALERTA: Pluja imminent en els propers 60 min!" |
 | ☀️ **Pluja s'allunya** | Probabilitat baixa per sota del **30%** | "✅ La pluja s'allunya!" |
-| 📋 **Resum diari** | Cada dia a les **7:00** | Outlook del matí amb condicions actuals |
+| 🌊 **Canvi de règim** | Vent gira a Llevantada/Garbí + condicions favorables | "🌊 Llevantada: entrada d'humitat mediterrània" |
+| 📋 **Previsió diària** | Cada dia a les **7:00** | Outlook per franges (matí/tarda/nit) amb règim eòlic |
+
+### Alertes de canvi de règim atmosfèric
+
+El sistema detecta canvis en la configuració atmosfèrica que històricament produeixen pluja a Cardedeu:
+
+| Règim | Detecció | Significat |
+|-------|---------|-----------|
+| 🌊 **Llevantada humida** | Vent gira a E/SE (850hPa) + HR ≥75% | Humitat mediterrània contra la Serralada → pluja #1 |
+| 🌀 **Garbí inestable** | Vent SW + TT>44 o LI<-2 | Configuració de tempestes convectives |
+| 📉 **Caiguda de pressió** | ≥2 hPa/3h en règim humit | Approximació de front o baixa |
+| 🔄 **Backing wind** | Gir antihorari >20° en 3h + HR ≥70% | Front càlid o baixa en aproximació |
+
+Aquestes alertes donen **hores** de lead time — alerten sobre la **causa** (configuració atmosfèrica), no l'**efecte** (pluja al terra).
+
+- **Cooldown**: 2 hores entre alertes de règim
+- **No repeteix**: El mateix tipus de règim no s'alerta dues vegades seguides
+
+### Radar espacial (30 km)
+
+El sistema no només mira el píxel de Cardedeu — escaneja un radi de **30 km** per detectar ecos de pluja que s'acosten:
+
+- **Eco més proper**: Distància i direcció (ex: "eco a 18 km NNE")
+- **Tracking de tempesta**: Velocitat i ETA (ex: "25 km/h, arriba en ~40 min")
+- **Sector de sobrevent**: Analitza els ecos en la direcció d'on ve el vent (850hPa)
+- **Cobertura**: Fracció de la zona amb ecos de radar
+
+### Previsió diària millorada
+
+El resum diari (7:00) ara inclou:
+- **Pronòstic per franges**: Matí (7-13h), Tarda (13-19h), Nit (19-1h)
+- **Règim eòlic actual**: Quin vent domina i què implica
+- **Models**: Quants dels 4 models prediuen pluja
+- **Temperatures**: Rang per franja
 
 ### Disseny anti-spam
 

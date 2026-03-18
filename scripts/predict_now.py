@@ -3,7 +3,7 @@
 Script 4: Predicció en temps real.
 Usat per GitHub Actions cada 15 minuts.
 Obté dades actuals, fa la predicció i gestiona notificacions
-basades en transicions d'estat (no spam).
+basades en transicions d'estat (no spam) + canvis de règim atmosfèric.
 """
 import json
 import logging
@@ -13,8 +13,11 @@ import sys
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 import config
 from src.model.predict import predict_now
-from src.notify.telegram import send_rain_incoming, send_rain_clearing
-from src.notify.state import load_state, save_state, should_notify, update_state
+from src.notify.telegram import send_rain_incoming, send_rain_clearing, send_regime_change
+from src.notify.state import (
+    load_state, save_state, should_notify, should_notify_regime, update_state,
+)
+from src.features.regime import detect_regime_change
 from src.feedback.logger import log_prediction
 from src.feedback.verify import verify_pending_predictions
 
@@ -72,21 +75,42 @@ def main():
     state = load_state()
     logger.info(f"  Estat actual: {state['current_state']} | Prob: {result['probability_pct']}%")
 
+    wind_regime = result.get("wind_regime", {})
     notification_type = should_notify(probability, state)
 
     if notification_type == "rain_incoming":
         logger.info("⚠️  Transició: clear → rain_alert. Enviant alerta de pluja...")
         send_rain_incoming(result)
-        update_state(state, "rain_incoming", probability)
+        update_state(state, "rain_incoming", probability, wind_regime=wind_regime)
     elif notification_type == "rain_clearing":
         logger.info("☀️  Transició: rain_alert → clear. Enviant avís de millora...")
         send_rain_clearing(result)
-        update_state(state, "rain_clearing", probability)
+        update_state(state, "rain_clearing", probability, wind_regime=wind_regime)
     else:
-        logger.info(f"  Sense canvi d'estat. No es notifica. (estat={state['current_state']})")
-        # Actualitzar la probabilitat sense canviar l'estat
-        state["last_probability"] = probability
-        save_state(state)
+        logger.info(f"  Sense canvi d'estat de pluja. (estat={state['current_state']})")
+
+        # ── Detecció de canvi de règim atmosfèric ──
+        regime_change = detect_regime_change(result, state)
+        if regime_change:
+            logger.info(f"🌬️  Canvi de règim detectat: {regime_change['type']} ({regime_change['severity']})")
+            if should_notify_regime(regime_change, state):
+                logger.info(f"  Enviant alerta de règim: {regime_change['title']}")
+                send_regime_change(result, regime_change)
+                update_state(
+                    state, "regime_change", probability,
+                    wind_regime=wind_regime,
+                    regime_alert_type=regime_change["type"],
+                )
+            else:
+                logger.info("  Canvi de règim detectat però no s'envia (cooldown/repetit).")
+                state["last_probability"] = probability
+                state["last_wind_regime"] = wind_regime
+                save_state(state)
+        else:
+            # Actualitzar la probabilitat i règim sense notificació
+            state["last_probability"] = probability
+            state["last_wind_regime"] = wind_regime
+            save_state(state)
 
     # Output per GitHub Actions
     github_output = os.environ.get("GITHUB_OUTPUT")

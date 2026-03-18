@@ -1,6 +1,8 @@
 """
 Client per a l'API de RainViewer.
 Obté dades de radar de precipitació en temps real per a Cardedeu.
+Inclou escaneig espacial: detecta ecos en un radi de 30km,
+rastreja el moviment de les cel·les de pluja i estima ETA.
 https://www.rainviewer.com/api.html
 """
 import io
@@ -35,17 +37,14 @@ def _extract_pixel_intensity(png_bytes: bytes, px: int, py: int) -> int:
     Retorna 0 (sense pluja) a 255 (pluja molt intensa).
     """
     try:
-        # Usar PIL si disponible, sinó fer fallback a raw PNG parsing
         from PIL import Image
         img = Image.open(io.BytesIO(png_bytes)).convert("RGBA")
         r, g, b, a = img.getpixel((px, py))
-        # Si alfa=0, no hi ha dades de radar → sense pluja
         if a == 0:
             return 0
-        return r  # Canal R conté la intensitat
+        return r
     except ImportError:
-        # Fallback: sense PIL, interpretar com "hi ha dades" si el PNG no està buit
-        return -1  # Indica que no podem extreure el valor exacte
+        return -1
 
 
 def _radar_intensity_to_dbz(intensity: int) -> float:
@@ -69,17 +68,226 @@ def _dbz_to_rain_rate(dbz: float) -> float:
     return (z_linear / 200.0) ** (1.0 / 1.6)
 
 
-def fetch_radar_at_cardedeu() -> dict:
+def _bearing_to_compass(bearing: float) -> str:
+    """Converteix graus (0-360) a punt cardinal (N, NE, E, SE, etc.)."""
+    directions = ["N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE",
+                   "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"]
+    idx = round(bearing / 22.5) % 16
+    return directions[idx]
+
+
+def _scan_radar_spatial(png_bytes: bytes, cx: int, cy: int,
+                        radius_km: float, pixel_size_km: float,
+                        wind_from_dir: Optional[float] = None) -> dict:
+    """
+    Escaneja una zona circular del tile de radar al voltant de Cardedeu.
+    Detecta ecos de pluja, calcula distància, cobertura i mètriques espacials.
+
+    Args:
+        png_bytes: Bytes del tile PNG de RainViewer
+        cx, cy: Coordenades del píxel central (Cardedeu)
+        radius_km: Radi d'escaneig en km
+        pixel_size_km: Mida de cada píxel en km
+        wind_from_dir: Direcció d'on ve el vent (graus, 0=N, 90=E).
+                       Si proporcionat, calcula mètriques del sector de sobrevent.
+
+    Returns:
+        Dict amb mètriques espacials del radar.
+    """
+    try:
+        from PIL import Image
+        img = Image.open(io.BytesIO(png_bytes)).convert("RGBA")
+        arr = np.array(img)
+    except Exception:
+        return _empty_spatial_result(radius_km)
+
+    h, w = arr.shape[:2]
+    radius_px = int(radius_km / pixel_size_km)
+
+    # Definir la subregió a escanejar
+    y_lo = max(0, cy - radius_px)
+    y_hi = min(h, cy + radius_px + 1)
+    x_lo = max(0, cx - radius_px)
+    x_hi = min(w, cx + radius_px + 1)
+
+    # Coordenades relatives al centre
+    yy, xx = np.mgrid[y_lo:y_hi, x_lo:x_hi]
+    dy = yy - cy
+    dx = xx - cx
+    dist_km = np.sqrt(dx.astype(float)**2 + dy.astype(float)**2) * pixel_size_km
+
+    # Màscara circular
+    in_radius = dist_km <= radius_km
+
+    # Extreure intensitat (canal R) on alfa > 0
+    region = arr[y_lo:y_hi, x_lo:x_hi]
+    intensity = region[:, :, 0].astype(float)
+    alpha = region[:, :, 3]
+
+    # Ecos: intensitat > 10 (~5 dBZ, pluja molt lleugera)
+    has_echo = (alpha > 0) & (intensity > 10) & in_radius
+
+    if not has_echo.any():
+        result = _empty_spatial_result(radius_km)
+        # Afegir centroid buit per tracking
+        result["_centroid_dx"] = None
+        result["_centroid_dy"] = None
+        return result
+
+    # ── Eco més proper ──
+    echo_distances = np.where(has_echo, dist_km, np.inf)
+    nearest_flat = echo_distances.argmin()
+    nearest_idx = np.unravel_index(nearest_flat, echo_distances.shape)
+    nearest_km = float(dist_km[nearest_idx])
+    nearest_dx = float(dx[nearest_idx])
+    nearest_dy = float(dy[nearest_idx])
+    # Rumb geogràfic: 0=N, 90=E, 180=S, 270=W
+    nearest_bearing = float((np.degrees(np.arctan2(nearest_dx, -nearest_dy)) + 360) % 360)
+
+    # ── Màxim dBZ dins de 20km ──
+    within_20km = in_radius & (dist_km <= 20) & has_echo
+    max_intensity_20km = float(intensity[within_20km].max()) if within_20km.any() else 0
+    max_dbz_20km = _radar_intensity_to_dbz(int(max_intensity_20km))
+
+    # ── Cobertura dins de 20km (fracció de píxels amb eco) ──
+    total_20km = int((in_radius & (dist_km <= 20)).sum())
+    echo_20km = int(within_20km.sum())
+    coverage_20km = float(echo_20km / total_20km) if total_20km > 0 else 0.0
+
+    # ── Centroide ponderat de tots els ecos (per tracking de moviment) ──
+    echo_intensities = intensity[has_echo]
+    echo_dx_arr = dx[has_echo].astype(float)
+    echo_dy_arr = dy[has_echo].astype(float)
+    total_int = echo_intensities.sum()
+    centroid_dx = float((echo_dx_arr * echo_intensities).sum() / total_int)
+    centroid_dy = float((echo_dy_arr * echo_intensities).sum() / total_int)
+
+    result = {
+        "nearest_echo_km": round(nearest_km, 1),
+        "nearest_echo_bearing": round(nearest_bearing, 0),
+        "nearest_echo_compass": _bearing_to_compass(nearest_bearing),
+        "max_dbz_20km": round(max_dbz_20km, 1),
+        "coverage_20km": round(coverage_20km, 4),
+        "echoes_found": True,
+        "_centroid_dx": centroid_dx,
+        "_centroid_dy": centroid_dy,
+    }
+
+    # ── Sector de sobrevent (upwind): d'on ve el vent → d'on esperem la pluja ──
+    if wind_from_dir is not None:
+        echo_bearings = (np.degrees(np.arctan2(echo_dx_arr, -echo_dy_arr)) + 360) % 360
+        angle_diff = ((echo_bearings - wind_from_dir + 180) % 360) - 180
+        upwind_mask = np.abs(angle_diff) <= 60  # ±60° from wind direction
+
+        if upwind_mask.any():
+            upwind_distances = np.sqrt(
+                echo_dx_arr[upwind_mask]**2 + echo_dy_arr[upwind_mask]**2
+            ) * pixel_size_km
+            upwind_intensities = echo_intensities[upwind_mask]
+            result["upwind_nearest_echo_km"] = round(float(upwind_distances.min()), 1)
+            result["upwind_max_dbz"] = round(
+                _radar_intensity_to_dbz(int(upwind_intensities.max())), 1
+            )
+        else:
+            result["upwind_nearest_echo_km"] = radius_km
+            result["upwind_max_dbz"] = 0.0
+    else:
+        result["upwind_nearest_echo_km"] = radius_km
+        result["upwind_max_dbz"] = 0.0
+
+    return result
+
+
+def _empty_spatial_result(radius_km: float) -> dict:
+    return {
+        "nearest_echo_km": radius_km,
+        "nearest_echo_bearing": None,
+        "nearest_echo_compass": None,
+        "max_dbz_20km": 0.0,
+        "coverage_20km": 0.0,
+        "echoes_found": False,
+        "upwind_nearest_echo_km": radius_km,
+        "upwind_max_dbz": 0.0,
+        "_centroid_dx": None,
+        "_centroid_dy": None,
+    }
+
+
+def _estimate_storm_tracking(spatial_scans: list, pixel_size_km: float,
+                              frame_interval_min: float = 10.0) -> dict:
+    """
+    Estima la velocitat i ETA de les cel·les de pluja a partir del
+    moviment del centroide entre frames consecutius.
+
+    Args:
+        spatial_scans: Llista de resultats de _scan_radar_spatial()
+        pixel_size_km: km per píxel
+        frame_interval_min: Minuts entre frames (~10 min per RainViewer)
+
+    Returns:
+        Dict amb velocitat de la tempesta i ETA estimat.
+    """
+    # Filtrar scans amb ecos i centroide vàlid
+    valid = [(s["_centroid_dx"], s["_centroid_dy"])
+             for s in spatial_scans
+             if s.get("echoes_found") and s.get("_centroid_dx") is not None]
+
+    if len(valid) < 2:
+        return {
+            "storm_velocity_kmh": 0.0,
+            "storm_approaching": False,
+            "storm_eta_min": None,
+        }
+
+    # Desplaçament total del centroide (primer → últim)
+    first_dx, first_dy = valid[0]
+    last_dx, last_dy = valid[-1]
+    n_intervals = len(valid) - 1
+    total_time_min = n_intervals * frame_interval_min
+
+    # Velocitat del centroide
+    move_dx = last_dx - first_dx   # píxels
+    move_dy = last_dy - first_dy
+    move_km = np.sqrt(move_dx**2 + move_dy**2) * pixel_size_km
+    velocity_kmh = (move_km / total_time_min * 60) if total_time_min > 0 else 0.0
+
+    # Distància del centroide al centre (Cardedeu) en cada instant
+    dist_first = np.sqrt(first_dx**2 + first_dy**2) * pixel_size_km
+    dist_last = np.sqrt(last_dx**2 + last_dy**2) * pixel_size_km
+    approach_km = dist_first - dist_last  # Positiu = s'acosta
+
+    approaching = approach_km > 1.0  # Almenys 1km d'aproximació
+
+    # ETA: temps estimat d'arribada a Cardedeu
+    eta_min = None
+    if approaching and total_time_min > 0:
+        approach_speed_kmh = (approach_km / total_time_min) * 60
+        if approach_speed_kmh > 2:  # Mínim 2 km/h per ser significatiu
+            latest_scan = spatial_scans[-1]
+            nearest_km = latest_scan.get("nearest_echo_km", 30)
+            eta_min = round((nearest_km / approach_speed_kmh) * 60)
+            eta_min = max(0, min(eta_min, 180))  # Cap a 0-180 min
+
+    return {
+        "storm_velocity_kmh": round(velocity_kmh, 1),
+        "storm_approaching": approaching,
+        "storm_eta_min": eta_min,
+    }
+
+
+def fetch_radar_at_cardedeu(wind_from_dir: Optional[float] = None) -> dict:
     """
     Obté les dades de radar actuals per a la ubicació de Cardedeu.
+    Inclou escaneig espacial en un radi de 30km al voltant del poble.
+
+    Args:
+        wind_from_dir: Direcció d'on ve el vent a 850hPa (graus).
+                       Permet calcular mètriques del sector de sobrevent.
+
     Retorna un diccionari amb:
-    - radar_intensity: 0-255 (intensitat del píxel)
-    - radar_dbz: dBZ estimat
-    - radar_rain_rate: mm/h estimat
-    - radar_has_echo: bool (hi ha eco de pluja?)
-    - radar_frames_with_echo: quants dels últims 6 frames tenien eco
-    - radar_approaching: bool (la pluja s'acosta?)
-    - radar_timestamp: str ISO
+    - Mètriques puntuals (píxel a Cardedeu): dbz, rain_rate, has_echo
+    - Mètriques espacials (radi 30km): nearest_echo_km, coverage, upwind
+    - Tracking de tempesta: velocity, approaching, ETA
     """
     try:
         data = _get_radar_frames()
@@ -88,7 +296,6 @@ def fetch_radar_at_cardedeu() -> dict:
         return _empty_radar_result()
 
     past_frames = data.get("radar", {}).get("past", [])
-    nowcast_frames = data.get("radar", {}).get("nowcast", [])
 
     if not past_frames:
         return _empty_radar_result()
@@ -96,6 +303,7 @@ def fetch_radar_at_cardedeu() -> dict:
     # Analitzar els últims 6 frames (~1h de radar, cada 10min)
     recent_frames = past_frames[-6:]
     intensities = []
+    spatial_scans = []
 
     for frame in recent_frames:
         tile_url = (
@@ -106,44 +314,96 @@ def fetch_radar_at_cardedeu() -> dict:
         try:
             r = SESSION.get(tile_url, timeout=5)
             if r.status_code == 200 and len(r.content) > 100:
+                # Intensitat puntual (píxel de Cardedeu)
                 intensity = _extract_pixel_intensity(
                     r.content,
                     config.RAINVIEWER_PIXEL_X,
                     config.RAINVIEWER_PIXEL_Y,
                 )
                 intensities.append(intensity)
+
+                # Escaneig espacial (radi 30km)
+                scan = _scan_radar_spatial(
+                    r.content,
+                    config.RAINVIEWER_PIXEL_X,
+                    config.RAINVIEWER_PIXEL_Y,
+                    config.RADAR_SCAN_RADIUS_KM,
+                    config.RADAR_PIXEL_SIZE_KM,
+                    wind_from_dir=wind_from_dir,
+                )
+                spatial_scans.append(scan)
             else:
                 intensities.append(0)
+                spatial_scans.append(_empty_spatial_result(config.RADAR_SCAN_RADIUS_KM))
         except Exception:
             intensities.append(0)
+            spatial_scans.append(_empty_spatial_result(config.RADAR_SCAN_RADIUS_KM))
 
-    # Última intensitat (moment actual)
+    # ── Mètriques puntuals (compatibilitat amb l'existent) ──
     current_intensity = intensities[-1] if intensities else 0
     current_dbz = _radar_intensity_to_dbz(current_intensity)
     current_rain_rate = _dbz_to_rain_rate(current_dbz)
-
-    # Quants frames tenen eco (>10 d'intensitat ≈ >5dBZ ≈ pluja lleu)
     frames_with_echo = sum(1 for i in intensities if i > 10)
 
-    # Detectar si la pluja s'acosta (intensitat creixent)
     approaching = False
     if len(intensities) >= 3:
         recent_trend = intensities[-1] - intensities[0]
-        approaching = recent_trend > 15  # Intensitat creixent
+        approaching = recent_trend > 15
 
     latest_ts = past_frames[-1]["time"]
     radar_time = datetime.fromtimestamp(latest_ts, tz=timezone.utc).isoformat()
 
-    return {
+    # ── Mètriques espacials (últim frame) ──
+    latest_spatial = spatial_scans[-1] if spatial_scans else _empty_spatial_result(
+        config.RADAR_SCAN_RADIUS_KM)
+
+    # ── Tracking de tempesta (moviment entre frames) ──
+    storm_tracking = _estimate_storm_tracking(
+        spatial_scans, config.RADAR_PIXEL_SIZE_KM
+    )
+
+    # Combinar approaching: puntual O espacial
+    spatial_approaching = storm_tracking["storm_approaching"]
+
+    result = {
+        # Puntuals (compatibilitat)
         "radar_intensity": current_intensity,
         "radar_dbz": round(current_dbz, 1),
         "radar_rain_rate": round(current_rain_rate, 2),
         "radar_has_echo": current_intensity > 10,
         "radar_frames_with_echo": frames_with_echo,
-        "radar_approaching": approaching,
+        "radar_approaching": approaching or spatial_approaching,
         "radar_max_intensity_1h": max(intensities) if intensities else 0,
         "radar_timestamp": radar_time,
+        # Espacials (noves)
+        "radar_nearest_echo_km": latest_spatial["nearest_echo_km"],
+        "radar_nearest_echo_bearing": latest_spatial.get("nearest_echo_bearing"),
+        "radar_nearest_echo_compass": latest_spatial.get("nearest_echo_compass"),
+        "radar_max_dbz_20km": latest_spatial["max_dbz_20km"],
+        "radar_coverage_20km": latest_spatial["coverage_20km"],
+        "radar_upwind_nearest_echo_km": latest_spatial.get("upwind_nearest_echo_km",
+                                                            config.RADAR_SCAN_RADIUS_KM),
+        "radar_upwind_max_dbz": latest_spatial.get("upwind_max_dbz", 0.0),
+        # Tracking
+        "radar_storm_velocity_kmh": storm_tracking["storm_velocity_kmh"],
+        "radar_storm_approaching": spatial_approaching,
+        "radar_storm_eta_min": storm_tracking["storm_eta_min"],
     }
+
+    # Log detallat
+    if latest_spatial["echoes_found"]:
+        eta_str = f", ETA={storm_tracking['storm_eta_min']}min" if storm_tracking["storm_eta_min"] else ""
+        logger.info(
+            f"  Radar espacial: eco a {latest_spatial['nearest_echo_km']}km "
+            f"{latest_spatial.get('nearest_echo_compass', '?')}, "
+            f"cobertura 20km={latest_spatial['coverage_20km']:.1%}, "
+            f"vel={storm_tracking['storm_velocity_kmh']}km/h"
+            f"{eta_str}"
+        )
+    else:
+        logger.info(f"  Radar espacial: sense ecos dins de {config.RADAR_SCAN_RADIUS_KM}km")
+
+    return result
 
 
 def _empty_radar_result() -> dict:
@@ -156,4 +416,16 @@ def _empty_radar_result() -> dict:
         "radar_approaching": False,
         "radar_max_intensity_1h": 0,
         "radar_timestamp": "",
+        # Espacials
+        "radar_nearest_echo_km": config.RADAR_SCAN_RADIUS_KM,
+        "radar_nearest_echo_bearing": None,
+        "radar_nearest_echo_compass": None,
+        "radar_max_dbz_20km": 0.0,
+        "radar_coverage_20km": 0.0,
+        "radar_upwind_nearest_echo_km": config.RADAR_SCAN_RADIUS_KM,
+        "radar_upwind_max_dbz": 0.0,
+        # Tracking
+        "radar_storm_velocity_kmh": 0.0,
+        "radar_storm_approaching": False,
+        "radar_storm_eta_min": None,
     }
