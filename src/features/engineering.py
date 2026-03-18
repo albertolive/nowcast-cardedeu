@@ -70,6 +70,10 @@ def _add_humidity_features(df: pd.DataFrame, temp_col: str = "temperature_2m", h
         # Tendència d'humitat
         df["humidity_change_1h"] = df[hum_col].diff(1)
         df["humidity_change_3h"] = df[hum_col].diff(3)
+    # VPD (Vapour Pressure Deficit) — mesura directa de saturació
+    # VPD=0 → aire saturat (boira/pluja imminent). Caiguda ràpida = règim canviant.
+    if "vapour_pressure_deficit" in df.columns:
+        df["vpd_change_3h"] = df["vapour_pressure_deficit"].diff(3)
     return df
 
 
@@ -434,6 +438,7 @@ FEATURE_COLUMNS = [
     "temperature_2m", "relative_humidity_2m",
     "dew_point", "dew_point_depression",
     "humidity_change_1h", "humidity_change_3h",
+    "vapour_pressure_deficit", "vpd_change_3h",
     # Vent
     "wind_speed_10m", "wind_u", "wind_v",
     "wind_speed_change_1h", "wind_speed_change_3h",

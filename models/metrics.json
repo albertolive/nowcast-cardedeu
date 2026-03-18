@@ -1,39 +1,39 @@
 {
-  "cv_auc_mean": 0.9526707208431633,
-  "cv_auc_std": 0.006905936413869851,
-  "cv_f1_mean": 0.6736765869700656,
-  "cv_f1_std": 0.03076688107208872,
-  "final_auc": 0.9596555272774576,
+  "cv_auc_mean": 0.9525946695669326,
+  "cv_auc_std": 0.006816827428742641,
+  "cv_f1_mean": 0.671850767914893,
+  "cv_f1_std": 0.03327271578086382,
+  "final_auc": 0.9591506598937601,
   "final_report": {
     "0": {
-      "precision": 0.9779179810725552,
-      "recall": 0.930286241920591,
-      "f1-score": 0.9535076304270673,
-      "support": 8664.0
+      "precision": 0.9785402521823472,
+      "recall": 0.9310185719229438,
+      "f1-score": 0.9541880948158658,
+      "support": 8669.0
     },
     "1": {
-      "precision": 0.6174794173527549,
-      "recall": 0.8426966292134831,
-      "f1-score": 0.7127192982456141,
-      "support": 1157.0
+      "precision": 0.6186224489795918,
+      "recall": 0.8456843940714909,
+      "f1-score": 0.714548802946593,
+      "support": 1147.0
     },
-    "accuracy": 0.919967416760004,
+    "accuracy": 0.9210472697636511,
     "macro avg": {
-      "precision": 0.7976986992126551,
-      "recall": 0.886491435567037,
-      "f1-score": 0.8331134643363407,
-      "support": 9821.0
+      "precision": 0.7985813505809696,
+      "recall": 0.8883514829972173,
+      "f1-score": 0.8343684488812293,
+      "support": 9816.0
     },
     "weighted avg": {
-      "precision": 0.9354551546573422,
-      "recall": 0.919967416760004,
-      "f1-score": 0.925140651470348,
-      "support": 9821.0
+      "precision": 0.936483842211528,
+      "recall": 0.9210472697636511,
+      "f1-score": 0.926186233795689,
+      "support": 9816.0
     }
   },
-  "n_samples": 98208,
-  "n_positive": 9178,
-  "n_features": 52,
+  "n_samples": 98160,
+  "n_positive": 9167,
+  "n_features": 54,
   "feature_names": [
     "hour_sin",
     "hour_cos",
@@ -50,6 +50,8 @@
     "dew_point_depression",
     "humidity_change_1h",
     "humidity_change_3h",
+    "vapour_pressure_deficit",
+    "vpd_change_3h",
     "wind_speed_10m",
     "wind_u",
     "wind_v",
