@@ -139,6 +139,8 @@ PRESSURE_LEVEL_VARS = [
     "temperature_500hPa",
     "geopotential_height_500hPa",
     "relative_humidity_850hPa",
+    "relative_humidity_700hPa",
+    "temperature_700hPa",
 ]
 
 
@@ -154,8 +156,11 @@ def fetch_pressure_levels() -> dict:
       - temp_850: temperatura a 850hPa (°C)
       - temp_500: temperatura a 500hPa (°C)
       - rh_850: humitat relativa a 850hPa (%)
+      - rh_700: humitat relativa a 700hPa (%) — clau per tempestes (ref: alexmeteo)
+      - temp_700: temperatura a 700hPa (°C)
       - vt_index: Vertical Totals = T850 - T500 (índex d'inestabilitat)
       - tt_index: Total Totals = VT + (Td850 - T500)
+      - li_index: Lifted Index (inestabilitat a 500hPa, negatiu = inestable)
     """
     import numpy as np
     import math
@@ -185,6 +190,8 @@ def fetch_pressure_levels() -> dict:
         temp_850 = _first("temperature_850hPa")
         temp_500 = _first("temperature_500hPa")
         rh_850 = _first("relative_humidity_850hPa")
+        rh_700 = _first("relative_humidity_700hPa")
+        temp_700 = _first("temperature_700hPa")
 
         # Vertical Totals (VT) — gradient tèrmic vertical
         # VT > 26: inestabilitat feble, > 30: inestabilitat clara, > 34: forta
@@ -201,14 +208,41 @@ def fetch_pressure_levels() -> dict:
             ct = td_850 - temp_500
             tt_index = vt_index + ct
 
+        # Lifted Index (LI) — mesura d'inestabilitat a 500hPa
+        # Estima la temperatura d'una parcel·la d'aire superficial pujada a 500hPa
+        # i la compara amb la temperatura ambient a 500hPa.
+        # LI negatiu = inestable. LI < -3: tempestes, < -6: severes.
+        # Ref: alexmeteo.com "Ingredients per formar Tempestes"
+        li_index = None
+        if temp_850 is not None and rh_850 is not None and temp_500 is not None:
+            # Parcel·la des de 850hPa (aprox. superfície elevada a Cardedeu)
+            # 1) Calcular temperatura de rosada a 850hPa
+            a, b = 17.27, 237.7
+            alpha_li = (a * temp_850) / (b + temp_850) + math.log(max(rh_850, 1) / 100.0)
+            td_850_li = (b * alpha_li) / (a - alpha_li)
+            # 2) LCL: nivell on la parcel·la satura (~125m per grau de depressió)
+            #    Després, la parcel·la puja adiabàticament humida (~6°C/km)
+            dew_dep = temp_850 - td_850_li
+            lcl_height_m = 125 * dew_dep  # metres sobre 850hPa
+            # 3) Adiabàtica seca fins LCL: ~9.8°C/km
+            t_at_lcl = temp_850 - 9.8 * (lcl_height_m / 1000.0)
+            # 4) Adiabàtica humida des de LCL fins 500hPa (~3500m sobre 850hPa)
+            remaining_m = max(3500 - lcl_height_m, 0)
+            t_parcel_500 = t_at_lcl - 6.0 * (remaining_m / 1000.0)
+            # 5) LI = T_ambient(500) - T_parcel(500)
+            li_index = temp_500 - t_parcel_500
+
         result = {
             "wind_850_speed": wind_850_speed,
             "wind_850_dir": wind_850_dir,
             "temp_850": temp_850,
             "temp_500": temp_500,
             "rh_850": rh_850,
+            "rh_700": rh_700,
+            "temp_700": temp_700,
             "vt_index": vt_index,
             "tt_index": tt_index,
+            "li_index": li_index,
         }
 
         logger.info(
@@ -227,6 +261,9 @@ def fetch_pressure_levels() -> dict:
             "temp_850": None,
             "temp_500": None,
             "rh_850": None,
+            "rh_700": None,
+            "temp_700": None,
             "vt_index": None,
             "tt_index": None,
+            "li_index": None,
         }

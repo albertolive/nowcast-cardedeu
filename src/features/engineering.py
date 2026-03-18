@@ -160,6 +160,9 @@ def _add_wind_regime_features(df: pd.DataFrame,
     df["llevantada_strength"] = df["is_llevantada"] * synoptic_speed
     df["llevantada_moisture"] = df["is_llevantada"] * (humidity / 100.0)
 
+    # Garbí × velocitat: "Anuncia borrasques amb fortes precipitacions" (ref: alexmeteo)
+    df["garbi_strength"] = df["is_garbi"] * synoptic_speed
+
     # Canvi de direcció sinòptica en 3h (backing/veering)
     df["wind_dir_change_3h"] = _angular_diff(synoptic_dir, 3)
 
@@ -168,17 +171,49 @@ def _add_wind_regime_features(df: pd.DataFrame,
 
 def _add_pressure_level_features(df: pd.DataFrame) -> pd.DataFrame:
     """
-    Features de nivells de pressió (850hPa, 500hPa).
+    Features de nivells de pressió (850hPa, 700hPa, 500hPa).
     Inclou índexs d'inestabilitat del Skew-T:
     - VT (Vertical Totals) = T850 - T500: gradient tèrmic vertical
     - TT (Total Totals) = VT + (Td850 - T500): combina gradient + humitat
-    Ref: alexmeteo.com Skew-T analysis
+    - LI (Lifted Index): inestabilitat a 500hPa (negatiu = inestable)
+
+    Ref: alexmeteo.com — Skew-T analysis, "Ingredients per formar Tempestes"
     """
     df = df.copy()
     for col in ["wind_850_speed", "wind_850_dir", "temp_850", "temp_500",
-                "rh_850", "vt_index", "tt_index"]:
+                "rh_850", "rh_700", "temp_700", "vt_index", "tt_index", "li_index"]:
         if col in df.columns:
             df[col] = pd.to_numeric(df[col], errors="coerce")
+
+    # ── Wind shear (cisalla): diferència vent superfície vs 850hPa ──
+    # Clau per organització i persistència de tempestes.
+    # Ref: alexmeteo "la cisalla de vent és un factor clau en el desenvolupament
+    #  i la intensitat de les tempestes"
+    if "wind_850_speed" in df.columns and "wind_speed_10m" in df.columns:
+        w850 = pd.to_numeric(df["wind_850_speed"], errors="coerce")
+        w10 = pd.to_numeric(df["wind_speed_10m"], errors="coerce")
+        df["wind_shear_speed"] = (w850 - w10).abs()
+
+    if "wind_850_dir" in df.columns and "wind_direction_10m" in df.columns:
+        d850 = pd.to_numeric(df["wind_850_dir"], errors="coerce")
+        d10 = pd.to_numeric(df["wind_direction_10m"], errors="coerce")
+        # Directional shear: canvi de direcció entre superfície i 850hPa
+        diff = d850 - d10
+        df["wind_shear_dir"] = ((diff + 180) % 360) - 180
+
+    # ── Cold air at 500hPa: llindars de tempesta ──
+    # Ref: alexmeteo — -17°C a l'estiu = "petita bomba", -22/-24°C primavera
+    if "temp_500" in df.columns:
+        t500 = pd.to_numeric(df["temp_500"], errors="coerce")
+        df["cold_500_moderate"] = (t500 < -17).astype(int)
+        df["cold_500_strong"] = (t500 < -24).astype(int)
+
+    # ── LI thresholds ──
+    if "li_index" in df.columns:
+        li = pd.to_numeric(df["li_index"], errors="coerce")
+        df["li_unstable"] = (li < -2).astype(int)
+        df["li_very_unstable"] = (li < -6).astype(int)
+
     return df
 
 
@@ -374,13 +409,19 @@ FEATURE_COLUMNS = [
     # Règims eòlics catalans (Rosa dels Vents completa)
     # Classificació basada en 850hPa (sinòptic) amb fallback a 10m (superfície)
     "is_tramuntana", "is_llevantada", "is_migjorn", "is_garbi", "is_ponent",
-    "llevantada_strength", "llevantada_moisture",
+    "llevantada_strength", "llevantada_moisture", "garbi_strength",
     "wind_dir_change_3h",
-    # Nivells de pressió (850hPa, 500hPa) — flux sinòptic real
+    # Nivells de pressió (850hPa, 700hPa, 500hPa) — flux sinòptic real
     "wind_850_speed", "wind_850_dir",
     "temp_850", "temp_500", "rh_850",
-    # Índexs d'inestabilitat (Skew-T)
-    "vt_index", "tt_index",
+    "rh_700", "temp_700",
+    # Índexs d'inestabilitat (Skew-T + Lifted Index)
+    "vt_index", "tt_index", "li_index",
+    "li_unstable", "li_very_unstable",
+    # Cisalla de vent (wind shear) — clau per tempestes organitzades
+    "wind_shear_speed", "wind_shear_dir",
+    # Llindars d'aire fred a 500hPa
+    "cold_500_moderate", "cold_500_strong",
     # Pluja recent
     "precipitation", "rain_accum_3h", "rain_accum_6h", "rained_last_3h",
     # Model / satèl·lit
