@@ -88,8 +88,9 @@ export TELEGRAM_CHAT_ID="el_teu_chat_id"
 El workflow `.github/workflows/nowcast.yml`:
 - **Prediccions** cada 15 minuts (6h-23h) amb notificacions intel·ligents
 - **Resum diari** a les 7:00 via Telegram
-- **Re-entrenament** automàtic cada diumenge a les 3:00
-- Execució manual amb selector d'acció (predict / daily_summary / retrain)
+- **Informe d'accuracy** setmanal (dilluns 8:00) via Telegram
+- **Re-entrenament** automàtic cada diumenge a les 3:00 (amb feedback loop)
+- Execució manual amb selector d'acció (predict / daily_summary / accuracy_report / retrain)
 - Configura els secrets al repositori:
   - `TELEGRAM_BOT_TOKEN`
   - `TELEGRAM_CHAT_ID`
@@ -111,17 +112,23 @@ nowcast-cardedeu/
 │   ├── model/
 │   │   ├── train.py          # Pipeline d'entrenament (XGBoost + TimeSeriesSplit)
 │   │   └── predict.py        # Predicció en temps real (fusió 4 fonts)
-│   └── notify/
-│       ├── telegram.py       # Missatges Telegram (3 tipus: alerta, clearing, resum)
-│       └── state.py          # Màquina d'estats per notificacions (histèresi + cooldown)
+│   ├── notify/
+│   │   ├── telegram.py       # Missatges Telegram (3 tipus: alerta, clearing, resum)
+│   │   └── state.py          # Màquina d'estats per notificacions (histèresi + cooldown)
+│   └── feedback/
+│       ├── logger.py         # Log JSONL de cada predicció
+│       ├── verify.py         # Verificació automàtica (predicció vs realitat)
+│       ├── accuracy.py       # Mètriques d'accuracy acumulades
+│       └── export.py         # Exporta verificacions per reentrenar
 ├── scripts/
 │   ├── download_history.py   # Descarregar 12+ anys d'històric
 │   ├── build_dataset.py      # Construir dataset d'entrenament
-│   ├── train_model.py        # Entrenar model
-│   ├── predict_now.py        # Predicció amb notificacions (GitHub Actions)
-│   └── daily_summary.py      # Resum diari del matí (7:00)
+│   ├── train_model.py        # Entrenar model (amb feedback loop)
+│   ├── predict_now.py        # Predicció + log + verificació (GitHub Actions)
+│   ├── daily_summary.py      # Resum diari del matí (7:00)
+│   └── accuracy_report.py    # Informe setmanal d'accuracy (dilluns 8:00)
 ├── models/                   # Model entrenat (git tracked)
-├── data/                     # Dades (raw no tracked, processed sí)
+├── data/                     # Dades + logs de prediccions
 ├── requirements.txt          # Dependències Python
 └── .github/workflows/        # Automatització cada 15 min
 ```
@@ -174,6 +181,44 @@ Utilitza l'estació de **Granollers (YM)** com a sentinella: si plou a Granoller
 | Cross-validation | TimeSeriesSplit (5 folds) |
 
 > El model utilitza `scale_pos_weight=9.7` per compensar el desequilibri de classes i `eval_metric="aucpr"` per optimitzar la detecció de pluja.
+
+## Feedback loop (auto-aprenentatge)
+
+El sistema verifica automàticament les seves pròpies prediccions i aprèn dels errors:
+
+```
+┌─────────────────┐    +60 min     ┌─────────────────┐    diumenge     ┌─────────────────┐
+│   Predicció     │──────────▶│  Verificació    │────────────▶│   Re-entrena   │
+│  cada 15 min   │             │ va ploure?     │              │  amb feedback   │
+└────────┬────────┘             └────────┬────────┘              └────────┬────────┘
+         │                       │                              │
+         ▼                       ▼                              │
+  predictions_log.jsonl   ✓/✗ correct?                         │
+                                │                              │
+                                ▼                              │
+                         Informe setmanal  ◄─────────────────┘
+                         (accuracy %, F1)
+                         via Telegram 📊
+```
+
+### Com funciona
+
+1. **Log**: Cada predicció es registra a `predictions_log.jsonl` amb timestamp, probabilitat, condicions
+2. **Verificació**: 60-75 min després, el sistema consulta l'estació per veure si realment va ploure
+3. **Classificació**: Cada predicció es marca com TP, FP, TN, o FN
+4. **Informe**: Cada dilluns a les 8:00, reps un report amb accuracy, precisión, recall, F1, i tendència
+5. **Re-entrenament**: El retrain setmanal incorpora les prediccions verificades com a dades noves, permetent al model aprendre dels seus errors recents
+
+### Mètriques que rebràs
+
+| Mètrica | Significat |
+|---------|-----------|
+| Accuracy | % de prediccions correctes (pluja i sec) |
+| Precision | De les alertes, quantes van ser pluja real |
+| Recall | De les pluges reals, quantes vam predir |
+| F1 | Balanç entre precision i recall |
+| Per confiança | Accuracy desglossada per nivell (Molt Baixa → Molt Alta) |
+| Per dia | Evolució diària de l'accuracy |
 
 ## Sistema de notificacions
 

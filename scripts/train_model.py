@@ -13,6 +13,7 @@ import pandas as pd
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 import config
 from src.model.train import prepare_training_data, train_model, save_model, get_feature_importance
+from src.feedback.export import export_verified_for_training, FEEDBACK_TRAINING_PATH
 
 logging.basicConfig(
     level=logging.INFO,
@@ -29,7 +30,19 @@ def main():
 
     logger.info("Carregant dataset...")
     df = pd.read_parquet(dataset_path)
-    logger.info(f"Dataset: {len(df)} mostres")
+    logger.info(f"Dataset base: {len(df)} mostres")
+
+    # ── Incorporar prediccions verificades (feedback loop) ──
+    n_feedback = export_verified_for_training()
+    if n_feedback > 0 and os.path.exists(FEEDBACK_TRAINING_PATH):
+        feedback_df = pd.read_parquet(FEEDBACK_TRAINING_PATH)
+        # Només afegir les columnes que existeixen al dataset base
+        common_cols = [c for c in df.columns if c in feedback_df.columns]
+        if "will_rain" in common_cols and len(common_cols) > 2:
+            feedback_subset = feedback_df[common_cols]
+            df = pd.concat([df, feedback_subset], ignore_index=True)
+            logger.info(f"  + {n_feedback} prediccions verificades afegides (feedback loop)")
+    logger.info(f"Dataset total: {len(df)} mostres")
 
     logger.info("Preparant dades d'entrenament...")
     X, y = prepare_training_data(df)
