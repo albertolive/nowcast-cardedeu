@@ -20,7 +20,7 @@ Utilitza dades reals de l'estació [MeteoCardedeu.net](https://meteocardedeu.net
          │                     │         │                      │
          ▼                     ▼         ▼                      ▼
     ┌──────────────────────────────────────────────────────────────────────┐
-    │                     Feature Engineering (84 features)               │
+    │                     Feature Engineering (61 training / 84 real-time)    │
     │  Tendències · Ensemble · 850hPa · Radar · Sentinella · AEMET · Vent │
     └──────────────────────────────┬───────────────────────────────────────┘
                                   │
@@ -124,7 +124,7 @@ nowcast-cardedeu/
 │   │   ├── aemet.py          # API AEMET OpenData (probTormenta/probPrecip)
 │   │   └── meteocat.py       # API Meteocat XEMA (sentinella, gated by rain gate)
 │   ├── features/
-│   │   └── engineering.py    # Feature engineering (84 features incl. LI, wind shear, 700hPa)
+│   │   └── engineering.py    # Feature engineering (61 training / 84 real-time, incl. LI, wind shear, 700hPa)
 │   ├── model/
 │   │   ├── train.py          # Pipeline d'entrenament (XGBoost + TimeSeriesSplit)
 │   │   └── predict.py        # Predicció en temps real (fusió 6 fonts + rain gate)
@@ -151,7 +151,7 @@ nowcast-cardedeu/
 
 ## Features del model
 
-El model utilitza **84 features** organitzades en categories:
+El model defineix **84 features** per predicció en temps real. Per entrenament, **61 estan disponibles** (les 23 restants —radar, ensemble, AEMET, sentinella— no tenen arxiu històric accessible).
 
 | Categoria | Features | Per què? |
 |-----------|----------|----------|
@@ -255,10 +255,12 @@ El model AROME de Meteo-France és el 4t model de l'ensemble, amb resolució de 
 
 | Mètrica | Valor |
 |---------|-------|
-| AUC-ROC | 0.9674 |
-| F1-Score | 0.6573 |
-| Mostres d'entrenament | 8,784 |
-| Features | 84 |
+| AUC-ROC (CV) | 0.9529 ± 0.007 |
+| F1-Score (CV) | 0.6714 ± 0.032 |
+| AUC-ROC (final) | 0.9600 |
+| Mostres d'entrenament | 98,208 |
+| Features (training) | 61 |
+| Features (real-time) | 84 |
 | Classe positiva (pluja) | ~9.3% |
 | Cross-validation | TimeSeriesSplit (5 folds) |
 

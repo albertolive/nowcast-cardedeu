@@ -1,39 +1,39 @@
 {
-  "cv_auc_mean": 0.9376570824555417,
-  "cv_auc_std": 0.025616063463807532,
-  "cv_f1_mean": 0.6573121131766314,
-  "cv_f1_std": 0.11232248490594793,
-  "final_auc": 0.9673573200992557,
+  "cv_auc_mean": 0.9529106659033149,
+  "cv_auc_std": 0.0066595505502504175,
+  "cv_f1_mean": 0.6713904723948539,
+  "cv_f1_std": 0.03176963424923127,
+  "final_auc": 0.9600014385118963,
   "final_report": {
     "0": {
-      "precision": 0.984,
-      "recall": 0.952258064516129,
-      "f1-score": 0.9678688524590164,
-      "support": 775.0
+      "precision": 0.9784802431610943,
+      "recall": 0.9289012003693444,
+      "f1-score": 0.9530463615370951,
+      "support": 8664.0
     },
     "1": {
-      "precision": 0.7131782945736435,
-      "recall": 0.8846153846153846,
-      "f1-score": 0.7896995708154506,
-      "support": 104.0
+      "precision": 0.6140350877192983,
+      "recall": 0.8470181503889369,
+      "f1-score": 0.7119505993461678,
+      "support": 1157.0
     },
-    "accuracy": 0.944254835039818,
+    "accuracy": 0.9192546583850931,
     "macro avg": {
-      "precision": 0.8485891472868217,
-      "recall": 0.9184367245657568,
-      "f1-score": 0.8787842116372335,
-      "support": 879.0
+      "precision": 0.7962576654401963,
+      "recall": 0.8879596753791407,
+      "f1-score": 0.8324984804416314,
+      "support": 9821.0
     },
     "weighted avg": {
-      "precision": 0.9519573863886904,
-      "recall": 0.944254835039818,
-      "f1-score": 0.9467885278959551,
-      "support": 879.0
+      "precision": 0.9355454050747326,
+      "recall": 0.9192546583850931,
+      "f1-score": 0.9246431646269125,
+      "support": 9821.0
     }
   },
-  "n_samples": 8784,
-  "n_positive": 966,
-  "n_features": 45,
+  "n_samples": 98208,
+  "n_positive": 9178,
+  "n_features": 61,
   "feature_names": [
     "hour_sin",
     "hour_cos",
@@ -65,6 +65,22 @@
     "llevantada_moisture",
     "garbi_strength",
     "wind_dir_change_3h",
+    "wind_850_speed",
+    "wind_850_dir",
+    "temp_850",
+    "temp_500",
+    "rh_850",
+    "rh_700",
+    "temp_700",
+    "vt_index",
+    "tt_index",
+    "li_index",
+    "li_unstable",
+    "li_very_unstable",
+    "wind_shear_speed",
+    "wind_shear_dir",
+    "cold_500_moderate",
+    "cold_500_strong",
     "precipitation",
     "rain_accum_3h",
     "rain_accum_6h",
