@@ -92,6 +92,65 @@ def _add_wind_features(df: pd.DataFrame, speed_col: str = "wind_speed_10m", dir_
     return df
 
 
+def _angular_diff(directions: pd.Series, periods: int) -> pd.Series:
+    """
+    Calcula el canvi angular del vent sobre `periods` timesteps.
+    Gestiona correctament el pas 360°→0°.
+    Positiu = veering (gir horari, pas de front fred).
+    Negatiu = backing (gir antihorari, aproximació de front càlid/baixa).
+    """
+    prev = directions.shift(periods)
+    diff = directions - prev
+    # Normalitzar a [-180, 180]
+    return ((diff + 180) % 360) - 180
+
+
+def _dir_in_range(direction: pd.Series, lo: float, hi: float) -> pd.Series:
+    """Comprova si la direcció del vent cau dins un rang (gestiona wrap 360°→0°)."""
+    if lo <= hi:
+        return ((direction >= lo) & (direction <= hi)).astype(int)
+    else:  # wrap-around (e.g. Tramuntana 330°-30°)
+        return ((direction >= lo) | (direction <= hi)).astype(int)
+
+
+def _add_wind_regime_features(df: pd.DataFrame,
+                              speed_col: str = "wind_speed_10m",
+                              dir_col: str = "wind_direction_10m",
+                              hum_col: str = "relative_humidity_2m") -> pd.DataFrame:
+    """
+    Classifica el vent en règims meteorològics catalans, clau per a la pluja:
+
+    - Llevantada (E/SE 60°-150°): humitat mediterrània contra la Serralada Prelitoral.
+      El patró de pluja #1 per a Cardedeu i tot el Vallès Oriental.
+    - Garbí/Xaloc (SW 190°-250°): aire càlid i inestable, desencadenant de tempestes.
+    - Ponent/Mestral (W/NW 260°-340°): aire continental sec, supressor de pluja.
+    - wind_dir_change_3h: gir del vent en 3h (backing → front càlid s'acosta).
+    - Interaccions: llevantada × velocitat, llevantada × humitat.
+    """
+    df = df.copy()
+    if dir_col not in df.columns:
+        return df
+
+    direction = pd.to_numeric(df[dir_col], errors="coerce")
+
+    # Règims eòlics catalans
+    df["is_llevantada"] = _dir_in_range(direction, 60, 150)
+    df["is_garbi"] = _dir_in_range(direction, 190, 250)
+    df["is_ponent"] = _dir_in_range(direction, 260, 340)
+
+    # Interaccions: quan hi ha Llevantada + velocitat/humitat alta → pluja quasi segura
+    speed = pd.to_numeric(df.get(speed_col, pd.Series(dtype=float)), errors="coerce").fillna(0)
+    humidity = pd.to_numeric(df.get(hum_col, pd.Series(dtype=float)), errors="coerce").fillna(0)
+
+    df["llevantada_strength"] = df["is_llevantada"] * speed
+    df["llevantada_moisture"] = df["is_llevantada"] * (humidity / 100.0)
+
+    # Canvi de direcció del vent en 3h (backing/veering)
+    df["wind_dir_change_3h"] = _angular_diff(direction, 3)
+
+    return df
+
+
 def _add_rain_context(df: pd.DataFrame, precip_col: str = "precipitation") -> pd.DataFrame:
     """Context de pluja recent (últimes hores)."""
     df = df.copy()
@@ -191,6 +250,7 @@ def build_features_from_hourly(df: pd.DataFrame) -> pd.DataFrame:
     df = _add_pressure_features(df, "pressure_msl")
     df = _add_humidity_features(df, "temperature_2m", "relative_humidity_2m")
     df = _add_wind_features(df, "wind_speed_10m", "wind_direction_10m")
+    df = _add_wind_regime_features(df, "wind_speed_10m", "wind_direction_10m", "relative_humidity_2m")
     df = _add_rain_context(df, "precipitation")
     df = _add_model_features(df)
     df = _add_radar_features(df)
@@ -279,6 +339,10 @@ FEATURE_COLUMNS = [
     "wind_speed_10m", "wind_u", "wind_v",
     "wind_speed_change_1h", "wind_speed_change_3h",
     "is_sea_breeze",
+    # Règims eòlics catalans (Llevantada, Garbí, Ponent)
+    "is_llevantada", "is_garbi", "is_ponent",
+    "llevantada_strength", "llevantada_moisture",
+    "wind_dir_change_3h",
     # Pluja recent
     "precipitation", "rain_accum_3h", "rain_accum_6h", "rained_last_3h",
     # Model / satèl·lit

@@ -88,7 +88,7 @@ AEMET_API_KEY = os.environ.get("AEMET_API_KEY", "")
 AEMET_MUNICIPALITY_CODE = "08052"  # Cardedeu
 
 # ── Rain gate: llindars per decidir si consultar fonts cares ──
-RAIN_GATE_ENSEMBLE_PROB = 0.3   # Fracció de models amb pluja
+RAIN_GATE_ENSEMBLE_PROB = 0.2   # Fracció de models amb pluja (≥1 de 4 = 0.25)
 RAIN_GATE_CAPE_THRESHOLD = 800  # J/kg
 RAIN_GATE_AEMET_STORM = 10      # %
 

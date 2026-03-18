@@ -179,6 +179,7 @@ def predict_now() -> dict:
             "rain_agreement": ensemble_data.get("ensemble_rain_agreement"),
             "precip_spread_mm": ensemble_data.get("ensemble_precip_spread"),
             "models_rain": ensemble_data.get("ensemble_models_rain"),
+            "total_models": 4,  # ECMWF + GFS + ICON + AROME
         },
         "aemet": {
             "prob_precip": aemet_data.get("aemet_prob_precip"),
@@ -187,6 +188,13 @@ def predict_now() -> dict:
         "bias": {
             "temp": bias_data.get("forecast_temp_bias"),
             "humidity": bias_data.get("forecast_humidity_bias"),
+        },
+        "wind_regime": {
+            "is_llevantada": bool(latest.get("is_llevantada", pd.Series([0])).values[0]),
+            "is_garbi": bool(latest.get("is_garbi", pd.Series([0])).values[0]),
+            "is_ponent": bool(latest.get("is_ponent", pd.Series([0])).values[0]),
+            "llevantada_strength": float(latest.get("llevantada_strength", pd.Series([0])).values[0]),
+            "wind_dir_change_3h": float(latest.get("wind_dir_change_3h", pd.Series([0])).values[0]) if pd.notna(latest.get("wind_dir_change_3h", pd.Series([np.nan])).values[0]) else None,
         },
         "rain_gate_open": rain_signals,
         "features_used": len(feature_names),

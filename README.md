@@ -2,16 +2,16 @@
 
 Sistema de predicció de pluja hiperlocal per a Cardedeu (Vallès Oriental) basat en Machine Learning.
 
-Utilitza dades reals de l'estació [MeteoCardedeu.net](https://meteocardedeu.net) combinades amb models meteorològics globals (Open-Meteo), acord entre múltiples models (ECMWF, GFS, ICON), radar de precipitació en temps real (RainViewer), estacions sentinella del SMC (Meteocat XEMA), i probabilitats de tempesta calibrades per experts (AEMET) per aprendre els patrons del microclima local i predir si plourà en els propers 60 minuts.
+Utilitza dades reals de l'estació [MeteoCardedeu.net](https://meteocardedeu.net) combinades amb models meteorològics globals (Open-Meteo), acord entre múltiples models (ECMWF, GFS, ICON, AROME), radar de precipitació en temps real (RainViewer), estacions sentinella del SMC (Meteocat XEMA), probabilitats de tempesta calibrades per experts (AEMET) i classificació de règims eòlics catalans (Llevantada, Garbí, Ponent) per aprendre els patrons del microclima local i predir si plourà en els propers 60 minuts.
 
 ## Com funciona
 
 ```
 ┌──────────────────┐  ┌──────────────────┐  ┌──────────────────┐
-│  MeteoCardedeu   │  │ Ensemble 3 NWP  │  │   RainViewer     │
-│  (dades reals)   │  │ ECMWF+GFS+ICON │  │  (radar precip)  │
-└────────┬─────────┘  └────────┬─────────┘  └────────┬─────────┘
-         │                     │                      │
+│  MeteoCardedeu   │  │ Ensemble 4 NWP  │  │   RainViewer     │
+│  (dades reals)   │  │ECMWF+GFS+ICON  │  │  (radar precip)  │
+└────────┬─────────┘  │   +AROME 2.5km  │  └────────┬─────────┘
+         │            └────────┬─────────┘           │
 ┌──────────────────┐  │  ┌──────────────────┐  │
 │  Meteocat XEMA   │  │  │     AEMET       │  │
 │ (si rain gate    │  │  │  probTormenta   │  │
@@ -20,8 +20,8 @@ Utilitza dades reals de l'estació [MeteoCardedeu.net](https://meteocardedeu.net
          │                     │         │                      │
          ▼                     ▼         ▼                      ▼
     ┌──────────────────────────────────────────────────────────────────────┐
-    │                     Feature Engineering (59 features)               │
-    │  Tendències · Ensemble acord · Bias · Radar · Sentinella · AEMET   │
+    │                     Feature Engineering (65 features)               │
+    │  Tendències · Ensemble · Bias · Radar · Sentinella · AEMET · Vent  │
     └──────────────────────────────┬───────────────────────────────────────┘
                                   │
                                   ▼
@@ -46,7 +46,7 @@ El model **no intenta predir el temps des de zero**. El que fa és:
 
 Per exemple, aprèn coses com:
 - "Quan el model diu pluja però el vent de Cardedeu és sec del Montseny → no plourà"
-- "Quan la pressió baixa ràpidament + humitat >85% + vent del SE → plou sempre aquí"
+- "Quan la pressió baixa ràpidament + humitat >85% + vent del SE (Llevantada) → plou sempre aquí"
 
 ## Setup
 
@@ -119,12 +119,12 @@ nowcast-cardedeu/
 │   ├── data/
 │   │   ├── meteocardedeu.py  # API meteocardedeu.net (sèries minut a minut + NOAA)
 │   │   ├── open_meteo.py     # API Open-Meteo (històric + forecast)
-│   │   ├── ensemble.py       # Acord entre ECMWF/GFS/ICON + forecast bias
+│   │   ├── ensemble.py       # Acord entre ECMWF/GFS/ICON/AROME + forecast bias
 │   │   ├── rainviewer.py     # API RainViewer (radar precipitació temps real)
 │   │   ├── aemet.py          # API AEMET OpenData (probTormenta/probPrecip)
 │   │   └── meteocat.py       # API Meteocat XEMA (sentinella, gated by rain gate)
 │   ├── features/
-│   │   └── engineering.py    # Feature engineering (59 features)
+│   │   └── engineering.py    # Feature engineering (65 features incl. règims eòlics)
 │   ├── model/
 │   │   ├── train.py          # Pipeline d'entrenament (XGBoost + TimeSeriesSplit)
 │   │   └── predict.py        # Predicció en temps real (fusió 6 fonts + rain gate)
@@ -151,7 +151,7 @@ nowcast-cardedeu/
 
 ## Features del model
 
-El model utilitza **59 features** organitzades en categories:
+El model utilitza **65 features** organitzades en categories:
 
 | Categoria | Features | Per què? |
 |-----------|----------|----------|
@@ -159,12 +159,13 @@ El model utilitza **59 features** organitzades en categories:
 | Pressió | Valor + tendència 1h/3h/6h + acceleració | Indicador principal d'inestabilitat |
 | Humitat | Valor + punt rosada + depressió + tendència | Saturació = pluja imminent |
 | Vent | Components U/V + canvis + marinada | Marinada del mar = aire sec |
+| 🆕 Règims eòlics | Llevantada, Garbí, Ponent + interaccions | Llevantada (E/SE) = pluja #1 a Cardedeu |
 | Pluja recent | Acumulat 3h/6h + ha plogut? | Context de fronts actius |
 | Models NWP | CAPE, núvols, weather code | Què diuen els models globals |
 | Radiació | Solar W/m² | Indicador indirecte de núvols |
 | 🆕 Radar | Intensitat, dBZ, mm/h, eco, tendència, aprox. | Precipitació real en temps real |
 | 🆕 Sentinella | Temp/hum Granollers + diffs amb Cardedeu + precip | Gradient territorial = front actiu |
-| 🆕 Ensemble | Acord ECMWF/GFS/ICON, spread precip, models pluja | Desacord = incertesa = zona ambigua |
+| 🆕 Ensemble | Acord ECMWF/GFS/ICON/AROME, spread precip, models pluja | Desacord = incertesa = zona ambigua |
 | 🆕 Bias | Forecast-observat temp/hum en temps real | Model biased = atmosfera impredictible |
 | 🆕 AEMET | probPrecipitació, probTormenta (experts) | Tempestes convectives mediterrànies |
 
@@ -174,7 +175,7 @@ El model utilitza **59 features** organitzades en categories:
 |------|-------|------------|----------|
 | [MeteoCardedeu.net](https://meteocardedeu.net) | Estació local (T, H, P, vent, pluja) | Cada minut, des de 2012 | No |
 | [Open-Meteo](https://open-meteo.com) | Models NWP (GFS, ECMWF) - històric + forecast | Horària | No |
-| [Open-Meteo Ensemble](https://open-meteo.com) | Acord ECMWF vs GFS vs ICON | Cada predicció | No |
+| [Open-Meteo Ensemble](https://open-meteo.com) | Acord ECMWF vs GFS vs ICON vs AROME | Cada predicció | No |
 | [RainViewer](https://www.rainviewer.com/api.html) | Radar de precipitació compost (mosaic global) | Cada ~10 min | No |
 | [AEMET OpenData](https://opendata.aemet.es) | probTormenta + probPrecipitació calibrades | Cada 6h | Sí (gratuïta) |
 | [Meteocat XEMA](https://apidocs.meteocat.gencat.cat) | Estacions sentinella SMC (Granollers, ETAP Cardedeu) | Cada 30 min | Sí (gratuïta) |
@@ -196,12 +197,29 @@ Meteocat XEMA té un límit de 750 crides/mes (pla gratuït). El sistema impleme
 
 | Senyal | Llindar | Font |
 |--------|---------|------|
-| Ensemble rain agreement | ≥ 30% dels models | ECMWF + GFS + ICON |
+| Ensemble rain agreement | ≥ 20% dels models | ECMWF + GFS + ICON + AROME |
 | Radar echo | Qualsevol eco detectat | RainViewer |
 | AEMET prob. tempesta | ≥ 10% | AEMET OpenData |
 | CAPE (energia convectiva) | ≥ 800 J/kg | Open-Meteo GFS |
 
 Resultat: ~200-400 crides/mes en lloc de ~6,000. Dins el límit gratuït.
+
+### Règims eòlics catalans
+
+Cardedeu se situa al peu de la Serralada Prelitoral, a la confluència d'aire mediterrani i continental. La direcció del vent és un predictor clau de pluja:
+
+| Règim | Direcció | Efecte a Cardedeu | Feature |
+|-------|----------|-------------------|---------|
+| 🌊 **Llevantada** | E/SE (60°-150°) | Humitat mediterrània contra les muntanyes → pluja #1 | `is_llevantada`, `llevantada_strength`, `llevantada_moisture` |
+| 🌀 **Garbí/Xaloc** | SW (190°-250°) | Aire càlid inestable → tempestes convectives | `is_garbi` |
+| 🏔️ **Ponent/Mestral** | W/NW (260°-340°) | Aire sec continental (Foehn) → supressor de pluja | `is_ponent` |
+| 🔄 **Backing wind** | Gir antihorari | Aproximació de front càlid o baixa → pluja imminent | `wind_dir_change_3h` (negatiu) |
+
+La **Llevantada** és el patró més important: quan el vent bufa de l'est amb humitat alta, la pluja a Cardedeu és quasi segura. El model captura aquesta interacció amb `llevantada_moisture` = is_llevantada × humitat relativa.
+
+### AROME: resolució 2.5km
+
+El model AROME de Meteo-France és el 4t model de l'ensemble, amb resolució de 2.5km (vs 9km d'ECMWF). Això li permet resoldre cel·les convectives individuals i efectes orogràfics a la Serralada Prelitoral que els models globals no veuen.
 
 ## Rendiment del model
 
@@ -210,7 +228,7 @@ Resultat: ~200-400 crides/mes en lloc de ~6,000. Dins el límit gratuït.
 | AUC-ROC | 0.9501 ± 0.0079 |
 | F1-Score | 0.6653 ± 0.0381 |
 | Mostres d'entrenament | 98,208 |
-| Features | 59 |
+| Features | 65 |
 | Classe positiva (pluja) | ~9.3% |
 | Cross-validation | TimeSeriesSplit (5 folds) |
 

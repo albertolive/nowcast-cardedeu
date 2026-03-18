@@ -1,6 +1,7 @@
 """
 Client per a l'API Ensemble d'Open-Meteo.
-Compara ECMWF, GFS i ICON per mesurar el grau d'acord entre models.
+Compara ECMWF, GFS, ICON i AROME per mesurar el grau d'acord entre models.
+AROME (Meteo-France) aporta resolució de 2.5km — clau per convecció local.
 Cap API key necessària.
 """
 import logging
@@ -19,13 +20,14 @@ SESSION = requests.Session()
 SESSION.headers.update({"User-Agent": "NowcastCardedeu/1.0 (research)"})
 
 ENSEMBLE_URL = "https://api.open-meteo.com/v1/forecast"
-ENSEMBLE_MODELS = ["ecmwf_ifs025", "gfs_global", "icon_global"]
+ENSEMBLE_MODELS = ["ecmwf_ifs025", "gfs_global", "icon_global", "meteofrance_arome_france0025"]
 
 
 def fetch_ensemble_agreement() -> dict:
     """
-    Consulta ECMWF, GFS i ICON per a les properes 6h i calcula
+    Consulta ECMWF, GFS, ICON i AROME per a les properes 6h i calcula
     el grau d'acord entre models per a precipitació i temperatura.
+    AROME (2.5km) resol convecció local molt millor que ECMWF (9km).
 
     Retorna dict amb:
       - ensemble_rain_agreement: fracció de models que prediuen pluja (0-1)
