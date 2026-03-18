@@ -83,6 +83,15 @@ XEMA_VAR_TEMP = 32
 XEMA_VAR_HUMIDITY = 33
 XEMA_VAR_PRECIP = 35
 
+# ── AEMET OpenData API ──
+AEMET_API_KEY = os.environ.get("AEMET_API_KEY", "")
+AEMET_MUNICIPALITY_CODE = "08052"  # Cardedeu
+
+# ── Rain gate: llindars per decidir si consultar fonts cares ──
+RAIN_GATE_ENSEMBLE_PROB = 0.3   # Fracció de models amb pluja
+RAIN_GATE_CAPE_THRESHOLD = 800  # J/kg
+RAIN_GATE_AEMET_STORM = 10      # %
+
 # ── Telegram ──
 TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "")
 TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID", "")
