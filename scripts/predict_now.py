@@ -15,6 +15,8 @@ import config
 from src.model.predict import predict_now
 from src.notify.telegram import send_rain_incoming, send_rain_clearing
 from src.notify.state import load_state, save_state, should_notify, update_state
+from src.feedback.logger import log_prediction
+from src.feedback.verify import verify_pending_predictions
 
 logging.basicConfig(
     level=logging.INFO,
@@ -55,6 +57,16 @@ def main():
     with open(output_path, "w") as f:
         json.dump(result, f, indent=2, ensure_ascii=False)
     logger.info(f"  Resultat desat a {output_path}")
+
+    # ── Registrar predicció al log de feedback ──
+    log_prediction(result)
+
+    # ── Verificar prediccions passades (60+ min enrere) ──
+    logger.info("🔍 Verificant prediccions anteriors...")
+    verification = verify_pending_predictions()
+    if verification["verified_count"] > 0:
+        acc = verification.get("accuracy", "?")
+        logger.info(f"  Verificades: {verification['verified_count']} | Accuracy: {acc}%")
 
     # ── Notificacions basades en transicions d'estat ──
     state = load_state()

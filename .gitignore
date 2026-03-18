@@ -4,6 +4,7 @@ __pycache__/
 data/raw/
 data/latest_prediction.json
 data/notification_state.json
+data/predictions_log.jsonl
 *.egg-info/
 venv/
 .venv/
