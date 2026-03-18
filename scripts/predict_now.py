@@ -10,6 +10,20 @@ import logging
 import os
 import sys
 
+import numpy as np
+
+
+class _NumpyEncoder(json.JSONEncoder):
+    """Handle numpy types when serialising prediction results."""
+    def default(self, o):
+        if isinstance(o, (np.bool_, np.integer)):
+            return int(o)
+        if isinstance(o, np.floating):
+            return float(o)
+        if isinstance(o, np.ndarray):
+            return o.tolist()
+        return super().default(o)
+
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 import config
 from src.model.predict import predict_now
@@ -50,15 +64,15 @@ def main():
     logger.info(f"\n📊 Resultat:")
     logger.info(f"  Probabilitat de pluja: {result['probability_pct']}%")
     logger.info(f"  Confiança: {result['confidence']}")
-    logger.info(f"  Condicions: {json.dumps(result['conditions'], indent=4)}")
-    logger.info(f"  Radar: {json.dumps(result.get('radar', {}), indent=4)}")
-    logger.info(f"  Sentinella: {json.dumps(result.get('sentinel', {}), indent=4)}")
+    logger.info(f"  Condicions: {json.dumps(result['conditions'], indent=4, cls=_NumpyEncoder)}")
+    logger.info(f"  Radar: {json.dumps(result.get('radar', {}), indent=4, cls=_NumpyEncoder)}")
+    logger.info(f"  Sentinella: {json.dumps(result.get('sentinel', {}), indent=4, cls=_NumpyEncoder)}")
 
     # Desar resultat en JSON (per GitHub Actions artifact)
     output_path = os.path.join(config.PROJECT_ROOT, "data", "latest_prediction.json")
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     with open(output_path, "w") as f:
-        json.dump(result, f, indent=2, ensure_ascii=False)
+        json.dump(result, f, indent=2, ensure_ascii=False, cls=_NumpyEncoder)
     logger.info(f"  Resultat desat a {output_path}")
 
     # ── Registrar predicció al log de feedback ──

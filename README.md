@@ -20,7 +20,7 @@ Utilitza dades reals de l'estació [MeteoCardedeu.net](https://meteocardedeu.net
          │                     │         │                      │
          ▼                     ▼         ▼                      ▼
     ┌──────────────────────────────────────────────────────────────────────┐
-    │                     Feature Engineering (52 training / 75 real-time)    │
+    │                     Feature Engineering (54 training / 84 real-time)    │
     │  Tendències · Ensemble · 850hPa · Radar · Sentinella · AEMET · Vent │
     └──────────────────────────────┬───────────────────────────────────────┘
                                   │
@@ -124,7 +124,7 @@ nowcast-cardedeu/
 │   │   ├── aemet.py          # API AEMET OpenData (probTormenta/probPrecip)
 │   │   └── meteocat.py       # API Meteocat XEMA (sentinella, gated by rain gate)
 │   ├── features/
-│   │   ├── engineering.py    # Feature engineering (52 training / 82 real-time, incl. radar espacial)
+│   │   ├── engineering.py    # Feature engineering (54 training / 84 real-time, incl. VPD + radar espacial)
 │   │   └── regime.py         # Detecció de canvis de règim atmosfèric (Llevantada, Garbí, pressió)
 │   ├── model/
 │   │   ├── train.py          # Pipeline d'entrenament (XGBoost + TimeSeriesSplit)
@@ -152,13 +152,13 @@ nowcast-cardedeu/
 
 ## Features del model
 
-El model defineix **75 features** per predicció en temps real (9 zero-importance features pruned). Per entrenament, **52 estan disponibles** (les 23 restants —radar, ensemble, AEMET, sentinella— no tenen arxiu històric accessible).
+El model defineix **84 features** per predicció en temps real (9 zero-importance features pruned). Per entrenament, **54 estan disponibles** (les 30 restants —radar, ensemble, AEMET, sentinella— no tenen arxiu històric accessible).
 
 | Categoria | Features | Per què? |
 |-----------|----------|----------|
 | Temporals | Hora, mes (codificació cíclica) | Patrons estacionals i diaris |
 | Pressió | Valor + tendència 1h/3h/6h + acceleració | Indicador principal d'inestabilitat |
-| Humitat | Valor + punt rosada + depressió + tendència | Saturació = pluja imminent |
+| Humitat | Valor + punt rosada + depressió + tendència + VPD + vpd_change_3h | Saturació = pluja imminent. VPD=0 → aire saturat |
 | Vent | Components U/V + canvis + marinada | Marinada del mar = aire sec |
 | Règims eòlics | Tramuntana, Llevantada, Migjorn, Garbí, Ponent (850hPa) + garbi_strength | Llevantada (E/SE) = pluja #1 a Cardedeu |
 | Nivells pressió | Vent/T/RH a 850hPa, T/RH a 700hPa, T a 500hPa | Flux sinòptic real a 3 nivells |
@@ -266,8 +266,8 @@ El model AROME de Meteo-France és el 4t model de l'ensemble, amb resolució de 
 | F1-Score (CV) | 0.6737 ± 0.031 |
 | AUC-ROC (final) | 0.9597 |
 | Mostres d'entrenament | 98,208 |
-| Features (training) | 52 |
-| Features (real-time) | 75 |
+| Features (training) | 54 |
+| Features (real-time) | 84 |
 | Classe positiva (pluja) | ~9.3% |
 | Cross-validation | TimeSeriesSplit (5 folds) |
 

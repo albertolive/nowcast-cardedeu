@@ -42,6 +42,7 @@ OPEN_METEO_HOURLY_VARS = [
     "cape",                    # Convective Available Potential Energy
     "shortwave_radiation",
     "weather_code",
+    "vapour_pressure_deficit", # VPD (kPa) — indicador directe de saturació
 ]
 
 # Variables del model per al forecast

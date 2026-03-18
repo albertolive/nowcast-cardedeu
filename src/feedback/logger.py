@@ -6,11 +6,23 @@ import json
 import logging
 import os
 
+import numpy as np
 import sys
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 import config
 
 logger = logging.getLogger(__name__)
+
+class _NumpyEncoder(json.JSONEncoder):
+    def default(self, o):
+        if isinstance(o, (np.bool_, np.integer)):
+            return int(o)
+        if isinstance(o, np.floating):
+            return float(o)
+        if isinstance(o, np.ndarray):
+            return o.tolist()
+        return super().default(o)
+
 
 PREDICTIONS_LOG = os.path.join(config.PROJECT_ROOT, "data", "predictions_log.jsonl")
 
@@ -42,7 +54,7 @@ def log_prediction(result: dict) -> None:
 
     os.makedirs(os.path.dirname(PREDICTIONS_LOG), exist_ok=True)
     with open(PREDICTIONS_LOG, "a") as f:
-        f.write(json.dumps(entry, ensure_ascii=False) + "\n")
+        f.write(json.dumps(entry, ensure_ascii=False, cls=_NumpyEncoder) + "\n")
 
     logger.info(f"Predicció registrada al log ({PREDICTIONS_LOG})")
 
@@ -65,4 +77,4 @@ def save_predictions_log(entries: list[dict]) -> None:
     os.makedirs(os.path.dirname(PREDICTIONS_LOG), exist_ok=True)
     with open(PREDICTIONS_LOG, "w") as f:
         for entry in entries:
-            f.write(json.dumps(entry, ensure_ascii=False) + "\n")
+            f.write(json.dumps(entry, ensure_ascii=False, cls=_NumpyEncoder) + "\n")
