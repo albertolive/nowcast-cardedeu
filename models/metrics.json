@@ -1,0 +1,75 @@
+{
+  "cv_auc_mean": 0.9501261930642212,
+  "cv_auc_std": 0.007868242237325488,
+  "cv_f1_mean": 0.6653474613103307,
+  "cv_f1_std": 0.038116436661328974,
+  "final_auc": 0.9548705299390039,
+  "final_report": {
+    "0": {
+      "precision": 0.978595890410959,
+      "recall": 0.9234764542936288,
+      "f1-score": 0.9502375296912114,
+      "support": 8664.0
+    },
+    "1": {
+      "precision": 0.5969604863221885,
+      "recall": 0.8487467588591184,
+      "f1-score": 0.7009279086366881,
+      "support": 1157.0
+    },
+    "accuracy": 0.914672640260666,
+    "macro avg": {
+      "precision": 0.7877781883665738,
+      "recall": 0.8861116065763737,
+      "f1-score": 0.8255827191639498,
+      "support": 9821.0
+    },
+    "weighted avg": {
+      "precision": 0.9336358901532757,
+      "recall": 0.914672640260666,
+      "f1-score": 0.9208666681129523,
+      "support": 9821.0
+    }
+  },
+  "n_samples": 98208,
+  "n_positive": 9178,
+  "n_features": 36,
+  "feature_names": [
+    "hour_sin",
+    "hour_cos",
+    "month_sin",
+    "month_cos",
+    "pressure_msl",
+    "pressure_change_1h",
+    "pressure_change_3h",
+    "pressure_change_6h",
+    "pressure_accel_3h",
+    "temperature_2m",
+    "relative_humidity_2m",
+    "dew_point",
+    "dew_point_depression",
+    "humidity_change_1h",
+    "humidity_change_3h",
+    "wind_speed_10m",
+    "wind_u",
+    "wind_v",
+    "wind_speed_change_1h",
+    "wind_speed_change_3h",
+    "is_sea_breeze",
+    "precipitation",
+    "rain_accum_3h",
+    "rain_accum_6h",
+    "rained_last_3h",
+    "cloud_cover",
+    "cloud_change_1h",
+    "cloud_change_3h",
+    "is_overcast",
+    "cape",
+    "cape_high",
+    "cape_very_high",
+    "weather_code",
+    "model_predicts_precip",
+    "model_predicts_showers",
+    "shortwave_radiation"
+  ]
+}

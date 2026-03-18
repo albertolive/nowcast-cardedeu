@@ -1,0 +1,78 @@
+name: "🌧️ Nowcast Cardedeu"
+
+on:
+  schedule:
+    # Cada 15 minuts, de 6h a 23h (hora de Barcelona = UTC+1/+2)
+    - cron: "*/15 5-22 * * *"
+  workflow_dispatch:  # Permet executar manualment
+
+env:
+  TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+  TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+  METEOCAT_API_KEY: ${{ secrets.METEOCAT_API_KEY }}
+
+jobs:
+  predict:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run prediction
+        id: nowcast
+        run: python scripts/predict_now.py
+
+      - name: Upload prediction artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: prediction-${{ github.run_number }}
+          path: data/latest_prediction.json
+          retention-days: 30
+
+  # Re-entrenar el model setmanalment (diumenge a les 3am)
+  retrain:
+    runs-on: ubuntu-latest
+    if: github.event.schedule == '0 3 * * 0' || github.event_name == 'workflow_dispatch'
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Download historical data
+        run: python scripts/download_history.py
+
+      - name: Build training dataset
+        run: python scripts/build_dataset.py
+
+      - name: Train model
+        run: python scripts/train_model.py
+
+      - name: Commit updated model
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add models/ data/processed/
+          git diff --cached --quiet || git commit -m "🤖 Retrain model $(date +%Y-%m-%d)"
+          git push
