@@ -20,7 +20,7 @@ Utilitza dades reals de l'estació [MeteoCardedeu.net](https://meteocardedeu.net
          │                     │         │                      │
          ▼                     ▼         ▼                      ▼
     ┌──────────────────────────────────────────────────────────────────────┐
-    │                     Feature Engineering (65 features)               │
+    │                     Feature Engineering (67 features)               │
     │  Tendències · Ensemble · Bias · Radar · Sentinella · AEMET · Vent  │
     └──────────────────────────────┬───────────────────────────────────────┘
                                   │
@@ -124,7 +124,7 @@ nowcast-cardedeu/
 │   │   ├── aemet.py          # API AEMET OpenData (probTormenta/probPrecip)
 │   │   └── meteocat.py       # API Meteocat XEMA (sentinella, gated by rain gate)
 │   ├── features/
-│   │   └── engineering.py    # Feature engineering (65 features incl. règims eòlics)
+│   │   └── engineering.py    # Feature engineering (67 features incl. règims eòlics)
 │   ├── model/
 │   │   ├── train.py          # Pipeline d'entrenament (XGBoost + TimeSeriesSplit)
 │   │   └── predict.py        # Predicció en temps real (fusió 6 fonts + rain gate)
@@ -151,7 +151,7 @@ nowcast-cardedeu/
 
 ## Features del model
 
-El model utilitza **65 features** organitzades en categories:
+El model utilitza **67 features** organitzades en categories:
 
 | Categoria | Features | Per què? |
 |-----------|----------|----------|
@@ -159,7 +159,7 @@ El model utilitza **65 features** organitzades en categories:
 | Pressió | Valor + tendència 1h/3h/6h + acceleració | Indicador principal d'inestabilitat |
 | Humitat | Valor + punt rosada + depressió + tendència | Saturació = pluja imminent |
 | Vent | Components U/V + canvis + marinada | Marinada del mar = aire sec |
-| 🆕 Règims eòlics | Llevantada, Garbí, Ponent + interaccions | Llevantada (E/SE) = pluja #1 a Cardedeu |
+| 🆕 Règims eòlics | Tramuntana, Llevantada, Migjorn, Garbí, Ponent + interaccions | Llevantada (E/SE) = pluja #1 a Cardedeu |
 | Pluja recent | Acumulat 3h/6h + ha plogut? | Context de fronts actius |
 | Models NWP | CAPE, núvols, weather code | Què diuen els models globals |
 | Radiació | Solar W/m² | Indicador indirecte de núvols |
@@ -228,7 +228,7 @@ El model AROME de Meteo-France és el 4t model de l'ensemble, amb resolució de 
 | AUC-ROC | 0.9501 ± 0.0079 |
 | F1-Score | 0.6653 ± 0.0381 |
 | Mostres d'entrenament | 98,208 |
-| Features | 65 |
+| Features | 67 |
 | Classe positiva (pluja) | ~9.3% |
 | Cross-validation | TimeSeriesSplit (5 folds) |
 

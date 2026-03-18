@@ -118,12 +118,17 @@ def _add_wind_regime_features(df: pd.DataFrame,
                               dir_col: str = "wind_direction_10m",
                               hum_col: str = "relative_humidity_2m") -> pd.DataFrame:
     """
-    Classifica el vent en règims meteorològics catalans, clau per a la pluja:
+    Classifica el vent en règims meteorològics catalans (Rosa dels Vents),
+    clau per a la pluja a Cardedeu. Ref: alexmeteo.com
 
+    Cobertura completa de la Rosa dels Vents:
+    - Tramuntana (N 340°-30°): vent polar fred, cel blau, supressor de pluja.
     - Llevantada (E/SE 60°-150°): humitat mediterrània contra la Serralada Prelitoral.
-      El patró de pluja #1 per a Cardedeu i tot el Vallès Oriental.
-    - Garbí/Xaloc (SW 190°-250°): aire càlid i inestable, desencadenant de tempestes.
-    - Ponent/Mestral (W/NW 260°-340°): aire continental sec, supressor de pluja.
+      El patró de pluja #1 per a Cardedeu. Inclou Xaloc (SE).
+    - Migjorn (S 150°-190°): vent del sud, aire africa calent i sec, xafogor estival.
+    - Garbí (SW 190°-250°): "Anuncia l'arribada de borrasques amb fortes precipitacions."
+    - Ponent/Mestral (W/NW 250°-340°): aire continental sec, supressor de pluja.
+      Inclou Mestral (NW) que "treu tota precipitació i nuvolositat".
     - wind_dir_change_3h: gir del vent en 3h (backing → front càlid s'acosta).
     - Interaccions: llevantada × velocitat, llevantada × humitat.
     """
@@ -133,10 +138,12 @@ def _add_wind_regime_features(df: pd.DataFrame,
 
     direction = pd.to_numeric(df[dir_col], errors="coerce")
 
-    # Règims eòlics catalans
-    df["is_llevantada"] = _dir_in_range(direction, 60, 150)
-    df["is_garbi"] = _dir_in_range(direction, 190, 250)
-    df["is_ponent"] = _dir_in_range(direction, 260, 340)
+    # Règims eòlics catalans (Rosa dels Vents completa)
+    df["is_tramuntana"] = _dir_in_range(direction, 340, 30)   # N: polar fred, cel clar
+    df["is_llevantada"] = _dir_in_range(direction, 60, 150)   # E/SE: pluja medit.
+    df["is_migjorn"] = _dir_in_range(direction, 150, 190)     # S: africà sec/calent
+    df["is_garbi"] = _dir_in_range(direction, 190, 250)       # SW: tempestes
+    df["is_ponent"] = _dir_in_range(direction, 250, 340)      # W/NW: sec continental
 
     # Interaccions: quan hi ha Llevantada + velocitat/humitat alta → pluja quasi segura
     speed = pd.to_numeric(df.get(speed_col, pd.Series(dtype=float)), errors="coerce").fillna(0)
@@ -339,8 +346,8 @@ FEATURE_COLUMNS = [
     "wind_speed_10m", "wind_u", "wind_v",
     "wind_speed_change_1h", "wind_speed_change_3h",
     "is_sea_breeze",
-    # Règims eòlics catalans (Llevantada, Garbí, Ponent)
-    "is_llevantada", "is_garbi", "is_ponent",
+    # Règims eòlics catalans (Rosa dels Vents completa)
+    "is_tramuntana", "is_llevantada", "is_migjorn", "is_garbi", "is_ponent",
     "llevantada_strength", "llevantada_moisture",
     "wind_dir_change_3h",
     # Pluja recent
