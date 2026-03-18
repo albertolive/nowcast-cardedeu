@@ -1,39 +1,39 @@
 {
-  "cv_auc_mean": 0.9501261930642212,
-  "cv_auc_std": 0.007868242237325488,
-  "cv_f1_mean": 0.6653474613103307,
-  "cv_f1_std": 0.038116436661328974,
-  "final_auc": 0.9548705299390039,
+  "cv_auc_mean": 0.9376570824555417,
+  "cv_auc_std": 0.025616063463807532,
+  "cv_f1_mean": 0.6573121131766314,
+  "cv_f1_std": 0.11232248490594793,
+  "final_auc": 0.9673573200992557,
   "final_report": {
     "0": {
-      "precision": 0.978595890410959,
-      "recall": 0.9234764542936288,
-      "f1-score": 0.9502375296912114,
-      "support": 8664.0
+      "precision": 0.984,
+      "recall": 0.952258064516129,
+      "f1-score": 0.9678688524590164,
+      "support": 775.0
     },
     "1": {
-      "precision": 0.5969604863221885,
-      "recall": 0.8487467588591184,
-      "f1-score": 0.7009279086366881,
-      "support": 1157.0
+      "precision": 0.7131782945736435,
+      "recall": 0.8846153846153846,
+      "f1-score": 0.7896995708154506,
+      "support": 104.0
     },
-    "accuracy": 0.914672640260666,
+    "accuracy": 0.944254835039818,
     "macro avg": {
-      "precision": 0.7877781883665738,
-      "recall": 0.8861116065763737,
-      "f1-score": 0.8255827191639498,
-      "support": 9821.0
+      "precision": 0.8485891472868217,
+      "recall": 0.9184367245657568,
+      "f1-score": 0.8787842116372335,
+      "support": 879.0
     },
     "weighted avg": {
-      "precision": 0.9336358901532757,
-      "recall": 0.914672640260666,
-      "f1-score": 0.9208666681129523,
-      "support": 9821.0
+      "precision": 0.9519573863886904,
+      "recall": 0.944254835039818,
+      "f1-score": 0.9467885278959551,
+      "support": 879.0
     }
   },
-  "n_samples": 98208,
-  "n_positive": 9178,
-  "n_features": 36,
+  "n_samples": 8784,
+  "n_positive": 966,
+  "n_features": 45,
   "feature_names": [
     "hour_sin",
     "hour_cos",
@@ -56,6 +56,15 @@
     "wind_speed_change_1h",
     "wind_speed_change_3h",
     "is_sea_breeze",
+    "is_tramuntana",
+    "is_llevantada",
+    "is_migjorn",
+    "is_garbi",
+    "is_ponent",
+    "llevantada_strength",
+    "llevantada_moisture",
+    "garbi_strength",
+    "wind_dir_change_3h",
     "precipitation",
     "rain_accum_3h",
     "rain_accum_6h",
