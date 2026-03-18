@@ -36,26 +36,15 @@ def send_telegram_message(text: str) -> bool:
         return False
 
 
-def format_rain_alert(prediction: dict) -> str:
-    """Formata el missatge d'alerta de pluja per Telegram."""
-    prob = prediction["probability_pct"]
-    confidence = prediction["confidence"]
-    conditions = prediction["conditions"]
-
-    emoji = "🌧️" if prediction["will_rain"] else "⛅"
-
+def _format_conditions(prediction: dict) -> list[str]:
+    """Genera les línies de condicions actuals, radar i sentinella."""
+    conditions = prediction.get("conditions", {})
     lines = [
-        f"{emoji} <b>Nowcast Cardedeu</b>",
-        "",
-        f"🎯 Probabilitat de pluja: <b>{prob}%</b>",
-        f"📊 Confiança: <b>{confidence}</b>",
-        "",
         "📡 <b>Condicions actuals:</b>",
         f"  🌡️ Temp: {conditions.get('temperature', '?')}°C",
         f"  💧 Humitat: {conditions.get('humidity', '?')}%",
         f"  📊 Pressió: {conditions.get('pressure', '?')} hPa",
         f"  💨 Vent: {conditions.get('wind_speed', '?')} km/h {conditions.get('wind_dir', '')}",
-        f"  ☀️ Radiació: {conditions.get('solar_radiation', '?')} W/m²",
     ]
 
     # Radar
@@ -75,19 +64,88 @@ def format_rain_alert(prediction: dict) -> str:
         lines.append("")
         lines.append(f"🔭 <b>{sentinel.get('station', 'Sentinella')}:</b> Plovent!")
 
+    return lines
+
+
+def format_rain_incoming(prediction: dict) -> str:
+    """Missatge quan la pluja s'acosta (clear → rain_alert)."""
+    prob = prediction["probability_pct"]
+    lines = [
+        "🌧️ <b>Nowcast Cardedeu</b>",
+        "",
+        "⚠️ <b>ALERTA: Pluja imminent en els propers 60 min!</b>",
+        "",
+        f"🎯 Probabilitat: <b>{prob}%</b>",
+        f"📊 Confiança: <b>{prediction['confidence']}</b>",
+        "",
+    ]
+    lines.extend(_format_conditions(prediction))
     lines.append("")
     lines.append(f"⏰ {prediction['timestamp'][:19]}")
-
-    if prediction["will_rain"]:
-        lines.insert(2, "⚠️ <b>ALERTA: Pluja imminent en els propers 60 min!</b>")
-
     return "\n".join(lines)
 
 
+def format_rain_clearing(prediction: dict) -> str:
+    """Missatge quan la pluja s'allunya (rain_alert → clear)."""
+    prob = prediction["probability_pct"]
+    lines = [
+        "☀️ <b>Nowcast Cardedeu</b>",
+        "",
+        "✅ <b>La pluja s'allunya!</b>",
+        f"Probabilitat tornada a <b>{prob}%</b>",
+        "",
+    ]
+    lines.extend(_format_conditions(prediction))
+    lines.append("")
+    lines.append(f"⏰ {prediction['timestamp'][:19]}")
+    return "\n".join(lines)
+
+
+def format_daily_summary(prediction: dict) -> str:
+    """Resum diari al matí."""
+    prob = prediction["probability_pct"]
+    confidence = prediction["confidence"]
+
+    if prob >= 65:
+        outlook = "🌧️ Pluja probable avui"
+    elif prob >= 40:
+        outlook = "🌥️ Possibilitat de pluja"
+    else:
+        outlook = "☀️ No es preveu pluja"
+
+    lines = [
+        "📋 <b>Nowcast Cardedeu — Resum del matí</b>",
+        "",
+        f"{outlook}",
+        f"🎯 Probabilitat: <b>{prob}%</b> ({confidence})",
+        "",
+    ]
+    lines.extend(_format_conditions(prediction))
+    lines.append("")
+    lines.append(f"⏰ {prediction['timestamp'][:19]}")
+    return "\n".join(lines)
+
+
+def format_rain_alert(prediction: dict) -> str:
+    """Compat: format antic per alertes simples."""
+    return format_rain_incoming(prediction)
+
+
+def send_rain_incoming(prediction: dict) -> bool:
+    """Envia alerta de pluja imminent."""
+    return send_telegram_message(format_rain_incoming(prediction))
+
+
+def send_rain_clearing(prediction: dict) -> bool:
+    """Envia avís de pluja que s'allunya."""
+    return send_telegram_message(format_rain_clearing(prediction))
+
+
+def send_daily_summary(prediction: dict) -> bool:
+    """Envia el resum diari del matí."""
+    return send_telegram_message(format_daily_summary(prediction))
+
+
 def send_prediction_alert(prediction: dict) -> bool:
-    """
-    Envia l'alerta de predicció si supera el llindar,
-    o un resum si s'ha demanat explícitament.
-    """
-    message = format_rain_alert(prediction)
-    return send_telegram_message(message)
+    """Compat: envia alerta genèrica."""
+    return send_telegram_message(format_rain_incoming(prediction))

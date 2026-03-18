@@ -51,7 +51,12 @@ OPEN_METEO_FORECAST_MODELS = [
 # ── Paràmetres del model ML ──
 RAIN_THRESHOLD_MM = 0.2          # mm en 60 min per considerar "pluja"
 PREDICTION_HORIZON_MIN = 60      # Predicció a 60 minuts vista
-ALERT_PROBABILITY_THRESHOLD = 0.65  # Probabilitat mínima per enviar alerta
+
+# ── Notificacions: histèresi per evitar flip-flop ──
+ALERT_PROBABILITY_THRESHOLD = 0.65  # Compat: usat pel model per marcar will_rain
+ALERT_THRESHOLD_UP = 0.65           # clear → rain_alert (probabilitat puja)
+ALERT_THRESHOLD_DOWN = 0.30         # rain_alert → clear (probabilitat baixa)
+NOTIFICATION_COOLDOWN_MIN = 30      # Minuts mínims entre alertes
 
 # ── RainViewer (radar, sense API key) ──
 RAINVIEWER_API_URL = "https://api.rainviewer.com/public/weather-maps.json"
