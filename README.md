@@ -2,7 +2,7 @@
 
 Sistema de predicció de pluja hiperlocal per a Cardedeu (Vallès Oriental) basat en Machine Learning.
 
-Utilitza dades reals de l'estació [MeteoCardedeu.net](https://meteocardedeu.net) combinades amb models meteorològics globals (Open-Meteo), acord entre múltiples models (ECMWF, GFS, ICON, AROME), radar de precipitació en temps real (RainViewer), estacions sentinella del SMC (Meteocat XEMA), probabilitats de tempesta calibrades per experts (AEMET) i classificació de règims eòlics catalans (Llevantada, Garbí, Ponent) per aprendre els patrons del microclima local i predir si plourà en els propers 60 minuts.
+Utilitza dades reals de l'estació [MeteoCardedeu.net](https://meteocardedeu.net) combinades amb models meteorològics globals (Open-Meteo), acord entre múltiples models (ECMWF, GFS, ICON, AROME), radar de precipitació en temps real (RainViewer), estacions sentinella del SMC (Meteocat XEMA), probabilitats de tempesta calibrades per experts (AEMET), classificació de règims eòlics catalans (Llevantada, Garbí, Ponent), índexs d'inestabilitat (VT, TT, Lifted Index), cisalla de vent i llindars d'aire fred per aprendre els patrons del microclima local i predir si plourà en els propers 60 minuts.
 
 ## Com funciona
 
@@ -20,7 +20,7 @@ Utilitza dades reals de l'estació [MeteoCardedeu.net](https://meteocardedeu.net
          │                     │         │                      │
          ▼                     ▼         ▼                      ▼
     ┌──────────────────────────────────────────────────────────────────────┐
-    │                     Feature Engineering (74 features)               │
+    │                     Feature Engineering (84 features)               │
     │  Tendències · Ensemble · 850hPa · Radar · Sentinella · AEMET · Vent │
     └──────────────────────────────┬───────────────────────────────────────┘
                                   │
@@ -124,7 +124,7 @@ nowcast-cardedeu/
 │   │   ├── aemet.py          # API AEMET OpenData (probTormenta/probPrecip)
 │   │   └── meteocat.py       # API Meteocat XEMA (sentinella, gated by rain gate)
 │   ├── features/
-│   │   └── engineering.py    # Feature engineering (74 features incl. 850hPa + Skew-T)
+│   │   └── engineering.py    # Feature engineering (84 features incl. LI, wind shear, 700hPa)
 │   ├── model/
 │   │   ├── train.py          # Pipeline d'entrenament (XGBoost + TimeSeriesSplit)
 │   │   └── predict.py        # Predicció en temps real (fusió 6 fonts + rain gate)
@@ -151,7 +151,7 @@ nowcast-cardedeu/
 
 ## Features del model
 
-El model utilitza **74 features** organitzades en categories:
+El model utilitza **84 features** organitzades en categories:
 
 | Categoria | Features | Per què? |
 |-----------|----------|----------|
@@ -159,16 +159,19 @@ El model utilitza **74 features** organitzades en categories:
 | Pressió | Valor + tendència 1h/3h/6h + acceleració | Indicador principal d'inestabilitat |
 | Humitat | Valor + punt rosada + depressió + tendència | Saturació = pluja imminent |
 | Vent | Components U/V + canvis + marinada | Marinada del mar = aire sec |
-| 🆕 Règims eòlics | Tramuntana, Llevantada, Migjorn, Garbí, Ponent (850hPa) | Llevantada (E/SE) = pluja #1 a Cardedeu |
-| 🆕 Nivells pressió | Vent/T/RH a 850hPa, T a 500hPa, VT, TT | Inestabilitat i flux sinòptic real |
+| Règims eòlics | Tramuntana, Llevantada, Migjorn, Garbí, Ponent (850hPa) + garbi_strength | Llevantada (E/SE) = pluja #1 a Cardedeu |
+| Nivells pressió | Vent/T/RH a 850hPa, T/RH a 700hPa, T a 500hPa | Flux sinòptic real a 3 nivells |
+| 🆕 Índexs inestabilitat | VT, TT, LI, li_unstable, li_very_unstable | Skew-T: detecció de convecció severa |
+| 🆕 Cisalla de vent | wind_shear_speed, wind_shear_dir | Tempestes organitzades (supercèl·lules) |
+| 🆕 Aire fred 500hPa | cold_500_moderate (<-17°C), cold_500_strong (<-24°C) | "Petita bomba" mediterrània (alexmeteo) |
 | Pluja recent | Acumulat 3h/6h + ha plogut? | Context de fronts actius |
 | Models NWP | CAPE, núvols, weather code | Què diuen els models globals |
 | Radiació | Solar W/m² | Indicador indirecte de núvols |
-| 🆕 Radar | Intensitat, dBZ, mm/h, eco, tendència, aprox. | Precipitació real en temps real |
-| 🆕 Sentinella | Temp/hum Granollers + diffs amb Cardedeu + precip | Gradient territorial = front actiu |
-| 🆕 Ensemble | Acord ECMWF/GFS/ICON/AROME, spread precip, models pluja | Desacord = incertesa = zona ambigua |
-| 🆕 Bias | Forecast-observat temp/hum en temps real | Model biased = atmosfera impredictible |
-| 🆕 AEMET | probPrecipitació, probTormenta (experts) | Tempestes convectives mediterrànies |
+| Radar | Intensitat, dBZ, mm/h, eco, tendència, aprox. | Precipitació real en temps real |
+| Sentinella | Temp/hum Granollers + diffs amb Cardedeu + precip | Gradient territorial = front actiu |
+| Ensemble | Acord ECMWF/GFS/ICON/AROME, spread precip, models pluja | Desacord = incertesa = zona ambigua |
+| Bias | Forecast-observat temp/hum en temps real | Model biased = atmosfera impredictible |
+| AEMET | probPrecipitació, probTormenta (experts) | Tempestes convectives mediterrànies |
 
 ## Fonts de dades
 
@@ -212,7 +215,7 @@ Cardedeu se situa al peu de la Serralada Prelitoral, a la confluència d'aire me
 | Règim | Direcció | Efecte a Cardedeu | Feature |
 |-------|----------|-------------------|---------|
 | 🌊 **Llevantada** | E/SE (60°-150°) | Humitat mediterrània contra les muntanyes → pluja #1 | `is_llevantada`, `llevantada_strength`, `llevantada_moisture` |
-| 🌀 **Garbí/Xaloc** | SW (190°-250°) | Aire càlid inestable → tempestes convectives | `is_garbi` |
+| 🌀 **Garbí/Xaloc** | SW (190°-250°) | Aire càlid inestable → tempestes convectives | `is_garbi`, `garbi_strength` |
 | 🏔️ **Ponent/Mestral** | W/NW (260°-340°) | Aire sec continental (Foehn) → supressor de pluja | `is_ponent` |
 | 🔄 **Backing wind** | Gir antihorari | Aproximació de front càlid o baixa → pluja imminent | `wind_dir_change_3h` (negatiu) |
 
@@ -226,6 +229,23 @@ A més del vent a 850hPa, el sistema obté dades de temperatura a 850hPa i 500hP
 |-------|---------|------------|
 | **VT** (Vertical Totals) | T850 − T500 | Gradient tèrmic vertical. >26: inestable, >30: tempestes, >34: forta inestabilitat |
 | **TT** (Total Totals) | VT + (Td850 − T500) | Combina gradient + humitat. >44: tronades possibles, >50: tempestes probables, >55: severes |
+| **LI** (Lifted Index) | T_ambient_500 − T_parcel_500 | Estabilitat convectiva. <0: inestable, <-2: tempestes, <-6: severes |
+
+### Cisalla de vent i aire fred (alexmeteo.com)
+
+Inspirats per l'anàlisi del blog [alexmeteo.com](https://alexmeteo.com), el sistema inclou indicadors derivats d'articles tècnics sobre meteorologia mediterrània:
+
+| Feature | Descripció | Referència |
+|---------|-----------|------------|
+| `wind_shear_speed` | Diferència de velocitat de vent entre 850hPa i superfície | "Ingredients per formar Tempestes" — cisalla necessària per organitzar tempestes |
+| `wind_shear_dir` | Diferència de direcció entre 850hPa i superfície | Cisalla direccional indica rotació → supercel·les |
+| `cold_500_moderate` | T500 < -17°C | "Canvi radical de temps" — -17°C a 500hPa = "petita bomba" a l'estiu |
+| `cold_500_strong` | T500 < -24°C | "Quines situacions sinòptiques" — -24°C a 500hPa = bomba convectiva a la primavera |
+| `li_unstable` | LI < -2 | Lifted Index negatiu = conveció probable |
+| `li_very_unstable` | LI < -6 | LI molt negatiu = tempestes severes |
+| `garbi_strength` | is_garbi × velocitat sinòptica | "Anuncia borrasques amb fortes precipitacions" |
+| `rh_700` | Humitat relativa a 700hPa | "Baixa mediterrània" — aire sec a 700hPa inhibeix conveció |
+| `temp_700` | Temperatura a 700hPa | Perfil tèrmic vertical complet |
 
 ### AROME: resolució 2.5km
 
@@ -235,10 +255,10 @@ El model AROME de Meteo-France és el 4t model de l'ensemble, amb resolució de 
 
 | Mètrica | Valor |
 |---------|-------|
-| AUC-ROC | 0.9501 ± 0.0079 |
-| F1-Score | 0.6653 ± 0.0381 |
-| Mostres d'entrenament | 98,208 |
-| Features | 74 |
+| AUC-ROC | 0.9674 |
+| F1-Score | 0.6573 |
+| Mostres d'entrenament | 8,784 |
+| Features | 84 |
 | Classe positiva (pluja) | ~9.3% |
 | Cross-validation | TimeSeriesSplit (5 folds) |
 
