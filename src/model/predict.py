@@ -12,7 +12,7 @@ import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 import config
 from src.data.meteocardedeu import fetch_series, fetch_latest
-from src.data.open_meteo import fetch_forecast
+from src.data.open_meteo import fetch_forecast, fetch_pressure_levels
 from src.data.rainviewer import fetch_radar_at_cardedeu
 from src.data.meteocat import fetch_sentinel_latest, compute_sentinel_features
 from src.data.ensemble import fetch_ensemble_agreement, compute_forecast_bias
@@ -41,6 +41,9 @@ def predict_now() -> dict:
 
     logger.info("Obtenint acord entre models (Ensemble)...")
     ensemble_data = fetch_ensemble_agreement()
+
+    logger.info("Obtenint dades a 850hPa (flux sinòptic)...")
+    pressure_data = fetch_pressure_levels()
 
     logger.info("Obtenint dades de radar (RainViewer)...")
     radar_data = fetch_radar_at_cardedeu()
@@ -117,6 +120,11 @@ def predict_now() -> dict:
         if k in FEATURE_COLUMNS:
             latest[k] = v
 
+    # Afegir dades de nivells de pressió (850hPa, 500hPa)
+    for k, v in pressure_data.items():
+        if k in FEATURE_COLUMNS:
+            latest[k] = v
+
     logger.info("Carregant model...")
     model, feature_names = load_model()
 
@@ -190,6 +198,7 @@ def predict_now() -> dict:
             "humidity": bias_data.get("forecast_humidity_bias"),
         },
         "wind_regime": {
+            "level": "850hPa" if pressure_data.get("wind_850_dir") is not None else "10m",
             "is_tramuntana": bool(latest.get("is_tramuntana", pd.Series([0])).values[0]),
             "is_llevantada": bool(latest.get("is_llevantada", pd.Series([0])).values[0]),
             "is_migjorn": bool(latest.get("is_migjorn", pd.Series([0])).values[0]),
@@ -197,6 +206,15 @@ def predict_now() -> dict:
             "is_ponent": bool(latest.get("is_ponent", pd.Series([0])).values[0]),
             "llevantada_strength": float(latest.get("llevantada_strength", pd.Series([0])).values[0]),
             "wind_dir_change_3h": float(latest.get("wind_dir_change_3h", pd.Series([0])).values[0]) if pd.notna(latest.get("wind_dir_change_3h", pd.Series([np.nan])).values[0]) else None,
+        },
+        "pressure_levels": {
+            "wind_850_dir": pressure_data.get("wind_850_dir"),
+            "wind_850_speed_kmh": pressure_data.get("wind_850_speed"),
+            "temp_850": pressure_data.get("temp_850"),
+            "temp_500": pressure_data.get("temp_500"),
+            "rh_850": pressure_data.get("rh_850"),
+            "vt_index": pressure_data.get("vt_index"),
+            "tt_index": pressure_data.get("tt_index"),
         },
         "rain_gate_open": rain_signals,
         "features_used": len(feature_names),
