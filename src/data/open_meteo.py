@@ -143,6 +143,87 @@ PRESSURE_LEVEL_VARS = [
     "temperature_700hPa",
 ]
 
+# Mapejat: noms de l'API → noms interns per al model
+_PRESSURE_RENAME = {
+    "wind_speed_850hPa": "wind_850_speed",
+    "wind_direction_850hPa": "wind_850_dir",
+    "temperature_850hPa": "temp_850",
+    "temperature_500hPa": "temp_500",
+    "relative_humidity_850hPa": "rh_850",
+    "relative_humidity_700hPa": "rh_700",
+    "temperature_700hPa": "temp_700",
+}
+
+
+def fetch_historical_pressure_levels(
+    start_date: date,
+    end_date: date,
+) -> pd.DataFrame:
+    """
+    Descarrega dades horàries de nivells de pressió (850/700/500hPa)
+    des de l'Historical Forecast API d'Open-Meteo.
+
+    Disponible des d'abril 2021. Per dates anteriors retorna DataFrame buit.
+    Les columnes es renomenen als noms interns del model:
+    wind_850_speed, wind_850_dir, temp_850, temp_500, rh_850, rh_700, temp_700.
+    """
+    # L'API té dades de pressure levels des d'abril 2021
+    DATA_START = date(2021, 4, 1)
+    effective_start = max(start_date, DATA_START)
+
+    if effective_start >= end_date:
+        logger.info(f"Pressure levels: no data before {DATA_START}, skipping")
+        return pd.DataFrame()
+
+    all_dfs = []
+    chunk_start = effective_start
+
+    while chunk_start < end_date:
+        chunk_end = min(chunk_start + timedelta(days=90), end_date)
+
+        params = {
+            "latitude": config.LATITUDE,
+            "longitude": config.LONGITUDE,
+            "start_date": chunk_start.isoformat(),
+            "end_date": chunk_end.isoformat(),
+            "hourly": ",".join(PRESSURE_LEVEL_VARS),
+            "timezone": "Europe/Madrid",
+        }
+
+        logger.info(f"Pressure levels històric: {chunk_start} → {chunk_end}")
+        r = SESSION.get(
+            config.OPEN_METEO_HISTORICAL_FORECAST_URL,
+            params=params,
+            timeout=60,
+        )
+        r.raise_for_status()
+        data = r.json()
+
+        hourly = data.get("hourly", {})
+        if not hourly:
+            chunk_start = chunk_end + timedelta(days=1)
+            continue
+
+        df = pd.DataFrame(hourly)
+        df["datetime"] = pd.to_datetime(df["time"])
+        df = df.drop(columns=["time"])
+
+        # Renomenar columnes API → noms interns
+        df = df.rename(columns=_PRESSURE_RENAME)
+        # Eliminar columnes no mapejades (ex: geopotential_height_500hPa)
+        df = df[["datetime"] + [c for c in _PRESSURE_RENAME.values() if c in df.columns]]
+
+        all_dfs.append(df)
+        chunk_start = chunk_end + timedelta(days=1)
+
+    if not all_dfs:
+        return pd.DataFrame()
+
+    result = pd.concat(all_dfs, ignore_index=True)
+    result = result.sort_values("datetime").reset_index(drop=True)
+    logger.info(f"Pressure levels: {len(result)} registres ({result['datetime'].min()} → {result['datetime'].max()})")
+    return result
+
 
 def fetch_pressure_levels() -> dict:
     """

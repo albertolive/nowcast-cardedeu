@@ -179,11 +179,34 @@ def _add_pressure_level_features(df: pd.DataFrame) -> pd.DataFrame:
 
     Ref: alexmeteo.com — Skew-T analysis, "Ingredients per formar Tempestes"
     """
+    import math
+
     df = df.copy()
     for col in ["wind_850_speed", "wind_850_dir", "temp_850", "temp_500",
                 "rh_850", "rh_700", "temp_700", "vt_index", "tt_index", "li_index"]:
         if col in df.columns:
             df[col] = pd.to_numeric(df[col], errors="coerce")
+
+    # ── Compute VT/TT/LI from raw pressure columns if not present ──
+    if "vt_index" not in df.columns and "temp_850" in df.columns and "temp_500" in df.columns:
+        df["vt_index"] = df["temp_850"] - df["temp_500"]
+
+    if "tt_index" not in df.columns and "vt_index" in df.columns and "rh_850" in df.columns:
+        a, b = 17.27, 237.7
+        alpha = (a * df["temp_850"]) / (b + df["temp_850"]) + np.log(df["rh_850"].clip(lower=1) / 100.0)
+        td_850 = (b * alpha) / (a - alpha)
+        df["tt_index"] = df["vt_index"] + (td_850 - df["temp_500"])
+
+    if "li_index" not in df.columns and all(c in df.columns for c in ["temp_850", "rh_850", "temp_500"]):
+        a, b = 17.27, 237.7
+        alpha_li = (a * df["temp_850"]) / (b + df["temp_850"]) + np.log(df["rh_850"].clip(lower=1) / 100.0)
+        td_850_li = (b * alpha_li) / (a - alpha_li)
+        dew_dep = df["temp_850"] - td_850_li
+        lcl_height_m = 125 * dew_dep
+        t_at_lcl = df["temp_850"] - 9.8 * (lcl_height_m / 1000.0)
+        remaining_m = (3500 - lcl_height_m).clip(lower=0)
+        t_parcel_500 = t_at_lcl - 6.0 * (remaining_m / 1000.0)
+        df["li_index"] = df["temp_500"] - t_parcel_500
 
     # ── Wind shear (cisalla): diferència vent superfície vs 850hPa ──
     # Clau per organització i persistència de tempestes.

@@ -8,12 +8,12 @@ Script 1: Descarrega totes les dades històriques.
 import logging
 import os
 import sys
-from datetime import date
+from datetime import date, timedelta
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 import config
 from src.data.meteocardedeu import download_all_history
-from src.data.open_meteo import fetch_historical_hourly
+from src.data.open_meteo import fetch_historical_hourly, fetch_historical_pressure_levels
 
 logging.basicConfig(
     level=logging.INFO,
@@ -44,17 +44,32 @@ def main():
     # Open-Meteo archive va des de 1940, però el seu arxiu complet
     # acostuma a anar fins fa 5-7 dies (no inclou els últims dies)
     start = date(min(config.HISTORY_YEARS), 1, 1)
-    end = date(max(config.HISTORY_YEARS), 3, 15)  # Fins fa pocs dies
+    end = date.today() - timedelta(days=5)  # Archive API lags ~5 days
 
     hourly_data = fetch_historical_hourly(start, end)
     hourly_path = os.path.join(config.DATA_RAW_DIR, "open_meteo_hourly.parquet")
     hourly_data.to_parquet(hourly_path, index=False)
     logger.info(f"Dades Open-Meteo: {len(hourly_data)} hores → {hourly_path}")
 
+    # ── 3. Dades de nivells de pressió (Historical Forecast API) ──
+    logger.info("=" * 60)
+    logger.info("Descarregant nivells de pressió (850/700/500hPa)...")
+    logger.info("=" * 60)
+
+    pressure_data = fetch_historical_pressure_levels(start, end)
+    pressure_path = os.path.join(config.DATA_RAW_DIR, "pressure_levels_hourly.parquet")
+    if not pressure_data.empty:
+        pressure_data.to_parquet(pressure_path, index=False)
+        logger.info(f"Pressure levels: {len(pressure_data)} hores → {pressure_path}")
+    else:
+        logger.warning("No s'han obtingut dades de pressure levels")
+
     logger.info("=" * 60)
     logger.info("Descàrrega completada!")
     logger.info(f"  Estació: {station_daily['date'].min()} → {station_daily['date'].max()}")
     logger.info(f"  Open-Meteo: {hourly_data['datetime'].min()} → {hourly_data['datetime'].max()}")
+    if not pressure_data.empty:
+        logger.info(f"  Pressure: {pressure_data['datetime'].min()} → {pressure_data['datetime'].max()}")
     logger.info("=" * 60)
 
 

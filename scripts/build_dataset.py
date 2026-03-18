@@ -84,6 +84,18 @@ def main():
     logger.info(f"Open-Meteo: {len(hourly_df)} registres horaris")
     logger.info(f"Estació: {len(station_daily)} dies")
 
+    # ── Afegir nivells de pressió si existeixen ──
+    pressure_path = os.path.join(config.DATA_RAW_DIR, "pressure_levels_hourly.parquet")
+    if os.path.exists(pressure_path):
+        pressure_df = pd.read_parquet(pressure_path)
+        pressure_df["datetime"] = pd.to_datetime(pressure_df["datetime"])
+        hourly_df["datetime"] = pd.to_datetime(hourly_df["datetime"])
+        hourly_df = hourly_df.merge(pressure_df, on="datetime", how="left")
+        logger.info(f"Pressure levels merged: {len(pressure_df)} registres, "
+                    f"columnes afegides: {[c for c in pressure_df.columns if c != 'datetime']}")
+    else:
+        logger.warning("No s'han trobat dades de pressure levels (executa download_history.py)")
+
     # ── Feature engineering ──
     logger.info("Aplicant feature engineering...")
     featured_df = build_features_from_hourly(hourly_df)

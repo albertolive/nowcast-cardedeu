@@ -24,6 +24,7 @@ SERIES_VARS = "TEMP,HUM,VEL,DIR,PREC,BAR,SUN,UVI,PINT"
 # ── Open-Meteo (sense API key) ──
 OPEN_METEO_FORECAST_URL = "https://api.open-meteo.com/v1/forecast"
 OPEN_METEO_HISTORICAL_URL = "https://archive-api.open-meteo.com/v1/archive"
+OPEN_METEO_HISTORICAL_FORECAST_URL = "https://historical-forecast-api.open-meteo.com/v1/forecast"
 
 # Variables horàries que demanem a Open-Meteo (forecast i històric)
 OPEN_METEO_HOURLY_VARS = [
