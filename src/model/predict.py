@@ -190,7 +190,9 @@ def predict_now() -> dict:
             "humidity": bias_data.get("forecast_humidity_bias"),
         },
         "wind_regime": {
+            "is_tramuntana": bool(latest.get("is_tramuntana", pd.Series([0])).values[0]),
             "is_llevantada": bool(latest.get("is_llevantada", pd.Series([0])).values[0]),
+            "is_migjorn": bool(latest.get("is_migjorn", pd.Series([0])).values[0]),
             "is_garbi": bool(latest.get("is_garbi", pd.Series([0])).values[0]),
             "is_ponent": bool(latest.get("is_ponent", pd.Series([0])).values[0]),
             "llevantada_strength": float(latest.get("llevantada_strength", pd.Series([0])).values[0]),
