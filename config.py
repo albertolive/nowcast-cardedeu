@@ -92,6 +92,17 @@ AEMET_MUNICIPALITY_CODE = "08052"  # Cardedeu
 RAIN_GATE_ENSEMBLE_PROB = 0.2   # Fracció de models amb pluja (≥1 de 4 = 0.25)
 RAIN_GATE_CAPE_THRESHOLD = 800  # J/kg
 RAIN_GATE_AEMET_STORM = 10      # %
+RAIN_GATE_RADAR_NEARBY_KM = 30  # Obrir rain gate si ecos de radar dins d'aquest radi
+
+# ── Radar Spatial Scanning ──
+# A zoom 8, cada píxel ≈ 0.457 km a la latitud de Cardedeu (41.63°)
+RADAR_SCAN_RADIUS_KM = 30       # km al voltant de Cardedeu per escanejar ecos
+RADAR_PIXEL_SIZE_KM = 0.457     # km per píxel (zoom 8, lat ~41.6°)
+
+# ── Detecció de canvi de règim eòlic ──
+REGIME_COOLDOWN_MIN = 120        # Minuts mínims entre alertes de canvi de règim
+REGIME_HUMIDITY_THRESHOLD = 75   # % RH per alerta de Llevantada humida
+REGIME_PRESSURE_DROP_3H = -2.0   # hPa caiguda en 3h per alerta de pressió
 
 # ── Telegram ──
 TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "")

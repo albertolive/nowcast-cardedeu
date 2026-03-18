@@ -46,7 +46,9 @@ def predict_now() -> dict:
     pressure_data = fetch_pressure_levels()
 
     logger.info("Obtenint dades de radar (RainViewer)...")
-    radar_data = fetch_radar_at_cardedeu()
+    # Passar la direcció del vent a 850hPa per escaneig del sector de sobrevent
+    wind_from_dir = pressure_data.get("wind_850_dir")
+    radar_data = fetch_radar_at_cardedeu(wind_from_dir=wind_from_dir)
     logger.info(f"  Radar: dBZ={radar_data['radar_dbz']}, echo={radar_data['radar_has_echo']}, "
                 f"approaching={radar_data['radar_approaching']}")
 
@@ -62,6 +64,7 @@ def predict_now() -> dict:
     rain_signals = (
         ensemble_data.get("ensemble_rain_agreement", 0) >= config.RAIN_GATE_ENSEMBLE_PROB
         or radar_data.get("radar_has_echo", False)
+        or radar_data.get("radar_nearest_echo_km", 30) < config.RAIN_GATE_RADAR_NEARBY_KM
         or (not np.isnan(aemet_data.get("aemet_prob_storm", 0) or 0)
             and (aemet_data.get("aemet_prob_storm", 0) or 0) >= config.RAIN_GATE_AEMET_STORM)
     )
@@ -175,6 +178,13 @@ def predict_now() -> dict:
             "rain_rate_mmh": radar_data["radar_rain_rate"],
             "has_echo": radar_data["radar_has_echo"],
             "approaching": radar_data["radar_approaching"],
+            "nearest_echo_km": radar_data.get("radar_nearest_echo_km"),
+            "nearest_echo_compass": radar_data.get("radar_nearest_echo_compass"),
+            "max_dbz_20km": radar_data.get("radar_max_dbz_20km"),
+            "coverage_20km": radar_data.get("radar_coverage_20km"),
+            "upwind_nearest_echo_km": radar_data.get("radar_upwind_nearest_echo_km"),
+            "storm_velocity_kmh": radar_data.get("radar_storm_velocity_kmh"),
+            "storm_eta_min": radar_data.get("radar_storm_eta_min"),
         },
         "sentinel": {
             "station": config.SENTINEL_STATION_NAME,
@@ -222,6 +232,8 @@ def predict_now() -> dict:
         "rain_gate_open": rain_signals,
         "features_used": len(feature_names),
         "threshold": config.ALERT_PROBABILITY_THRESHOLD,
+        "pressure_change_3h": float(latest.get("pressure_change_3h", pd.Series([np.nan])).values[0])
+            if pd.notna(latest.get("pressure_change_3h", pd.Series([np.nan])).values[0]) else None,
     }
 
     logger.info(
