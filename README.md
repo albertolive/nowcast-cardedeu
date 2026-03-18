@@ -86,8 +86,10 @@ export TELEGRAM_CHAT_ID="el_teu_chat_id"
 
 ### 6. GitHub Actions (automatització)
 El workflow `.github/workflows/nowcast.yml`:
-- Executa prediccions cada 15 minuts (6h-23h)
-- Re-entrena el model automàticament cada diumenge a les 3:00
+- **Prediccions** cada 15 minuts (6h-23h) amb notificacions intel·ligents
+- **Resum diari** a les 7:00 via Telegram
+- **Re-entrenament** automàtic cada diumenge a les 3:00
+- Execució manual amb selector d'acció (predict / daily_summary / retrain)
 - Configura els secrets al repositori:
   - `TELEGRAM_BOT_TOKEN`
   - `TELEGRAM_CHAT_ID`
@@ -110,12 +112,14 @@ nowcast-cardedeu/
 │   │   ├── train.py          # Pipeline d'entrenament (XGBoost + TimeSeriesSplit)
 │   │   └── predict.py        # Predicció en temps real (fusió 4 fonts)
 │   └── notify/
-│       └── telegram.py       # Alertes Telegram (amb info radar + sentinella)
+│       ├── telegram.py       # Missatges Telegram (3 tipus: alerta, clearing, resum)
+│       └── state.py          # Màquina d'estats per notificacions (histèresi + cooldown)
 ├── scripts/
 │   ├── download_history.py   # Descarregar 12+ anys d'històric
 │   ├── build_dataset.py      # Construir dataset d'entrenament
 │   ├── train_model.py        # Entrenar model
-│   └── predict_now.py        # Predicció (GitHub Actions)
+│   ├── predict_now.py        # Predicció amb notificacions (GitHub Actions)
+│   └── daily_summary.py      # Resum diari del matí (7:00)
 ├── models/                   # Model entrenat (git tracked)
 ├── data/                     # Dades (raw no tracked, processed sí)
 ├── requirements.txt          # Dependències Python
@@ -170,6 +174,36 @@ Utilitza l'estació de **Granollers (YM)** com a sentinella: si plou a Granoller
 | Cross-validation | TimeSeriesSplit (5 folds) |
 
 > El model utilitza `scale_pos_weight=9.7` per compensar el desequilibri de classes i `eval_metric="aucpr"` per optimitzar la detecció de pluja.
+
+## Sistema de notificacions
+
+Les notificacions són basades en **transicions d'estat**, no en cada predicció. Això maximitza el senyal i minimitza el soroll.
+
+### Tipus de notificació
+
+| Tipus | Quan s'envia | Missatge |
+|-------|-------------|----------|
+| 🌧️ **Pluja imminent** | Probabilitat puja per sobre del **65%** | "⚠️ ALERTA: Pluja imminent en els propers 60 min!" |
+| ☀️ **Pluja s'allunya** | Probabilitat baixa per sota del **30%** | "✅ La pluja s'allunya!" |
+| 📋 **Resum diari** | Cada dia a les **7:00** | Outlook del matí amb condicions actuals |
+
+### Disseny anti-spam
+
+```
+           65%  ┌──────────────────┐
+     clear ─────┤  rain_alert     │
+                │  (🌧️ notifica)   │
+                └─────┬────────────┘
+           30%  │
+     clear ◄────┘  (☀️ notifica)
+
+     Zona 30-65% = histèresi (sense notificació)
+```
+
+- **Histèresi**: El gap de 35 punts entre llindars evita flip-flop quan la probabilitat oscil·la
+- **Cooldown**: Mínim 30 minuts entre alertes consecutives
+- **Persistència**: L'estat es manté entre execucions via GitHub Actions cache
+- **Resultat**: 2-5 missatges en dies de pluja, 0-1 en dies clars
 
 ## Nivells de confiança
 
