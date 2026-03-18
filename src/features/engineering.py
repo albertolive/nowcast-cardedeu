@@ -118,43 +118,67 @@ def _add_wind_regime_features(df: pd.DataFrame,
                               dir_col: str = "wind_direction_10m",
                               hum_col: str = "relative_humidity_2m") -> pd.DataFrame:
     """
-    Classifica el vent en règims meteorològics catalans (Rosa dels Vents),
-    clau per a la pluja a Cardedeu. Ref: alexmeteo.com
+    Classifica el vent en règims meteorològics catalans (Rosa dels Vents).
+    Ref: alexmeteo.com
+
+    IMPORTANT: La classificació sinòptica (Llevantada, Garbí…) es fa amb el
+    vent a 850hPa (~1500m), que reflecteix el flux sinòptic real.
+    El vent a 10m (superfície) és distorsionat per orografia (Montseny),
+    canalització de valls, i brises tèrmiques.
+
+    Si hi ha dades de 850hPa (columna wind_850_dir), s'utilitzen per
+    a la classificació. Si no, fallback a 10m (entrenament històric).
 
     Cobertura completa de la Rosa dels Vents:
     - Tramuntana (N 340°-30°): vent polar fred, cel blau, supressor de pluja.
-    - Llevantada (E/SE 60°-150°): humitat mediterrània contra la Serralada Prelitoral.
-      El patró de pluja #1 per a Cardedeu. Inclou Xaloc (SE).
-    - Migjorn (S 150°-190°): vent del sud, aire africa calent i sec, xafogor estival.
-    - Garbí (SW 190°-250°): "Anuncia l'arribada de borrasques amb fortes precipitacions."
-    - Ponent/Mestral (W/NW 250°-340°): aire continental sec, supressor de pluja.
-      Inclou Mestral (NW) que "treu tota precipitació i nuvolositat".
-    - wind_dir_change_3h: gir del vent en 3h (backing → front càlid s'acosta).
-    - Interaccions: llevantada × velocitat, llevantada × humitat.
+    - Llevantada (E/SE 60°-150°): humitat mediterrània contra la Serralada.
+    - Migjorn (S 150°-190°): vent del sud, aire africà calent i sec.
+    - Garbí (SW 190°-250°): "Anuncia borrasques amb fortes precipitacions."
+    - Ponent/Mestral (W/NW 250°-340°): aire continental sec.
     """
     df = df.copy()
-    if dir_col not in df.columns:
+
+    # Preferir 850hPa per a la classificació sinòptica, fallback a 10m
+    if "wind_850_dir" in df.columns and df["wind_850_dir"].notna().any():
+        synoptic_dir = pd.to_numeric(df["wind_850_dir"], errors="coerce")
+        synoptic_speed = pd.to_numeric(df.get("wind_850_speed", pd.Series(dtype=float)), errors="coerce").fillna(0)
+    elif dir_col in df.columns:
+        synoptic_dir = pd.to_numeric(df[dir_col], errors="coerce")
+        synoptic_speed = pd.to_numeric(df.get(speed_col, pd.Series(dtype=float)), errors="coerce").fillna(0)
+    else:
         return df
 
-    direction = pd.to_numeric(df[dir_col], errors="coerce")
+    # Règims eòlics catalans a partir del vent sinòptic
+    df["is_tramuntana"] = _dir_in_range(synoptic_dir, 340, 30)
+    df["is_llevantada"] = _dir_in_range(synoptic_dir, 60, 150)
+    df["is_migjorn"] = _dir_in_range(synoptic_dir, 150, 190)
+    df["is_garbi"] = _dir_in_range(synoptic_dir, 190, 250)
+    df["is_ponent"] = _dir_in_range(synoptic_dir, 250, 340)
 
-    # Règims eòlics catalans (Rosa dels Vents completa)
-    df["is_tramuntana"] = _dir_in_range(direction, 340, 30)   # N: polar fred, cel clar
-    df["is_llevantada"] = _dir_in_range(direction, 60, 150)   # E/SE: pluja medit.
-    df["is_migjorn"] = _dir_in_range(direction, 150, 190)     # S: africà sec/calent
-    df["is_garbi"] = _dir_in_range(direction, 190, 250)       # SW: tempestes
-    df["is_ponent"] = _dir_in_range(direction, 250, 340)      # W/NW: sec continental
-
-    # Interaccions: quan hi ha Llevantada + velocitat/humitat alta → pluja quasi segura
-    speed = pd.to_numeric(df.get(speed_col, pd.Series(dtype=float)), errors="coerce").fillna(0)
+    # Interaccions: Llevantada × velocitat/humitat
     humidity = pd.to_numeric(df.get(hum_col, pd.Series(dtype=float)), errors="coerce").fillna(0)
-
-    df["llevantada_strength"] = df["is_llevantada"] * speed
+    df["llevantada_strength"] = df["is_llevantada"] * synoptic_speed
     df["llevantada_moisture"] = df["is_llevantada"] * (humidity / 100.0)
 
-    # Canvi de direcció del vent en 3h (backing/veering)
-    df["wind_dir_change_3h"] = _angular_diff(direction, 3)
+    # Canvi de direcció sinòptica en 3h (backing/veering)
+    df["wind_dir_change_3h"] = _angular_diff(synoptic_dir, 3)
 
+    return df
+
+
+def _add_pressure_level_features(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Features de nivells de pressió (850hPa, 500hPa).
+    Inclou índexs d'inestabilitat del Skew-T:
+    - VT (Vertical Totals) = T850 - T500: gradient tèrmic vertical
+    - TT (Total Totals) = VT + (Td850 - T500): combina gradient + humitat
+    Ref: alexmeteo.com Skew-T analysis
+    """
+    df = df.copy()
+    for col in ["wind_850_speed", "wind_850_dir", "temp_850", "temp_500",
+                "rh_850", "vt_index", "tt_index"]:
+        if col in df.columns:
+            df[col] = pd.to_numeric(df[col], errors="coerce")
     return df
 
 
@@ -263,6 +287,7 @@ def build_features_from_hourly(df: pd.DataFrame) -> pd.DataFrame:
     df = _add_radar_features(df)
     df = _add_sentinel_features(df)
     df = _add_ensemble_features(df)
+    df = _add_pressure_level_features(df)
     return df
 
 
@@ -347,9 +372,15 @@ FEATURE_COLUMNS = [
     "wind_speed_change_1h", "wind_speed_change_3h",
     "is_sea_breeze",
     # Règims eòlics catalans (Rosa dels Vents completa)
+    # Classificació basada en 850hPa (sinòptic) amb fallback a 10m (superfície)
     "is_tramuntana", "is_llevantada", "is_migjorn", "is_garbi", "is_ponent",
     "llevantada_strength", "llevantada_moisture",
     "wind_dir_change_3h",
+    # Nivells de pressió (850hPa, 500hPa) — flux sinòptic real
+    "wind_850_speed", "wind_850_dir",
+    "temp_850", "temp_500", "rh_850",
+    # Índexs d'inestabilitat (Skew-T)
+    "vt_index", "tt_index",
     # Pluja recent
     "precipitation", "rain_accum_3h", "rain_accum_6h", "rained_last_3h",
     # Model / satèl·lit

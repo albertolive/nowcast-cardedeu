@@ -128,3 +128,105 @@ def fetch_current_conditions() -> dict:
     data = r.json()
 
     return data.get("current", {})
+
+
+# ── Dades a nivells de pressió (850hPa, 500hPa) ──
+
+PRESSURE_LEVEL_VARS = [
+    "wind_speed_850hPa",
+    "wind_direction_850hPa",
+    "temperature_850hPa",
+    "temperature_500hPa",
+    "geopotential_height_500hPa",
+    "relative_humidity_850hPa",
+]
+
+
+def fetch_pressure_levels() -> dict:
+    """
+    Obté dades a 850hPa i 500hPa del forecast d'Open-Meteo.
+    850hPa (~1500m) és el nivell estàndard per classificar règims sinòptics
+    (Llevantada, Garbí, etc.). 500hPa per calcular Vertical Totals (VT).
+
+    Retorna dict amb:
+      - wind_850_speed: velocitat del vent a 850hPa (km/h)
+      - wind_850_dir: direcció del vent a 850hPa (graus)
+      - temp_850: temperatura a 850hPa (°C)
+      - temp_500: temperatura a 500hPa (°C)
+      - rh_850: humitat relativa a 850hPa (%)
+      - vt_index: Vertical Totals = T850 - T500 (índex d'inestabilitat)
+      - tt_index: Total Totals = VT + (Td850 - T500)
+    """
+    import numpy as np
+    import math
+
+    try:
+        params = {
+            "latitude": config.LATITUDE,
+            "longitude": config.LONGITUDE,
+            "hourly": ",".join(PRESSURE_LEVEL_VARS),
+            "timezone": "Europe/Madrid",
+            "forecast_hours": 6,
+        }
+
+        r = SESSION.get(config.OPEN_METEO_FORECAST_URL, params=params, timeout=15)
+        r.raise_for_status()
+        data = r.json()
+
+        hourly = data.get("hourly", {})
+
+        # Agafar primera hora (moment actual)
+        def _first(key):
+            vals = hourly.get(key, [])
+            return vals[0] if vals and vals[0] is not None else None
+
+        wind_850_speed = _first("wind_speed_850hPa")
+        wind_850_dir = _first("wind_direction_850hPa")
+        temp_850 = _first("temperature_850hPa")
+        temp_500 = _first("temperature_500hPa")
+        rh_850 = _first("relative_humidity_850hPa")
+
+        # Vertical Totals (VT) — gradient tèrmic vertical
+        # VT > 26: inestabilitat feble, > 30: inestabilitat clara, > 34: forta
+        vt_index = (temp_850 - temp_500) if (temp_850 is not None and temp_500 is not None) else None
+
+        # Total Totals (TT) = VT + Cross Totals (CT = Td850 - T500)
+        # Necessitem punt de rosada a 850hPa: estimat a partir de T850 i RH850
+        tt_index = None
+        if vt_index is not None and rh_850 is not None and temp_850 is not None and temp_500 is not None:
+            # Magnus formula per dew point a 850hPa
+            a, b = 17.27, 237.7
+            alpha = (a * temp_850) / (b + temp_850) + math.log(max(rh_850, 1) / 100.0)
+            td_850 = (b * alpha) / (a - alpha)
+            ct = td_850 - temp_500
+            tt_index = vt_index + ct
+
+        result = {
+            "wind_850_speed": wind_850_speed,
+            "wind_850_dir": wind_850_dir,
+            "temp_850": temp_850,
+            "temp_500": temp_500,
+            "rh_850": rh_850,
+            "vt_index": vt_index,
+            "tt_index": tt_index,
+        }
+
+        logger.info(
+            f"850hPa: vent {wind_850_dir}° @ {wind_850_speed} km/h, "
+            f"T850={temp_850}°C, T500={temp_500}°C, "
+            f"VT={vt_index:.1f}, TT={tt_index:.1f}" if vt_index and tt_index else
+            f"850hPa: vent {wind_850_dir}° @ {wind_850_speed} km/h"
+        )
+        return result
+
+    except Exception as e:
+        logger.warning(f"Error obtenint dades 850hPa: {e}")
+        return {
+            "wind_850_speed": None,
+            "wind_850_dir": None,
+            "temp_850": None,
+            "temp_500": None,
+            "rh_850": None,
+            "vt_index": None,
+            "tt_index": None,
+        }

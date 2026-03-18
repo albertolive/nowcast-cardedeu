@@ -20,8 +20,8 @@ Utilitza dades reals de l'estació [MeteoCardedeu.net](https://meteocardedeu.net
          │                     │         │                      │
          ▼                     ▼         ▼                      ▼
     ┌──────────────────────────────────────────────────────────────────────┐
-    │                     Feature Engineering (67 features)               │
-    │  Tendències · Ensemble · Bias · Radar · Sentinella · AEMET · Vent  │
+    │                     Feature Engineering (74 features)               │
+    │  Tendències · Ensemble · 850hPa · Radar · Sentinella · AEMET · Vent │
     └──────────────────────────────┬───────────────────────────────────────┘
                                   │
                                   ▼
@@ -124,7 +124,7 @@ nowcast-cardedeu/
 │   │   ├── aemet.py          # API AEMET OpenData (probTormenta/probPrecip)
 │   │   └── meteocat.py       # API Meteocat XEMA (sentinella, gated by rain gate)
 │   ├── features/
-│   │   └── engineering.py    # Feature engineering (67 features incl. règims eòlics)
+│   │   └── engineering.py    # Feature engineering (74 features incl. 850hPa + Skew-T)
 │   ├── model/
 │   │   ├── train.py          # Pipeline d'entrenament (XGBoost + TimeSeriesSplit)
 │   │   └── predict.py        # Predicció en temps real (fusió 6 fonts + rain gate)
@@ -151,7 +151,7 @@ nowcast-cardedeu/
 
 ## Features del model
 
-El model utilitza **67 features** organitzades en categories:
+El model utilitza **74 features** organitzades en categories:
 
 | Categoria | Features | Per què? |
 |-----------|----------|----------|
@@ -159,7 +159,8 @@ El model utilitza **67 features** organitzades en categories:
 | Pressió | Valor + tendència 1h/3h/6h + acceleració | Indicador principal d'inestabilitat |
 | Humitat | Valor + punt rosada + depressió + tendència | Saturació = pluja imminent |
 | Vent | Components U/V + canvis + marinada | Marinada del mar = aire sec |
-| 🆕 Règims eòlics | Tramuntana, Llevantada, Migjorn, Garbí, Ponent + interaccions | Llevantada (E/SE) = pluja #1 a Cardedeu |
+| 🆕 Règims eòlics | Tramuntana, Llevantada, Migjorn, Garbí, Ponent (850hPa) | Llevantada (E/SE) = pluja #1 a Cardedeu |
+| 🆕 Nivells pressió | Vent/T/RH a 850hPa, T a 500hPa, VT, TT | Inestabilitat i flux sinòptic real |
 | Pluja recent | Acumulat 3h/6h + ha plogut? | Context de fronts actius |
 | Models NWP | CAPE, núvols, weather code | Què diuen els models globals |
 | Radiació | Solar W/m² | Indicador indirecte de núvols |
@@ -217,6 +218,15 @@ Cardedeu se situa al peu de la Serralada Prelitoral, a la confluència d'aire me
 
 La **Llevantada** és el patró més important: quan el vent bufa de l'est amb humitat alta, la pluja a Cardedeu és quasi segura. El model captura aquesta interacció amb `llevantada_moisture` = is_llevantada × humitat relativa.
 
+### Índexs d'inestabilitat (Skew-T)
+
+A més del vent a 850hPa, el sistema obté dades de temperatura a 850hPa i 500hPa per calcular índexs clàssics de radiosondatge ([ref: Anàlisis Skew-T](https://alexmeteo.com/2025/07/11/analisis-dun-radiosondatge-diagrames-termodinamics-skew-t/)):
+
+| Índex | Fórmula | Significat |
+|-------|---------|------------|
+| **VT** (Vertical Totals) | T850 − T500 | Gradient tèrmic vertical. >26: inestable, >30: tempestes, >34: forta inestabilitat |
+| **TT** (Total Totals) | VT + (Td850 − T500) | Combina gradient + humitat. >44: tronades possibles, >50: tempestes probables, >55: severes |
+
 ### AROME: resolució 2.5km
 
 El model AROME de Meteo-France és el 4t model de l'ensemble, amb resolució de 2.5km (vs 9km d'ECMWF). Això li permet resoldre cel·les convectives individuals i efectes orogràfics a la Serralada Prelitoral que els models globals no veuen.
@@ -228,7 +238,7 @@ El model AROME de Meteo-France és el 4t model de l'ensemble, amb resolució de 
 | AUC-ROC | 0.9501 ± 0.0079 |
 | F1-Score | 0.6653 ± 0.0381 |
 | Mostres d'entrenament | 98,208 |
-| Features | 67 |
+| Features | 74 |
 | Classe positiva (pluja) | ~9.3% |
 | Cross-validation | TimeSeriesSplit (5 folds) |
 
