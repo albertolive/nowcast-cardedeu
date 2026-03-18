@@ -2,22 +2,27 @@
 
 Sistema de predicció de pluja hiperlocal per a Cardedeu (Vallès Oriental) basat en Machine Learning.
 
-Utilitza dades reals de l'estació [MeteoCardedeu.net](https://meteocardedeu.net) combinades amb models meteorològics globals (Open-Meteo), radar de precipitació en temps real (RainViewer) i estacions sentinella del Servei Meteorològic de Catalunya (Meteocat XEMA) per aprendre els patrons del microclima local i predir si plourà en els propers 60 minuts amb més precisió que els models estàndard.
+Utilitza dades reals de l'estació [MeteoCardedeu.net](https://meteocardedeu.net) combinades amb models meteorològics globals (Open-Meteo), acord entre múltiples models (ECMWF, GFS, ICON), radar de precipitació en temps real (RainViewer), estacions sentinella del SMC (Meteocat XEMA), i probabilitats de tempesta calibrades per experts (AEMET) per aprendre els patrons del microclima local i predir si plourà en els propers 60 minuts.
 
 ## Com funciona
 
 ```
-┌──────────────────┐  ┌──────────────────┐  ┌──────────────────┐  ┌──────────────────┐
-│  MeteoCardedeu   │  │   Open-Meteo     │  │   RainViewer     │  │  Meteocat XEMA   │
-│  (dades reals)   │  │  (models NWP)    │  │  (radar precip)  │  │  (sentinelles)   │
-│  T, H, P, Vent   │  │  GFS, ECMWF...   │  │  dBZ, mm/h       │  │  Granollers, etc │
-└────────┬─────────┘  └────────┬─────────┘  └────────┬─────────┘  └────────┬─────────┘
-         │                     │                      │                     │
-         ▼                     ▼                      ▼                     ▼
-    ┌──────────────────────────────────────────────────────────────────────────┐
-    │                       Feature Engineering                               │
-    │   Tendències · Derivades · Context · Radar · Diferencial sentinella     │
-    └──────────────────────────────┬───────────────────────────────────────────┘
+┌──────────────────┐  ┌──────────────────┐  ┌──────────────────┐
+│  MeteoCardedeu   │  │ Ensemble 3 NWP  │  │   RainViewer     │
+│  (dades reals)   │  │ ECMWF+GFS+ICON │  │  (radar precip)  │
+└────────┬─────────┘  └────────┬─────────┘  └────────┬─────────┘
+         │                     │                      │
+┌──────────────────┐  │  ┌──────────────────┐  │
+│  Meteocat XEMA   │  │  │     AEMET       │  │
+│ (si rain gate    │  │  │  probTormenta   │  │
+│  està obert)     │  │  │  probPrecip     │  │
+└────────┬─────────┘  │  └────────┬─────────┘  │
+         │                     │         │                      │
+         ▼                     ▼         ▼                      ▼
+    ┌──────────────────────────────────────────────────────────────────────┐
+    │                     Feature Engineering (59 features)               │
+    │  Tendències · Ensemble acord · Bias · Radar · Sentinella · AEMET   │
+    └──────────────────────────────┬───────────────────────────────────────┘
                                   │
                                   ▼
                         ┌───────────────────┐
@@ -74,9 +79,17 @@ Per obtenir dades de les estacions sentinella del SMC:
 ```bash
 export METEOCAT_API_KEY="la_teva_clau"
 ```
-> Sense clau, el sistema funciona igualment però sense les features de radar sentinella.
+> Sense clau, el sistema funciona igualment. Meteocat només es consulta quan el **rain gate** detecta senyals de pluja (estalvi d'API).
 
-### 5. Configurar alertes Telegram (opcional)
+### 5. Configurar API AEMET (recomanat)
+Per obtenir probabilitats de tempesta calibrades per experts:
+1. Registra't gratuïtament a [opendata.aemet.es](https://opendata.aemet.es/centrodedescargas/altaUsuario)
+2. Configura la variable d'entorn:
+```bash
+export AEMET_API_KEY="la_teva_clau"
+```
+
+### 6. Configurar alertes Telegram (opcional)
 1. Crea un bot amb [@BotFather](https://t.me/BotFather)
 2. Configura les variables d'entorn:
 ```bash
@@ -84,7 +97,7 @@ export TELEGRAM_BOT_TOKEN="el_teu_token"
 export TELEGRAM_CHAT_ID="el_teu_chat_id"
 ```
 
-### 6. GitHub Actions (automatització)
+### 7. GitHub Actions (automatització)
 El workflow `.github/workflows/nowcast.yml`:
 - **Prediccions** cada 15 minuts (6h-23h) amb notificacions intel·ligents
 - **Resum diari** a les 7:00 via Telegram
@@ -95,6 +108,7 @@ El workflow `.github/workflows/nowcast.yml`:
   - `TELEGRAM_BOT_TOKEN`
   - `TELEGRAM_CHAT_ID`
   - `METEOCAT_API_KEY`
+  - `AEMET_API_KEY`
 
 ## Estructura
 
@@ -105,13 +119,15 @@ nowcast-cardedeu/
 │   ├── data/
 │   │   ├── meteocardedeu.py  # API meteocardedeu.net (sèries minut a minut + NOAA)
 │   │   ├── open_meteo.py     # API Open-Meteo (històric + forecast)
+│   │   ├── ensemble.py       # Acord entre ECMWF/GFS/ICON + forecast bias
 │   │   ├── rainviewer.py     # API RainViewer (radar precipitació temps real)
-│   │   └── meteocat.py       # API Meteocat XEMA (estacions sentinella SMC)
+│   │   ├── aemet.py          # API AEMET OpenData (probTormenta/probPrecip)
+│   │   └── meteocat.py       # API Meteocat XEMA (sentinella, gated by rain gate)
 │   ├── features/
-│   │   └── engineering.py    # Feature engineering (48 features)
+│   │   └── engineering.py    # Feature engineering (59 features)
 │   ├── model/
 │   │   ├── train.py          # Pipeline d'entrenament (XGBoost + TimeSeriesSplit)
-│   │   └── predict.py        # Predicció en temps real (fusió 4 fonts)
+│   │   └── predict.py        # Predicció en temps real (fusió 6 fonts + rain gate)
 │   ├── notify/
 │   │   ├── telegram.py       # Missatges Telegram (3 tipus: alerta, clearing, resum)
 │   │   └── state.py          # Màquina d'estats per notificacions (histèresi + cooldown)
@@ -135,7 +151,7 @@ nowcast-cardedeu/
 
 ## Features del model
 
-El model utilitza **48 features** organitzades en categories:
+El model utilitza **59 features** organitzades en categories:
 
 | Categoria | Features | Per què? |
 |-----------|----------|----------|
@@ -148,6 +164,9 @@ El model utilitza **48 features** organitzades en categories:
 | Radiació | Solar W/m² | Indicador indirecte de núvols |
 | 🆕 Radar | Intensitat, dBZ, mm/h, eco, tendència, aprox. | Precipitació real en temps real |
 | 🆕 Sentinella | Temp/hum Granollers + diffs amb Cardedeu + precip | Gradient territorial = front actiu |
+| 🆕 Ensemble | Acord ECMWF/GFS/ICON, spread precip, models pluja | Desacord = incertesa = zona ambigua |
+| 🆕 Bias | Forecast-observat temp/hum en temps real | Model biased = atmosfera impredictible |
+| 🆕 AEMET | probPrecipitació, probTormenta (experts) | Tempestes convectives mediterrànies |
 
 ## Fonts de dades
 
@@ -155,7 +174,9 @@ El model utilitza **48 features** organitzades en categories:
 |------|-------|------------|----------|
 | [MeteoCardedeu.net](https://meteocardedeu.net) | Estació local (T, H, P, vent, pluja) | Cada minut, des de 2012 | No |
 | [Open-Meteo](https://open-meteo.com) | Models NWP (GFS, ECMWF) - històric + forecast | Horària | No |
+| [Open-Meteo Ensemble](https://open-meteo.com) | Acord ECMWF vs GFS vs ICON | Cada predicció | No |
 | [RainViewer](https://www.rainviewer.com/api.html) | Radar de precipitació compost (mosaic global) | Cada ~10 min | No |
+| [AEMET OpenData](https://opendata.aemet.es) | probTormenta + probPrecipitació calibrades | Cada 6h | Sí (gratuïta) |
 | [Meteocat XEMA](https://apidocs.meteocat.gencat.cat) | Estacions sentinella SMC (Granollers, ETAP Cardedeu) | Cada 30 min | Sí (gratuïta) |
 
 ### Radar RainViewer
@@ -169,6 +190,19 @@ Utilitza l'estació de **Granollers (YM)** com a sentinella: si plou a Granoller
 - **Granollers (sentinella)**: 41.608°N, 2.288°E
 - **ETAP Cardedeu (pluviòmetre)**: ~41.63°N, ~2.36°E
 
+### Rain gate (estalvi d'API)
+
+Meteocat XEMA té un límit de 750 crides/mes (pla gratuït). El sistema implementa un **rain gate** que només consulta Meteocat quan almenys un senyal independent indica risc de pluja:
+
+| Senyal | Llindar | Font |
+|--------|---------|------|
+| Ensemble rain agreement | ≥ 30% dels models | ECMWF + GFS + ICON |
+| Radar echo | Qualsevol eco detectat | RainViewer |
+| AEMET prob. tempesta | ≥ 10% | AEMET OpenData |
+| CAPE (energia convectiva) | ≥ 800 J/kg | Open-Meteo GFS |
+
+Resultat: ~200-400 crides/mes en lloc de ~6,000. Dins el límit gratuït.
+
 ## Rendiment del model
 
 | Mètrica | Valor |
@@ -176,7 +210,7 @@ Utilitza l'estació de **Granollers (YM)** com a sentinella: si plou a Granoller
 | AUC-ROC | 0.9501 ± 0.0079 |
 | F1-Score | 0.6653 ± 0.0381 |
 | Mostres d'entrenament | 98,208 |
-| Features | 48 |
+| Features | 59 |
 | Classe positiva (pluja) | ~9.3% |
 | Cross-validation | TimeSeriesSplit (5 folds) |
 
@@ -259,10 +293,3 @@ Les notificacions són basades en **transicions d'estat**, no en cada predicció
 | 40-65% | Moderada | No es notifica |
 | 65-85% | Alta | 🔔 Alerta Telegram |
 | > 85% | Molt Alta | 🔔 Alerta Telegram |
-
-## API budget Meteocat
-
-> ⚠️ **Important**: El pla gratuït de Meteocat permet 750 crides XEMA/mes. El sistema fa ~3 crides per predicció (temperatura, humitat, precipitació). Amb prediccions cada 15 min durant 17h/dia, això supera el límit. Opcions:
-> - **Reduir freqüència**: Consultar Meteocat només quan la probabilitat base (sense sentinella) supera un llindar
-> - **Cache**: Reutilitzar dades de Meteocat durant 30 min (la seva freqüència d'actualització)
-> - **Pla de pagament**: Si cal més crides

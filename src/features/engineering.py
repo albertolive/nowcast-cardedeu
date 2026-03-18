@@ -157,6 +157,18 @@ def _add_sentinel_features(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
+def _add_ensemble_features(df: pd.DataFrame) -> pd.DataFrame:
+    """Features d'acord entre models d'ensemble i bias del forecast."""
+    df = df.copy()
+    for col in ["ensemble_rain_agreement", "ensemble_precip_spread", "ensemble_temp_spread",
+                "ensemble_max_precip", "ensemble_min_precip", "ensemble_models_rain",
+                "forecast_temp_bias", "forecast_humidity_bias",
+                "aemet_prob_precip", "aemet_prob_storm", "aemet_precip_today"]:
+        if col in df.columns:
+            df[col] = pd.to_numeric(df[col], errors="coerce")
+    return df
+
+
 def build_target_column(df: pd.DataFrame, precip_col: str = "precipitation", horizon: int = 1) -> pd.DataFrame:
     """
     Crea la columna target: 'will_rain' = 1 si plourà en les properes `horizon` hores.
@@ -183,6 +195,7 @@ def build_features_from_hourly(df: pd.DataFrame) -> pd.DataFrame:
     df = _add_model_features(df)
     df = _add_radar_features(df)
     df = _add_sentinel_features(df)
+    df = _add_ensemble_features(df)
     return df
 
 
@@ -281,4 +294,12 @@ FEATURE_COLUMNS = [
     "sentinel_temp_diff", "sentinel_humidity_diff",
     "sentinel_precip", "sentinel_raining",
     "local_rain_xema", "local_rain_xema_3h",
+    # Acord entre models (Ensemble: ECMWF vs GFS vs ICON)
+    "ensemble_rain_agreement", "ensemble_precip_spread",
+    "ensemble_temp_spread", "ensemble_max_precip",
+    "ensemble_min_precip", "ensemble_models_rain",
+    # Bias del forecast vs observació real
+    "forecast_temp_bias", "forecast_humidity_bias",
+    # AEMET probabilitats de precipitació i tempesta
+    "aemet_prob_precip", "aemet_prob_storm", "aemet_precip_today",
 ]
