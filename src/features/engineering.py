@@ -431,7 +431,8 @@ FEATURE_COLUMNS = [
     "is_sea_breeze",
     # Règims eòlics catalans (Rosa dels Vents completa)
     # Classificació basada en 850hPa (sinòptic) amb fallback a 10m (superfície)
-    "is_tramuntana", "is_llevantada", "is_migjorn", "is_garbi", "is_ponent",
+    # is_tramuntana, is_llevantada: zero importance (kept in engineering for derived features)
+    "is_migjorn", "is_garbi", "is_ponent",
     "llevantada_strength", "llevantada_moisture", "garbi_strength",
     "wind_dir_change_3h",
     # Nivells de pressió (850hPa, 700hPa, 500hPa) — flux sinòptic real
@@ -440,17 +441,18 @@ FEATURE_COLUMNS = [
     "rh_700", "temp_700",
     # Índexs d'inestabilitat (Skew-T + Lifted Index)
     "vt_index", "tt_index", "li_index",
-    "li_unstable", "li_very_unstable",
+    "li_unstable",  # li_very_unstable: zero importance (fires too rarely)
     # Cisalla de vent (wind shear) — clau per tempestes organitzades
     "wind_shear_speed", "wind_shear_dir",
     # Llindars d'aire fred a 500hPa
-    "cold_500_moderate", "cold_500_strong",
+    # cold_500_moderate, cold_500_strong: zero importance (extreme thresholds fire too rarely)
     # Pluja recent
     "precipitation", "rain_accum_3h", "rain_accum_6h", "rained_last_3h",
     # Model / satèl·lit
     "cloud_cover", "cloud_change_1h", "cloud_change_3h", "is_overcast",
-    "cape", "cape_high", "cape_very_high",
-    "weather_code", "model_predicts_precip", "model_predicts_showers",
+    # cape, cape_high, cape_very_high: zero importance
+    "weather_code", "model_predicts_precip",
+    # model_predicts_showers: zero importance (redundant with weather_code)
     # Radiació solar
     "shortwave_radiation",
     # Radar (RainViewer)
