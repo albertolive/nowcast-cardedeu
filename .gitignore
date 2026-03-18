@@ -1,0 +1,8 @@
+__pycache__/
+*.pyc
+.env
+data/raw/
+data/latest_prediction.json
+*.egg-info/
+venv/
+.venv/

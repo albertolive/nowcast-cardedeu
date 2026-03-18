@@ -1,0 +1,95 @@
+"""
+Configuració central del projecte Nowcast Cardedeu.
+Totes les constants i paràmetres en un sol lloc.
+"""
+import os
+
+# ── Coordenades de l'estació MeteoCardedeu Poble Sec ──
+LATITUDE = 41.63282
+LONGITUDE = 2.364255
+ALTITUDE = 190  # metres
+
+# ── URLs de l'API de meteocardedeu.net ──
+BASE_URL = "https://meteocardedeu.net"
+YEAR = "2026"
+SLUG = "cardedeu_poble_sec"
+
+LATEST_URL = f"{BASE_URL}/{YEAR}/data/{SLUG}/latest.json"
+SERIES_URL = f"{BASE_URL}/{YEAR}/api/graphs-series.php"
+HISTORY_LIST_URL = f"{BASE_URL}/{YEAR}/api/history/historics_list.php"
+HISTORY_FILE_URL = f"{BASE_URL}/{YEAR}/api/history/historics_file.php"
+
+SERIES_VARS = "TEMP,HUM,VEL,DIR,PREC,BAR,SUN,UVI,PINT"
+
+# ── Open-Meteo (sense API key) ──
+OPEN_METEO_FORECAST_URL = "https://api.open-meteo.com/v1/forecast"
+OPEN_METEO_HISTORICAL_URL = "https://archive-api.open-meteo.com/v1/archive"
+
+# Variables horàries que demanem a Open-Meteo (forecast i històric)
+OPEN_METEO_HOURLY_VARS = [
+    "temperature_2m",
+    "relative_humidity_2m",
+    "dew_point_2m",
+    "pressure_msl",
+    "surface_pressure",
+    "precipitation",
+    "rain",
+    "cloud_cover",
+    "wind_speed_10m",
+    "wind_direction_10m",
+    "wind_gusts_10m",
+    "cape",                    # Convective Available Potential Energy
+    "shortwave_radiation",
+    "weather_code",
+]
+
+# Variables del model per al forecast
+OPEN_METEO_FORECAST_MODELS = [
+    "best_match",  # Barreja automàtica del millor model
+]
+
+# ── Paràmetres del model ML ──
+RAIN_THRESHOLD_MM = 0.2          # mm en 60 min per considerar "pluja"
+PREDICTION_HORIZON_MIN = 60      # Predicció a 60 minuts vista
+ALERT_PROBABILITY_THRESHOLD = 0.65  # Probabilitat mínima per enviar alerta
+
+# ── RainViewer (radar, sense API key) ──
+RAINVIEWER_API_URL = "https://api.rainviewer.com/public/weather-maps.json"
+RAINVIEWER_TILE_BASE = "https://tilecache.rainviewer.com"
+# Tile zoom=8 → cada tile ~1.5km. Cardedeu cau al tile x=134, y=94
+RAINVIEWER_TILE_ZOOM = 8
+RAINVIEWER_TILE_X = 134
+RAINVIEWER_TILE_Y = 94
+# Píxel dins del tile on cau Cardedeu (256x256)
+RAINVIEWER_PIXEL_X = 88
+RAINVIEWER_PIXEL_Y = 125
+
+# ── Meteocat XEMA API ──
+METEOCAT_API_KEY = os.environ.get("METEOCAT_API_KEY", "")
+METEOCAT_BASE_URL = "https://api.meteo.cat"
+# Estació sentinella: Granollers (YM) - 7km SO de Cardedeu
+# Les tempestes solen venir de l'O/SO → Granollers les rep primer
+SENTINEL_STATION_CODE = "YM"
+SENTINEL_STATION_NAME = "Granollers"
+# Estació pluviomètrica local: ETAP Cardedeu (KX) - 1.5km
+LOCAL_RAIN_STATION_CODE = "KX"
+# Variables XEMA: 32=Temp, 33=Humitat, 35=Precipitació
+XEMA_VAR_TEMP = 32
+XEMA_VAR_HUMIDITY = 33
+XEMA_VAR_PRECIP = 35
+
+# ── Telegram ──
+TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "")
+TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID", "")
+
+# ── Paths ──
+PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
+DATA_RAW_DIR = os.path.join(PROJECT_ROOT, "data", "raw")
+DATA_PROCESSED_DIR = os.path.join(PROJECT_ROOT, "data", "processed")
+MODELS_DIR = os.path.join(PROJECT_ROOT, "models")
+MODEL_PATH = os.path.join(MODELS_DIR, "xgboost_nowcast.json")
+FEATURE_NAMES_PATH = os.path.join(MODELS_DIR, "feature_names.json")
+SCALER_PATH = os.path.join(MODELS_DIR, "scaler.pkl")
+
+# ── Històric: anys a descarregar ──
+HISTORY_YEARS = list(range(2015, 2027))  # 2015-2026 (12 anys)
