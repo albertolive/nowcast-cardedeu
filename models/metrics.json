@@ -1,39 +1,39 @@
 {
-  "cv_auc_mean": 0.9529106659033149,
-  "cv_auc_std": 0.0066595505502504175,
-  "cv_f1_mean": 0.6713904723948539,
-  "cv_f1_std": 0.03176963424923127,
-  "final_auc": 0.9600014385118963,
+  "cv_auc_mean": 0.9526707208431633,
+  "cv_auc_std": 0.006905936413869851,
+  "cv_f1_mean": 0.6736765869700656,
+  "cv_f1_std": 0.03076688107208872,
+  "final_auc": 0.9596555272774576,
   "final_report": {
     "0": {
-      "precision": 0.9784802431610943,
-      "recall": 0.9289012003693444,
-      "f1-score": 0.9530463615370951,
+      "precision": 0.9779179810725552,
+      "recall": 0.930286241920591,
+      "f1-score": 0.9535076304270673,
       "support": 8664.0
     },
     "1": {
-      "precision": 0.6140350877192983,
-      "recall": 0.8470181503889369,
-      "f1-score": 0.7119505993461678,
+      "precision": 0.6174794173527549,
+      "recall": 0.8426966292134831,
+      "f1-score": 0.7127192982456141,
       "support": 1157.0
     },
-    "accuracy": 0.9192546583850931,
+    "accuracy": 0.919967416760004,
     "macro avg": {
-      "precision": 0.7962576654401963,
-      "recall": 0.8879596753791407,
-      "f1-score": 0.8324984804416314,
+      "precision": 0.7976986992126551,
+      "recall": 0.886491435567037,
+      "f1-score": 0.8331134643363407,
       "support": 9821.0
     },
     "weighted avg": {
-      "precision": 0.9355454050747326,
-      "recall": 0.9192546583850931,
-      "f1-score": 0.9246431646269125,
+      "precision": 0.9354551546573422,
+      "recall": 0.919967416760004,
+      "f1-score": 0.925140651470348,
       "support": 9821.0
     }
   },
   "n_samples": 98208,
   "n_positive": 9178,
-  "n_features": 61,
+  "n_features": 52,
   "feature_names": [
     "hour_sin",
     "hour_cos",
@@ -56,8 +56,6 @@
     "wind_speed_change_1h",
     "wind_speed_change_3h",
     "is_sea_breeze",
-    "is_tramuntana",
-    "is_llevantada",
     "is_migjorn",
     "is_garbi",
     "is_ponent",
@@ -76,11 +74,8 @@
     "tt_index",
     "li_index",
     "li_unstable",
-    "li_very_unstable",
     "wind_shear_speed",
     "wind_shear_dir",
-    "cold_500_moderate",
-    "cold_500_strong",
     "precipitation",
     "rain_accum_3h",
     "rain_accum_6h",
@@ -89,12 +84,8 @@
     "cloud_change_1h",
     "cloud_change_3h",
     "is_overcast",
-    "cape",
-    "cape_high",
-    "cape_very_high",
     "weather_code",
     "model_predicts_precip",
-    "model_predicts_showers",
     "shortwave_radiation"
   ]
 }

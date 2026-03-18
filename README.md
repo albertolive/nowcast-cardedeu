@@ -20,7 +20,7 @@ Utilitza dades reals de l'estació [MeteoCardedeu.net](https://meteocardedeu.net
          │                     │         │                      │
          ▼                     ▼         ▼                      ▼
     ┌──────────────────────────────────────────────────────────────────────┐
-    │                     Feature Engineering (61 training / 84 real-time)    │
+    │                     Feature Engineering (52 training / 75 real-time)    │
     │  Tendències · Ensemble · 850hPa · Radar · Sentinella · AEMET · Vent │
     └──────────────────────────────┬───────────────────────────────────────┘
                                   │
@@ -124,7 +124,7 @@ nowcast-cardedeu/
 │   │   ├── aemet.py          # API AEMET OpenData (probTormenta/probPrecip)
 │   │   └── meteocat.py       # API Meteocat XEMA (sentinella, gated by rain gate)
 │   ├── features/
-│   │   └── engineering.py    # Feature engineering (61 training / 84 real-time, incl. LI, wind shear, 700hPa)
+│   │   └── engineering.py    # Feature engineering (52 training / 75 real-time, incl. LI, wind shear, 700hPa)
 │   ├── model/
 │   │   ├── train.py          # Pipeline d'entrenament (XGBoost + TimeSeriesSplit)
 │   │   └── predict.py        # Predicció en temps real (fusió 6 fonts + rain gate)
@@ -151,7 +151,7 @@ nowcast-cardedeu/
 
 ## Features del model
 
-El model defineix **84 features** per predicció en temps real. Per entrenament, **61 estan disponibles** (les 23 restants —radar, ensemble, AEMET, sentinella— no tenen arxiu històric accessible).
+El model defineix **75 features** per predicció en temps real (9 zero-importance features pruned). Per entrenament, **52 estan disponibles** (les 23 restants —radar, ensemble, AEMET, sentinella— no tenen arxiu històric accessible).
 
 | Categoria | Features | Per què? |
 |-----------|----------|----------|
@@ -255,12 +255,12 @@ El model AROME de Meteo-France és el 4t model de l'ensemble, amb resolució de 
 
 | Mètrica | Valor |
 |---------|-------|
-| AUC-ROC (CV) | 0.9529 ± 0.007 |
-| F1-Score (CV) | 0.6714 ± 0.032 |
-| AUC-ROC (final) | 0.9600 |
+| AUC-ROC (CV) | 0.9527 ± 0.007 |
+| F1-Score (CV) | 0.6737 ± 0.031 |
+| AUC-ROC (final) | 0.9597 |
 | Mostres d'entrenament | 98,208 |
-| Features (training) | 61 |
-| Features (real-time) | 84 |
+| Features (training) | 52 |
+| Features (real-time) | 75 |
 | Classe positiva (pluja) | ~9.3% |
 | Cross-validation | TimeSeriesSplit (5 folds) |
 
