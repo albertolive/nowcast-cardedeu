@@ -348,3 +348,39 @@ def fetch_pressure_levels() -> dict:
             "tt_index": None,
             "li_index": None,
         }
+
+
+def fetch_pressure_levels_hourly(hours_ahead: int = 48) -> pd.DataFrame:
+    """
+    Obté previsió horària de nivells de pressió (850/700/500hPa).
+    Retorna DataFrame amb columnes: datetime, wind_850_speed, wind_850_dir,
+    temp_850, temp_500, rh_850, rh_700, temp_700.
+    """
+    try:
+        params = {
+            "latitude": config.LATITUDE,
+            "longitude": config.LONGITUDE,
+            "hourly": ",".join(PRESSURE_LEVEL_VARS),
+            "timezone": "Europe/Madrid",
+            "forecast_hours": hours_ahead,
+        }
+
+        r = SESSION.get(config.OPEN_METEO_FORECAST_URL, params=params, timeout=15)
+        r.raise_for_status()
+        data = r.json()
+
+        hourly = data.get("hourly", {})
+        if not hourly:
+            return pd.DataFrame()
+
+        df = pd.DataFrame(hourly)
+        df["datetime"] = pd.to_datetime(df["time"])
+        df = df.drop(columns=["time"])
+        df = df.rename(columns=_PRESSURE_RENAME)
+        # Keep only renamed columns + datetime
+        keep = ["datetime"] + [c for c in _PRESSURE_RENAME.values() if c in df.columns]
+        return df[keep]
+
+    except Exception as e:
+        logger.warning(f"Error obtenint pressure levels horari: {e}")
+        return pd.DataFrame()

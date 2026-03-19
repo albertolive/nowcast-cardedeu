@@ -318,6 +318,45 @@ def _add_sentinel_features(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
+def _add_lightning_features(df: pd.DataFrame) -> pd.DataFrame:
+    """Features de descàrregues elèctriques (XDDE Meteocat)."""
+    df = df.copy()
+    for col in ["lightning_count_30km", "lightning_count_15km",
+                "lightning_nearest_km", "lightning_cloud_ground",
+                "lightning_max_current_ka"]:
+        if col in df.columns:
+            df[col] = pd.to_numeric(df[col], errors="coerce")
+    if "lightning_approaching" in df.columns:
+        df["lightning_approaching"] = df["lightning_approaching"].astype(int)
+    if "lightning_has_activity" in df.columns:
+        df["lightning_has_activity"] = df["lightning_has_activity"].astype(int)
+    return df
+
+
+def _add_aemet_radar_features(df: pd.DataFrame) -> pd.DataFrame:
+    """Features del radar AEMET Barcelona."""
+    df = df.copy()
+    for col in ["aemet_radar_dbz", "aemet_radar_nearest_echo_km",
+                "aemet_radar_max_dbz_20km", "aemet_radar_coverage_20km"]:
+        if col in df.columns:
+            df[col] = pd.to_numeric(df[col], errors="coerce")
+    if "aemet_radar_has_echo" in df.columns:
+        df["aemet_radar_has_echo"] = df["aemet_radar_has_echo"].astype(int)
+    if "aemet_radar_echoes_found" in df.columns:
+        df["aemet_radar_echoes_found"] = df["aemet_radar_echoes_found"].astype(int)
+    return df
+
+
+def _add_smc_forecast_features(df: pd.DataFrame) -> pd.DataFrame:
+    """Features de la predicció municipal del Meteocat (SMC)."""
+    df = df.copy()
+    for col in ["smc_prob_precip_1h", "smc_prob_precip_6h",
+                "smc_precip_intensity", "smc_temp_forecast"]:
+        if col in df.columns:
+            df[col] = pd.to_numeric(df[col], errors="coerce")
+    return df
+
+
 def _add_ensemble_features(df: pd.DataFrame) -> pd.DataFrame:
     """Features d'acord entre models d'ensemble i bias del forecast."""
     df = df.copy()
@@ -357,6 +396,9 @@ def build_features_from_hourly(df: pd.DataFrame) -> pd.DataFrame:
     df = _add_model_features(df)
     df = _add_radar_features(df)
     df = _add_sentinel_features(df)
+    df = _add_lightning_features(df)
+    df = _add_aemet_radar_features(df)
+    df = _add_smc_forecast_features(df)
     df = _add_ensemble_features(df)
     df = _add_pressure_level_features(df)
     return df
@@ -488,4 +530,54 @@ FEATURE_COLUMNS = [
     "forecast_temp_bias", "forecast_humidity_bias",
     # AEMET probabilitats de precipitació i tempesta
     "aemet_prob_precip", "aemet_prob_storm", "aemet_precip_today",
+    # Descàrregues elèctriques (XDDE Meteocat)
+    "lightning_count_30km", "lightning_count_15km",
+    "lightning_nearest_km", "lightning_cloud_ground",
+    "lightning_max_current_ka", "lightning_approaching",
+    "lightning_has_activity",
+    # Radar AEMET Barcelona (complement a RainViewer)
+    "aemet_radar_dbz", "aemet_radar_has_echo",
+    "aemet_radar_nearest_echo_km", "aemet_radar_max_dbz_20km",
+    "aemet_radar_coverage_20km", "aemet_radar_echoes_found",
+    # Predicció municipal SMC (Meteocat)
+    "smc_prob_precip_1h", "smc_prob_precip_6h",
+    "smc_precip_intensity",
 ]
+
+
+def build_features_from_forecast(
+    forecast_df: pd.DataFrame,
+    pressure_df: pd.DataFrame = None,
+) -> pd.DataFrame:
+    """
+    Construeix vectors de features per a hores futures usant only forecast data.
+    Les features de radar/sentinella/bias/AEMET queden com NaN
+    (XGBoost les gestiona nativament).
+
+    Args:
+        forecast_df: DataFrame d'Open-Meteo hourly forecast (temperature_2m, etc.)
+        pressure_df: DataFrame de pressure levels hourly (wind_850_speed, etc.)
+
+    Returns:
+        DataFrame amb una fila per hora futura i totes les FEATURE_COLUMNS.
+    """
+    df = forecast_df.copy()
+    df["datetime"] = pd.to_datetime(df["datetime"])
+    df = df.sort_values("datetime").reset_index(drop=True)
+
+    # Merge pressure levels si disponible
+    if pressure_df is not None and not pressure_df.empty:
+        pressure_df = pressure_df.copy()
+        pressure_df["datetime"] = pd.to_datetime(pressure_df["datetime"])
+        df = pd.merge_asof(
+            df.sort_values("datetime"),
+            pressure_df.sort_values("datetime"),
+            on="datetime",
+            direction="nearest",
+            tolerance=pd.Timedelta("2h"),
+        )
+
+    # Aplicar feature engineering (temporal, pressió, humitat, vent, etc.)
+    df = build_features_from_hourly(df)
+
+    return df
