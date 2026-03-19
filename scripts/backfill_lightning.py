@@ -67,30 +67,32 @@ def _bearing_deg(lat1, lon1, lat2, lon2):
 
 
 def fetch_xdde_day(target_date: date) -> list[dict]:
-    """Fetch all lightning strikes for a single day in Catalunya."""
-    url = (
-        f"{config.METEOCAT_BASE_URL}/xdde/v1/Catalunya/"
-        f"{target_date.year}/{target_date.month:02d}/{target_date.day:02d}"
-    )
-    try:
-        r = SESSION.get(url, headers=_headers(), timeout=30)
-        if r.status_code == 404:
-            return []  # No data for this date
-        if r.status_code == 429:
-            logger.warning(f"Rate limited on {target_date}, waiting 60s...")
-            time.sleep(60)
+    """Fetch all lightning strikes for a single day in Catalunya (all 24 hours)."""
+    all_strikes = []
+    for hour in range(24):
+        url = (
+            f"{config.METEOCAT_BASE_URL}/xdde/v1/catalunya/"
+            f"{target_date.year}/{target_date.month:02d}/{target_date.day:02d}/{hour:02d}"
+        )
+        try:
             r = SESSION.get(url, headers=_headers(), timeout=30)
-        r.raise_for_status()
-        data = r.json()
-        return data if isinstance(data, list) else []
-    except requests.exceptions.HTTPError as e:
-        if "400" in str(e) or "404" in str(e):
-            return []  # Date out of range
-        logger.warning(f"XDDE error ({target_date}): {e}")
-        return []
-    except Exception as e:
-        logger.warning(f"XDDE error ({target_date}): {e}")
-        return []
+            if r.status_code == 404:
+                continue
+            if r.status_code == 429:
+                logger.warning(f"Rate limited on {target_date} {hour:02d}h, waiting 60s...")
+                time.sleep(60)
+                r = SESSION.get(url, headers=_headers(), timeout=30)
+            r.raise_for_status()
+            data = r.json()
+            if isinstance(data, list):
+                all_strikes.extend(data)
+        except requests.exceptions.HTTPError as e:
+            if "400" in str(e) or "404" in str(e):
+                continue
+            logger.warning(f"XDDE error ({target_date} {hour:02d}h): {e}")
+        except Exception as e:
+            logger.warning(f"XDDE error ({target_date} {hour:02d}h): {e}")
+    return all_strikes
 
 
 def parse_strikes(raw_strikes: list[dict]) -> list[dict]:

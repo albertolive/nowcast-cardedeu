@@ -60,13 +60,37 @@ def _bearing_to_compass(bearing: float) -> str:
     return directions[idx]
 
 
-def fetch_lightning_data(target_date: Optional[date] = None) -> list[dict]:
+def _fetch_lightning_hour(target_date: date, hour: int) -> list[dict]:
+    """Fetch lightning strikes for a specific hour.
+    Endpoint: /xdde/v1/catalunya/{YYYY}/{MM}/{DD}/{HH}
     """
-    Obté les descàrregues elèctriques de Catalunya per un dia.
-    Endpoint: /xdde/v1/Catalunya/{YYYY}/{MM}/{DD}
+    url = (
+        f"{config.METEOCAT_BASE_URL}/xdde/v1/catalunya/"
+        f"{target_date.year}/{target_date.month:02d}/{target_date.day:02d}/{hour:02d}"
+    )
+    try:
+        r = SESSION.get(url, headers=_headers(), timeout=20)
+        r.raise_for_status()
+        data = r.json()
+        return data if isinstance(data, list) else []
+    except Exception as e:
+        logger.debug(f"XDDE hour error ({target_date} {hour:02d}h): {e}")
+        return []
+
+
+def fetch_lightning_data(
+    target_date: Optional[date] = None,
+    hours: Optional[list[int]] = None,
+) -> list[dict]:
+    """
+    Obté les descàrregues elèctriques de Catalunya.
+    Endpoint: /xdde/v1/catalunya/{YYYY}/{MM}/{DD}/{HH}
+
+    L'API requereix consultes per hora. Si no s'especifiquen hores,
+    consulta les últimes 4 hores (cobreix el window de 3h de compute_lightning_features).
 
     Retorna llista de dicts amb:
-      - id, data (timestamp), lat, lon, correntPic, nuvolTerra
+      - id, data (timestamp), coordenades {latitud, longitud}, correntPic, nuvolTerra
     """
     if not _is_configured():
         logger.warning("Meteocat API key no configurada per XDDE")
@@ -75,17 +99,18 @@ def fetch_lightning_data(target_date: Optional[date] = None) -> list[dict]:
     if target_date is None:
         target_date = date.today()
 
-    url = (
-        f"{config.METEOCAT_BASE_URL}/xdde/v1/Catalunya/"
-        f"{target_date.year}/{target_date.month:02d}/{target_date.day:02d}"
-    )
-    try:
-        r = SESSION.get(url, headers=_headers(), timeout=20)
-        r.raise_for_status()
-        return r.json()
-    except Exception as e:
-        logger.warning(f"Meteocat XDDE error ({target_date}): {e}")
-        return []
+    if hours is None:
+        now = datetime.now(timezone.utc)
+        current_hour = now.hour
+        hours = [(current_hour - i) % 24 for i in range(4)]
+
+    all_strikes = []
+    for h in hours:
+        strikes = _fetch_lightning_hour(target_date, h)
+        all_strikes.extend(strikes)
+
+    logger.info(f"XDDE: {len(all_strikes)} descàrregues obtingudes ({len(hours)} hores consultades)")
+    return all_strikes
 
 
 def compute_lightning_features(
