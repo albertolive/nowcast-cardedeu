@@ -249,6 +249,8 @@ Meteocat té quotes mensuals separades per servei (reset dia 1 a 00:00 UTC):
 | AEMET prob. tempesta | ≥ 10% | AEMET OpenData |
 | CAPE (energia convectiva) | ≥ 800 J/kg | Open-Meteo GFS |
 
+Quan el gate s'obre, es consulten les fonts Meteocat: llamps (XDDE), predicció municipal (SMC) i estacions sentinella (XEMA).
+
 Amb ~8 dies de pluja/mes a Cardedeu i cache TTL, el consum real queda dins de les quotes. Els scripts de backfill comproven la quota via `get_remaining()` abans d'executar-se.
 
 ### Règims eòlics catalans
