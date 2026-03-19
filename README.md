@@ -166,7 +166,7 @@ nowcast-cardedeu/
 
 ## Features del model
 
-El model defineix **100 features** per predicció en temps real. Per entrenament, **54 estan disponibles** (les 46 restants —radar, ensemble, AEMET, sentinella, llamps XDDE, radar AEMET, predicció SMC— no tenen arxiu històric accessible, o l'API encara no està activada).
+El model defineix **100 features** per predicció en temps real. Per entrenament, **54 estan disponibles** amb dades històriques. Les 46 restants (radar, ensemble, AEMET, sentinella, llamps XDDE, radar AEMET, predicció SMC) s'estan acumulant en temps real des que totes les APIs estan actives, i s'incorporen progressivament al model via el feedback loop.
 
 | Categoria | Features | Per què? |
 |-----------|----------|----------|
@@ -317,7 +317,7 @@ El sistema verifica automàticament les seves pròpies prediccions i aprèn dels
 
 ### Com funciona
 
-1. **Log**: Cada predicció es registra a `predictions_log.jsonl` amb timestamp, probabilitat, condicions
+1. **Log**: Cada predicció es registra a `predictions_log.jsonl` amb un snapshot complet: probabilitat, condicions, radar, AEMET, sentinella, ensemble, nivells de pressió, règim de vent, bias, i les 54 features del model
 2. **Verificació**: 60-75 min després, el sistema consulta l'estació per veure si realment va ploure
 3. **Classificació**: Cada predicció es marca com TP, FP, TN, o FN
 4. **Informe**: Cada dilluns a les 8:00, reps un report amb accuracy, precisión, recall, F1, i tendència

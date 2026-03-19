@@ -19,7 +19,9 @@ config.py       → All constants, paths, thresholds, coordinates — single sou
 
 **Key pattern — Graceful degradation:** Every `src/data/` module wraps API calls in try/except, logs warnings, and returns a dict with NaN values on failure. XGBoost handles NaN natively. Never let a single API failure crash the pipeline.
 
-**Key pattern — Feature split:** 100 features defined in `FEATURE_COLUMNS` but only 54 exist in historical training data. The remaining 46 are real-time only (radar, sentinel, ensemble, AEMET, lightning, AEMET radar, SMC forecast). XGBoost handles NaN natively for training rows missing these columns. The feedback loop gradually adds real-time features to the training set as verified predictions accumulate. Lightning features (7) can be backfilled historically via `scripts/backfill_lightning.py` once XDDE API access is enabled.
+**Key pattern — Feature split:** 100 features defined in `FEATURE_COLUMNS` but only 54 exist in historical training data. The remaining 46 are real-time only (radar, sentinel, ensemble, AEMET, lightning, AEMET radar, SMC forecast). All 6 data sources are now active and logging real values. XGBoost handles NaN natively for training rows missing these columns. The feedback loop gradually adds real-time features to the training set as verified predictions accumulate. Lightning features (7) can be backfilled historically via `scripts/backfill_lightning.py`.
+
+**Key pattern — Diagnostic logging:** Every prediction logs a full snapshot to `predictions_log.jsonl`: conditions, radar (RainViewer), AEMET (radar+forecast), sentinel (XEMA), ensemble, pressure_levels, wind_regime, bias, plus the complete 54-feature vector. This enables post-hoc analysis of missed predictions.
 
 **Key pattern — Isotonic calibration:** Raw XGBoost probabilities are calibrated using IsotonicRegression fitted on out-of-fold predictions. This maps raw scores to true probabilities. The optimal F1 threshold (0.3542) is derived from the calibrated OOF predictions, not the default 0.5.
 
@@ -92,5 +94,7 @@ Secrets: `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID`, `METEOCAT_API_KEY`, `AEMET_AP
 - XEMA (sentinel stations): `/xema/v1/variables/mesurades/{var}/{YYYY}/{MM}/{DD}`
 - XDDE (lightning): `/xdde/v1/catalunya/{YYYY}/{MM}/{DD}/{HH}` (lowercase, hour required)
 - Predicció (municipal forecast): `/pronostic/v1/municipalHoraria/080462`
+
+**CI cache strategy:** `predictions_log.jsonl` and `notification_state.json` use `actions/cache/restore` + `actions/cache/save` with unique `run_id` keys. This is required because `actions/cache` is immutable per key — a static key would only save once, losing all subsequent predictions.
 
 **Note:** GitHub Actions free tier runs `*/15` cron but actual execution is ~hourly due to queue congestion. This is a known limitation — a VPS would give true 15-min resolution.
