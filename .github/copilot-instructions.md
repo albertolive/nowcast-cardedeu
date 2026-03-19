@@ -88,6 +88,9 @@ GitHub Actions (`.github/workflows/nowcast.yml`):
 
 Secrets: `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID`, `METEOCAT_API_KEY`, `AEMET_API_KEY`
 
-**Note on Meteocat API:** The API key currently only works for XEMA endpoints. XDDE (lightning) and Predicció (municipal forecast) return 403 — pending SMC support fix. The code handles this gracefully (empty results, NaN features).
+**Meteocat API endpoints (all working):**
+- XEMA (sentinel stations): `/xema/v1/variables/mesurades/{var}/{YYYY}/{MM}/{DD}`
+- XDDE (lightning): `/xdde/v1/catalunya/{YYYY}/{MM}/{DD}/{HH}` (lowercase, hour required)
+- Predicció (municipal forecast): `/pronostic/v1/municipalHoraria/080462`
 
 **Note:** GitHub Actions free tier runs `*/15` cron but actual execution is ~hourly due to queue congestion. This is a known limitation — a VPS would give true 15-min resolution.
