@@ -694,11 +694,6 @@ function renderPrediction(latest, history) {
   const correct = verified.filter(h => h.correct).length;
   const accuracy = verified.length > 0 ? ((correct / verified.length) * 100).toFixed(0) : '—';
 
-  // Overall stats for history header
-  const allVerified = history.filter(h => h.verified);
-  const allCorrect = allVerified.filter(h => h.correct).length;
-  const overallAcc = allVerified.length > 0 ? ((allCorrect / allVerified.length) * 100).toFixed(1) : '—';
-
   const app = document.getElementById('app');
   app.innerHTML = `
     <!-- Main prediction -->
@@ -739,6 +734,7 @@ function renderPrediction(latest, history) {
 
       <div class="prediction-meta">
         Precisió histórica: <strong style="color:var(--accent-green)">${accuracy}%</strong> (${correct}/${verified.length})
+        · ${latest.features_used || '—'} features · Calibrat isotònic
       </div>
     </div>
 
@@ -767,27 +763,14 @@ function renderPrediction(latest, history) {
       <div class="info-card">
         <h3>🤖 Model</h3>
         <div class="stat-row">
-          <span class="stat-label">Features</span>
-          <span class="stat-value">${latest.features_used || '—'}</span>
-        </div>
-        <div class="stat-row">
           <span class="stat-label">Threshold</span>
           <span class="stat-value">${latest.threshold ? (latest.threshold * 100).toFixed(1) + '%' : '—'}</span>
         </div>
         <div class="stat-row">
-          <span class="stat-label">Calibrat</span>
-          <span class="stat-value">${latest.calibrated ? '✅ Isotònic' : '❌'}</span>
+          <span class="stat-label">Prob. crua → calibrada</span>
+          <span class="stat-value">${latest.raw_probability != null ? (latest.raw_probability * 100).toFixed(1) + '% → ' + pct + '%' : '—'}</span>
         </div>
-        <div class="stat-row">
-          <span class="stat-label">Prob. crua</span>
-          <span class="stat-value">${latest.raw_probability != null ? (latest.raw_probability * 100).toFixed(1) + '%' : '—'}</span>
-        </div>
-      </div>
-
-      <!-- Data sources -->
-      <div class="info-card">
-        <h3>📡 Fonts de dades</h3>
-        <div class="sources-grid">
+        <div class="sources-grid" style="margin-top:12px">
           ${renderSources(latest)}
         </div>
       </div>
@@ -803,9 +786,7 @@ function renderPrediction(latest, history) {
     <div class="history-card">
       <h2>📋 Historial de resolucions</h2>
       <p class="history-subtitle">
-        Cada predicció es verifica amb dades reals de pluja.
-        Model accuracy: <strong style="color:var(--accent-green)">${overallAcc}%</strong>
-        (${allCorrect}/${allVerified.length} verificades)
+        Cada predicció es verifica amb dades reals. Clica un dia per veure el detall.
       </p>
       <div id="calendar-root"></div>
     </div>
@@ -1229,17 +1210,30 @@ function drawChart(history) {
   ctx.lineWidth = 2;
   ctx.stroke();
 
-  // Time labels
+  // Time labels — evenly spaced along time axis, with collision avoidance
   ctx.fillStyle = '#8b949e';
   ctx.font = '11px sans-serif';
   ctx.textAlign = 'center';
-  const labelCount = Math.min(6, points.length);
-  const step = Math.floor(points.length / labelCount);
-  for (let i = 0; i < points.length; i += step) {
-    const d = new Date(points[i].t);
-    const lbl = d.toLocaleString('ca-ES', { hour: '2-digit', minute: '2-digit' });
-    ctx.fillText(lbl, x(points[i].t), H - 8);
+  const maxLabels = Math.min(6, Math.floor(cW / 70));
+  const minLabelGap = 60;
+  let lastLabelX = -Infinity;
+
+  for (let i = 0; i <= maxLabels; i++) {
+    const t = tMin + (tRange * i) / maxLabels;
+    const px = x(t);
+    if (px - lastLabelX < minLabelGap) continue;
+    const d = new Date(t);
+    const h = String(d.getHours()).padStart(2, '0');
+    const m = String(d.getMinutes()).padStart(2, '0');
+    ctx.fillText(`${h}:${m}`, px, H - 8);
+    lastLabelX = px;
   }
+
+  // Threshold label
+  ctx.fillStyle = 'rgba(248,81,73,0.5)';
+  ctx.font = '10px sans-serif';
+  ctx.textAlign = 'left';
+  ctx.fillText('threshold', pad.left + 4, threshY - 4);
 }
 
 /* ---- Init ---- */
