@@ -167,6 +167,10 @@ def _add_wind_regime_features(df: pd.DataFrame,
     # Garbí × velocitat: "Anuncia borrasques amb fortes precipitacions" (ref: alexmeteo)
     df["garbi_strength"] = df["is_garbi"] * synoptic_speed
 
+    # Tramuntana × velocitat/humitat: historically 13.8% of rain events (not negligible)
+    df["tramuntana_strength"] = df["is_tramuntana"] * synoptic_speed
+    df["tramuntana_moisture"] = df["is_tramuntana"] * (humidity / 100.0)
+
     # Canvi de direcció sinòptica en 3h (backing/veering)
     df["wind_dir_change_3h"] = _angular_diff(synoptic_dir, 3)
 
@@ -285,7 +289,7 @@ def _add_model_features(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def _add_radar_features(df: pd.DataFrame) -> pd.DataFrame:
-    """Features derivades del radar (RainViewer) — puntuals i espacials."""
+    """Features derivades del radar (RainViewer) — puntuals, espacials i per quadrant."""
     df = df.copy()
     # Puntuals
     if "radar_dbz" in df.columns:
@@ -305,6 +309,17 @@ def _add_radar_features(df: pd.DataFrame) -> pd.DataFrame:
             df[col] = pd.to_numeric(df[col], errors="coerce")
     if "radar_storm_approaching" in df.columns:
         df["radar_storm_approaching"] = df["radar_storm_approaching"].astype(int)
+    # Quadrant features (N/E/S/W)
+    for quad in ("N", "E", "S", "W"):
+        for prefix in ("radar_quadrant_max_dbz_", "radar_quadrant_coverage_"):
+            col = f"{prefix}{quad}"
+            if col in df.columns:
+                df[col] = pd.to_numeric(df[col], errors="coerce").fillna(0)
+    # Cyclic encoding of nearest echo bearing (sin/cos)
+    if "radar_nearest_echo_bearing" in df.columns:
+        bearing_rad = np.deg2rad(pd.to_numeric(df["radar_nearest_echo_bearing"], errors="coerce").fillna(0))
+        df["radar_echo_bearing_sin"] = np.sin(bearing_rad)
+        df["radar_echo_bearing_cos"] = np.cos(bearing_rad)
     return df
 
 
@@ -487,9 +502,10 @@ FEATURE_COLUMNS = [
     "is_sea_breeze",
     # Règims eòlics catalans (Rosa dels Vents completa)
     # Classificació basada en 850hPa (sinòptic) amb fallback a 10m (superfície)
-    # is_tramuntana, is_llevantada: zero importance (kept in engineering for derived features)
+    # is_tramuntana, is_llevantada: binary flags (kept for derived interaction features)
     "is_migjorn", "is_garbi", "is_ponent",
     "llevantada_strength", "llevantada_moisture", "garbi_strength",
+    "tramuntana_strength", "tramuntana_moisture",
     "wind_dir_change_3h",
     # Nivells de pressió (850hPa, 700hPa, 500hPa) — flux sinòptic real
     "wind_850_speed", "wind_850_dir",
@@ -518,6 +534,13 @@ FEATURE_COLUMNS = [
     "radar_nearest_echo_km", "radar_max_dbz_20km", "radar_coverage_20km",
     "radar_upwind_nearest_echo_km", "radar_upwind_max_dbz",
     "radar_storm_velocity_kmh", "radar_storm_approaching",
+    # Radar quadrant features (N/E/S/W directional awareness)
+    "radar_quadrant_max_dbz_N", "radar_quadrant_max_dbz_E",
+    "radar_quadrant_max_dbz_S", "radar_quadrant_max_dbz_W",
+    "radar_quadrant_coverage_N", "radar_quadrant_coverage_E",
+    "radar_quadrant_coverage_S", "radar_quadrant_coverage_W",
+    # Cyclic encoding of nearest echo bearing
+    "radar_echo_bearing_sin", "radar_echo_bearing_cos",
     # Estació sentinella (Granollers) i pluviòmetre XEMA local
     "sentinel_temp_diff", "sentinel_humidity_diff",
     "sentinel_precip", "sentinel_raining",
