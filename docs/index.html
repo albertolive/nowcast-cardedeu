@@ -926,7 +926,7 @@ function renderPrediction(latest, history) {
           <span class="stat-value" style="color:${color}">${pct}%</span>
         </div>
         <div class="stat-row">
-          <span class="stat-label">Threshold</span>
+          <span class="stat-label">Llindar</span>
           <span class="stat-value">${latest.threshold ? (latest.threshold * 100).toFixed(1) + '%' : '—'}</span>
         </div>
         <div class="stat-row">
@@ -934,8 +934,8 @@ function renderPrediction(latest, history) {
           <span class="stat-value">${latest.calibrated ? 'Isotònica' : 'No'}</span>
         </div>
         <div class="stat-row">
-          <span class="stat-label">Features</span>
-          <span class="stat-value">${latest.features_used || '—'}</span>
+          <span class="stat-label">Senyals analitzats</span>
+          <span class="stat-value">${latest.features_used || '—'} de 112</span>
         </div>
       </div>
     </div>
@@ -984,11 +984,11 @@ function renderRadar(d) {
   }).join(' · ');
   const hasQuadrants = quadLabels.some(dir => (q[`max_dbz_${dir}`] || 0) > 5);
   return `
-    <div class="stat-row"><span class="stat-label">Eco més proper</span><span class="stat-value">${r.nearest_echo_km ?? '—'} km ${r.nearest_echo_compass || ''}</span></div>
-    <div class="stat-row"><span class="stat-label">Cobertura (20 km)</span><span class="stat-value">${r.coverage_20km != null ? r.coverage_20km + '%' : '—'}</span></div>
+    <div class="stat-row"><span class="stat-label">Pluja més propera</span><span class="stat-value">${r.nearest_echo_km != null && r.nearest_echo_km < 30 ? r.nearest_echo_km + ' km ' + (r.nearest_echo_compass || '') : 'No detectada'}</span></div>
+    <div class="stat-row"><span class="stat-label">Zona amb pluja</span><span class="stat-value">${r.coverage_20km != null ? r.coverage_20km + '% (radi 20 km)' : '—'}</span></div>
     <div class="stat-row"><span class="stat-label">S'acosta?</span><span class="stat-value">${r.approaching ? '⚠️ Sí' : 'No'}${r.storm_eta_min ? ' (~' + r.storm_eta_min + ' min)' : ''}</span></div>
-    <div class="stat-row"><span class="stat-label">Sectors amb pluja</span><span class="stat-value">${hasQuadrants ? compassParts : '<span style="color:var(--text-muted)">Cap</span>'}</span></div>
-    <div class="stat-row"><span class="stat-label">Intensitat</span><span class="stat-value">${r.dbz != null && r.dbz > 0 ? r.dbz + ' dBZ' : 'Sense eco'}</span></div>
+    <div class="stat-row"><span class="stat-label">Direcció</span><span class="stat-value">${hasQuadrants ? compassParts : '<span style="color:var(--text-muted)">Sense pluja al radar</span>'}</span></div>
+    <div class="stat-row"><span class="stat-label">Força</span><span class="stat-value">${r.dbz != null && r.dbz > 0 ? (r.dbz >= 40 ? '🟥 Forta' : r.dbz >= 25 ? '🟨 Moderada' : '🟩 Feble') : 'Res detectat'}</span></div>
   `;
 }
 
