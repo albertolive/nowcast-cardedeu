@@ -581,20 +581,24 @@
     }
 
     .pred-said {
-      min-width: 55px;
+      min-width: 70px;
       font-size: 12px;
     }
 
     .pred-result {
-      min-width: 24px;
-      text-align: center;
-      font-size: 16px;
+      min-width: 70px;
+      font-size: 12px;
+      font-weight: 600;
     }
+
+    .pred-result.correct { color: var(--accent-green); }
+    .pred-result.wrong { color: var(--accent-red); }
+    .pred-result.pending { color: var(--accent-yellow); }
 
     .pred-rain-mm {
       color: var(--text-muted);
       font-size: 12px;
-      min-width: 50px;
+      min-width: 55px;
     }
 
     /* Responsive */
@@ -1054,23 +1058,26 @@ function initCalendar(history) {
       const time = t.toLocaleString('ca-ES', { hour: '2-digit', minute: '2-digit' });
       const pct = p.probability_pct;
       const color = getProbColor(pct);
-      const said = p.will_rain ? '🌧️ Plou' : '☀️ No plou';
-      let result, resultTitle;
+      const said = p.will_rain ? '🌧️ Plourà' : '☀️ No plourà';
+      let resultText, resultCls;
       if (!p.verified) {
-        result = '⏳'; resultTitle = 'Pendent de verificació';
+        resultText = '⏳ Pendent';
+        resultCls = 'pending';
       } else if (p.correct) {
-        result = '✅'; resultTitle = 'Encert';
+        resultText = '✅ Encert';
+        resultCls = 'correct';
       } else {
-        result = '❌'; resultTitle = 'Error';
+        resultText = '❌ Error';
+        resultCls = 'wrong';
       }
-      const rainInfo = p.actual_rain_mm != null ? `${p.actual_rain_mm.toFixed(1)} mm` : '';
+      const rainInfo = p.actual_rain_mm != null ? `${p.actual_rain_mm.toFixed(1)} mm` : '—';
       return `
         <div class="pred-row">
           <span class="pred-time">${time}</span>
           <div class="pred-prob-bar"><div class="pred-prob-fill" style="width:${pct}%;background:${color}"></div></div>
           <span class="pred-pct" style="color:${color}">${pct}%</span>
           <span class="pred-said">${said}</span>
-          <span class="pred-result" title="${resultTitle}">${result}</span>
+          <span class="pred-result ${resultCls}">${resultText}</span>
           <span class="pred-rain-mm">${rainInfo}</span>
         </div>`;
     }).join('');
@@ -1080,9 +1087,9 @@ function initCalendar(history) {
         <span class="pred-time">Hora</span>
         <div class="pred-prob-bar"></div>
         <span class="pred-pct">Prob.</span>
-        <span class="pred-said">Predicció</span>
+        <span class="pred-said">Vam dir</span>
         <span class="pred-result">Resultat</span>
-        <span class="pred-rain-mm">Pluja</span>
+        <span class="pred-rain-mm">Pluja real</span>
       </div>`;
 
     panel.innerHTML = `
