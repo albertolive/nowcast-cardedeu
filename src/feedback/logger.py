@@ -30,7 +30,8 @@ PREDICTIONS_LOG = os.path.join(config.PROJECT_ROOT, "data", "predictions_log.jso
 def log_prediction(result: dict) -> None:
     """
     Afegeix una predicció al log JSONL.
-    Inclou el vector de features complet per alimentar el feedback loop.
+    Inclou el vector de features complet per alimentar el feedback loop,
+    més totes les dades de sensors per a diagnòstic futur.
     """
     entry = {
         "timestamp": result["timestamp"],
@@ -38,12 +39,25 @@ def log_prediction(result: dict) -> None:
         "probability_pct": result["probability_pct"],
         "will_rain": result["will_rain"],
         "confidence": result["confidence"],
-        "temperature": result["conditions"].get("temperature"),
-        "humidity": result["conditions"].get("humidity"),
-        "pressure": result["conditions"].get("pressure"),
-        "radar_dbz": result.get("radar", {}).get("dbz", 0),
-        "radar_approaching": result.get("radar", {}).get("approaching", False),
-        "sentinel_precip": result.get("sentinel", {}).get("precip"),
+        "threshold": result.get("threshold"),
+        "raw_probability": result.get("raw_probability"),
+        "rain_gate_open": result.get("rain_gate_open"),
+        # Condicions locals
+        "conditions": result.get("conditions", {}),
+        # Radar complet (RainViewer)
+        "radar": result.get("radar", {}),
+        # Radar AEMET
+        "aemet": result.get("aemet", {}),
+        # Sentinella XEMA
+        "sentinel": result.get("sentinel", {}),
+        # Ensemble
+        "ensemble": result.get("ensemble", {}),
+        # Règim de vent
+        "wind_regime": result.get("wind_regime", {}),
+        # Nivells de pressió
+        "pressure_levels": result.get("pressure_levels", {}),
+        # Bias forecast vs observació
+        "bias": result.get("bias", {}),
         # Vector de features complet (per feedback loop)
         "features": result.get("feature_vector", {}),
         # Camps de verificació (es completen després)
