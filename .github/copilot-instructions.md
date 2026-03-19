@@ -83,7 +83,7 @@ No formal test suite exists (`tests/` is empty). Validation relies on the feedba
 ## CI/CD
 
 GitHub Actions (`.github/workflows/nowcast.yml`):
-- **predict**: Every 15 min (6–23h Barcelona) → `predict_now.py`
+- **predict**: Every 10 min (6–23h Barcelona) via cron-job.org → `predict_now.py`
 - **daily_summary**: 7:00 Barcelona → `daily_summary.py`
 - **accuracy_report**: Monday 8:00 → `accuracy_report.py`
 - **retrain**: Daily 3:00 Barcelona → download + build + train + git commit model
@@ -92,9 +92,17 @@ Secrets: `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID`, `METEOCAT_API_KEY`, `AEMET_AP
 
 **Meteocat API endpoints (all working):**
 - XEMA (sentinel stations): `/xema/v1/variables/mesurades/{var}/{YYYY}/{MM}/{DD}`
-- XDDE (lightning): `/xdde/v1/catalunya/{YYYY}/{MM}/{DD}/{HH}` (lowercase, hour required)
+- XDDE (lightning): `/xdde/v1/catalunya/{YYYY}/{MM}/{DD}/{HH}` (lowercase `catalunya`, hour required)
 - Predicció (municipal forecast): `/pronostic/v1/municipalHoraria/080462`
+- Quota check: `/quotes/v1/consum-actual`
+
+**Meteocat API quotas (separate per service, monthly, reset 1st 00:00 UTC):**
+- XEMA: 750 calls/month
+- XDDE: 250 calls/month
+- Predicció: 100 calls/month
+- All Meteocat calls are behind the rain gate (only fire when rain signals detected)
+- Backfill scripts check quota via `get_remaining()` before running
 
 **CI data persistence:** `predictions_log.jsonl`, `notification_state.json`, and `latest_prediction.json` are git-committed by each predict run. This gives permanent, queryable history of every prediction with full diagnostics. The `concurrency: predict-push` group prevents overlapping pushes.
 
-**Note:** GitHub Actions free tier runs `*/15` cron but actual execution is ~hourly due to queue congestion. This is a known limitation — a VPS would give true 15-min resolution.
+**Note:** Predictions are triggered every 10 min via cron-job.org → workflow_dispatch (not GitHub's native cron, which has ~hourly queue congestion).
