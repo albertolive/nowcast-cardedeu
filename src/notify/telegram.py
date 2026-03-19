@@ -200,11 +200,53 @@ def _format_timestamp(iso_ts: str) -> str:
         return iso_ts[:19]
 
 
+def _dir_to_compass(deg) -> str:
+    """Converteix graus a punt cardinal abreujat (8 punts)."""
+    if deg is None:
+        return "?"
+    dirs = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"]
+    return dirs[round(deg / 45) % 8]
+
+
+def _format_radar_summary(radar: dict) -> str:
+    """Resum intel·ligent del radar per la previsió diària."""
+    if not radar:
+        return "Radar net"
+
+    if radar.get("has_echo"):
+        dbz = radar.get("dbz", 0)
+        rate = radar.get("rain_rate_mmh", 0)
+        line = f"Eco actiu: {dbz:.0f} dBZ ({rate:.1f} mm/h)"
+        if radar.get("approaching"):
+            eta = radar.get("storm_eta_min")
+            if eta:
+                line += f" — ETA ~{eta} min"
+        return line
+
+    nearest = radar.get("nearest_echo_km", 30)
+    coverage = radar.get("coverage_20km", 0)
+
+    if nearest < 10 and coverage > 0.05:
+        compass = radar.get("nearest_echo_compass", "")
+        line = f"Eco a {nearest:.0f} km {compass}"
+        if coverage > 0.1:
+            line += f" · {coverage:.0%} cobertura"
+        if radar.get("approaching"):
+            eta = radar.get("storm_eta_min")
+            if eta:
+                line += f" — ETA ~{eta} min"
+        return line
+
+    return "Radar net"
+
+
 def format_daily_forecast(prediction: dict, hourly_outlook: list[dict] = None,
                           next_rain_text: str = None) -> str:
     """
     Resum diari millorat amb previsió hora per hora (matí/tarda/nit)
     corregida pel model ML de Cardedeu.
+    Dissenyat per doble audiència: públic general (part superior) i
+    entusiastes de la meteorologia (secció tècnica).
     """
     prob = prediction["probability_pct"]
     confidence = prediction["confidence"]
@@ -234,7 +276,7 @@ def format_daily_forecast(prediction: dict, hourly_outlook: list[dict] = None,
 
     lines.append("")
 
-    # Previsió per franges horàries (probabilitats del model ML local)
+    # ── Previsió per franges (públic general) ──
     if hourly_outlook:
         lines.append("📅 <b>Previsió ML per franges:</b>")
         for slot in hourly_outlook:
@@ -249,20 +291,85 @@ def format_daily_forecast(prediction: dict, hourly_outlook: list[dict] = None,
             lines.append(line)
         lines.append("")
 
-    # Ensemble: només mostrar si algun model prediu pluja
-    ensemble = prediction.get("ensemble", {})
-    models_rain = ensemble.get("models_rain", 0)
-    total_models = ensemble.get("total_models", 4)
-    if models_rain is not None and models_rain > 0:
-        lines.append(f"🔮 Models: {models_rain}/{total_models} prediuen pluja")
-        lines.append("")
-
     # Propera pluja estimada (48h)
     if next_rain_text:
         lines.append(f"🔭 {next_rain_text}")
         lines.append("")
 
-    lines.extend(_format_conditions(prediction))
+    # ── Condicions actuals (compacte) ──
+    conditions = prediction.get("conditions", {})
+    pressure = conditions.get("pressure", "?")
+    pressure_change = prediction.get("pressure_change_3h")
+    trend = _pressure_trend_arrow(pressure_change)
+
+    fv = prediction.get("feature_vector", {})
+    dew_point = fv.get("dew_point")
+    cloud_cover = fv.get("cloud_cover")
+
+    lines.append("📡 <b>Condicions actuals:</b>")
+
+    temp_line = f"  🌡️ {conditions.get('temperature', '?')}°C · 💧 {conditions.get('humidity', '?')}%"
+    if dew_point is not None:
+        temp_line += f" · Rosada {dew_point:.1f}°C"
+    lines.append(temp_line)
+
+    pres_line = f"  📊 {pressure} hPa"
+    if pressure_change is not None:
+        sign = "+" if pressure_change >= 0 else ""
+        pres_line += f"{trend}({sign}{pressure_change:.1f}/3h)"
+    lines.append(pres_line)
+
+    wind_line = f"  💨 {conditions.get('wind_speed', '?')} km/h {conditions.get('wind_dir', '')}"
+    if cloud_cover is not None:
+        wind_line += f" · ☁️ {cloud_cover:.0f}%"
+    lines.append(wind_line)
+
+    lines.append("")
+
+    # ── Detall tècnic (entusiastes meteo) ──
+    lines.append("🔬 <b>Detall tècnic:</b>")
+
+    # Ensemble
+    ensemble = prediction.get("ensemble", {})
+    models_rain = ensemble.get("models_rain")
+    total_models = ensemble.get("total_models", 4)
+    if models_rain is not None:
+        lines.append(f"  🔮 Ensemble: {models_rain}/{total_models} models pluja")
+
+    # 850hPa wind + temperature
+    if pressure_levels:
+        wind_dir_850 = pressure_levels.get("wind_850_dir")
+        wind_spd_850 = pressure_levels.get("wind_850_speed_kmh")
+        temp_850 = pressure_levels.get("temp_850")
+        rh_850 = pressure_levels.get("rh_850")
+        rh_700 = pressure_levels.get("rh_700")
+        if wind_dir_850 is not None and wind_spd_850 is not None:
+            compass_850 = _dir_to_compass(wind_dir_850)
+            pl_line = f"  🌬️ 850hPa: {compass_850} {wind_spd_850:.0f} km/h"
+            if temp_850 is not None:
+                pl_line += f" · T850 {temp_850:.1f}°C"
+            if rh_850 is not None and rh_700 is not None:
+                pl_line += f" · RH {rh_850:.0f}/{rh_700:.0f}%"
+            lines.append(pl_line)
+
+        # Instability indices
+        tt = pressure_levels.get("tt_index")
+        li = pressure_levels.get("li_index")
+        vt = pressure_levels.get("vt_index")
+        if tt is not None:
+            idx_parts = [f"TT {tt:.1f}"]
+            if li is not None:
+                sign = "+" if li >= 0 else ""
+                idx_parts.append(f"LI {sign}{li:.1f}")
+            if vt is not None:
+                idx_parts.append(f"VT {vt:.1f}")
+            lines.append(f"  📊 {' · '.join(idx_parts)}")
+
+    # Radar summary
+    radar = prediction.get("radar", {})
+    radar_line = _format_radar_summary(radar)
+    lines.append(f"  📡 {radar_line}")
+
     lines.append("")
     lines.append(f"⏰ {_format_timestamp(prediction['timestamp'])}")
     return "\n".join(lines)

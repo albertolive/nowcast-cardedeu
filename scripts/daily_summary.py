@@ -46,9 +46,10 @@ def build_hourly_outlook(
 
     now = datetime.now()
     today = now.date()
+    today_ts = pd.Timestamp(today)
 
-    # Filtrar per avui + demà matinada
-    ml_df = ml_df[ml_df["datetime"].dt.date >= today].head(24)
+    # Filtrar per avui en endavant
+    ml_df = ml_df[ml_df["datetime"] >= today_ts]
 
     # Merge amb temperatures del forecast
     if not forecast_df.empty:
@@ -65,16 +66,20 @@ def build_hourly_outlook(
     if ml_df.empty:
         return []
 
-    # Definir franges
+    # Definir franges amb datetime explícit per evitar barrejar
+    # temperatures de demà al matí amb avui
     slots = [
-        {"label": "Matí (7-13h)", "hours": range(7, 13)},
-        {"label": "Tarda (13-19h)", "hours": range(13, 19)},
-        {"label": "Nit (19-1h)", "hours": list(range(19, 24)) + [0]},
+        {"label": "Matí (7-13h)", "start": today_ts + pd.Timedelta(hours=7), "end": today_ts + pd.Timedelta(hours=13)},
+        {"label": "Tarda (13-19h)", "start": today_ts + pd.Timedelta(hours=13), "end": today_ts + pd.Timedelta(hours=19)},
+        {"label": "Nit (19-1h)", "start": today_ts + pd.Timedelta(hours=19), "end": today_ts + pd.Timedelta(hours=25)},
     ]
 
     outlook = []
     for slot in slots:
-        slot_df = ml_df[ml_df["hour"].isin(slot["hours"])]
+        slot_df = ml_df[
+            (ml_df["datetime"] >= slot["start"]) &
+            (ml_df["datetime"] < slot["end"])
+        ]
         if slot_df.empty:
             continue
 

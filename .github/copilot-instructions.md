@@ -37,6 +37,10 @@ config.py       → All constants, paths, thresholds, coordinates — single sou
 
 **Key pattern — Notification types:** Four distinct Telegram alerts: `rain_incoming` (prob crosses above 0.65), `rain_clearing` (prob drops below 0.30), `regime_change` (atmospheric setup shifts to historically rainy pattern), and `daily_summary` (morning 3-slot outlook at 7:00). State machine with hysteresis prevents notification spam.
 
+**Key pattern — Daily forecast progressive disclosure:** The daily summary uses a dual-audience design. Top: outlook + ML time slots + next rain (general audience). Middle: compact conditions (temp + humidity + dewpoint, pressure with numeric 3h trend, wind + cloud cover). Bottom: "Detall tècnic" section with ensemble count, 850hPa wind/temp/RH, instability indices (TT/LI/VT), and smart radar summary. Radar display filters non-significant echoes (needs both <10km proximity AND >5% coverage to show).
+
+**Key pattern — Slot datetime filtering:** When building hourly outlook slots (Matí/Tarda/Nit), always filter by explicit datetime ranges (not hour-only), to prevent tomorrow's cold morning hours from contaminating today's temperature ranges.
+
 ## Build and Test
 
 ```bash
