@@ -137,7 +137,7 @@ nowcast-cardedeu/
 │   │   ├── meteocat_xdde.py  # API Meteocat XDDE (descàrregues elèctriques)
 │   │   └── meteocat_prediccio.py # API Meteocat Predicció (forecast municipal)
 │   ├── features/
-│   │   ├── engineering.py    # Feature engineering (112 features, incl. VPD + radar espacial + quadrants)
+│   │   ├── engineering.py    # Feature engineering (112 features, 68 historical)
 │   │   └── regime.py         # Detecció de canvis de règim atmosfèric (Llevantada, Garbí, pressió)
 │   ├── model/
 │   │   ├── train.py          # Pipeline d'entrenament (XGBoost + TimeSeriesSplit)
@@ -166,7 +166,10 @@ nowcast-cardedeu/
 
 ## Features del model
 
-El model defineix **112 features** per predicció en temps real. Per entrenament, **54 estan disponibles** amb dades històriques. Les 58 restants (radar, ensemble, AEMET, sentinella, llamps XDDE, radar AEMET, predicció SMC, quadrants radar, bearing cíclic, interaccions Tramuntana) s'estan acumulant en temps real des que totes les APIs estan actives, i s'incorporen progressivament al model via el feedback loop.
+El model defineix **112 features** per predicció en temps real. Per entrenament, **68 estan disponibles** amb dades històriques (54 originals + 6 ensemble + 6 sentinella + 2 Tramuntana). Les 44 restants (radar, AEMET, llamps XDDE, radar AEMET, predicció SMC, quadrants radar, bearing cíclic) s'incorporen progressivament via backfill i feedback loop.
+
+**Ensemble backfill**: Des de gener 2022, dades de 4 models NWP (ECMWF, GFS, ICON, AROME) descarregades via `scripts/backfill_ensemble.py`.
+**XEMA sentinel backfill**: Dades de Granollers (YM) + ETAP Cardedeu (KX) via `scripts/backfill_xema.py` (incremental, 15 dies/execució per respectar el límit API).
 
 | Categoria | Features | Per què? |
 |-----------|----------|----------|
@@ -287,13 +290,13 @@ El model AROME de Meteo-France és el 4t model de l'ensemble, amb resolució de 
 
 | Mètrica | Valor |
 |---------|-------|
-| AUC-ROC (CV) | 0.9526 ± 0.007 |
-| F1-Score (CV) | 0.6719 ± 0.033 |
-| F1-Score OOF (calibrat) | 0.6904 |
-| AUC-ROC (final) | 0.9590 |
-| Llindar òptim (calibrat) | 0.3542 |
-| Mostres d'entrenament | 98,160 |
-| Features (training) | 54 |
+| AUC-ROC (CV) | 0.9548 ± 0.008 |
+| F1-Score (CV) | 0.6743 ± 0.030 |
+| F1-Score OOF (calibrat) | 0.6929 |
+| AUC-ROC (final) | 0.9654 |
+| Llindar òptim (calibrat) | 0.3513 |
+| Mostres d'entrenament | 98,183 |
+| Features (training) | 68 |
 | Features (total) | 112 |
 | Classe positiva (pluja) | ~9.3% |
 | Cross-validation | TimeSeriesSplit (5 folds) |
@@ -322,7 +325,7 @@ El sistema verifica automàticament les seves pròpies prediccions i aprèn dels
 
 ### Com funciona
 
-1. **Log**: Cada predicció es registra a `predictions_log.jsonl` amb un snapshot complet: probabilitat, condicions, radar, AEMET, sentinella, ensemble, nivells de pressió, règim de vent, bias, i les 54 features del model
+1. **Log**: Cada predicció es registra a `predictions_log.jsonl` amb un snapshot complet: probabilitat, condicions, radar, AEMET, sentinella, ensemble, nivells de pressió, règim de vent, bias, i les 68 features del model
 2. **Verificació**: 60-75 min després, el sistema consulta l'estació per veure si realment va ploure
 3. **Classificació**: Cada predicció es marca com TP, FP, TN, o FN
 4. **Informe**: Cada dilluns a les 8:00, reps un report amb accuracy, precisión, recall, F1, i tendència

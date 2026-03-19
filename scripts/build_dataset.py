@@ -96,6 +96,51 @@ def main():
     else:
         logger.warning("No s'han trobat dades de pressure levels (executa download_history.py)")
 
+    # ── Afegir dades d'ensemble històric si existeixen ──
+    ensemble_path = os.path.join(config.DATA_RAW_DIR, "ensemble_historical.parquet")
+    if os.path.exists(ensemble_path):
+        ensemble_df = pd.read_parquet(ensemble_path)
+        ensemble_df["datetime"] = pd.to_datetime(ensemble_df["datetime"])
+        hourly_df["datetime"] = pd.to_datetime(hourly_df["datetime"])
+        ensemble_cols = [c for c in ensemble_df.columns if c != "datetime"]
+        hourly_df = hourly_df.merge(ensemble_df, on="datetime", how="left")
+        n_valid = hourly_df[ensemble_cols[0]].notna().sum() if ensemble_cols else 0
+        logger.info(f"Ensemble merged: {len(ensemble_df)} registres, "
+                    f"{n_valid}/{len(hourly_df)} hores amb dades ({100*n_valid/len(hourly_df):.1f}%)")
+    else:
+        logger.info("No ensemble data (run: .venv/bin/python scripts/backfill_ensemble.py)")
+
+    # ── Afegir dades sentinella XEMA si existeixen ──
+    xema_path = os.path.join(config.DATA_PROCESSED_DIR, "xema_sentinel_cache.parquet")
+    if os.path.exists(xema_path):
+        xema_df = pd.read_parquet(xema_path)
+        xema_df["datetime"] = pd.to_datetime(xema_df["datetime"], utc=True).dt.tz_localize(None)
+        hourly_df["datetime"] = pd.to_datetime(hourly_df["datetime"])
+        # Compute sentinel diffs vs station data
+        if "sentinel_temp_val" in xema_df.columns and "temperature_2m" in hourly_df.columns:
+            xema_merged = xema_df.merge(
+                hourly_df[["datetime", "temperature_2m", "relative_humidity_2m"]],
+                on="datetime", how="left"
+            )
+            xema_merged["sentinel_temp_diff"] = xema_merged["temperature_2m"] - xema_merged["sentinel_temp_val"]
+            xema_merged["sentinel_humidity_diff"] = xema_merged["sentinel_humidity_val"] - xema_merged["relative_humidity_2m"]
+            # Keep only the features we need
+            sentinel_feature_cols = ["datetime", "sentinel_temp_diff", "sentinel_humidity_diff",
+                                     "sentinel_precip_val", "sentinel_raining",
+                                     "local_rain_xema", "local_rain_xema_3h"]
+            sentinel_feature_cols = [c for c in sentinel_feature_cols if c in xema_merged.columns]
+            xema_features = xema_merged[sentinel_feature_cols].copy()
+            # Rename to match FEATURE_COLUMNS
+            xema_features = xema_features.rename(columns={"sentinel_precip_val": "sentinel_precip"})
+            hourly_df = hourly_df.merge(xema_features, on="datetime", how="left")
+            n_valid = xema_features["sentinel_temp_diff"].notna().sum() if "sentinel_temp_diff" in xema_features.columns else 0
+            logger.info(f"XEMA sentinel merged: {len(xema_df)} registres, "
+                        f"{n_valid}/{len(hourly_df)} hores amb dades ({100*n_valid/len(hourly_df):.1f}%)")
+        else:
+            logger.warning("XEMA data missing expected columns, skipping sentinel merge")
+    else:
+        logger.info("No XEMA sentinel data (run: METEOCAT_API_KEY=xxx .venv/bin/python scripts/backfill_xema.py)")
+
     # ── Feature engineering ──
     logger.info("Aplicant feature engineering...")
     featured_df = build_features_from_hourly(hourly_df)
