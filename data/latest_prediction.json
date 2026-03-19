@@ -3,12 +3,12 @@
   "probability_pct": 0.0,
   "will_rain": false,
   "confidence": "Molt Baixa",
-  "timestamp": "2026-03-20T00:11:46.521527",
+  "timestamp": "2026-03-20T00:20:35.885308",
   "conditions": {
-    "temperature": "4.9",
+    "temperature": "5.1",
     "humidity": 89,
-    "pressure": "1019.1",
-    "wind_speed": "1.6",
+    "pressure": "1019.0",
+    "wind_speed": "0.0",
     "wind_dir": "NE",
     "rain_today": "0.0",
     "solar_radiation": 0
@@ -54,7 +54,7 @@
     "prob_storm": 0
   },
   "bias": {
-    "temp": 1.0,
+    "temp": 0.8000000000000007,
     "humidity": 0.0
   },
   "wind_regime": {
@@ -89,24 +89,24 @@
     "hour_cos": 1.0,
     "month_sin": 1.0,
     "month_cos": 6.123233995736766e-17,
-    "pressure_msl": 1019.1,
-    "pressure_change_1h": -0.01999999999998181,
-    "pressure_change_3h": 0.08780487804881432,
-    "pressure_change_6h": 0.9931818181819381,
-    "pressure_accel_3h": -0.3699728997288503,
-    "temperature_2m": 4.9125000000000005,
-    "relative_humidity_2m": 88.75,
-    "dew_point": 3.213227906909935,
-    "dew_point_depression": 1.6992720930900655,
-    "humidity_change_1h": 0.8299999999999983,
-    "humidity_change_3h": 1.4085365853658516,
+    "pressure_msl": 1019.06875,
+    "pressure_change_1h": -0.05124999999998181,
+    "pressure_change_3h": 0.05655487804881432,
+    "pressure_change_6h": 0.9619318181819381,
+    "pressure_accel_3h": -0.4012228997288503,
+    "temperature_2m": 4.9625,
+    "relative_humidity_2m": 88.875,
+    "dew_point": 3.2824388796914583,
+    "dew_point_depression": 1.680061120308542,
+    "humidity_change_1h": 0.9549999999999983,
+    "humidity_change_3h": 1.5335365853658516,
     "vapour_pressure_deficit": null,
     "vpd_change_3h": null,
-    "wind_speed_10m": 0.8,
-    "wind_u": -0.565685424949238,
-    "wind_v": -0.5656854249492381,
-    "wind_speed_change_1h": 0.5760000000000001,
-    "wind_speed_change_3h": 0.44878048780487806,
+    "wind_speed_10m": 1.4000000000000001,
+    "wind_u": -0.9899494936611666,
+    "wind_v": -0.9899494936611667,
+    "wind_speed_change_1h": 1.1760000000000002,
+    "wind_speed_change_3h": 1.048780487804878,
     "is_sea_breeze": 0.0,
     "is_migjorn": 0.0,
     "is_garbi": 0.0,
@@ -154,5 +154,5 @@
     "ensemble_min_precip": 0.0,
     "ensemble_models_rain": 0.0
   },
-  "pressure_change_3h": 0.08780487804881432
+  "pressure_change_3h": 0.05655487804881432
 }
