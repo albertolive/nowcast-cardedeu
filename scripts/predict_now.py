@@ -90,6 +90,7 @@ def main():
     logger.info(f"  Estat actual: {state['current_state']} | Prob: {result['probability_pct']}%")
 
     wind_regime = result.get("wind_regime", {})
+    threshold = result.get("threshold", config.ALERT_PROBABILITY_THRESHOLD)
     notification_type = should_notify(probability, state)
 
     if notification_type == "rain_incoming":
@@ -105,6 +106,12 @@ def main():
 
         # ── Detecció de canvi de règim atmosfèric ──
         regime_change = detect_regime_change(result, state)
+        if regime_change and probability < threshold:
+            logger.info(
+                f"🌬️  Canvi de règim detectat: {regime_change['type']} "
+                f"— però model diu {result['probability_pct']}% (< llindar {threshold:.0%}), no s'envia."
+            )
+            regime_change = None
         if regime_change:
             logger.info(f"🌬️  Canvi de règim detectat: {regime_change['type']} ({regime_change['severity']})")
             if should_notify_regime(regime_change, state):
