@@ -47,6 +47,14 @@ def export_verified_for_training() -> int:
             df[col] = features_df[col].values
         df = df.drop(columns=["features"])
 
+    # Normalitzar columnes booleanes a tipus consistent
+    for col in df.columns:
+        if df[col].dtype == object:
+            try:
+                df[col] = pd.to_numeric(df[col])
+            except (ValueError, TypeError):
+                pass
+
     # Guardar com a parquet per fusionar amb el dataset principal
     os.makedirs(os.path.dirname(FEEDBACK_TRAINING_PATH), exist_ok=True)
     df.to_parquet(FEEDBACK_TRAINING_PATH, index=False)

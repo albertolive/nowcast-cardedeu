@@ -299,13 +299,14 @@ def predict_now() -> dict:
 def predict_hourly_forecast(hours_ahead: int = 48) -> list[dict]:
     """
     Executa el model ML sobre cada hora futura del forecast.
-    Usa les features disponibles del forecast Open-Meteo + pressure levels.
-    Features de radar/sentinella/bias/AEMET queden com NaN (XGBoost ho gestiona).
+    Usa les features disponibles del forecast Open-Meteo + pressure levels + SMC.
+    Features de radar/sentinella/bias queden com NaN (XGBoost ho gestiona).
 
     Retorna llista de dicts: [{"datetime": ..., "probability": ..., "will_rain": ...}, ...]
     """
     from src.data.open_meteo import fetch_forecast as _fetch_forecast
     from src.data.open_meteo import fetch_pressure_levels_hourly
+    from src.data.meteocat_prediccio import fetch_smc_hourly_df
     from src.features.engineering import build_features_from_forecast, FEATURE_COLUMNS
 
     logger.info(f"Generant forecast ML per a les properes {hours_ahead}h...")
@@ -317,7 +318,14 @@ def predict_hourly_forecast(hours_ahead: int = 48) -> list[dict]:
 
     pressure_df = fetch_pressure_levels_hourly(hours_ahead=hours_ahead)
 
-    features_df = build_features_from_forecast(forecast_df, pressure_df)
+    # SMC municipal forecast (72h, Cardedeu-specific)
+    smc_df = pd.DataFrame()
+    try:
+        smc_df = fetch_smc_hourly_df()
+    except Exception as e:
+        logger.warning(f"SMC hourly forecast no disponible: {e}")
+
+    features_df = build_features_from_forecast(forecast_df, pressure_df, smc_df)
     if features_df.empty:
         logger.warning("No features built from forecast")
         return []
