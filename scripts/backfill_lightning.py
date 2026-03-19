@@ -66,6 +66,10 @@ def _bearing_deg(lat1, lon1, lat2, lon2):
     return (math.degrees(math.atan2(x, y)) + 360) % 360
 
 
+class QuotaExhaustedError(Exception):
+    pass
+
+
 def fetch_xdde_day(target_date: date) -> list[dict]:
     """Fetch all lightning strikes for a single day in Catalunya (all 24 hours)."""
     all_strikes = []
@@ -79,13 +83,13 @@ def fetch_xdde_day(target_date: date) -> list[dict]:
             if r.status_code == 404:
                 continue
             if r.status_code == 429:
-                logger.warning(f"Rate limited on {target_date} {hour:02d}h, waiting 60s...")
-                time.sleep(60)
-                r = SESSION.get(url, headers=_headers(), timeout=30)
+                raise QuotaExhaustedError(f"XDDE quota exhausted (429) at {target_date} {hour:02d}h")
             r.raise_for_status()
             data = r.json()
             if isinstance(data, list):
                 all_strikes.extend(data)
+        except QuotaExhaustedError:
+            raise
         except requests.exceptions.HTTPError as e:
             if "400" in str(e) or "404" in str(e):
                 continue
@@ -219,8 +223,8 @@ def main():
         cache_df = pd.DataFrame()
         done_dates = set()
 
-    # Dates to process (limited by quota)
-    pending_dates = [d for d in all_dates if d not in done_dates]
+    # Dates to process (limited by quota, most recent first = more training value)
+    pending_dates = [d for d in reversed(all_dates) if d not in done_dates]
     if max_days_by_quota is not None and len(pending_dates) > max_days_by_quota:
         pending_dates = pending_dates[:max_days_by_quota]
         logger.info(f"Limited to {max_days_by_quota} days by XDDE quota")
@@ -248,7 +252,11 @@ def main():
                 batch_results = []
 
         # Fetch today's strikes
-        raw_today = fetch_xdde_day(d)
+        try:
+            raw_today = fetch_xdde_day(d)
+        except QuotaExhaustedError as e:
+            logger.warning(f"Stopping backfill: {e}")
+            break
         time.sleep(API_DELAY)
 
         strikes_today = parse_strikes(raw_today) if raw_today else []
@@ -257,7 +265,11 @@ def main():
         prev_d = d - timedelta(days=1)
         if prev_d not in prev_day_strikes:
             if prev_d >= all_dates[0]:
-                raw_prev = fetch_xdde_day(prev_d)
+                try:
+                    raw_prev = fetch_xdde_day(prev_d)
+                except QuotaExhaustedError as e:
+                    logger.warning(f"Stopping backfill: {e}")
+                    break
                 time.sleep(API_DELAY)
                 prev_day_strikes[prev_d] = parse_strikes(raw_prev) if raw_prev else []
             else:
