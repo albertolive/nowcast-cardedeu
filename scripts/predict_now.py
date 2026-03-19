@@ -13,15 +13,35 @@ import sys
 import numpy as np
 
 
+import math
+
+
+def _sanitize_nans(obj):
+    """Recursively replace NaN/Infinity with None for valid JSON."""
+    if isinstance(obj, float) and (math.isnan(obj) or math.isinf(obj)):
+        return None
+    if isinstance(obj, dict):
+        return {k: _sanitize_nans(v) for k, v in obj.items()}
+    if isinstance(obj, (list, tuple)):
+        return [_sanitize_nans(v) for v in obj]
+    return obj
+
+
 class _NumpyEncoder(json.JSONEncoder):
-    """Handle numpy types when serialising prediction results."""
+    """Handle numpy types when serialising prediction results.
+
+    Converts NaN/Infinity to None (JSON null) to produce valid JSON.
+    """
     def default(self, o):
         if isinstance(o, (np.bool_, np.integer)):
             return int(o)
         if isinstance(o, np.floating):
-            return float(o)
+            v = float(o)
+            return None if math.isnan(v) or math.isinf(v) else v
         if isinstance(o, np.ndarray):
             return o.tolist()
+        if isinstance(o, float) and (math.isnan(o) or math.isinf(o)):
+            return None
         return super().default(o)
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
@@ -72,7 +92,7 @@ def main():
     output_path = os.path.join(config.PROJECT_ROOT, "data", "latest_prediction.json")
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     with open(output_path, "w") as f:
-        json.dump(result, f, indent=2, ensure_ascii=False, cls=_NumpyEncoder)
+        json.dump(_sanitize_nans(result), f, indent=2, ensure_ascii=False, cls=_NumpyEncoder)
     logger.info(f"  Resultat desat a {output_path}")
 
     # ── Registrar predicció al log de feedback ──
