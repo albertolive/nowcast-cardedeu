@@ -67,7 +67,13 @@
     .prediction-question {
       font-size: 22px;
       font-weight: 600;
-      margin-bottom: 24px;
+      margin-bottom: 8px;
+    }
+
+    .prediction-subtext {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 20px;
     }
 
     .probability-ring {
@@ -110,11 +116,17 @@
     }
 
     .probability-value .label {
-      font-size: 13px;
+      font-size: 11px;
       color: var(--text-muted);
-      margin-top: 4px;
+      margin-top: 2px;
       text-transform: uppercase;
       letter-spacing: 1px;
+    }
+
+    .probability-value .conf {
+      font-size: 12px;
+      margin-top: 4px;
+      font-weight: 600;
     }
 
     /* Yes/No buttons like Polymarket */
@@ -159,26 +171,19 @@
       border-color: var(--rain-no);
     }
 
-    .outcome-btn .btn-label { display: block; font-size: 12px; opacity: 0.7; margin-bottom: 2px; }
+    .outcome-btn .btn-label { display: block; font-size: 14px; margin-bottom: 2px; }
     .outcome-btn .btn-pct { display: block; font-size: 22px; }
+    .outcome-btn .btn-sub { display: block; font-size: 11px; opacity: 0.6; margin-top: 2px; }
 
     .prediction-meta {
       color: var(--text-muted);
       font-size: 12px;
+      margin-top: 16px;
     }
 
-    .prediction-meta .confidence-badge {
-      display: inline-block;
-      padding: 2px 8px;
-      border-radius: 6px;
-      font-size: 11px;
-      font-weight: 600;
-      margin-left: 6px;
-    }
-
-    .confidence-Baixa, .confidence-Molt-Baixa { background: rgba(63, 185, 80, 0.15); color: var(--accent-green); }
-    .confidence-Mitjana { background: rgba(210, 153, 34, 0.15); color: var(--accent-yellow); }
-    .confidence-Alta, .confidence-Molt-Alta { background: rgba(248, 81, 73, 0.15); color: var(--accent-red); }
+    .conf-low { color: var(--accent-green); }
+    .conf-medium { color: var(--accent-yellow); }
+    .conf-high { color: var(--accent-red); }
 
     /* Chart */
     .chart-card {
@@ -233,41 +238,6 @@
     .stat-row:last-child { border-bottom: none; }
     .stat-row .stat-label { color: var(--text-muted); }
     .stat-row .stat-value { font-weight: 600; }
-
-    /* Track record */
-    .track-record {
-      display: flex;
-      gap: 6px;
-      flex-wrap: wrap;
-      margin-top: 8px;
-    }
-
-    .track-dot {
-      width: 14px;
-      height: 14px;
-      border-radius: 3px;
-      position: relative;
-    }
-
-    .track-dot.correct { background: var(--accent-green); }
-    .track-dot.wrong { background: var(--accent-red); }
-    .track-dot.pending { background: var(--border); }
-
-    .track-dot[title]:hover::after {
-      content: attr(title);
-      position: absolute;
-      bottom: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      padding: 4px 8px;
-      border-radius: 6px;
-      font-size: 11px;
-      white-space: nowrap;
-      z-index: 10;
-      color: var(--text);
-    }
 
     /* Rain gate */
     .gate-indicator {
@@ -557,6 +527,20 @@
 
     .day-detail-close:hover { color: var(--text); }
 
+    .pred-header {
+      display: flex;
+      align-items: center;
+      padding: 8px 16px;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      gap: 12px;
+      border-top: 1px solid rgba(48, 54, 61, 0.4);
+      background: rgba(48, 54, 61, 0.15);
+    }
+
     .pred-row {
       display: flex;
       align-items: center;
@@ -622,6 +606,7 @@
       .outcome-btn .btn-pct { font-size: 18px; }
       .pred-prob-bar { display: none; }
       .pred-row { gap: 8px; }
+      .pred-header { display: none; }
       .cal-month-stats { gap: 10px; font-size: 12px; }
       .cal-day { font-size: 11px; border-radius: 6px; }
       .day-detail-header { flex-wrap: wrap; gap: 8px; }
@@ -701,7 +686,7 @@ function renderPrediction(latest, history) {
   const color = getProbColor(pct);
   const circumference = 2 * Math.PI * 88;
   const offset = circumference * (1 - pct / 100);
-  const confidenceCls = `confidence-${(latest.confidence || '').replace(/\s+/g, '-')}`;
+  const confColor = pct >= 60 ? 'conf-high' : pct >= 35 ? 'conf-medium' : 'conf-low';
   const gateOpen = latest.rain_gate_open;
 
   // Verified history stats
@@ -719,6 +704,7 @@ function renderPrediction(latest, history) {
     <!-- Main prediction -->
     <div class="prediction-card">
       <div class="prediction-question">Plourà a Cardedeu en les properes 4 hores?</div>
+      <div class="prediction-subtext">${fmtTime(latest.timestamp)}</div>
 
       <div class="probability-ring">
         <svg viewBox="0 0 200 200" width="200" height="200">
@@ -731,16 +717,17 @@ function renderPrediction(latest, history) {
         <div class="probability-value">
           <div class="pct" style="color:${color}">${pct}%</div>
           <div class="label">probabilitat</div>
+          <div class="conf ${confColor}">${latest.confidence}</div>
         </div>
       </div>
 
       <div class="outcome-buttons">
         <div class="outcome-btn yes ${latest.will_rain ? 'active' : ''}">
-          <span class="btn-label">🌧️ Sí</span>
+          <span class="btn-label">🌧️ Sí, plourà</span>
           <span class="btn-pct">${pct}%</span>
         </div>
         <div class="outcome-btn no ${!latest.will_rain ? 'active' : ''}">
-          <span class="btn-label">☀️ No</span>
+          <span class="btn-label">☀️ No plourà</span>
           <span class="btn-pct">${noPct}%</span>
         </div>
       </div>
@@ -750,9 +737,8 @@ function renderPrediction(latest, history) {
         ${gateOpen ? '🌧️ Rain Gate OBERT — condicions favorables' : '☀️ Rain Gate tancat — condicions estables'}
       </div>
 
-      <div class="prediction-meta" style="margin-top: 16px">
-        Última actualització: ${fmtTime(latest.timestamp)}
-        <span class="confidence-badge ${confidenceCls}">${latest.confidence}</span>
+      <div class="prediction-meta">
+        Precisió histórica: <strong style="color:var(--accent-green)">${accuracy}%</strong> (${correct}/${verified.length})
       </div>
     </div>
 
@@ -795,26 +781,6 @@ function renderPrediction(latest, history) {
         <div class="stat-row">
           <span class="stat-label">Prob. crua</span>
           <span class="stat-value">${latest.raw_probability != null ? (latest.raw_probability * 100).toFixed(1) + '%' : '—'}</span>
-        </div>
-      </div>
-
-      <!-- Track record -->
-      <div class="info-card">
-        <h3>📊 Historial (${verified.length} prediccions)</h3>
-        <div class="stat-row">
-          <span class="stat-label">Encerts</span>
-          <span class="stat-value" style="color:var(--accent-green)">${correct}/${verified.length}</span>
-        </div>
-        <div class="stat-row">
-          <span class="stat-label">Precisió</span>
-          <span class="stat-value">${accuracy}%</span>
-        </div>
-        <div class="track-record">
-          ${history.slice(-40).map(h => {
-            const cls = h.verified ? (h.correct ? 'correct' : 'wrong') : 'pending';
-            const tip = `${fmtTimeShort(h.timestamp)} — ${h.probability_pct}% → ${h.verified ? (h.correct ? '✓' : '✗') : '⏳'}`;
-            return `<div class="track-dot ${cls}" title="${tip}"></div>`;
-          }).join('')}
         </div>
       </div>
 
@@ -1128,6 +1094,16 @@ function initCalendar(history) {
         </div>`;
     }).join('');
 
+    const tableHeader = `
+      <div class="pred-header">
+        <span class="pred-time">Hora</span>
+        <div class="pred-prob-bar"></div>
+        <span class="pred-pct">Prob.</span>
+        <span class="pred-said">Predicció</span>
+        <span class="pred-result">Res.</span>
+        <span class="pred-rain-mm">Pluja</span>
+      </div>`;
+
     panel.innerHTML = `
       <div class="day-detail">
         <div class="day-detail-header">
@@ -1140,6 +1116,7 @@ function initCalendar(history) {
             <button class="day-detail-close" id="close-detail" title="Tancar">✕</button>
           </div>
         </div>
+        ${tableHeader}
         ${predRows}
       </div>`;
 
