@@ -234,19 +234,16 @@ def format_daily_forecast(prediction: dict, hourly_outlook: list[dict] = None,
 
     lines.append("")
 
-    # Previsió per franges horàries
+    # Previsió per franges horàries (probabilitats del model ML local)
     if hourly_outlook:
-        lines.append("📅 <b>Previsió per franges:</b>")
+        lines.append("📅 <b>Previsió ML per franges:</b>")
         for slot in hourly_outlook:
             icon = _rain_icon(slot.get("max_prob", 0))
             label = slot["label"]
             max_prob = slot.get("max_prob", 0)
-            precip = slot.get("precip_mm", 0)
             temp_range = slot.get("temp_range", "")
 
             line = f"  {icon} <b>{label}</b>: {max_prob:.0f}% pluja"
-            if precip > 0.1:
-                line += f" ({precip:.1f} mm)"
             if temp_range:
                 line += f" · {temp_range}"
             lines.append(line)

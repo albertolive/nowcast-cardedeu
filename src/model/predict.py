@@ -15,6 +15,9 @@ from src.data.meteocardedeu import fetch_series, fetch_latest
 from src.data.open_meteo import fetch_forecast, fetch_pressure_levels
 from src.data.rainviewer import fetch_radar_at_cardedeu
 from src.data.meteocat import fetch_sentinel_latest, compute_sentinel_features
+from src.data.meteocat_xdde import compute_lightning_features
+from src.data.meteocat_prediccio import fetch_municipal_hourly_forecast
+from src.data.aemet_radar import fetch_aemet_radar
 from src.data.ensemble import fetch_ensemble_agreement, compute_forecast_bias
 from src.data.aemet import fetch_hourly_forecast as fetch_aemet_hourly
 from src.features.engineering import build_features_from_realtime, FEATURE_COLUMNS
@@ -52,6 +55,17 @@ def predict_now() -> dict:
     logger.info(f"  Radar: dBZ={radar_data['radar_dbz']}, echo={radar_data['radar_has_echo']}, "
                 f"approaching={radar_data['radar_approaching']}")
 
+    # ── Radar AEMET Barcelona (complement professional al RainViewer) ──
+    aemet_radar_data = {"aemet_radar_dbz": 0.0, "aemet_radar_has_echo": False,
+                        "aemet_radar_nearest_echo_km": config.RADAR_SCAN_RADIUS_KM,
+                        "aemet_radar_max_dbz_20km": 0.0, "aemet_radar_coverage_20km": 0.0,
+                        "aemet_radar_echoes_found": False, "aemet_radar_available": False}
+    if config.AEMET_API_KEY:
+        logger.info("Obtenint radar AEMET Barcelona...")
+        aemet_radar_data = fetch_aemet_radar()
+    else:
+        logger.info("AEMET radar no configurat (sense AEMET_API_KEY)")
+
     # ── AEMET: probabilitats de precipitació i tempesta ──
     aemet_data = {"aemet_prob_precip": np.nan, "aemet_prob_storm": np.nan, "aemet_precip_today": np.nan}
     if config.AEMET_API_KEY:
@@ -60,6 +74,20 @@ def predict_now() -> dict:
     else:
         logger.info("AEMET no configurat (sense AEMET_API_KEY)")
 
+    # ── Meteocat XDDE: descàrregues elèctriques (llamps) ──
+    logger.info("Obtenint dades de llamps (XDDE Meteocat)...")
+    lightning_data = compute_lightning_features()
+
+    # ── Meteocat Predicció Municipal: previsió horària local ──
+    smc_forecast = {"smc_prob_precip_1h": np.nan, "smc_prob_precip_6h": np.nan,
+                    "smc_precip_intensity": np.nan, "smc_temp_forecast": np.nan,
+                    "smc_weather_symbol": np.nan}
+    if config.METEOCAT_API_KEY:
+        logger.info("Obtenint predicció municipal SMC (Meteocat)...")
+        smc_forecast = fetch_municipal_hourly_forecast()
+    else:
+        logger.info("Meteocat Predicció no configurat (sense METEOCAT_API_KEY)")
+
     # ── Rain gate: només consultar Meteocat si hi ha senyals de pluja ──
     rain_signals = (
         ensemble_data.get("ensemble_rain_agreement", 0) >= config.RAIN_GATE_ENSEMBLE_PROB
@@ -67,6 +95,8 @@ def predict_now() -> dict:
         or radar_data.get("radar_nearest_echo_km", 30) < config.RAIN_GATE_RADAR_NEARBY_KM
         or (not np.isnan(aemet_data.get("aemet_prob_storm", 0) or 0)
             and (aemet_data.get("aemet_prob_storm", 0) or 0) >= config.RAIN_GATE_AEMET_STORM)
+        or lightning_data.get("lightning_has_activity", False)
+        or aemet_radar_data.get("aemet_radar_has_echo", False)
     )
     # Also check CAPE from forecast
     cape_vals = forecast_df["cape"].dropna() if "cape" in forecast_df.columns else pd.Series()
@@ -120,6 +150,21 @@ def predict_now() -> dict:
 
     # Afegir features AEMET
     for k, v in aemet_data.items():
+        if k in FEATURE_COLUMNS:
+            latest[k] = v
+
+    # Afegir features de llamps (XDDE Meteocat)
+    for k, v in lightning_data.items():
+        if k in FEATURE_COLUMNS:
+            latest[k] = v
+
+    # Afegir features de radar AEMET Barcelona
+    for k, v in aemet_radar_data.items():
+        if k in FEATURE_COLUMNS:
+            latest[k] = v
+
+    # Afegir features de predicció municipal SMC (Meteocat)
+    for k, v in smc_forecast.items():
         if k in FEATURE_COLUMNS:
             latest[k] = v
 
@@ -249,3 +294,62 @@ def predict_now() -> dict:
     )
 
     return result
+
+
+def predict_hourly_forecast(hours_ahead: int = 48) -> list[dict]:
+    """
+    Executa el model ML sobre cada hora futura del forecast.
+    Usa les features disponibles del forecast Open-Meteo + pressure levels.
+    Features de radar/sentinella/bias/AEMET queden com NaN (XGBoost ho gestiona).
+
+    Retorna llista de dicts: [{"datetime": ..., "probability": ..., "will_rain": ...}, ...]
+    """
+    from src.data.open_meteo import fetch_forecast as _fetch_forecast
+    from src.data.open_meteo import fetch_pressure_levels_hourly
+    from src.features.engineering import build_features_from_forecast, FEATURE_COLUMNS
+
+    logger.info(f"Generant forecast ML per a les properes {hours_ahead}h...")
+
+    forecast_df = _fetch_forecast(hours_ahead=hours_ahead)
+    if forecast_df.empty:
+        logger.warning("No forecast data available")
+        return []
+
+    pressure_df = fetch_pressure_levels_hourly(hours_ahead=hours_ahead)
+
+    features_df = build_features_from_forecast(forecast_df, pressure_df)
+    if features_df.empty:
+        logger.warning("No features built from forecast")
+        return []
+
+    model, feature_names, calibrator, threshold = load_model()
+
+    # Build X matrix aligned with model features
+    X = pd.DataFrame(columns=feature_names, index=features_df.index)
+    for col in feature_names:
+        if col in features_df.columns:
+            X[col] = features_df[col].values
+        else:
+            X[col] = np.nan
+
+    X = X.replace([np.inf, -np.inf], np.nan).astype(float)
+
+    raw_probs = model.predict_proba(X)[:, 1]
+    if calibrator is not None:
+        probs = calibrator.predict(raw_probs)
+    else:
+        probs = raw_probs
+
+    results = []
+    for i, row in features_df.iterrows():
+        prob = float(probs[i] if i < len(probs) else 0)
+        results.append({
+            "datetime": row["datetime"],
+            "probability": round(prob, 4),
+            "will_rain": prob >= threshold,
+        })
+
+    rain_hours = sum(1 for r in results if r["will_rain"])
+    logger.info(f"  ML forecast: {rain_hours}/{len(results)} hores amb pluja prevista")
+
+    return results
