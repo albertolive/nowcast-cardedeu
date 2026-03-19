@@ -124,16 +124,14 @@ TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "")
 TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID", "")
 
 # ── Meteocat API rate limiting ──
-# Cache TTLs to stay within 750 calls/month free tier.
-# With 144 predictions/day, uncached calls would exhaust the budget in <1 day.
-# Budget breakdown (with caching):
-#   XDDE lightning: ~24 calls/day (1 per hour) = ~720/month
-#   SMC forecast:   ~8 calls/day  (1 per 3h)   = ~240/month
-#   XEMA sentinel:  ~0-120/month  (rain gate)   = ~120/month (worst case)
-#   Backfill XEMA:  ~9/retrain    (3 days × 3)  = ~270/month
-#   Total: ~1,350/month → still over 750, but XDDE hours cache aggressively
-#   Actual XDDE: past hours cached 24h, only current hour every 60min ≈ ~50/day = ~400/month
-#   Revised total: ~400 + 240 + 120 + 270 = ~1,030 → needs XDDE at 120min
+# Separate quotas per service: XDDE 250/month, Predicció 100/month, XEMA 750/month.
+# ALL Meteocat calls are behind the rain gate (only fire when rain is likely).
+# Typical rain days in Cardedeu: ~8/month, ~6 hours rain/event.
+# Budget breakdown (rain gate + caching):
+#   XDDE:       ~8 days × 6h × 4 calls = ~192/month (limit 250)
+#   Predicció:  ~8 days × 6h / 3h TTL  = ~16/month  (limit 100)
+#   XEMA:       ~8 days × 6h / 0.5h TTL = ~96/month (limit 750) + backfill ~90
+#   Backfill XEMA: --max-days 3/retrain × 3 vars = ~270/month
 METEOCAT_CACHE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "meteocat_cache")
 METEOCAT_CACHE_TTL_XDDE = 120     # minutes — current hour cache; past hours cached 24h automatically
 METEOCAT_CACHE_TTL_SMC = 180      # minutes — municipal forecast updates every 6h, 3h cache is safe

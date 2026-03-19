@@ -1,16 +1,13 @@
 """
 Cache amb TTL per a crides a l'API Meteocat.
-Evita superar el límit de 750 crides/mes del pla gratuït.
+Quotes separades per servei (mensuals, reset dia 1 a 00:00 UTC):
+  - XEMA: 750 crides/mes
+  - XDDE: 250 crides/mes
+  - Predicció: 100 crides/mes
+  - Referència: 2000 crides/mes
+  - Quota (consum-actual): 300 crides/mes
 
-Amb prediccions cada 10 min (144/dia), sense cache:
-  - XDDE (4 crides/predicció): 17,280/mes
-  - SMC (1 crida/predicció): 4,320/mes
-  - XEMA (4 crides, rain gate): variable
-
-Amb cache TTL de 30-60 min:
-  - XDDE: ~384/mes (48/dia × 4 × ~2 per cache miss)
-  - SMC: ~720/mes (24/dia)
-  - XEMA: similar a sense cache (ja gated)
+Endpoint de consum: GET /quotes/v1/consum-actual
 """
 import hashlib
 import json
@@ -18,11 +15,49 @@ import logging
 import os
 import time
 
+import requests
+
 import sys
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 import config
 
 logger = logging.getLogger(__name__)
+
+
+def fetch_quota() -> dict:
+    """
+    Check current API quota consumption.
+    Returns dict mapping plan name → {max, used, remaining}.
+    """
+    if not config.METEOCAT_API_KEY:
+        return {}
+    try:
+        r = requests.get(
+            f"{config.METEOCAT_BASE_URL}/quotes/v1/consum-actual",
+            headers={"X-Api-Key": config.METEOCAT_API_KEY},
+            timeout=10,
+        )
+        r.raise_for_status()
+        data = r.json()
+        result = {}
+        for plan in data.get("plans", []):
+            result[plan["nom"]] = {
+                "max": plan["maxConsultes"],
+                "used": plan["consultesRealitzades"],
+                "remaining": plan["consultesRestants"],
+            }
+        return result
+    except Exception as e:
+        logger.warning(f"Could not fetch quota: {e}")
+        return {}
+
+
+def get_remaining(plan_name: str) -> int:
+    """Get remaining calls for a specific plan. Returns -1 if unknown."""
+    quota = fetch_quota()
+    if plan_name in quota:
+        return quota[plan_name]["remaining"]
+    return -1
 
 
 def _cache_path(key: str) -> str:

@@ -183,6 +183,23 @@ def main():
         logger.error("METEOCAT_API_KEY no configurada! Ús: METEOCAT_API_KEY=xxx .venv/bin/python scripts/backfill_lightning.py")
         sys.exit(1)
 
+    # Check XDDE quota before running
+    from src.data.meteocat_cache import get_remaining
+    remaining_quota = get_remaining("XDDE_250")
+    if remaining_quota == 0:
+        logger.warning("XDDE quota exhausted (0 remaining). Skipping backfill until next month.")
+        return
+    if remaining_quota > 0:
+        # Each day = 24 API calls. Reserve 50 for real-time predictions.
+        available = max(0, remaining_quota - 50)
+        max_days_by_quota = available // 24
+        logger.info(f"XDDE quota: {remaining_quota} remaining, {available} available for backfill = {max_days_by_quota} days")
+        if max_days_by_quota == 0:
+            logger.warning(f"XDDE quota too low for backfill ({remaining_quota} remaining, need 50 reserve).")
+            return
+    else:
+        max_days_by_quota = None  # Unknown quota, proceed cautiously
+
     # Load training dataset
     logger.info("Carregant training dataset...")
     df = pd.read_parquet(DATASET_PATH)
@@ -202,8 +219,11 @@ def main():
         cache_df = pd.DataFrame()
         done_dates = set()
 
-    # Dates to process
+    # Dates to process (limited by quota)
     pending_dates = [d for d in all_dates if d not in done_dates]
+    if max_days_by_quota is not None and len(pending_dates) > max_days_by_quota:
+        pending_dates = pending_dates[:max_days_by_quota]
+        logger.info(f"Limited to {max_days_by_quota} days by XDDE quota")
     if not pending_dates:
         logger.info("Tots els dies ja processats!")
     else:

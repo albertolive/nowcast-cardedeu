@@ -74,28 +74,15 @@ def predict_now() -> dict:
     else:
         logger.info("AEMET no configurat (sense AEMET_API_KEY)")
 
-    # ── Meteocat XDDE: descàrregues elèctriques (llamps) ──
-    logger.info("Obtenint dades de llamps (XDDE Meteocat)...")
-    lightning_data = compute_lightning_features()
-
-    # ── Meteocat Predicció Municipal: previsió horària local ──
-    smc_forecast = {"smc_prob_precip_1h": np.nan, "smc_prob_precip_6h": np.nan,
-                    "smc_precip_intensity": np.nan, "smc_temp_forecast": np.nan,
-                    "smc_weather_symbol": np.nan}
-    if config.METEOCAT_API_KEY:
-        logger.info("Obtenint predicció municipal SMC (Meteocat)...")
-        smc_forecast = fetch_municipal_hourly_forecast()
-    else:
-        logger.info("Meteocat Predicció no configurat (sense METEOCAT_API_KEY)")
-
     # ── Rain gate: només consultar Meteocat si hi ha senyals de pluja ──
+    # Checked BEFORE any Meteocat call to stay within separate quotas:
+    #   XDDE: 250/month, Predicció: 100/month, XEMA: 750/month
     rain_signals = (
         ensemble_data.get("ensemble_rain_agreement", 0) >= config.RAIN_GATE_ENSEMBLE_PROB
         or radar_data.get("radar_has_echo", False)
         or radar_data.get("radar_nearest_echo_km", 30) < config.RAIN_GATE_RADAR_NEARBY_KM
         or (not np.isnan(aemet_data.get("aemet_prob_storm", 0) or 0)
             and (aemet_data.get("aemet_prob_storm", 0) or 0) >= config.RAIN_GATE_AEMET_STORM)
-        or lightning_data.get("lightning_has_activity", False)
         or aemet_radar_data.get("aemet_radar_has_echo", False)
     )
     # Also check CAPE from forecast
@@ -103,13 +90,21 @@ def predict_now() -> dict:
     cape_max_6h = float(cape_vals.head(6).max()) if not cape_vals.empty else 0
     rain_signals = rain_signals or cape_max_6h >= config.RAIN_GATE_CAPE_THRESHOLD
 
-    sentinel_data = {}
+    # ── Meteocat calls: ALL behind rain gate (XDDE 250/mo, Predicció 100/mo, XEMA 750/mo) ──
+    lightning_data = {}
+    smc_forecast = {"smc_prob_precip_1h": np.nan, "smc_prob_precip_6h": np.nan,
+                    "smc_precip_intensity": np.nan, "smc_temp_forecast": np.nan,
+                    "smc_weather_symbol": np.nan}
+    sentinel_data = {"sentinel_temp": None, "sentinel_humidity": None, "sentinel_precip": None}
+
     if rain_signals:
-        logger.info("🚨 Rain gate OBERT — consultant Meteocat XEMA...")
+        logger.info("🚨 Rain gate OBERT — consultant Meteocat (XDDE + Predicció + XEMA)...")
+        lightning_data = compute_lightning_features()
+        if config.METEOCAT_API_KEY:
+            smc_forecast = fetch_municipal_hourly_forecast()
         sentinel_data = fetch_sentinel_latest()
     else:
         logger.info("✅ Rain gate tancat — no cal Meteocat (estalvi d'API)")
-        sentinel_data = {"sentinel_temp": None, "sentinel_humidity": None, "sentinel_precip": None}
     logger.info(f"  Sentinella: temp={sentinel_data.get('sentinel_temp')}, "
                 f"precip={sentinel_data.get('sentinel_precip')}")
 

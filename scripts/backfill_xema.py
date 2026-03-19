@@ -6,18 +6,11 @@ Descarrega dades diàries de temperatura, humitat i precipitació de l'API Meteo
 Cada crida a fetch_variable_all_stations retorna TOTES les estacions (~180) per a una
 variable i una data — per tant podem extreure múltiples estacions d'una sola crida.
 
-Costos API: 3 crides/dia (temp, humidity, precip). Amb 750 crides/mes free tier
-i ~200-400 crides/mes pel predict en temps real, queden ~350-550 crides/mes
-per backfill = ~115-180 dies per mes (~10-15 dies de backfill per execució diària).
+Costos API: 3 crides/dia (temp, humidity, precip). Quota XEMA: 750 crides/mes.
+El script comprova la quota restant abans d'executar.
 
 Ús:
     METEOCAT_API_KEY=xxx .venv/bin/python scripts/backfill_xema.py [--max-days N]
-
-Característiques:
-- Guarda progrés a data/raw/xema_sentinel_cache.parquet (reprèn si s'interromp)
-- Descarrega des del més recent cap enrere (dades recents = més valor)
-- Rate limiting: 0.5s entre crides API
-- Default: 15 dies per execució (45 API calls) — segur dins del budget
 """
 import argparse
 import logging
@@ -166,6 +159,23 @@ def main():
     if not config.METEOCAT_API_KEY:
         logger.error("METEOCAT_API_KEY not set")
         sys.exit(1)
+
+    # Check XEMA quota before running
+    from src.data.meteocat_cache import get_remaining
+    remaining_quota = get_remaining("XEMA_750 OD")
+    if remaining_quota == 0:
+        logger.warning("XEMA quota exhausted (0 remaining). Skipping backfill until next month.")
+        return
+    if remaining_quota > 0:
+        # Reserve 30 calls for real-time predictions
+        available_for_backfill = max(0, remaining_quota - 30)
+        max_days_by_quota = available_for_backfill // 3  # 3 API calls per day
+        if max_days_by_quota == 0:
+            logger.warning(f"XEMA quota too low ({remaining_quota} remaining, need 30 reserve). Skipping.")
+            return
+        if max_days_by_quota < args.max_days:
+            logger.info(f"Limiting to {max_days_by_quota} days (quota: {remaining_quota} remaining, 30 reserved)")
+            args.max_days = max_days_by_quota
 
     os.makedirs(config.DATA_RAW_DIR, exist_ok=True)
 
