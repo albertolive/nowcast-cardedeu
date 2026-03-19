@@ -234,6 +234,16 @@ def predict_now() -> dict:
             "upwind_nearest_echo_km": radar_data.get("radar_upwind_nearest_echo_km"),
             "storm_velocity_kmh": radar_data.get("radar_storm_velocity_kmh"),
             "storm_eta_min": radar_data.get("radar_storm_eta_min"),
+            "quadrants": {
+                "max_dbz_N": radar_data.get("radar_quadrant_max_dbz_N", 0.0),
+                "max_dbz_E": radar_data.get("radar_quadrant_max_dbz_E", 0.0),
+                "max_dbz_S": radar_data.get("radar_quadrant_max_dbz_S", 0.0),
+                "max_dbz_W": radar_data.get("radar_quadrant_max_dbz_W", 0.0),
+                "coverage_N": radar_data.get("radar_quadrant_coverage_N", 0.0),
+                "coverage_E": radar_data.get("radar_quadrant_coverage_E", 0.0),
+                "coverage_S": radar_data.get("radar_quadrant_coverage_S", 0.0),
+                "coverage_W": radar_data.get("radar_quadrant_coverage_W", 0.0),
+            },
         },
         "sentinel": {
             "station": config.SENTINEL_STATION_NAME,

@@ -6,7 +6,7 @@ Hyperlocal rain nowcasting system for Cardedeu (Vallès Oriental) using XGBoost 
 
 ```
 src/data/       → 12 independent API clients (graceful degradation: each returns empty dict on failure)
-src/features/   → Feature engineering (100 features: 54 with historical data, 46 real-time only) + wind regime detection
+src/features/   → Feature engineering (112 features: 54 with historical data, 58 real-time only) + wind regime detection
 src/features/regime.py → Regime change detection (Llevantada onset, Garbí+instability, pressure drops, backing wind)
 src/model/      → XGBoost training (TimeSeriesSplit CV + IsotonicRegression calibration) + prediction + ML-powered hourly forecast
 src/notify/     → Telegram alerts with state machine (hysteresis: up=0.65, down=0.30) + regime alerts
@@ -19,7 +19,7 @@ config.py       → All constants, paths, thresholds, coordinates — single sou
 
 **Key pattern — Graceful degradation:** Every `src/data/` module wraps API calls in try/except, logs warnings, and returns a dict with NaN values on failure. XGBoost handles NaN natively. Never let a single API failure crash the pipeline.
 
-**Key pattern — Feature split:** 100 features defined in `FEATURE_COLUMNS` but only 54 exist in historical training data. The remaining 46 are real-time only (radar, sentinel, ensemble, AEMET, lightning, AEMET radar, SMC forecast). All 6 data sources are now active and logging real values. XGBoost handles NaN natively for training rows missing these columns. The feedback loop gradually adds real-time features to the training set as verified predictions accumulate. Lightning features (7) can be backfilled historically via `scripts/backfill_lightning.py`.
+**Key pattern — Feature split:** 112 features defined in `FEATURE_COLUMNS` but only 54 exist in historical training data. The remaining 58 are real-time only (radar, sentinel, ensemble, AEMET, lightning, AEMET radar, SMC forecast, radar quadrants, echo bearing, Tramuntana interactions). All data sources are now active and logging real values. XGBoost handles NaN natively for training rows missing these columns. The feedback loop gradually adds real-time features to the training set as verified predictions accumulate. Lightning features (7) can be backfilled historically via `scripts/backfill_lightning.py`.
 
 **Key pattern — Diagnostic logging:** Every prediction logs a full snapshot to `predictions_log.jsonl`: conditions, radar (RainViewer), AEMET (radar+forecast), sentinel (XEMA), ensemble, pressure_levels, wind_regime, bias, plus the complete 54-feature vector. This enables post-hoc analysis of missed predictions.
 
@@ -27,11 +27,11 @@ config.py       → All constants, paths, thresholds, coordinates — single sou
 
 **Key pattern — ML-powered daily forecast:** The daily summary (7:00) runs `predict_hourly_forecast()` which applies the XGBoost model to each future hour using Open-Meteo forecast + pressure levels + SMC municipal forecast as input features. This replaces raw weather-code-based forecasts with actual ML predictions.
 
-**Key pattern — Wind regimes at 850hPa:** Wind classification (Llevantada, Garbí, Ponent, Tramuntana, Migjorn) uses the synoptic 850hPa wind, not the 10m surface wind which is distorted by local orography (Montseny). The raw binary regime flags have zero model importance — the interaction terms (`llevantada_strength`, `llevantada_moisture`, `garbi_strength`) carry the signal.
+**Key pattern — Wind regimes at 850hPa:** Wind classification (Llevantada, Garbí, Ponent, Tramuntana, Migjorn) uses the synoptic 850hPa wind, not the 10m surface wind which is distorted by local orography (Montseny). The raw binary regime flags have zero model importance — the interaction terms (`llevantada_strength`, `llevantada_moisture`, `garbi_strength`, `tramuntana_strength`, `tramuntana_moisture`) carry the signal. Note: Tramuntana (N wind) accounts for 13.8% of rain events — it is NOT negligible despite being commonly labeled "dry".
 
 **Key pattern — Feature pruning:** Binary threshold features (e.g., `cape_high`, `cold_500_moderate`) tend to have zero importance because the continuous source variable is always more informative. Prefer continuous features; only add binary indicators if XGBoost can't learn the threshold from the continuous value (very rare).
 
-**Key pattern — Spatial radar:** RainViewer radar scans a 30km radius around Cardedeu (not just one pixel). Uses 850hPa wind direction to prioritize the upwind sector. Tracks storm movement across 6 frames (~1h) to estimate velocity and ETA. The `radar_nearest_echo_km` feature is far more informative than the point `radar_dbz`.
+**Key pattern — Spatial radar:** RainViewer radar scans a 30km radius around Cardedeu (not just one pixel). Uses 850hPa wind direction to prioritize the upwind sector. Tracks storm movement across 6 frames (~1h) to estimate velocity and ETA. The `radar_nearest_echo_km` feature is far more informative than the point `radar_dbz`. Radar quadrant features (`radar_quadrant_max_dbz_N/E/S/W`, `radar_quadrant_coverage_N/E/S/W`) give the model directional awareness independent of wind regime. The nearest echo bearing is encoded cyclically (`radar_echo_bearing_sin`, `radar_echo_bearing_cos`).
 
 **Key pattern — Regime change alerts:** The system alerts on atmospheric **transitions** (cause), not just rain probability (effect). Four types: Llevantada onset (E/SE wind + humidity ≥75%), Garbí + instability (SW wind + TT>44 or LI<-2), rapid pressure drop (≤-2 hPa in 3h), and backing wind with high humidity. Regime alerts have an independent 2h cooldown (`REGIME_COOLDOWN_MIN`) separate from rain alerts.
 

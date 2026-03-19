@@ -868,7 +868,7 @@ function renderPrediction(latest, history) {
 
       <div class="prediction-meta">
         Precisió histórica: <strong style="color:var(--accent-green)">${accuracy}%</strong> (${correct}/${verified.length})
-        · ${latest.features_used || '—'} features · Calibrat isotònic
+        · Calibrat isotònic
       </div>
     </div>
 
@@ -958,12 +958,22 @@ function renderConditions(d) {
 
 function renderRadar(d) {
   const r = d.radar || {};
+  const q = r.quadrants || {};
+  // Build mini compass showing which quadrants have echoes
+  const quadLabels = ['N','E','S','W'];
+  const compassParts = quadLabels.map(dir => {
+    const dbz = q[`max_dbz_${dir}`] || 0;
+    const cov = q[`coverage_${dir}`] || 0;
+    if (dbz > 5) return `<span style="color:var(--accent-blue);font-weight:700">${dir}</span>`;
+    return `<span style="color:var(--text-muted);opacity:0.3">${dir}</span>`;
+  }).join(' · ');
+  const hasQuadrants = quadLabels.some(dir => (q[`max_dbz_${dir}`] || 0) > 5);
   return `
-    <div class="stat-row"><span class="stat-label">Intensitat del radar</span><span class="stat-value">${r.dbz ?? '—'}</span></div>
-    <div class="stat-row"><span class="stat-label">Pluja més propera</span><span class="stat-value">${r.nearest_echo_km ?? '—'} km ${r.nearest_echo_compass || ''}</span></div>
-    <div class="stat-row"><span class="stat-label">Pluja als voltants (20 km)</span><span class="stat-value">${r.coverage_20km != null ? r.coverage_20km + '%' : '—'}</span></div>
-    <div class="stat-row"><span class="stat-label">S'acosta pluja?</span><span class="stat-value">${r.approaching ? '⚠️ Sí' : 'No'}</span></div>
-    <div class="stat-row"><span class="stat-label">Arriba en</span><span class="stat-value">${r.storm_eta_min ? r.storm_eta_min + ' min' : '—'}</span></div>
+    <div class="stat-row"><span class="stat-label">Eco més proper</span><span class="stat-value">${r.nearest_echo_km ?? '—'} km ${r.nearest_echo_compass || ''}</span></div>
+    <div class="stat-row"><span class="stat-label">Cobertura (20 km)</span><span class="stat-value">${r.coverage_20km != null ? r.coverage_20km + '%' : '—'}</span></div>
+    <div class="stat-row"><span class="stat-label">S'acosta?</span><span class="stat-value">${r.approaching ? '⚠️ Sí' : 'No'}${r.storm_eta_min ? ' (~' + r.storm_eta_min + ' min)' : ''}</span></div>
+    <div class="stat-row"><span class="stat-label">Sectors amb pluja</span><span class="stat-value">${hasQuadrants ? compassParts : '<span style="color:var(--text-muted)">Cap</span>'}</span></div>
+    <div class="stat-row"><span class="stat-label">Intensitat</span><span class="stat-value">${r.dbz != null && r.dbz > 0 ? r.dbz + ' dBZ' : 'Sense eco'}</span></div>
   `;
 }
 
@@ -991,7 +1001,7 @@ function renderAtmosphere(d) {
                  w.is_tramuntana ? '💨 Tramuntana' :
                  w.is_migjorn ? '🌡️ Migjorn' :
                  w.is_garbi ? '🌬️ Garbí' :
-                 w.is_ponent ? '🔥 Ponent' : '— Neutre';
+                 w.is_ponent ? '🔥 Ponent' : '🧭 Neutre';
   return `
     <div class="stat-row"><span class="stat-label">Règim de vent</span><span class="stat-value">${regime}</span></div>
     <div class="stat-row"><span class="stat-label">Temperatura en altitud</span><span class="stat-value">${p.temp_850 ?? '—'}°C</span></div>

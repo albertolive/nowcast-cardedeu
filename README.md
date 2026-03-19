@@ -30,7 +30,7 @@ Utilitza dades reals de l'estació [MeteoCardedeu.net](https://meteocardedeu.net
          │                     │         │                      │
          ▼                     ▼         ▼                      ▼
     ┌──────────────────────────────────────────────────────────────────────┐
-    │                Feature Engineering (100 features)                    │
+    │                Feature Engineering (112 features)                    │
     │  Tendències · Ensemble · 850hPa · Radar · Sentinella · Llamps · Vent │
     └──────────────────────────────┬───────────────────────────────────────┘
                                   │
@@ -137,7 +137,7 @@ nowcast-cardedeu/
 │   │   ├── meteocat_xdde.py  # API Meteocat XDDE (descàrregues elèctriques)
 │   │   └── meteocat_prediccio.py # API Meteocat Predicció (forecast municipal)
 │   ├── features/
-│   │   ├── engineering.py    # Feature engineering (100 features, incl. VPD + radar espacial)
+│   │   ├── engineering.py    # Feature engineering (112 features, incl. VPD + radar espacial + quadrants)
 │   │   └── regime.py         # Detecció de canvis de règim atmosfèric (Llevantada, Garbí, pressió)
 │   ├── model/
 │   │   ├── train.py          # Pipeline d'entrenament (XGBoost + TimeSeriesSplit)
@@ -166,7 +166,7 @@ nowcast-cardedeu/
 
 ## Features del model
 
-El model defineix **100 features** per predicció en temps real. Per entrenament, **54 estan disponibles** amb dades històriques. Les 46 restants (radar, ensemble, AEMET, sentinella, llamps XDDE, radar AEMET, predicció SMC) s'estan acumulant en temps real des que totes les APIs estan actives, i s'incorporen progressivament al model via el feedback loop.
+El model defineix **112 features** per predicció en temps real. Per entrenament, **54 estan disponibles** amb dades històriques. Les 58 restants (radar, ensemble, AEMET, sentinella, llamps XDDE, radar AEMET, predicció SMC, quadrants radar, bearing cíclic, interaccions Tramuntana) s'estan acumulant en temps real des que totes les APIs estan actives, i s'incorporen progressivament al model via el feedback loop.
 
 | Categoria | Features | Per què? |
 |-----------|----------|----------|
@@ -190,6 +190,9 @@ El model defineix **100 features** per predicció en temps real. Per entrenament
 | 🆕 Llamps (XDDE) | Count 30km/15km, distància, approaching, cloud-ground, corrent màxim | Activitat convectiva directa |
 | 🆕 Radar AEMET | dBZ, eco, distància eco, cobertura 20km | Radar C-banda Barcelona (alta resolució) |
 | 🆕 SMC Predicció | prob_precip_1h, prob_precip_6h, intensitat | Previsió municipal calibrada per Cardedeu |
+| 🆕 Radar quadrants | max_dbz i cobertura per N/E/S/W | Consciència direccional: d'on ve la pluja |
+| 🆕 Echo bearing | sin/cos del rumb de l'eco més proper | Direcció de la pluja codificada cíclicament |
+| 🆕 Tramuntana | tramuntana_strength, tramuntana_moisture | 13.8% de la pluja ve amb vent del nord |
 
 ## Fonts de dades
 
@@ -291,7 +294,7 @@ El model AROME de Meteo-France és el 4t model de l'ensemble, amb resolució de 
 | Llindar òptim (calibrat) | 0.3542 |
 | Mostres d'entrenament | 98,160 |
 | Features (training) | 54 |
-| Features (total) | 100 |
+| Features (total) | 112 |
 | Classe positiva (pluja) | ~9.3% |
 | Cross-validation | TimeSeriesSplit (5 folds) |
 | Calibratge | Isotonic Regression (OOF) |

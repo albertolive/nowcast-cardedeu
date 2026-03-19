@@ -181,9 +181,32 @@ def _scan_radar_spatial(png_bytes: bytes, cx: int, cy: int,
         "_centroid_dy": centroid_dy,
     }
 
+    # ── Quadrant features: intensitat i cobertura per N/E/S/W ──
+    echo_bearings = (np.degrees(np.arctan2(echo_dx_arr, -echo_dy_arr)) + 360) % 360
+    total_echo_pixels = len(echo_dx_arr)
+    # Total pixels in scan area for coverage calculation
+    total_scan_pixels = int(in_radius.sum())
+
+    for quad_name, q_lo, q_hi in [("N", 315, 45), ("E", 45, 135),
+                                    ("S", 135, 225), ("W", 225, 315)]:
+        if q_lo > q_hi:
+            q_mask = (echo_bearings >= q_lo) | (echo_bearings < q_hi)
+        else:
+            q_mask = (echo_bearings >= q_lo) & (echo_bearings < q_hi)
+
+        if q_mask.any():
+            result[f"quadrant_max_dbz_{quad_name}"] = round(
+                _radar_intensity_to_dbz(int(echo_intensities[q_mask].max())), 1
+            )
+            result[f"quadrant_coverage_{quad_name}"] = round(
+                float(q_mask.sum()) / (total_scan_pixels / 4) if total_scan_pixels > 0 else 0.0, 4
+            )
+        else:
+            result[f"quadrant_max_dbz_{quad_name}"] = 0.0
+            result[f"quadrant_coverage_{quad_name}"] = 0.0
+
     # ── Sector de sobrevent (upwind): d'on ve el vent → d'on esperem la pluja ──
     if wind_from_dir is not None:
-        echo_bearings = (np.degrees(np.arctan2(echo_dx_arr, -echo_dy_arr)) + 360) % 360
         angle_diff = ((echo_bearings - wind_from_dir + 180) % 360) - 180
         upwind_mask = np.abs(angle_diff) <= 60  # ±60° from wind direction
 
@@ -240,7 +263,7 @@ def _build_clutter_mask(tile_bytes_list: list) -> Optional[np.ndarray]:
 
 
 def _empty_spatial_result(radius_km: float) -> dict:
-    return {
+    result = {
         "nearest_echo_km": radius_km,
         "nearest_echo_bearing": None,
         "nearest_echo_compass": None,
@@ -252,6 +275,10 @@ def _empty_spatial_result(radius_km: float) -> dict:
         "_centroid_dx": None,
         "_centroid_dy": None,
     }
+    for quad in ("N", "E", "S", "W"):
+        result[f"quadrant_max_dbz_{quad}"] = 0.0
+        result[f"quadrant_coverage_{quad}"] = 0.0
+    return result
 
 
 def _estimate_storm_tracking(spatial_scans: list, pixel_size_km: float,
@@ -443,6 +470,15 @@ def fetch_radar_at_cardedeu(wind_from_dir: Optional[float] = None) -> dict:
         "radar_storm_velocity_kmh": storm_tracking["storm_velocity_kmh"],
         "radar_storm_approaching": spatial_approaching,
         "radar_storm_eta_min": storm_tracking["storm_eta_min"],
+        # Quadrant features (N/E/S/W)
+        "radar_quadrant_max_dbz_N": latest_spatial.get("quadrant_max_dbz_N", 0.0),
+        "radar_quadrant_max_dbz_E": latest_spatial.get("quadrant_max_dbz_E", 0.0),
+        "radar_quadrant_max_dbz_S": latest_spatial.get("quadrant_max_dbz_S", 0.0),
+        "radar_quadrant_max_dbz_W": latest_spatial.get("quadrant_max_dbz_W", 0.0),
+        "radar_quadrant_coverage_N": latest_spatial.get("quadrant_coverage_N", 0.0),
+        "radar_quadrant_coverage_E": latest_spatial.get("quadrant_coverage_E", 0.0),
+        "radar_quadrant_coverage_S": latest_spatial.get("quadrant_coverage_S", 0.0),
+        "radar_quadrant_coverage_W": latest_spatial.get("quadrant_coverage_W", 0.0),
     }
 
     # Log detallat
@@ -483,4 +519,13 @@ def _empty_radar_result() -> dict:
         "radar_storm_velocity_kmh": 0.0,
         "radar_storm_approaching": False,
         "radar_storm_eta_min": None,
+        # Quadrant features
+        "radar_quadrant_max_dbz_N": 0.0,
+        "radar_quadrant_max_dbz_E": 0.0,
+        "radar_quadrant_max_dbz_S": 0.0,
+        "radar_quadrant_max_dbz_W": 0.0,
+        "radar_quadrant_coverage_N": 0.0,
+        "radar_quadrant_coverage_E": 0.0,
+        "radar_quadrant_coverage_S": 0.0,
+        "radar_quadrant_coverage_W": 0.0,
     }
