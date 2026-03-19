@@ -177,3 +177,75 @@ def _empty_forecast() -> dict:
         "smc_temp_forecast": np.nan,
         "smc_weather_symbol": np.nan,
     }
+
+
+def fetch_smc_hourly_df() -> "pd.DataFrame":
+    """
+    Obté la predicció horària municipal del SMC com a DataFrame.
+    Columnes: datetime, smc_prob_precip_1h, smc_precip_intensity.
+    Per injectar a build_features_from_forecast().
+    """
+    import pandas as pd
+    from datetime import timedelta
+
+    if not _is_configured():
+        return pd.DataFrame()
+
+    try:
+        url = (
+            f"{config.METEOCAT_BASE_URL}/pronostic/v1/municipal/"
+            f"{config.METEOCAT_MUNICIPALITY_CODE}/horaria"
+        )
+        r = SESSION.get(url, headers=_headers(), timeout=20)
+        r.raise_for_status()
+        data = r.json()
+
+        if not data:
+            return pd.DataFrame()
+
+        hourly_forecasts = _extract_hourly(data)
+        if not hourly_forecasts:
+            return pd.DataFrame()
+
+        # Construir DataFrame amb datetime complet
+        now = datetime.now()
+        today = now.replace(hour=0, minute=0, second=0, microsecond=0)
+        rows = []
+        seen_hours = set()
+        day_offset = 0
+
+        for hf in hourly_forecasts:
+            hour = hf.get("hour")
+            if hour is None:
+                continue
+            # Detectar canvi de dia (hora torna a ser menor)
+            if seen_hours and hour < max(seen_hours):
+                day_offset += 1
+            seen_hours.add(hour)
+            dt = today + timedelta(days=day_offset, hours=hour)
+            rows.append({
+                "datetime": dt,
+                "smc_prob_precip_1h": hf.get("prob_precip", np.nan),
+                "smc_precip_intensity": hf.get("precip_intensity", np.nan),
+            })
+
+        if not rows:
+            return pd.DataFrame()
+
+        df = pd.DataFrame(rows)
+        # Compute smc_prob_precip_6h as rolling max of next 6 hours
+        df = df.sort_values("datetime").reset_index(drop=True)
+        df["smc_prob_precip_6h"] = (
+            df["smc_prob_precip_1h"]
+            .rolling(6, min_periods=1)
+            .max()
+            .shift(-5)
+            .fillna(df["smc_prob_precip_1h"])
+        )
+
+        logger.info(f"SMC hourly forecast: {len(df)} hores obtingudes")
+        return df
+
+    except Exception as e:
+        logger.warning(f"Error obtenint SMC hourly forecast: {e}")
+        return pd.DataFrame()

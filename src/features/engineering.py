@@ -548,15 +548,17 @@ FEATURE_COLUMNS = [
 def build_features_from_forecast(
     forecast_df: pd.DataFrame,
     pressure_df: pd.DataFrame = None,
+    smc_df: pd.DataFrame = None,
 ) -> pd.DataFrame:
     """
     Construeix vectors de features per a hores futures usant only forecast data.
-    Les features de radar/sentinella/bias/AEMET queden com NaN
+    Les features de radar/sentinella/bias queden com NaN
     (XGBoost les gestiona nativament).
 
     Args:
         forecast_df: DataFrame d'Open-Meteo hourly forecast (temperature_2m, etc.)
         pressure_df: DataFrame de pressure levels hourly (wind_850_speed, etc.)
+        smc_df: DataFrame de SMC municipal forecast (smc_prob_precip_1h, etc.)
 
     Returns:
         DataFrame amb una fila per hora futura i totes les FEATURE_COLUMNS.
@@ -572,6 +574,18 @@ def build_features_from_forecast(
         df = pd.merge_asof(
             df.sort_values("datetime"),
             pressure_df.sort_values("datetime"),
+            on="datetime",
+            direction="nearest",
+            tolerance=pd.Timedelta("2h"),
+        )
+
+    # Merge SMC municipal forecast si disponible
+    if smc_df is not None and not smc_df.empty:
+        smc_df = smc_df.copy()
+        smc_df["datetime"] = pd.to_datetime(smc_df["datetime"])
+        df = pd.merge_asof(
+            df.sort_values("datetime"),
+            smc_df.sort_values("datetime"),
             on="datetime",
             direction="nearest",
             tolerance=pd.Timedelta("2h"),
