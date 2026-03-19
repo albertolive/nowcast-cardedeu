@@ -8,8 +8,8 @@ on:
     - cron: "0 6 * * *"
     # Informe d'accuracy setmanal (dilluns 8:00 Barcelona = 7:00 UTC estiu)
     - cron: "0 7 * * 1"
-    # Re-entrenar setmanalment (diumenge 3:00 Barcelona = 2:00 UTC estiu)
-    - cron: "0 2 * * 0"
+    # Re-entrenar diàriament (3:00 Barcelona = 2:00 UTC estiu)
+    - cron: "0 2 * * *"
   workflow_dispatch:
     inputs:
       action:
@@ -137,7 +137,7 @@ jobs:
   retrain:
     runs-on: ubuntu-latest
     if: >-
-      github.event.schedule == '0 2 * * 0' ||
+      github.event.schedule == '0 2 * * *' ||
       (github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'retrain')
     timeout-minutes: 30
     permissions:
@@ -176,6 +176,6 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add models/ data/processed/
+          git add models/ data/processed/ data/predictions_log.jsonl
           git diff --cached --quiet || git commit -m "🤖 Retrain model $(date +%Y-%m-%d)"
           git push
