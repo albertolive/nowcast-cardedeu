@@ -278,7 +278,7 @@ def format_daily_forecast(prediction: dict, hourly_outlook: list[dict] = None,
 
     # ── Previsió per franges (públic general) ──
     if hourly_outlook:
-        lines.append("📅 <b>Previsió ML per franges:</b>")
+        lines.append("📅 <b>Previsió per franges:</b>")
         for slot in hourly_outlook:
             icon = _rain_icon(slot.get("max_prob", 0))
             label = slot["label"]
