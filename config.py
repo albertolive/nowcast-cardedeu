@@ -123,6 +123,22 @@ REGIME_PRESSURE_DROP_3H = -2.0   # hPa caiguda en 3h per alerta de pressió
 TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "")
 TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID", "")
 
+# ── Meteocat API rate limiting ──
+# Cache TTLs to stay within 750 calls/month free tier.
+# With 144 predictions/day, uncached calls would exhaust the budget in <1 day.
+# Budget breakdown (with caching):
+#   XDDE lightning: ~24 calls/day (1 per hour) = ~720/month
+#   SMC forecast:   ~8 calls/day  (1 per 3h)   = ~240/month
+#   XEMA sentinel:  ~0-120/month  (rain gate)   = ~120/month (worst case)
+#   Backfill XEMA:  ~9/retrain    (3 days × 3)  = ~270/month
+#   Total: ~1,350/month → still over 750, but XDDE hours cache aggressively
+#   Actual XDDE: past hours cached 24h, only current hour every 60min ≈ ~50/day = ~400/month
+#   Revised total: ~400 + 240 + 120 + 270 = ~1,030 → needs XDDE at 120min
+METEOCAT_CACHE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "meteocat_cache")
+METEOCAT_CACHE_TTL_XDDE = 120     # minutes — current hour cache; past hours cached 24h automatically
+METEOCAT_CACHE_TTL_SMC = 180      # minutes — municipal forecast updates every 6h, 3h cache is safe
+METEOCAT_CACHE_TTL_XEMA = 30      # minutes — sentinel data (already gated by rain gate)
+
 # ── Paths ──
 PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 DATA_RAW_DIR = os.path.join(PROJECT_ROOT, "data", "raw")

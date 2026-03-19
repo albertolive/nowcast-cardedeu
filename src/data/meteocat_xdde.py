@@ -63,7 +63,21 @@ def _bearing_to_compass(bearing: float) -> str:
 def _fetch_lightning_hour(target_date: date, hour: int) -> list[dict]:
     """Fetch lightning strikes for a specific hour.
     Endpoint: /xdde/v1/catalunya/{YYYY}/{MM}/{DD}/{HH}
+    Uses TTL cache to stay within 750 calls/month Meteocat budget.
+    Past hours are immutable — cache forever. Current hour uses TTL.
     """
+    from src.data.meteocat_cache import get_cached, set_cached
+    cache_key = f"xdde_{target_date}_{hour:02d}"
+
+    # Past hours are immutable — use long TTL (24h)
+    now_utc = datetime.now(timezone.utc)
+    is_current_hour = (target_date == now_utc.date() and hour == now_utc.hour)
+    ttl = config.METEOCAT_CACHE_TTL_XDDE if is_current_hour else 1440
+
+    cached = get_cached(cache_key, ttl)
+    if cached is not None:
+        return cached
+
     url = (
         f"{config.METEOCAT_BASE_URL}/xdde/v1/catalunya/"
         f"{target_date.year}/{target_date.month:02d}/{target_date.day:02d}/{hour:02d}"
@@ -72,7 +86,9 @@ def _fetch_lightning_hour(target_date: date, hour: int) -> list[dict]:
         r = SESSION.get(url, headers=_headers(), timeout=20)
         r.raise_for_status()
         data = r.json()
-        return data if isinstance(data, list) else []
+        result = data if isinstance(data, list) else []
+        set_cached(cache_key, result)
+        return result
     except Exception as e:
         logger.debug(f"XDDE hour error ({target_date} {hour:02d}h): {e}")
         return []
@@ -138,6 +154,14 @@ def compute_lightning_features(
     if not _is_configured():
         return result
 
+    # Top-level cache: avoid calling XDDE API 144 times/day
+    from src.data.meteocat_cache import get_cached, set_cached
+    cache_key = f"lightning_features_{datetime.now(timezone.utc).strftime('%Y%m%d_%H')}"
+    cached = get_cached(cache_key, config.METEOCAT_CACHE_TTL_XDDE)
+    if cached is not None:
+        logger.info("XDDE: using cached lightning features")
+        return cached
+
     try:
         strikes = fetch_lightning_data()
     except Exception as e:
@@ -146,6 +170,7 @@ def compute_lightning_features(
 
     if not strikes:
         logger.info("  XDDE: cap descàrrega avui a Catalunya")
+        set_cached(cache_key, result)  # Cache "no lightning" too
         return result
 
     now = datetime.now(timezone.utc)
@@ -187,6 +212,7 @@ def compute_lightning_features(
 
     if not nearby:
         logger.info(f"  XDDE: cap llamp dins de {radius_km}km en les últimes {hours_back}h")
+        set_cached(cache_key, result)  # Cache "no nearby lightning" too
         return result
 
     # Ordenar per distància
@@ -229,7 +255,7 @@ def compute_lightning_features(
         f"més proper a {nearest['dist_km']:.1f}km {_bearing_to_compass(nearest['bearing'])}, "
         f"{'s\'acosta' if approaching else 'estable/s\'allunya'}"
     )
-
+    set_cached(cache_key, result)
     return result
 
 

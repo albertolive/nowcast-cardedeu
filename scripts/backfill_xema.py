@@ -142,6 +142,19 @@ def compute_diffs(sentinel_df: pd.DataFrame, hourly_df: pd.DataFrame) -> pd.Data
     return sentinel_df
 
 
+def _save_cache(cached: pd.DataFrame, new_rows: list) -> pd.DataFrame:
+    """Merge new rows with cache and save to parquet."""
+    new_data = pd.concat(new_rows, ignore_index=True)
+    if not cached.empty:
+        result = pd.concat([cached, new_data], ignore_index=True)
+    else:
+        result = new_data
+    result["datetime"] = pd.to_datetime(result["datetime"])
+    result = result.sort_values("datetime").drop_duplicates(subset=["datetime"], keep="last")
+    result.to_parquet(CACHE_PATH, index=False)
+    return result
+
+
 def main():
     parser = argparse.ArgumentParser(description="Backfill XEMA sentinel data")
     parser.add_argument("--max-days", type=int, default=15,
@@ -187,6 +200,8 @@ def main():
     logger.info(f"API calls: {len(dates_to_fetch) * 3} (budget: ~350-550/month for backfill)")
 
     new_rows = []
+    save_every = 25  # Save progress every N days to avoid data loss on interruption
+
     for i, target in enumerate(dates_to_fetch):
         logger.info(f"  [{i+1}/{len(dates_to_fetch)}] {target}")
         try:
@@ -199,21 +214,16 @@ def main():
         except Exception as e:
             logger.warning(f"    → Error: {e}")
 
+        # Incremental save
+        if new_rows and (i + 1) % save_every == 0:
+            _save_cache(cached, new_rows)
+            logger.info(f"  [checkpoint] Saved progress at day {i+1}")
+
     if not new_rows:
         logger.info("No new data downloaded")
         return
 
-    new_data = pd.concat(new_rows, ignore_index=True)
-
-    # Merge with cache
-    if not cached.empty:
-        result = pd.concat([cached, new_data], ignore_index=True)
-    else:
-        result = new_data
-
-    result["datetime"] = pd.to_datetime(result["datetime"])
-    result = result.sort_values("datetime").drop_duplicates(subset=["datetime"], keep="last")
-    result.to_parquet(CACHE_PATH, index=False)
+    result = _save_cache(cached, new_rows)
 
     n_days = result["datetime"].dt.date.nunique()
     logger.info(f"Saved: {len(result)} rows ({n_days} days) → {CACHE_PATH}")
