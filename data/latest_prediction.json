@@ -3,9 +3,9 @@
   "probability_pct": 0.0,
   "will_rain": false,
   "confidence": "Molt Baixa",
-  "timestamp": "2026-03-19T21:10:59.096877",
+  "timestamp": "2026-03-19T21:20:37.062094",
   "conditions": {
-    "temperature": "7.8",
+    "temperature": "7.6",
     "humidity": 87,
     "pressure": "1018.9",
     "wind_speed": "0.0",
@@ -54,7 +54,7 @@
     "prob_storm": 0
   },
   "bias": {
-    "temp": 1.3999999999999995,
+    "temp": 1.5999999999999996,
     "humidity": -2.0
   },
   "wind_regime": {
@@ -89,17 +89,17 @@
     "hour_cos": 0.7071067811865474,
     "month_sin": 1.0,
     "month_cos": 6.123233995736766e-17,
-    "pressure_msl": 1018.7833333333333,
-    "pressure_change_1h": 0.12111111111096307,
-    "pressure_change_3h": 0.6765151515152183,
-    "pressure_change_6h": 0.3568027210883429,
-    "pressure_accel_3h": 0.009848484848475891,
-    "temperature_2m": 8.0,
-    "relative_humidity_2m": 86.83333333333333,
-    "dew_point": 5.941236685203435,
-    "dew_point_depression": 2.0587633147965647,
-    "humidity_change_1h": 1.2777777777777715,
-    "humidity_change_3h": 7.583333333333329,
+    "pressure_msl": 1018.8461538461538,
+    "pressure_change_1h": 0.18393162393147122,
+    "pressure_change_3h": 0.7393356643357265,
+    "pressure_change_6h": 0.41962323390885103,
+    "pressure_accel_3h": 0.07266899766898405,
+    "temperature_2m": 7.846153846153846,
+    "relative_humidity_2m": 86.92307692307692,
+    "dew_point": 5.804876834899039,
+    "dew_point_depression": 2.041277011254807,
+    "humidity_change_1h": 1.3675213675213627,
+    "humidity_change_3h": 7.67307692307692,
     "vapour_pressure_deficit": null,
     "vpd_change_3h": null,
     "wind_speed_10m": 0.0,
@@ -149,10 +149,10 @@
     "local_rain_xema_3h": null,
     "ensemble_rain_agreement": 0.0,
     "ensemble_precip_spread": 0.0,
-    "ensemble_temp_spread": 0.5760859310901458,
+    "ensemble_temp_spread": 0.6495190528383289,
     "ensemble_max_precip": 0.0,
     "ensemble_min_precip": 0.0,
     "ensemble_models_rain": 0.0
   },
-  "pressure_change_3h": 0.6765151515152183
+  "pressure_change_3h": 0.7393356643357265
 }
