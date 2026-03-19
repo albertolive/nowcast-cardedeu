@@ -109,7 +109,7 @@ export TELEGRAM_CHAT_ID="el_teu_chat_id"
 
 ### 7. GitHub Actions (automatització)
 El workflow `.github/workflows/nowcast.yml`:
-- **Prediccions** cada 15 minuts (6h-23h) amb notificacions intel·ligents
+- **Prediccions** cada 10 minuts (6h-23h) amb notificacions intel·ligents
 - **Resum diari** a les 7:00 via Telegram
 - **Informe d'accuracy** setmanal (dilluns 8:00) via Telegram
 - **Re-entrenament** automàtic diari a les 3:00 (amb feedback loop + calibratge isotònic)

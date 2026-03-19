@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Script 4: Predicció en temps real.
-Usat per GitHub Actions cada 15 minuts.
+Usat per GitHub Actions cada 10 minuts.
 Obté dades actuals, fa la predicció i gestiona notificacions
 basades en transicions d'estat (no spam) + canvis de règim atmosfèric.
 """
