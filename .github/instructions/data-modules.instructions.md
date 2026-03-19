@@ -74,13 +74,12 @@ def fetch_gated_data() -> dict:
 ```
 
 Rain gate signals (checked in `predict_now.py`, not in the module):
-- Radar echo detected
+- Radar echo detected (spatial scan: nearest echo < 30km)
 - Ensemble agreement ≥ 25%
 - CAPE ≥ 800 J/kg
 - Lightning activity
 - AEMET storm prob ≥ 10%
 - AEMET radar has echo
-- AEMET storm prob ≥ 10%
 
 ## Config Integration
 
