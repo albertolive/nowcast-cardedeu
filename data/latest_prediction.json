@@ -3,15 +3,15 @@
   "probability_pct": 1.8,
   "will_rain": false,
   "confidence": "Molt Baixa",
-  "timestamp": "2026-03-19T17:07:14.111946",
+  "timestamp": "2026-03-19T17:10:43.456026",
   "conditions": {
-    "temperature": "12.7",
-    "humidity": 73,
+    "temperature": "12.6",
+    "humidity": 74,
     "pressure": "1017.9",
-    "wind_speed": "11.3",
-    "wind_dir": "NE",
+    "wind_speed": "8.0",
+    "wind_dir": "ENE",
     "rain_today": "0.0",
-    "solar_radiation": 23
+    "solar_radiation": 21
   },
   "radar": {
     "dbz": 0.0,
@@ -44,8 +44,8 @@
     "prob_storm": 0
   },
   "bias": {
-    "temp": 0.40000000000000036,
-    "humidity": -8.0
+    "temp": 0.5,
+    "humidity": -9.0
   },
   "wind_regime": {
     "level": "850hPa",
@@ -73,7 +73,7 @@
   "features_used": 54,
   "threshold": 0.3541666666666667,
   "calibrated": true,
-  "raw_probability": 0.1076,
+  "raw_probability": 0.1155,
   "feature_vector": {
     "hour_sin": -0.9659258262890683,
     "hour_cos": -0.25881904510252063,
@@ -84,19 +84,19 @@
     "pressure_change_3h": -0.8829787234043351,
     "pressure_change_6h": -1.5130434782608972,
     "pressure_accel_3h": 0.2782358156026703,
-    "temperature_2m": 12.716666666666667,
+    "temperature_2m": 12.712499999999999,
     "relative_humidity_2m": 73.0,
-    "dew_point": 7.999752208712593,
-    "dew_point_depression": 4.716914457954074,
+    "dew_point": 7.995741031302398,
+    "dew_point_depression": 4.716758968697601,
     "humidity_change_1h": -0.8936170212765973,
     "humidity_change_3h": -2.851063829787236,
     "vapour_pressure_deficit": null,
     "vpd_change_3h": null,
-    "wind_speed_10m": 8.566666666666666,
-    "wind_u": -6.057548092164756,
-    "wind_v": -6.057548092164757,
-    "wind_speed_change_1h": 0.4581560283687942,
-    "wind_speed_change_3h": -1.9801418439716318,
+    "wind_speed_10m": 8.025,
+    "wind_u": -5.674531919022043,
+    "wind_v": -5.674531919022044,
+    "wind_speed_change_1h": -0.08351063829787186,
+    "wind_speed_change_3h": -2.521808510638298,
     "is_sea_breeze": 1.0,
     "is_migjorn": 0.0,
     "is_garbi": 0.0,
@@ -128,7 +128,7 @@
     "is_overcast": 1.0,
     "weather_code": 3.0,
     "model_predicts_precip": 0.0,
-    "shortwave_radiation": 23.333333333333332
+    "shortwave_radiation": 22.75
   },
   "pressure_change_3h": -0.8829787234043351
 }
