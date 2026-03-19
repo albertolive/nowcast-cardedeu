@@ -209,7 +209,12 @@
     canvas { width: 100% !important; height: 100% !important; }
 
     /* Conditions grid */
-    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; margin-bottom: 24px; }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+      margin-bottom: 16px;
+    }
 
     .info-card {
       background: var(--surface);
@@ -225,6 +230,9 @@
       text-transform: uppercase;
       letter-spacing: 0.5px;
       margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
     }
 
     .stat-row {
@@ -238,6 +246,37 @@
     .stat-row:last-child { border-bottom: none; }
     .stat-row .stat-label { color: var(--text-muted); }
     .stat-row .stat-value { font-weight: 600; }
+
+    /* Sources bar */
+    .sources-bar {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      flex-wrap: wrap;
+      padding: 12px 16px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      margin-bottom: 24px;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .sources-bar .source-item {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .sources-bar .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+    }
+
+    .sources-bar .dot.active { background: var(--accent-green); }
+    .sources-bar .dot.inactive { background: var(--text-muted); }
 
     /* Rain gate */
     .gate-indicator {
@@ -267,33 +306,6 @@
       0%, 100% { opacity: 1; }
       50% { opacity: 0.4; }
     }
-
-    /* Data sources */
-    .sources-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-      gap: 8px;
-      margin-top: 10px;
-    }
-
-    .source-chip {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      padding: 8px 12px;
-      background: var(--surface2);
-      border-radius: 8px;
-      font-size: 12px;
-    }
-
-    .source-chip .dot {
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-    }
-
-    .source-chip .dot.active { background: var(--accent-green); }
-    .source-chip .dot.inactive { background: var(--text-muted); }
 
     /* Loading */
     .loading {
@@ -763,27 +775,42 @@ function renderPrediction(latest, history) {
         ${renderRadar(latest)}
       </div>
 
-      <!-- Model info -->
-      <div class="info-card">
-        <h3>🤖 Model</h3>
-        <div class="stat-row">
-          <span class="stat-label">Threshold</span>
-          <span class="stat-value">${latest.threshold ? (latest.threshold * 100).toFixed(1) + '%' : '—'}</span>
-        </div>
-        <div class="stat-row">
-          <span class="stat-label">Prob. crua → calibrada</span>
-          <span class="stat-value">${latest.raw_probability != null ? (latest.raw_probability * 100).toFixed(1) + '% → ' + pct + '%' : '—'}</span>
-        </div>
-        <div class="sources-grid" style="margin-top:12px">
-          ${renderSources(latest)}
-        </div>
-      </div>
-
       <!-- Atmospheric -->
       <div class="info-card">
         <h3>🌀 Atmosfera</h3>
         ${renderAtmosphere(latest)}
       </div>
+
+      <!-- Model info -->
+      <div class="info-card">
+        <h3>🤖 Model</h3>
+        <div class="stat-row">
+          <span class="stat-label">Prob. crua</span>
+          <span class="stat-value">${latest.raw_probability != null ? (latest.raw_probability * 100).toFixed(1) + '%' : '—'}</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Prob. calibrada</span>
+          <span class="stat-value" style="color:${color}">${pct}%</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Threshold</span>
+          <span class="stat-value">${latest.threshold ? (latest.threshold * 100).toFixed(1) + '%' : '—'}</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Calibració</span>
+          <span class="stat-value">${latest.calibrated ? 'Isotònica' : 'No'}</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Features</span>
+          <span class="stat-value">${latest.features_used || '—'}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sources bar -->
+    <div class="sources-bar">
+      <span style="font-weight:600">Fonts:</span>
+      ${renderSources(latest)}
     </div>
 
     <!-- Resolution History -->
@@ -832,10 +859,10 @@ function renderSources(d) {
     { name: 'Open-Meteo', active: d.ensemble?.total_models > 0 },
   ];
   return sources.map(s => `
-    <div class="source-chip">
+    <span class="source-item">
       <span class="dot ${s.active ? 'active' : 'inactive'}"></span>
       ${s.name}
-    </div>
+    </span>
   `).join('');
 }
 
