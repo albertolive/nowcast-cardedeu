@@ -89,11 +89,25 @@ XEMA_VAR_PRECIP = 35
 AEMET_API_KEY = os.environ.get("AEMET_API_KEY", "")
 AEMET_MUNICIPALITY_CODE = "08052"  # Cardedeu
 
+# ── AEMET Radar regional Barcelona ──
+# Bounds geogràfics estimats per l'àrea del radar regional de Barcelona
+# Cobreix Catalunya i voltants (~38°N-43°N, ~-1°E-4°E)
+AEMET_RADAR_BOUNDS = {
+    "lat_min": 38.5,
+    "lat_max": 43.0,
+    "lon_min": -1.0,
+    "lon_max": 4.5,
+}
+
+# ── Meteocat Predicció Municipal ──
+METEOCAT_MUNICIPALITY_CODE = "080515"  # Cardedeu (codi INE 6 dígits)
+
 # ── Rain gate: llindars per decidir si consultar fonts cares ──
 RAIN_GATE_ENSEMBLE_PROB = 0.2   # Fracció de models amb pluja (≥1 de 4 = 0.25)
 RAIN_GATE_CAPE_THRESHOLD = 800  # J/kg
 RAIN_GATE_AEMET_STORM = 10      # %
 RAIN_GATE_RADAR_NEARBY_KM = 30  # Obrir rain gate si ecos de radar dins d'aquest radi
+RAIN_GATE_LIGHTNING_NEARBY_KM = 30  # Obrir rain gate si llamps dins d'aquest radi
 
 # ── Radar Spatial Scanning ──
 # A zoom 8, cada píxel ≈ 0.457 km a la latitud de Cardedeu (41.63°)
