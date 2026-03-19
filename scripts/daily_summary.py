@@ -60,15 +60,20 @@ def build_hourly_outlook(forecast_df: pd.DataFrame) -> list[dict]:
         if slot_df.empty:
             continue
 
-        # Precipitació i probabilitat
+        # Precipitació acumulada a la franja
         precip_cols = [c for c in ["precipitation", "rain"] if c in slot_df.columns]
         precip_mm = float(slot_df[precip_cols[0]].sum()) if precip_cols else 0
 
-        # Weather code: comptar hores amb precipitació (code >= 50)
+        # Probabilitat basada en weather code + precipitació prevista
         rain_hours = 0
         total_hours = len(slot_df)
         if "weather_code" in slot_df.columns:
             rain_hours = int((slot_df["weather_code"] >= 50).sum())
+
+        # Hores amb precipitació > 0.1mm (potser weather_code no ho marca)
+        if precip_cols:
+            precip_hours = int((slot_df[precip_cols[0]] > 0.1).sum())
+            rain_hours = max(rain_hours, precip_hours)
 
         max_prob = (rain_hours / total_hours * 100) if total_hours > 0 else 0
 
@@ -100,6 +105,55 @@ def build_hourly_outlook(forecast_df: pd.DataFrame) -> list[dict]:
     return outlook
 
 
+def _next_rain_text(forecast_df: pd.DataFrame) -> str:
+    """
+    Busca la propera hora amb pluja prevista en les pròximes 48h.
+    Retorna un text descriptiu o None si no es preveu pluja.
+    """
+    if forecast_df.empty:
+        return None
+
+    df = forecast_df.copy()
+    df["datetime"] = pd.to_datetime(df["datetime"])
+    now = datetime.now()
+
+    # Buscar primera hora amb precipitació > 0.1mm o weather_code >= 50
+    precip_col = "precipitation" if "precipitation" in df.columns else "rain" if "rain" in df.columns else None
+    if precip_col is None:
+        return None
+
+    future = df[df["datetime"] > pd.Timestamp(now)]
+    rain_mask = future[precip_col] > 0.1
+    if "weather_code" in future.columns:
+        rain_mask = rain_mask | (future["weather_code"] >= 50)
+
+    rain_hours = future[rain_mask]
+    if rain_hours.empty:
+        return "Cap pluja prevista en 48h"
+
+    first_rain = rain_hours.iloc[0]["datetime"]
+    delta_h = (first_rain - pd.Timestamp(now)).total_seconds() / 3600
+
+    if delta_h < 3:
+        return f"Pluja prevista d'aquí {delta_h:.0f}h"
+    elif first_rain.date() == now.date():
+        hour = first_rain.hour
+        if hour < 13:
+            return "Pluja prevista aquest matí"
+        elif hour < 19:
+            return "Pluja prevista aquesta tarda"
+        else:
+            return "Pluja prevista aquesta nit"
+    else:
+        hour = first_rain.hour
+        if hour < 13:
+            return "Propera pluja: demà al matí"
+        elif hour < 19:
+            return "Propera pluja: demà a la tarda"
+        else:
+            return "Propera pluja: demà a la nit"
+
+
 def main():
     if not os.path.exists(config.MODEL_PATH):
         logger.error(f"Model no trobat a {config.MODEL_PATH}")
@@ -115,18 +169,29 @@ def main():
 
     logger.info(f"Probabilitat actual: {result['probability_pct']}% ({result['confidence']})")
 
-    # Obtenir forecast horari per a les properes 24h
+    # Obtenir forecast horari per a les properes 48h
     try:
-        forecast_df = fetch_forecast(hours_ahead=24)
+        forecast_df = fetch_forecast(hours_ahead=48)
         hourly_outlook = build_hourly_outlook(forecast_df)
         logger.info(f"Franges horàries: {len(hourly_outlook)}")
         for slot in hourly_outlook:
             logger.info(f"  {slot['label']}: {slot['max_prob']:.0f}% pluja, {slot['precip_mm']:.1f}mm")
     except Exception as e:
         logger.warning(f"Error obtenint forecast horari: {e}")
+        forecast_df = pd.DataFrame()
         hourly_outlook = None
 
-    send_daily_forecast(result, hourly_outlook)
+    # Propera pluja estimada (48h)
+    next_rain = None
+    try:
+        if not forecast_df.empty:
+            next_rain = _next_rain_text(forecast_df)
+            if next_rain:
+                logger.info(f"  Propera pluja: {next_rain}")
+    except Exception as e:
+        logger.warning(f"Error calculant propera pluja: {e}")
+
+    send_daily_forecast(result, hourly_outlook, next_rain_text=next_rain)
     logger.info("✅ Previsió diària enviada per Telegram")
 
     return result
