@@ -228,9 +228,11 @@ Meteocat XEMA té un límit de 750 crides/mes (pla gratuït). El sistema impleme
 
 | Senyal | Llindar | Font |
 |--------|---------|------|
-| Ensemble rain agreement | ≥ 20% dels models | ECMWF + GFS + ICON + AROME |
+| Ensemble rain agreement | ≥ 25% dels models | ECMWF + GFS + ICON + AROME |
 | Radar echo | Qualsevol eco detectat | RainViewer |
+| Radar AEMET | Qualsevol eco detectat | AEMET radar Barcelona |
 | AEMET prob. tempesta | ≥ 10% | AEMET OpenData |
+| Llamps detectats | Qualsevol descàrrega | Meteocat XDDE |
 | CAPE (energia convectiva) | ≥ 800 J/kg | Open-Meteo GFS |
 
 Resultat: ~200-400 crides/mes en lloc de ~6,000. Dins el límit gratuït.
@@ -407,7 +409,7 @@ El resum diari (7:00) està dissenyat per doble audiència — públic general i
 
 - **Histèresi**: El gap de 35 punts entre llindars evita flip-flop quan la probabilitat oscil·la
 - **Cooldown**: Mínim 30 minuts entre alertes consecutives
-- **Persistència**: L'estat es manté entre execucions via GitHub Actions cache
+- **Persistència**: L'estat es manté entre execucions via git commits automàtics
 - **Resultat**: 2-5 missatges en dies de pluja, 0-1 en dies clars
 
 ## Nivells de confiança
