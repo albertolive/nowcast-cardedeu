@@ -823,10 +823,24 @@ function renderPrediction(latest, history) {
   const confColor = pct >= 60 ? 'conf-high' : pct >= 35 ? 'conf-medium' : 'conf-low';
   const gateOpen = latest.rain_gate_open;
 
-  // Verified history stats
+  // Verified history stats (prediction-level)
   const verified = history.filter(h => h.verified);
   const correct = verified.filter(h => h.correct).length;
   const accuracy = verified.length > 0 ? ((correct / verified.length) * 100).toFixed(0) : '—';
+
+  // Day-level accuracy: a day is "correct" if majority of verified predictions were right
+  const dayBuckets = {};
+  for (const h of history) {
+    if (!h.verified) continue;
+    const day = h.timestamp.slice(0, 10);
+    if (!dayBuckets[day]) dayBuckets[day] = { correct: 0, total: 0 };
+    dayBuckets[day].total++;
+    if (h.correct) dayBuckets[day].correct++;
+  }
+  const dayKeys = Object.keys(dayBuckets);
+  const daysCorrect = dayKeys.filter(d => dayBuckets[d].correct / dayBuckets[d].total >= 0.5).length;
+  const daysTotal = dayKeys.length;
+  const dayAccuracy = daysTotal > 0 ? ((daysCorrect / daysTotal) * 100).toFixed(0) : '—';
 
   const app = document.getElementById('app');
   app.innerHTML = `
@@ -867,7 +881,8 @@ function renderPrediction(latest, history) {
       </div>
 
       <div class="prediction-meta">
-        Precisió histórica: <strong style="color:var(--accent-green)">${accuracy}%</strong> (${correct}/${verified.length})
+        Dies encertats: <strong style="color:var(--accent-green)">${dayAccuracy}%</strong> (${daysCorrect}/${daysTotal} dies)
+        · Prediccions: <strong>${accuracy}%</strong> (${correct}/${verified.length})
         · Calibrat isotònic
       </div>
     </div>
@@ -1057,7 +1072,7 @@ function initCalendar(history) {
     const monthLabel = firstDay.toLocaleDateString('ca-ES', { month: 'long', year: 'numeric' });
 
     // Month stats
-    let mVerified = 0, mCorrect = 0, mPreds = 0, mRainDays = 0;
+    let mVerified = 0, mCorrect = 0, mPreds = 0, mRainDays = 0, mDaysCorrect = 0, mDaysWithData = 0;
     for (let d = 1; d <= daysInMonth; d++) {
       const key = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
       const s = getDaySummary(key);
@@ -1066,9 +1081,14 @@ function initCalendar(history) {
         mVerified += s.verified.length;
         mCorrect += s.correct;
         if (s.anyRain) mRainDays++;
+        if (s.verified.length > 0) {
+          mDaysWithData++;
+          if (s.acc >= 0.5) mDaysCorrect++;
+        }
       }
     }
     const mAcc = mVerified > 0 ? ((mCorrect / mVerified) * 100).toFixed(0) : '—';
+    const mDayAcc = mDaysWithData > 0 ? ((mDaysCorrect / mDaysWithData) * 100).toFixed(0) : '—';
 
     // Can navigate?
     const earliest = allDays.length > 0 ? allDays[0] : `${year}-${String(month + 1).padStart(2, '0')}-01`;
@@ -1134,9 +1154,8 @@ function initCalendar(history) {
       </div>
 
       <div class="cal-month-stats">
-        <span class="cal-stat">Prediccions: <strong>${mPreds}</strong></span>
-        <span class="cal-stat">Verificades: <strong>${mVerified}</strong></span>
-        <span class="cal-stat">Precisió: <strong>${mAcc}%</strong></span>
+        <span class="cal-stat">Dies encertats: <strong>${mDayAcc}%</strong> (${mDaysCorrect}/${mDaysWithData})</span>
+        <span class="cal-stat">Prediccions: <strong>${mAcc}%</strong> (${mCorrect}/${mVerified})</span>
         <span class="cal-stat">Dies de pluja: <strong>${mRainDays}</strong></span>
       </div>
 
