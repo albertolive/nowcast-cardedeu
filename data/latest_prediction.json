@@ -40,8 +40,8 @@
     "total_models": 4
   },
   "aemet": {
-    "prob_precip": NaN,
-    "prob_storm": NaN
+    "prob_precip": null,
+    "prob_storm": null
   },
   "bias": {
     "temp": 0.40000000000000036,
