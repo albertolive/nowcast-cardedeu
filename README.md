@@ -374,11 +374,23 @@ El sistema no només mira el píxel de Cardedeu — escaneja un radi de **30 km*
 
 ### Previsió diària millorada
 
-El resum diari (7:00) ara inclou:
-- **Pronòstic per franges**: Matí (7-13h), Tarda (13-19h), Nit (19-1h)
-- **Règim eòlic actual**: Quin vent domina i què implica
-- **Models**: Quants dels 4 models prediuen pluja
-- **Temperatures**: Rang per franja
+El resum diari (7:00) està dissenyat per doble audiència — públic general i entusiastes de la meteorologia (progressive disclosure):
+
+**Part superior (tothom):**
+- Outlook del dia (☀️/🌥️/🌧️) + probabilitat actual
+- Previsió ML per franges: Matí (7-13h), Tarda (13-19h), Nit (19-1h) amb rang de temperatura
+- Propera pluja prevista (48h)
+
+**Condicions actuals (compacte):**
+- Temperatura + humitat + punt de rosada en línia compacta
+- Pressió amb tendència numèrica (ex: `↑(+0.8/3h)`)
+- Vent + cobertura de núvols
+
+**Detall tècnic (entusiastes meteo):**
+- Ensemble: quants models prediuen pluja
+- Vent sinòptic a 850hPa amb direcció, velocitat, T850 i humitat relativa 850/700hPa
+- Índexs d'inestabilitat (TT, LI, VT)
+- Resum intel·ligent del radar (filtra ecos no significatius)
 
 ### Disseny anti-spam
 
