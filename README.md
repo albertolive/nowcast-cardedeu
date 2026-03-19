@@ -2,7 +2,7 @@
 
 Sistema de predicció de pluja hiperlocal per a Cardedeu (Vallès Oriental) basat en Machine Learning.
 
-Utilitza dades reals de l'estació [MeteoCardedeu.net](https://meteocardedeu.net) combinades amb models meteorològics globals (Open-Meteo), acord entre múltiples models (ECMWF, GFS, ICON, AROME), radar de precipitació en temps real (RainViewer), estacions sentinella del SMC (Meteocat XEMA), probabilitats de tempesta calibrades per experts (AEMET), classificació de règims eòlics catalans (Llevantada, Garbí, Ponent), índexs d'inestabilitat (VT, TT, Lifted Index), cisalla de vent i llindars d'aire fred per aprendre els patrons del microclima local i predir si plourà en els propers 60 minuts.
+Utilitza dades reals de l'estació [MeteoCardedeu.net](https://meteocardedeu.net) combinades amb models meteorològics globals (Open-Meteo), acord entre múltiples models (ECMWF, GFS, ICON, AROME), radar de precipitació en temps real (RainViewer), estacions sentinella del SMC (Meteocat XEMA), descàrregues elèctriques (Meteocat XDDE), radar C-banda Barcelona (AEMET), predicció municipal del SMC, probabilitats de tempesta calibrades per experts (AEMET), classificació de règims eòlics catalans (Llevantada, Garbí, Ponent), índexs d'inestabilitat (VT, TT, Lifted Index), cisalla de vent i llindars d'aire fred per aprendre els patrons del microclima local i predir si plourà en els propers 60 minuts.
 
 ## Com funciona
 
@@ -18,16 +18,26 @@ Utilitza dades reals de l'estació [MeteoCardedeu.net](https://meteocardedeu.net
 │  està obert)     │  │  │  probPrecip     │  │
 └────────┬─────────┘  │  └────────┬─────────┘  │
          │                     │         │                      │
+┌──────────────────┐  │  ┌──────────────────┐  │
+│ Meteocat XDDE   │  │  │  AEMET Radar    │  │
+│ (llamps)        │  │  │  (C-banda BCN)  │  │
+└────────┬─────────┘  │  └────────┬─────────┘  │
+         │                     │         │                      │
+┌──────────────────┐  │  │                              │
+│ SMC Predicció   │  │  │                              │
+│ (municipal)     │  │  │                              │
+└────────┬─────────┘  │  │                              │
+         │                     │         │                      │
          ▼                     ▼         ▼                      ▼
     ┌──────────────────────────────────────────────────────────────────────┐
-    │                     Feature Engineering (54 training / 84 real-time)    │
-    │  Tendències · Ensemble · 850hPa · Radar · Sentinella · AEMET · Vent │
+    │                Feature Engineering (100 features)                    │
+    │  Tendències · Ensemble · 850hPa · Radar · Sentinella · Llamps · Vent │
     └──────────────────────────────┬───────────────────────────────────────┘
                                   │
                                   ▼
                         ┌───────────────────┐
                         │     XGBoost       │
-                        │  (corrector local)│
+                        │  + Isotònic Cal.  │
                         └────────┬──────────┘
                                  │
                                  ▼
@@ -102,7 +112,7 @@ El workflow `.github/workflows/nowcast.yml`:
 - **Prediccions** cada 15 minuts (6h-23h) amb notificacions intel·ligents
 - **Resum diari** a les 7:00 via Telegram
 - **Informe d'accuracy** setmanal (dilluns 8:00) via Telegram
-- **Re-entrenament** automàtic cada diumenge a les 3:00 (amb feedback loop)
+- **Re-entrenament** automàtic diari a les 3:00 (amb feedback loop + calibratge isotònic)
 - Execució manual amb selector d'acció (predict / daily_summary / accuracy_report / retrain)
 - Configura els secrets al repositori:
   - `TELEGRAM_BOT_TOKEN`
@@ -118,13 +128,16 @@ nowcast-cardedeu/
 ├── src/
 │   ├── data/
 │   │   ├── meteocardedeu.py  # API meteocardedeu.net (sèries minut a minut + NOAA)
-│   │   ├── open_meteo.py     # API Open-Meteo (històric + forecast)
+│   │   ├── open_meteo.py     # API Open-Meteo (històric + forecast + pressure levels)
 │   │   ├── ensemble.py       # Acord entre ECMWF/GFS/ICON/AROME + forecast bias
-│   │   ├── rainviewer.py     # API RainViewer (radar precipitació temps real)
+│   │   ├── rainviewer.py     # API RainViewer (radar precipitació + màscara clutter)
 │   │   ├── aemet.py          # API AEMET OpenData (probTormenta/probPrecip)
-│   │   └── meteocat.py       # API Meteocat XEMA (sentinella, gated by rain gate)
+│   │   ├── aemet_radar.py    # API AEMET Radar C-banda Barcelona
+│   │   ├── meteocat.py       # API Meteocat XEMA (sentinella, gated by rain gate)
+│   │   ├── meteocat_xdde.py  # API Meteocat XDDE (descàrregues elèctriques)
+│   │   └── meteocat_prediccio.py # API Meteocat Predicció (forecast municipal)
 │   ├── features/
-│   │   ├── engineering.py    # Feature engineering (54 training / 84 real-time, incl. VPD + radar espacial)
+│   │   ├── engineering.py    # Feature engineering (100 features, incl. VPD + radar espacial)
 │   │   └── regime.py         # Detecció de canvis de règim atmosfèric (Llevantada, Garbí, pressió)
 │   ├── model/
 │   │   ├── train.py          # Pipeline d'entrenament (XGBoost + TimeSeriesSplit)
@@ -140,10 +153,11 @@ nowcast-cardedeu/
 ├── scripts/
 │   ├── download_history.py   # Descarregar 12+ anys d'històric
 │   ├── build_dataset.py      # Construir dataset d'entrenament
-│   ├── train_model.py        # Entrenar model (amb feedback loop)
+│   ├── train_model.py        # Entrenar model (amb feedback loop + calibratge isotònic)
 │   ├── predict_now.py        # Predicció + log + verificació (GitHub Actions)
-│   ├── daily_summary.py      # Resum diari del matí (7:00)
-│   └── accuracy_report.py    # Informe setmanal d'accuracy (dilluns 8:00)
+│   ├── daily_summary.py      # Resum diari ML-powered (7:00) amb previsió per franges
+│   ├── accuracy_report.py    # Informe setmanal d'accuracy (dilluns 8:00)
+│   └── backfill_lightning.py  # Backfill històric de llamps XDDE al dataset
 ├── models/                   # Model entrenat (git tracked)
 ├── data/                     # Dades + logs de prediccions
 ├── requirements.txt          # Dependències Python
@@ -152,7 +166,7 @@ nowcast-cardedeu/
 
 ## Features del model
 
-El model defineix **84 features** per predicció en temps real (9 zero-importance features pruned). Per entrenament, **54 estan disponibles** (les 30 restants —radar, ensemble, AEMET, sentinella— no tenen arxiu històric accessible).
+El model defineix **100 features** per predicció en temps real. Per entrenament, **54 estan disponibles** (les 46 restants —radar, ensemble, AEMET, sentinella, llamps XDDE, radar AEMET, predicció SMC— no tenen arxiu històric accessible, o l'API encara no està activada).
 
 | Categoria | Features | Per què? |
 |-----------|----------|----------|
@@ -173,6 +187,9 @@ El model defineix **84 features** per predicció en temps real (9 zero-importanc
 | Ensemble | Acord ECMWF/GFS/ICON/AROME, spread precip, models pluja | Desacord = incertesa = zona ambigua |
 | Bias | Forecast-observat temp/hum en temps real | Model biased = atmosfera impredictible |
 | AEMET | probPrecipitació, probTormenta (experts) | Tempestes convectives mediterrànies |
+| 🆕 Llamps (XDDE) | Count 30km/15km, distància, approaching, cloud-ground, corrent màxim | Activitat convectiva directa |
+| 🆕 Radar AEMET | dBZ, eco, distància eco, cobertura 20km | Radar C-banda Barcelona (alta resolució) |
+| 🆕 SMC Predicció | prob_precip_1h, prob_precip_6h, intensitat | Previsió municipal calibrada per Cardedeu |
 
 ## Fonts de dades
 
@@ -184,6 +201,9 @@ El model defineix **84 features** per predicció en temps real (9 zero-importanc
 | [RainViewer](https://www.rainviewer.com/api.html) | Radar de precipitació compost (mosaic global) | Cada ~10 min | No |
 | [AEMET OpenData](https://opendata.aemet.es) | probTormenta + probPrecipitació calibrades | Cada 6h | Sí (gratuïta) |
 | [Meteocat XEMA](https://apidocs.meteocat.gencat.cat) | Estacions sentinella SMC (Granollers, ETAP Cardedeu) | Cada 30 min | Sí (gratuïta) |
+| [Meteocat XDDE](https://apidocs.meteocat.gencat.cat) | Descàrregues elèctriques (llamps) a Catalunya | Temps real | Sí (gratuïta) |
+| [AEMET Radar](https://opendata.aemet.es) | Radar C-banda regional Barcelona | Cada ~10 min | Sí (gratuïta) |
+| [SMC Predicció](https://apidocs.meteocat.gencat.cat) | Previsió municipal horària (prob. precip) | Cada 6h | Sí (gratuïta) |
 
 ### Radar RainViewer
 El sistema descarrega tiles de radar (zoom 8, tile 134/94) i fa dues coses:
@@ -262,23 +282,26 @@ El model AROME de Meteo-France és el 4t model de l'ensemble, amb resolució de 
 
 | Mètrica | Valor |
 |---------|-------|
-| AUC-ROC (CV) | 0.9527 ± 0.007 |
-| F1-Score (CV) | 0.6737 ± 0.031 |
-| AUC-ROC (final) | 0.9597 |
-| Mostres d'entrenament | 98,208 |
+| AUC-ROC (CV) | 0.9526 ± 0.007 |
+| F1-Score (CV) | 0.6719 ± 0.033 |
+| F1-Score OOF (calibrat) | 0.6904 |
+| AUC-ROC (final) | 0.9590 |
+| Llindar òptim (calibrat) | 0.3542 |
+| Mostres d'entrenament | 98,160 |
 | Features (training) | 54 |
-| Features (real-time) | 84 |
+| Features (total) | 100 |
 | Classe positiva (pluja) | ~9.3% |
 | Cross-validation | TimeSeriesSplit (5 folds) |
+| Calibratge | Isotonic Regression (OOF) |
 
-> El model utilitza `scale_pos_weight=9.7` per compensar el desequilibri de classes i `eval_metric="aucpr"` per optimitzar la detecció de pluja.
+> El model utilitza `scale_pos_weight=9.71` per compensar el desequilibri de classes, `eval_metric="aucpr"` per optimitzar la detecció de pluja, i **calibratge isotònic** sobre prediccions out-of-fold per obtenir probabilitats fiables.
 
 ## Feedback loop (auto-aprenentatge)
 
 El sistema verifica automàticament les seves pròpies prediccions i aprèn dels errors:
 
 ```
-┌─────────────────┐    +60 min     ┌─────────────────┐    diumenge     ┌─────────────────┐
+┌─────────────────┐    +60 min     ┌─────────────────┐    diari      ┌─────────────────┐
 │   Predicció     │──────────▶│  Verificació    │────────────▶│   Re-entrena   │
 │  cada 15 min   │             │ va ploure?     │              │  amb feedback   │
 └────────┬────────┘             └────────┬────────┘              └────────┬────────┘
@@ -298,7 +321,7 @@ El sistema verifica automàticament les seves pròpies prediccions i aprèn dels
 2. **Verificació**: 60-75 min després, el sistema consulta l'estació per veure si realment va ploure
 3. **Classificació**: Cada predicció es marca com TP, FP, TN, o FN
 4. **Informe**: Cada dilluns a les 8:00, reps un report amb accuracy, precisión, recall, F1, i tendència
-5. **Re-entrenament**: El retrain setmanal incorpora les prediccions verificades com a dades noves, permetent al model aprendre dels seus errors recents
+5. **Re-entrenament**: El retrain diari incorpora les prediccions verificades com a dades noves, permetent al model aprendre dels seus errors recents
 
 ### Mètriques que rebràs
 

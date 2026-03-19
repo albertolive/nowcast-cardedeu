@@ -5,13 +5,13 @@ Hyperlocal rain nowcasting system for Cardedeu (Vallès Oriental) using XGBoost 
 ## Architecture
 
 ```
-src/data/       → 9 independent API clients (graceful degradation: each returns empty dict on failure)
-src/features/   → Feature engineering (54 train / 100 real-time) + wind regime detection
+src/data/       → 12 independent API clients (graceful degradation: each returns empty dict on failure)
+src/features/   → Feature engineering (100 features: 54 with historical data, 46 real-time only) + wind regime detection
 src/features/regime.py → Regime change detection (Llevantada onset, Garbí+instability, pressure drops, backing wind)
-src/model/      → XGBoost training (TimeSeriesSplit CV + IsotonicRegression calibration) + prediction
+src/model/      → XGBoost training (TimeSeriesSplit CV + IsotonicRegression calibration) + prediction + ML-powered hourly forecast
 src/notify/     → Telegram alerts with state machine (hysteresis: up=0.65, down=0.30) + regime alerts
 src/feedback/   → JSONL prediction log, verification (60+ min later), feedback export for retraining
-scripts/        → Entry points: download_history, build_dataset, train_model, predict_now, daily_summary, accuracy_report
+scripts/        → Entry points: download_history, build_dataset, train_model, predict_now, daily_summary, accuracy_report, backfill_lightning
 config.py       → All constants, paths, thresholds, coordinates — single source of truth
 ```
 
@@ -19,7 +19,11 @@ config.py       → All constants, paths, thresholds, coordinates — single sou
 
 **Key pattern — Graceful degradation:** Every `src/data/` module wraps API calls in try/except, logs warnings, and returns a dict with NaN values on failure. XGBoost handles NaN natively. Never let a single API failure crash the pipeline.
 
-**Key pattern — Feature split:** 100 features defined in `FEATURE_COLUMNS` but only 54 exist in historical training data. The remaining 46 are real-time only (radar, sentinel, ensemble, AEMET, lightning, forecast bias). XGBoost handles NaN natively for training rows missing these columns. The feedback loop gradually adds real-time features to the training set as verified predictions accumulate.
+**Key pattern — Feature split:** 100 features defined in `FEATURE_COLUMNS` but only 54 exist in historical training data. The remaining 46 are real-time only (radar, sentinel, ensemble, AEMET, lightning, AEMET radar, SMC forecast). XGBoost handles NaN natively for training rows missing these columns. The feedback loop gradually adds real-time features to the training set as verified predictions accumulate. Lightning features (7) can be backfilled historically via `scripts/backfill_lightning.py` once XDDE API access is enabled.
+
+**Key pattern — Isotonic calibration:** Raw XGBoost probabilities are calibrated using IsotonicRegression fitted on out-of-fold predictions. This maps raw scores to true probabilities. The optimal F1 threshold (0.3542) is derived from the calibrated OOF predictions, not the default 0.5.
+
+**Key pattern — ML-powered daily forecast:** The daily summary (7:00) runs `predict_hourly_forecast()` which applies the XGBoost model to each future hour using Open-Meteo forecast + pressure levels + SMC municipal forecast as input features. This replaces raw weather-code-based forecasts with actual ML predictions.
 
 **Key pattern — Wind regimes at 850hPa:** Wind classification (Llevantada, Garbí, Ponent, Tramuntana, Migjorn) uses the synoptic 850hPa wind, not the 10m surface wind which is distorted by local orography (Montseny). The raw binary regime flags have zero model importance — the interaction terms (`llevantada_strength`, `llevantada_moisture`, `garbi_strength`) carry the signal.
 
@@ -76,8 +80,10 @@ GitHub Actions (`.github/workflows/nowcast.yml`):
 - **predict**: Every 15 min (6–23h Barcelona) → `predict_now.py`
 - **daily_summary**: 7:00 Barcelona → `daily_summary.py`
 - **accuracy_report**: Monday 8:00 → `accuracy_report.py`
-- **retrain**: Daily 2:00 → download + build + train + git commit model
+- **retrain**: Daily 3:00 Barcelona → download + build + train + git commit model
 
 Secrets: `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID`, `METEOCAT_API_KEY`, `AEMET_API_KEY`
+
+**Note on Meteocat API:** The API key currently only works for XEMA endpoints. XDDE (lightning) and Predicció (municipal forecast) return 403 — pending SMC support fix. The code handles this gracefully (empty results, NaN features).
 
 **Note:** GitHub Actions free tier runs `*/15` cron but actual execution is ~hourly due to queue congestion. This is a known limitation — a VPS would give true 15-min resolution.

@@ -20,29 +20,34 @@ logger = logging.getLogger(__name__)
 
 
 def main():
-    logger.info("📊 Nowcast Cardedeu — Informe setmanal d'accuracy")
+    try:
+        logger.info("📊 Nowcast Cardedeu — Informe setmanal d'accuracy")
 
-    # Mètriques dels últims 7 dies
-    metrics_week = compute_accuracy(days=7)
-    logger.info(f"Últims 7 dies: {metrics_week.get('verified', 0)} verificades, "
-                f"accuracy={metrics_week.get('accuracy', '?')}%")
+        # Mètriques dels últims 7 dies
+        metrics_week = compute_accuracy(days=7)
+        logger.info(f"Últims 7 dies: {metrics_week.get('verified', 0)} verificades, "
+                    f"accuracy={metrics_week.get('accuracy', '?')}%")
 
-    # Mètriques totals
-    metrics_all = compute_accuracy()
-    logger.info(f"Total: {metrics_all.get('verified', 0)} verificades, "
-                f"accuracy={metrics_all.get('accuracy', '?')}%")
+        # Mètriques totals
+        metrics_all = compute_accuracy()
+        logger.info(f"Total: {metrics_all.get('verified', 0)} verificades, "
+                    f"accuracy={metrics_all.get('accuracy', '?')}%")
 
-    # Enviar report per Telegram
-    report = format_accuracy_report(metrics_week)
-    if metrics_all.get("verified", 0) > metrics_week.get("verified", 0):
-        report += (
-            f"\n\n📈 <b>Total acumulat:</b> "
-            f"{metrics_all['accuracy']}% accuracy "
-            f"({metrics_all['verified']} prediccions)"
-        )
+        # Enviar report per Telegram
+        report = format_accuracy_report(metrics_week)
+        if metrics_all.get("verified", 0) > metrics_week.get("verified", 0):
+            report += (
+                f"\n\n📈 <b>Total acumulat:</b> "
+                f"{metrics_all['accuracy']}% accuracy "
+                f"({metrics_all['verified']} prediccions)"
+            )
 
-    send_telegram_message(report)
-    logger.info("✅ Informe enviat per Telegram")
+        send_telegram_message(report)
+        logger.info("✅ Informe enviat per Telegram")
+
+    except Exception as e:
+        logger.error(f"Error generant informe d'accuracy: {e}")
+        sys.exit(1)
 
 
 if __name__ == "__main__":
