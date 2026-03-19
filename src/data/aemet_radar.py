@@ -24,6 +24,7 @@ import requests
 import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 import config
+from src.data.aemet_cache import get_cached, set_cached, RADAR_TTL
 
 logger = logging.getLogger(__name__)
 
@@ -144,6 +145,11 @@ def fetch_aemet_radar() -> dict:
     if not config.AEMET_API_KEY:
         logger.info("AEMET radar no configurat (sense AEMET_API_KEY)")
         return result
+
+    # Check cache first (radar updates every ~10 min)
+    cached = get_cached("radar", RADAR_TTL)
+    if cached is not None:
+        return cached
 
     try:
         # Obtenir la URL de la imatge del radar de Barcelona
@@ -268,6 +274,7 @@ def fetch_aemet_radar() -> dict:
             f"eco_proper={result.get('aemet_radar_nearest_echo_km', 'N/A')}km, "
             f"cobertura_20km={result.get('aemet_radar_coverage_20km', 0):.1%}"
         )
+        set_cached("radar", result)
         return result
 
     except Exception as e:

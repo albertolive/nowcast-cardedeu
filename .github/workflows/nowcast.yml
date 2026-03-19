@@ -83,6 +83,7 @@ jobs:
           cp -f data/latest_prediction.json docs/latest_prediction.json 2>/dev/null || true
           cp -f data/predictions_log.jsonl docs/predictions_log.jsonl 2>/dev/null || true
           git add data/predictions_log.jsonl data/notification_state.json data/latest_prediction.json
+          git add data/aemet_cache.json 2>/dev/null || true
           git add docs/latest_prediction.json docs/predictions_log.jsonl 2>/dev/null || true
           git diff --cached --quiet || git commit -m "📊 Prediction $(date -u +%Y-%m-%dT%H:%M)"
           git push || (git pull --rebase origin main && git push)
