@@ -36,29 +36,50 @@ def send_telegram_message(text: str) -> bool:
         return False
 
 
+def _pressure_trend_arrow(change_3h) -> str:
+    """Retorna fletxa de tendència de pressió."""
+    if change_3h is None:
+        return ""
+    if change_3h >= 1.5:
+        return " ↑↑"
+    elif change_3h >= 0.5:
+        return " ↑"
+    elif change_3h > -0.5:
+        return " →"
+    elif change_3h > -1.5:
+        return " ↓"
+    else:
+        return " ↓↓"
+
+
 def _format_conditions(prediction: dict) -> list[str]:
     """Genera les línies de condicions actuals, radar i sentinella."""
     conditions = prediction.get("conditions", {})
+    pressure = conditions.get('pressure', '?')
+    pressure_change = prediction.get("pressure_change_3h")
+    trend = _pressure_trend_arrow(pressure_change)
+
     lines = [
         "📡 <b>Condicions actuals:</b>",
         f"  🌡️ Temp: {conditions.get('temperature', '?')}°C",
         f"  💧 Humitat: {conditions.get('humidity', '?')}%",
-        f"  📊 Pressió: {conditions.get('pressure', '?')} hPa",
+        f"  📊 Pressió: {pressure} hPa{trend}",
         f"  💨 Vent: {conditions.get('wind_speed', '?')} km/h {conditions.get('wind_dir', '')}",
     ]
 
-    # Radar (puntual + espacial)
+    # Radar (només mostrar si hi ha informació rellevant)
     radar = prediction.get("radar", {})
     if radar:
-        lines.append("")
-        lines.append("📡 <b>Radar:</b>")
         if radar.get("has_echo"):
+            lines.append("")
+            lines.append("📡 <b>Radar:</b>")
             lines.append(f"  ⚡ Eco sobre Cardedeu: {radar.get('dbz', 0)} dBZ ({radar.get('rain_rate_mmh', 0)} mm/h)")
         else:
-            # Mostrar ecos propers si existeixen
             nearest_km = radar.get("nearest_echo_km")
             compass = radar.get("nearest_echo_compass")
-            if nearest_km is not None and nearest_km < 30:
+            if nearest_km is not None and nearest_km < 25:
+                lines.append("")
+                lines.append("📡 <b>Radar:</b>")
                 lines.append(f"  Eco més proper: {nearest_km} km {compass}")
                 eta = radar.get("storm_eta_min")
                 if eta is not None:
@@ -66,12 +87,9 @@ def _format_conditions(prediction: dict) -> list[str]:
                 velocity = radar.get("storm_velocity_kmh", 0)
                 if velocity > 5:
                     lines.append(f"  Velocitat: {velocity} km/h")
-            else:
-                lines.append("  Sense ecos en 30 km")
-
-        coverage = radar.get("coverage_20km", 0)
-        if coverage > 0:
-            lines.append(f"  Cobertura 20 km: {coverage:.0%}")
+                coverage = radar.get("coverage_20km", 0)
+                if coverage > 0:
+                    lines.append(f"  Cobertura 20 km: {coverage:.0%}")
 
     # Sentinella
     sentinel = prediction.get("sentinel", {})
@@ -170,7 +188,20 @@ def format_regime_change(prediction: dict, regime_change: dict) -> str:
     return "\n".join(lines)
 
 
-def format_daily_forecast(prediction: dict, hourly_outlook: list[dict] = None) -> str:
+def _format_timestamp(iso_ts: str) -> str:
+    """Converteix ISO timestamp a format llegible en català."""
+    from datetime import datetime
+    months = ['gen', 'feb', 'mar', 'abr', 'mai', 'jun',
+              'jul', 'ago', 'set', 'oct', 'nov', 'des']
+    try:
+        dt = datetime.fromisoformat(iso_ts[:19])
+        return f"{dt.day} {months[dt.month-1]} {dt.year}, {dt.hour:02d}:{dt.minute:02d}"
+    except Exception:
+        return iso_ts[:19]
+
+
+def format_daily_forecast(prediction: dict, hourly_outlook: list[dict] = None,
+                          next_rain_text: str = None) -> str:
     """
     Resum diari millorat amb previsió hora per hora (matí/tarda/nit)
     corregida pel model ML de Cardedeu.
@@ -195,9 +226,13 @@ def format_daily_forecast(prediction: dict, hourly_outlook: list[dict] = None) -
         "",
         f"{outlook}",
         f"🎯 Probabilitat ara: <b>{prob}%</b> ({confidence})",
-        f"🌬️ Règim: {regime_text}",
-        "",
     ]
+
+    # Només mostrar règim si és informatiu (no "Variable")
+    if regime_text != "Variable":
+        lines.append(f"🌬️ {regime_text}")
+
+    lines.append("")
 
     # Previsió per franges horàries
     if hourly_outlook:
@@ -217,17 +252,22 @@ def format_daily_forecast(prediction: dict, hourly_outlook: list[dict] = None) -
             lines.append(line)
         lines.append("")
 
-    # Ensemble models
+    # Ensemble: només mostrar si algun model prediu pluja
     ensemble = prediction.get("ensemble", {})
     models_rain = ensemble.get("models_rain", 0)
     total_models = ensemble.get("total_models", 4)
-    if models_rain is not None:
+    if models_rain is not None and models_rain > 0:
         lines.append(f"🔮 Models: {models_rain}/{total_models} prediuen pluja")
+        lines.append("")
 
-    lines.append("")
+    # Propera pluja estimada (48h)
+    if next_rain_text:
+        lines.append(f"🔭 {next_rain_text}")
+        lines.append("")
+
     lines.extend(_format_conditions(prediction))
     lines.append("")
-    lines.append(f"⏰ {prediction['timestamp'][:19]}")
+    lines.append(f"⏰ {_format_timestamp(prediction['timestamp'])}")
     return "\n".join(lines)
 
 
@@ -279,9 +319,10 @@ def send_daily_summary(prediction: dict) -> bool:
     return send_telegram_message(format_daily_summary(prediction))
 
 
-def send_daily_forecast(prediction: dict, hourly_outlook: list[dict] = None) -> bool:
+def send_daily_forecast(prediction: dict, hourly_outlook: list[dict] = None,
+                        next_rain_text: str = None) -> bool:
     """Envia la previsió diària millorada."""
-    return send_telegram_message(format_daily_forecast(prediction, hourly_outlook))
+    return send_telegram_message(format_daily_forecast(prediction, hourly_outlook, next_rain_text))
 
 
 def send_regime_change(prediction: dict, regime_change: dict) -> bool:
