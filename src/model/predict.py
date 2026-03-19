@@ -129,7 +129,7 @@ def predict_now() -> dict:
             latest[k] = v
 
     logger.info("Carregant model...")
-    model, feature_names = load_model()
+    model, feature_names, calibrator, threshold = load_model()
 
     # Preparar el vector de features (alinear amb les que el model espera)
     X = pd.DataFrame(columns=feature_names)
@@ -141,9 +141,13 @@ def predict_now() -> dict:
 
     X = X.replace([np.inf, -np.inf], np.nan)
 
-    # Predicció
-    probability = float(model.predict_proba(X)[:, 1][0])
-    will_rain = probability >= config.ALERT_PROBABILITY_THRESHOLD
+    # Predicció amb calibratge
+    raw_probability = float(model.predict_proba(X)[:, 1][0])
+    if calibrator is not None:
+        probability = float(calibrator.predict([raw_probability])[0])
+    else:
+        probability = raw_probability
+    will_rain = probability >= threshold
 
     # Nivell de confiança
     if probability >= 0.85:
@@ -231,7 +235,10 @@ def predict_now() -> dict:
         },
         "rain_gate_open": rain_signals,
         "features_used": len(feature_names),
-        "threshold": config.ALERT_PROBABILITY_THRESHOLD,
+        "threshold": threshold,
+        "calibrated": calibrator is not None,
+        "raw_probability": round(raw_probability, 4),
+        "feature_vector": {col: float(X[col].values[0]) if pd.notna(X[col].values[0]) else None for col in feature_names},
         "pressure_change_3h": float(latest.get("pressure_change_3h", pd.Series([np.nan])).values[0])
             if pd.notna(latest.get("pressure_change_3h", pd.Series([np.nan])).values[0]) else None,
     }

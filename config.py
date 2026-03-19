@@ -116,6 +116,7 @@ DATA_PROCESSED_DIR = os.path.join(PROJECT_ROOT, "data", "processed")
 MODELS_DIR = os.path.join(PROJECT_ROOT, "models")
 MODEL_PATH = os.path.join(MODELS_DIR, "xgboost_nowcast.json")
 FEATURE_NAMES_PATH = os.path.join(MODELS_DIR, "feature_names.json")
+CALIBRATOR_PATH = os.path.join(MODELS_DIR, "calibrator.pkl")
 SCALER_PATH = os.path.join(MODELS_DIR, "scaler.pkl")
 
 # ── Històric: anys a descarregar ──

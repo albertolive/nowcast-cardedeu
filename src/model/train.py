@@ -17,6 +17,7 @@ from sklearn.metrics import (
     precision_recall_curve,
     f1_score,
 )
+from sklearn.isotonic import IsotonicRegression
 
 import sys
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
@@ -62,6 +63,7 @@ def train_model(
 ) -> tuple[xgb.XGBClassifier, dict]:
     """
     Entrena XGBoost amb validació creuada temporal (TimeSeriesSplit).
+    Inclou calibratge isotònic de les probabilitats i cerca del llindar òptim.
     Retorna el model entrenat i les mètriques.
     """
     # Calcular el pes de les classes (la pluja és minoritària)
@@ -91,10 +93,11 @@ def train_model(
         enable_categorical=False,
     )
 
-    # Validació creuada temporal
+    # Validació creuada temporal — recollir prediccions out-of-fold per calibratge
     tscv = TimeSeriesSplit(n_splits=n_splits)
     cv_scores = []
     cv_f1_scores = []
+    oof_proba = np.full(len(y), np.nan)
 
     for fold, (train_idx, val_idx) in enumerate(tscv.split(X)):
         X_train, X_val = X.iloc[train_idx], X.iloc[val_idx]
@@ -107,6 +110,7 @@ def train_model(
         )
 
         y_pred_proba = model.predict_proba(X_val)[:, 1]
+        oof_proba[val_idx] = y_pred_proba
         y_pred = (y_pred_proba >= config.ALERT_PROBABILITY_THRESHOLD).astype(int)
 
         auc = roc_auc_score(y_val, y_pred_proba) if y_val.nunique() > 1 else 0
@@ -114,6 +118,34 @@ def train_model(
         cv_scores.append(auc)
         cv_f1_scores.append(f1)
         logger.info(f"  Fold {fold+1}: AUC={auc:.4f}, F1={f1:.4f}")
+
+    # ── Calibratge isotònic sobre les prediccions out-of-fold ──
+    oof_mask = ~np.isnan(oof_proba)
+    oof_y = y.values[oof_mask]
+    oof_p = oof_proba[oof_mask]
+
+    calibrator = IsotonicRegression(y_min=0, y_max=1, out_of_bounds="clip")
+    calibrator.fit(oof_p, oof_y)
+    logger.info(f"Calibratge isotònic ajustat amb {oof_mask.sum()} prediccions OOF")
+
+    # Trobar llindar òptim (F1) sobre les probabilitats calibrades OOF
+    oof_calibrated = calibrator.predict(oof_p)
+    precisions, recalls, thresholds = precision_recall_curve(oof_y, oof_calibrated)
+    f1s = np.where(
+        (precisions[:-1] + recalls[:-1]) > 0,
+        2 * precisions[:-1] * recalls[:-1] / (precisions[:-1] + recalls[:-1]),
+        0,
+    )
+    optimal_idx = np.argmax(f1s)
+    optimal_threshold = float(thresholds[optimal_idx])
+    logger.info(f"Llindar òptim (F1={f1s[optimal_idx]:.4f}): {optimal_threshold:.4f}")
+
+    # Recalcular CV F1 amb llindar òptim calibrat per comparar
+    oof_cal_pred = (oof_calibrated >= optimal_threshold).astype(int)
+    cal_f1 = f1_score(oof_y, oof_cal_pred, zero_division=0)
+    uncal_f1 = f1_score(oof_y, (oof_p >= config.ALERT_PROBABILITY_THRESHOLD).astype(int), zero_division=0)
+    logger.info(f"F1 OOF sense calibratge (llindar={config.ALERT_PROBABILITY_THRESHOLD}): {uncal_f1:.4f}")
+    logger.info(f"F1 OOF amb calibratge  (llindar={optimal_threshold:.4f}): {cal_f1:.4f}")
 
     # Entrenar model final amb totes les dades
     # Utilitzem les últimes 10% com a eval_set per early stopping
@@ -124,9 +156,10 @@ def train_model(
         verbose=False,
     )
 
-    # Mètriques finals al conjunt de validació
-    y_final_proba = model.predict_proba(X.iloc[split_idx:])[:, 1]
-    y_final_pred = (y_final_proba >= config.ALERT_PROBABILITY_THRESHOLD).astype(int)
+    # Mètriques finals al conjunt de validació (amb calibratge)
+    y_final_proba_raw = model.predict_proba(X.iloc[split_idx:])[:, 1]
+    y_final_proba = calibrator.predict(y_final_proba_raw)
+    y_final_pred = (y_final_proba >= optimal_threshold).astype(int)
     y_final_true = y.iloc[split_idx:]
 
     metrics = {
@@ -140,13 +173,17 @@ def train_model(
         "n_positive": int(n_positive),
         "n_features": X.shape[1],
         "feature_names": list(X.columns),
+        "calibrated": True,
+        "optimal_threshold": optimal_threshold,
+        "calibration_oof_f1_uncalibrated": float(uncal_f1),
+        "calibration_oof_f1_calibrated": float(cal_f1),
     }
 
     logger.info(f"\nResultats CV: AUC={metrics['cv_auc_mean']:.4f}±{metrics['cv_auc_std']:.4f}, "
                 f"F1={metrics['cv_f1_mean']:.4f}±{metrics['cv_f1_std']:.4f}")
-    logger.info(f"Model final: AUC={metrics['final_auc']:.4f}")
+    logger.info(f"Model final (calibrat): AUC={metrics['final_auc']:.4f}, llindar={optimal_threshold:.4f}")
 
-    return model, metrics
+    return model, metrics, calibrator
 
 
 def get_feature_importance(model: xgb.XGBClassifier, feature_names: list[str]) -> pd.DataFrame:
@@ -159,8 +196,9 @@ def get_feature_importance(model: xgb.XGBClassifier, feature_names: list[str]) -
     return fi
 
 
-def save_model(model: xgb.XGBClassifier, feature_names: list[str], metrics: dict) -> None:
-    """Desa el model, noms de features i mètriques."""
+def save_model(model: xgb.XGBClassifier, feature_names: list[str], metrics: dict,
+               calibrator: Optional[IsotonicRegression] = None) -> None:
+    """Desa el model, calibrador, noms de features i mètriques."""
     os.makedirs(config.MODELS_DIR, exist_ok=True)
 
     model.save_model(config.MODEL_PATH)
@@ -169,6 +207,10 @@ def save_model(model: xgb.XGBClassifier, feature_names: list[str], metrics: dict
     with open(config.FEATURE_NAMES_PATH, "w") as f:
         json.dump(feature_names, f)
 
+    if calibrator is not None:
+        joblib.dump(calibrator, config.CALIBRATOR_PATH)
+        logger.info(f"Calibrador desat a {config.CALIBRATOR_PATH}")
+
     metrics_path = os.path.join(config.MODELS_DIR, "metrics.json")
     with open(metrics_path, "w") as f:
         json.dump(metrics, f, indent=2, default=str)
@@ -176,8 +218,8 @@ def save_model(model: xgb.XGBClassifier, feature_names: list[str], metrics: dict
     logger.info(f"Mètriques desades a {metrics_path}")
 
 
-def load_model() -> tuple[xgb.XGBClassifier, list[str]]:
-    """Carrega el model entrenat i els noms de features."""
+def load_model() -> tuple[xgb.XGBClassifier, list[str], Optional[IsotonicRegression], float]:
+    """Carrega el model entrenat, calibrador i llindar òptim."""
     if not os.path.exists(config.MODEL_PATH):
         raise FileNotFoundError(f"Model no trobat: {config.MODEL_PATH}")
 
@@ -187,4 +229,18 @@ def load_model() -> tuple[xgb.XGBClassifier, list[str]]:
     with open(config.FEATURE_NAMES_PATH) as f:
         feature_names = json.load(f)
 
-    return model, feature_names
+    # Carregar calibrador (si existeix)
+    calibrator = None
+    if os.path.exists(config.CALIBRATOR_PATH):
+        calibrator = joblib.load(config.CALIBRATOR_PATH)
+
+    # Carregar llindar òptim de metrics.json (si existeix)
+    threshold = config.ALERT_PROBABILITY_THRESHOLD
+    metrics_path = os.path.join(config.MODELS_DIR, "metrics.json")
+    if os.path.exists(metrics_path):
+        with open(metrics_path) as f:
+            metrics = json.load(f)
+        if "optimal_threshold" in metrics:
+            threshold = metrics["optimal_threshold"]
+
+    return model, feature_names, calibrator, threshold
