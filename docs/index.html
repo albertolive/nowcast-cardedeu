@@ -85,6 +85,8 @@
 
     .probability-ring svg {
       transform: rotate(-90deg);
+      width: 100%;
+      height: 100%;
     }
 
     .probability-ring .ring-bg {
@@ -613,19 +615,129 @@
       min-width: 55px;
     }
 
-    /* Responsive */
+    /* Responsive — Tablet */
+    @media (max-width: 768px) {
+      .container { padding: 16px 12px; }
+
+      header { padding: 24px 0 16px; }
+      header h1 { font-size: 24px; }
+
+      .prediction-card { padding: 24px 16px; }
+      .prediction-question { font-size: 20px; }
+      .probability-ring { width: 170px; height: 170px; }
+      .probability-value .pct { font-size: 46px; }
+
+      .outcome-btn { padding: 12px 18px; }
+      .outcome-btn .btn-pct { font-size: 20px; }
+
+      .grid { gap: 12px; }
+      .info-card { padding: 16px; }
+
+      .chart-card { padding: 20px 16px; }
+      .chart-container { height: 180px; }
+
+      .history-card { padding: 20px 16px; }
+
+      .pred-row { padding: 8px 12px; gap: 10px; }
+      .pred-header { padding: 8px 12px; }
+
+      .gate-indicator { font-size: 12px; padding: 6px 12px; }
+
+      .cal-month-stats { gap: 12px; font-size: 12px; padding: 8px 12px; }
+    }
+
+    /* Responsive — Mobile */
     @media (max-width: 600px) {
+      .container { padding: 12px 10px; }
+
+      header { padding: 20px 0 12px; }
+      header h1 { font-size: 22px; }
+      header .subtitle { font-size: 13px; }
+
+      .prediction-card { padding: 20px 14px; border-radius: 12px; margin-bottom: 16px; }
       .prediction-question { font-size: 18px; }
-      .probability-value .pct { font-size: 42px; }
-      .probability-ring { width: 160px; height: 160px; }
-      .outcome-btn { padding: 10px 16px; }
+      .prediction-subtext { font-size: 12px; margin-bottom: 16px; }
+      .probability-ring { width: 150px; height: 150px; }
+      .probability-value .pct { font-size: 40px; }
+      .probability-value .label { font-size: 10px; }
+
+      .outcome-buttons { gap: 8px; }
+      .outcome-btn { padding: 10px 14px; border-radius: 10px; }
+      .outcome-btn .btn-label { font-size: 13px; }
       .outcome-btn .btn-pct { font-size: 18px; }
-      .pred-prob-bar { display: none; }
-      .pred-row { gap: 8px; }
-      .pred-header { display: none; }
-      .cal-month-stats { gap: 10px; font-size: 12px; }
+
+      .gate-indicator { font-size: 11px; padding: 5px 10px; }
+
+      .prediction-meta { font-size: 11px; }
+
+      .chart-card { padding: 16px 12px; border-radius: 12px; margin-bottom: 16px; }
+      .chart-card h2 { font-size: 14px; }
+      .chart-container { height: 160px; }
+
+      .grid { grid-template-columns: 1fr; gap: 12px; margin-bottom: 12px; }
+      .info-card { padding: 14px; border-radius: 10px; }
+      .info-card h3 { font-size: 12px; margin-bottom: 10px; }
+      .stat-row { font-size: 13px; padding: 5px 0; }
+
+      .sources-bar { padding: 10px 12px; gap: 10px; font-size: 11px; border-radius: 8px; margin-bottom: 16px; }
+
+      .history-card { padding: 16px 12px; border-radius: 12px; margin-bottom: 16px; }
+      .history-card h2 { font-size: 14px; }
+      .history-subtitle { font-size: 12px; margin-bottom: 14px; }
+
+      .cal-nav-btn { padding: 5px 10px; font-size: 12px; }
+      .cal-month-label { font-size: 14px; }
+      .cal-month-stats { gap: 8px; font-size: 11px; padding: 8px 10px; flex-wrap: wrap; }
       .cal-day { font-size: 11px; border-radius: 6px; }
-      .day-detail-header { flex-wrap: wrap; gap: 8px; }
+      .cal-day-icon { font-size: 9px; }
+      .cal-weekday { font-size: 10px; }
+      .cal-legend { gap: 8px; font-size: 11px; }
+
+      .day-detail-header { flex-wrap: wrap; gap: 8px; padding: 12px; }
+      .day-detail-date { font-size: 13px; }
+      .day-resolution { font-size: 11px; padding: 2px 8px; }
+      .day-detail-accuracy { font-size: 12px; }
+
+      .pred-header { display: none; }
+      .pred-row { padding: 8px 12px; gap: 6px; font-size: 12px; flex-wrap: wrap; }
+      .pred-prob-bar { display: none; }
+      .pred-time { min-width: 40px; font-size: 12px; }
+      .pred-pct { min-width: 36px; font-size: 12px; }
+      .pred-said { min-width: 60px; font-size: 11px; }
+      .pred-result { min-width: 60px; font-size: 11px; }
+      .pred-rain-mm { min-width: 45px; font-size: 11px; }
+
+      footer { padding: 16px 0; font-size: 11px; }
+    }
+
+    /* Responsive — Small phones */
+    @media (max-width: 380px) {
+      .container { padding: 10px 8px; }
+
+      header h1 { font-size: 19px; }
+
+      .prediction-card { padding: 16px 10px; }
+      .prediction-question { font-size: 16px; }
+      .probability-ring { width: 130px; height: 130px; }
+      .probability-value .pct { font-size: 34px; }
+
+      .outcome-buttons { flex-direction: column; align-items: center; }
+      .outcome-btn { max-width: 100%; width: 100%; }
+
+      .gate-indicator { font-size: 10px; text-align: center; line-height: 1.4; }
+
+      .cal-grid { gap: 3px; }
+      .cal-day { border-radius: 4px; }
+      .cal-day-num { font-size: 10px; }
+      .cal-day-icon { font-size: 8px; }
+
+      .cal-month-stats { flex-direction: column; gap: 4px; }
+
+      .pred-row { gap: 4px; }
+      .pred-said { display: none; }
+      .pred-rain-mm { display: none; }
+
+      .sources-bar { flex-direction: column; gap: 6px; align-items: flex-start; }
     }
   </style>
 </head>
