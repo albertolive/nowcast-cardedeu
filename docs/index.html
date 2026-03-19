@@ -841,11 +841,11 @@ function renderConditions(d) {
 function renderRadar(d) {
   const r = d.radar || {};
   return `
-    <div class="stat-row"><span class="stat-label">dBZ</span><span class="stat-value">${r.dbz ?? '—'}</span></div>
-    <div class="stat-row"><span class="stat-label">Eco proper</span><span class="stat-value">${r.nearest_echo_km ?? '—'} km ${r.nearest_echo_compass || ''}</span></div>
-    <div class="stat-row"><span class="stat-label">Cobertura 20km</span><span class="stat-value">${r.coverage_20km != null ? r.coverage_20km + '%' : '—'}</span></div>
-    <div class="stat-row"><span class="stat-label">Apropa?</span><span class="stat-value">${r.approaching ? '⚠️ Sí' : '—'}</span></div>
-    <div class="stat-row"><span class="stat-label">ETA</span><span class="stat-value">${r.storm_eta_min ? r.storm_eta_min + ' min' : '—'}</span></div>
+    <div class="stat-row"><span class="stat-label">Intensitat del radar</span><span class="stat-value">${r.dbz ?? '—'}</span></div>
+    <div class="stat-row"><span class="stat-label">Pluja més propera</span><span class="stat-value">${r.nearest_echo_km ?? '—'} km ${r.nearest_echo_compass || ''}</span></div>
+    <div class="stat-row"><span class="stat-label">Pluja als voltants (20 km)</span><span class="stat-value">${r.coverage_20km != null ? r.coverage_20km + '%' : '—'}</span></div>
+    <div class="stat-row"><span class="stat-label">S'acosta pluja?</span><span class="stat-value">${r.approaching ? '⚠️ Sí' : 'No'}</span></div>
+    <div class="stat-row"><span class="stat-label">Arriba en</span><span class="stat-value">${r.storm_eta_min ? r.storm_eta_min + ' min' : '—'}</span></div>
   `;
 }
 
@@ -876,10 +876,10 @@ function renderAtmosphere(d) {
                  w.is_ponent ? '🔥 Ponent' : '— Neutre';
   return `
     <div class="stat-row"><span class="stat-label">Règim de vent</span><span class="stat-value">${regime}</span></div>
-    <div class="stat-row"><span class="stat-label">Temp 850hPa</span><span class="stat-value">${p.temp_850 ?? '—'}°C</span></div>
-    <div class="stat-row"><span class="stat-label">VT Index</span><span class="stat-value">${p.vt_index ?? '—'}</span></div>
-    <div class="stat-row"><span class="stat-label">TT Index</span><span class="stat-value">${p.tt_index != null ? p.tt_index.toFixed(1) : '—'}</span></div>
-    <div class="stat-row"><span class="stat-label">Humitat 850hPa</span><span class="stat-value">${p.rh_850 ?? '—'}%</span></div>
+    <div class="stat-row"><span class="stat-label">Temperatura en altitud</span><span class="stat-value">${p.temp_850 ?? '—'}°C</span></div>
+    <div class="stat-row"><span class="stat-label">Inestabilitat vertical</span><span class="stat-value">${p.vt_index ?? '—'}</span></div>
+    <div class="stat-row"><span class="stat-label">Inestabilitat total</span><span class="stat-value">${p.tt_index != null ? p.tt_index.toFixed(1) : '—'}</span></div>
+    <div class="stat-row"><span class="stat-label">Humitat en altitud</span><span class="stat-value">${p.rh_850 ?? '—'}%</span></div>
   `;
 }
 
