@@ -41,10 +41,12 @@ def export_verified_for_training() -> int:
 
     # Expandir el vector de features complet (guardat pel logger) en columnes
     if "features" in df.columns:
-        features_df = pd.json_normalize(df["features"])
-        # Afegir les columnes de features al DataFrame, sobreescrivint si ja existeixen
-        for col in features_df.columns:
-            df[col] = features_df[col].values
+        # Filter out rows where features is not a dict (e.g., NaN/float)
+        valid_mask = df["features"].apply(lambda x: isinstance(x, dict))
+        if valid_mask.any():
+            features_df = pd.json_normalize(df.loc[valid_mask, "features"])
+            for col in features_df.columns:
+                df.loc[valid_mask, col] = features_df[col].values
         df = df.drop(columns=["features"])
 
     # Normalitzar columnes booleanes a tipus consistent

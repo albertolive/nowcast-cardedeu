@@ -3,6 +3,7 @@
 Script 1: Descarrega totes les dades històriques.
 - NOAA daily data de meteocardedeu.net (2015-2026)
 - Hourly data d'Open-Meteo per al mateix període
+- Ensemble historical (multi-model agreement) d'Open-Meteo
 - Combina tot en un dataset únic per entrenar el model
 """
 import logging
@@ -70,6 +71,27 @@ def main():
     logger.info(f"  Open-Meteo: {hourly_data['datetime'].min()} → {hourly_data['datetime'].max()}")
     if not pressure_data.empty:
         logger.info(f"  Pressure: {pressure_data['datetime'].min()} → {pressure_data['datetime'].max()}")
+    logger.info("=" * 60)
+
+    # ── 4. Ensemble historical (multi-model agreement) ──
+    logger.info("=" * 60)
+    logger.info("Descarregant ensemble historical (backfill_ensemble)...")
+    logger.info("=" * 60)
+    import subprocess
+    result = subprocess.run(
+        [sys.executable, os.path.join(os.path.dirname(__file__), "backfill_ensemble.py")],
+        capture_output=True, text=True
+    )
+    if result.returncode == 0:
+        # Show last few lines of output
+        lines = result.stdout.strip().split("\n")
+        for line in lines[-5:]:
+            logger.info(f"  {line}")
+    else:
+        logger.warning(f"Ensemble backfill failed: {result.stderr[-200:]}")
+
+    logger.info("=" * 60)
+    logger.info("Tot completat!")
     logger.info("=" * 60)
 
 

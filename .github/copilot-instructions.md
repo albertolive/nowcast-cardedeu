@@ -6,12 +6,12 @@ Hyperlocal rain nowcasting system for Cardedeu (Vallès Oriental) using XGBoost 
 
 ```
 src/data/       → 12 independent API clients (graceful degradation: each returns empty dict on failure)
-src/features/   → Feature engineering (112 features: 54 with historical data, 58 real-time only) + wind regime detection
+src/features/   → Feature engineering (112 features: 68 with historical data, 44 real-time only) + wind regime detection
 src/features/regime.py → Regime change detection (Llevantada onset, Garbí+instability, pressure drops, backing wind)
 src/model/      → XGBoost training (TimeSeriesSplit CV + IsotonicRegression calibration) + prediction + ML-powered hourly forecast
 src/notify/     → Telegram alerts with state machine (hysteresis: up=0.65, down=0.30) + regime alerts
 src/feedback/   → JSONL prediction log, verification (60+ min later), feedback export for retraining
-scripts/        → Entry points: download_history, build_dataset, train_model, predict_now, daily_summary, accuracy_report, backfill_lightning
+scripts/        → Entry points: download_history, build_dataset, train_model, predict_now, daily_summary, accuracy_report, backfill_lightning, backfill_ensemble, backfill_xema
 config.py       → All constants, paths, thresholds, coordinates — single source of truth
 ```
 
@@ -19,11 +19,11 @@ config.py       → All constants, paths, thresholds, coordinates — single sou
 
 **Key pattern — Graceful degradation:** Every `src/data/` module wraps API calls in try/except, logs warnings, and returns a dict with NaN values on failure. XGBoost handles NaN natively. Never let a single API failure crash the pipeline.
 
-**Key pattern — Feature split:** 112 features defined in `FEATURE_COLUMNS` but only 54 exist in historical training data. The remaining 58 are real-time only (radar, sentinel, ensemble, AEMET, lightning, AEMET radar, SMC forecast, radar quadrants, echo bearing, Tramuntana interactions). All data sources are now active and logging real values. XGBoost handles NaN natively for training rows missing these columns. The feedback loop gradually adds real-time features to the training set as verified predictions accumulate. Lightning features (7) can be backfilled historically via `scripts/backfill_lightning.py`.
+**Key pattern — Feature split:** 112 features defined in `FEATURE_COLUMNS` but 68 exist in historical training data (54 original + 6 ensemble + 6 sentinel + 2 Tramuntana interactions). The remaining 44 are real-time only (radar, AEMET, AEMET radar, SMC forecast, radar quadrants, echo bearing, forecast bias). Ensemble features are backfilled via `scripts/backfill_ensemble.py` (Open-Meteo Historical Forecast API, free, from Jan 2022). XEMA sentinel features are backfilled incrementally via `scripts/backfill_xema.py` (Meteocat API, 15 days/run). Lightning features (7) can be backfilled via `scripts/backfill_lightning.py`.
 
-**Key pattern — Diagnostic logging:** Every prediction logs a full snapshot to `predictions_log.jsonl`: conditions, radar (RainViewer), AEMET (radar+forecast), sentinel (XEMA), ensemble, pressure_levels, wind_regime, bias, plus the complete 54-feature vector. This enables post-hoc analysis of missed predictions.
+**Key pattern — Diagnostic logging:** Every prediction logs a full snapshot to `predictions_log.jsonl`: conditions, radar (RainViewer), AEMET (radar+forecast), sentinel (XEMA), ensemble, pressure_levels, wind_regime, bias, plus the complete 68-feature vector. This enables post-hoc analysis of missed predictions.
 
-**Key pattern — Isotonic calibration:** Raw XGBoost probabilities are calibrated using IsotonicRegression fitted on out-of-fold predictions. This maps raw scores to true probabilities. The optimal F1 threshold (0.3542) is derived from the calibrated OOF predictions, not the default 0.5.
+**Key pattern — Isotonic calibration:** Raw XGBoost probabilities are calibrated using IsotonicRegression fitted on out-of-fold predictions. This maps raw scores to true probabilities. The optimal F1 threshold (0.3513) is derived from the calibrated OOF predictions, not the default 0.5.
 
 **Key pattern — ML-powered daily forecast:** The daily summary (7:00) runs `predict_hourly_forecast()` which applies the XGBoost model to each future hour using Open-Meteo forecast + pressure levels + SMC municipal forecast as input features. This replaces raw weather-code-based forecasts with actual ML predictions.
 
@@ -35,7 +35,7 @@ config.py       → All constants, paths, thresholds, coordinates — single sou
 
 **Key pattern — Regime change alerts:** The system alerts on atmospheric **transitions** (cause), not just rain probability (effect). Four types: Llevantada onset (E/SE wind + humidity ≥75%), Garbí + instability (SW wind + TT>44 or LI<-2), rapid pressure drop (≤-2 hPa in 3h), and backing wind with high humidity. Regime alerts have an independent 2h cooldown (`REGIME_COOLDOWN_MIN`) separate from rain alerts.
 
-**Key pattern — Feedback loop:** Every prediction is logged to JSONL. 60+ min later, the system verifies against actual MeteoCardedeu station data. Verified predictions feed back into the training set on the next retrain cycle. This is how real-time-only features (radar, sentinel, ensemble) gradually enter the training data.
+**Key pattern — Feedback loop:** Every prediction is logged to JSONL. 60+ min later, the system verifies against actual MeteoCardedeu station data. Verified predictions feed back into the training set on the next retrain cycle. This is how real-time-only features (radar, AEMET, SMC forecast) gradually enter the training data.
 
 **Key pattern — Notification types:** Four distinct Telegram alerts: `rain_incoming` (prob crosses above 0.65), `rain_clearing` (prob drops below 0.30), `regime_change` (atmospheric setup shifts to historically rainy pattern), and `daily_summary` (morning 3-slot outlook at 7:00). State machine with hysteresis prevents notification spam.
 

@@ -1,39 +1,39 @@
 {
-  "cv_auc_mean": 0.9525946695669326,
-  "cv_auc_std": 0.006816827428742641,
-  "cv_f1_mean": 0.671850767914893,
-  "cv_f1_std": 0.03327271578086382,
-  "final_auc": 0.958986127703731,
+  "cv_auc_mean": 0.9548440476701157,
+  "cv_auc_std": 0.007795945150334797,
+  "cv_f1_mean": 0.6742958470965922,
+  "cv_f1_std": 0.029558875924234847,
+  "final_auc": 0.9654107800068845,
   "final_report": {
     "0": {
-      "precision": 0.9719107754042252,
-      "recall": 0.9499365555427385,
-      "f1-score": 0.9607980399019951,
-      "support": 8669.0
+      "precision": 0.9749970234551733,
+      "recall": 0.9443035055350554,
+      "f1-score": 0.9594048386151953,
+      "support": 8672.0
     },
     "1": {
-      "precision": 0.676842889054356,
-      "recall": 0.7925021795989537,
-      "f1-score": 0.7301204819277108,
+      "precision": 0.6598591549295775,
+      "recall": 0.8169136878814298,
+      "f1-score": 0.7300350603817686,
       "support": 1147.0
     },
-    "accuracy": 0.9315403422982885,
+    "accuracy": 0.9294225481209899,
     "macro avg": {
-      "precision": 0.8243768322292906,
-      "recall": 0.8712193675708462,
-      "f1-score": 0.845459260914853,
-      "support": 9816.0
+      "precision": 0.8174280891923753,
+      "recall": 0.8806085967082427,
+      "f1-score": 0.844719949498482,
+      "support": 9819.0
     },
     "weighted avg": {
-      "precision": 0.9374320808602867,
-      "recall": 0.9315403422982885,
-      "f1-score": 0.9338433578526365,
-      "support": 9816.0
+      "precision": 0.9381844014774914,
+      "recall": 0.9294225481209899,
+      "f1-score": 0.932611159459096,
+      "support": 9819.0
     }
   },
-  "n_samples": 98160,
+  "n_samples": 98183,
   "n_positive": 9167,
-  "n_features": 54,
+  "n_features": 68,
   "feature_names": [
     "hour_sin",
     "hour_cos",
@@ -64,6 +64,8 @@
     "llevantada_strength",
     "llevantada_moisture",
     "garbi_strength",
+    "tramuntana_strength",
+    "tramuntana_moisture",
     "wind_dir_change_3h",
     "wind_850_speed",
     "wind_850_dir",
@@ -88,10 +90,22 @@
     "is_overcast",
     "weather_code",
     "model_predicts_precip",
-    "shortwave_radiation"
+    "shortwave_radiation",
+    "sentinel_temp_diff",
+    "sentinel_humidity_diff",
+    "sentinel_precip",
+    "sentinel_raining",
+    "local_rain_xema",
+    "local_rain_xema_3h",
+    "ensemble_rain_agreement",
+    "ensemble_precip_spread",
+    "ensemble_temp_spread",
+    "ensemble_max_precip",
+    "ensemble_min_precip",
+    "ensemble_models_rain"
   ],
   "calibrated": true,
-  "optimal_threshold": 0.3541666666666667,
-  "calibration_oof_f1_uncalibrated": 0.6754485578014989,
-  "calibration_oof_f1_calibrated": 0.6903812609020683
+  "optimal_threshold": 0.35126050420168065,
+  "calibration_oof_f1_uncalibrated": 0.6773393461104847,
+  "calibration_oof_f1_calibrated": 0.6928774225404271
 }
