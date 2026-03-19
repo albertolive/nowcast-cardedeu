@@ -13,6 +13,7 @@ import requests
 import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 import config
+from src.data.aemet_cache import get_cached, set_cached, FORECAST_TTL
 
 logger = logging.getLogger(__name__)
 
@@ -62,6 +63,11 @@ def fetch_hourly_forecast() -> dict:
       - aemet_precip_today: prob. de precipitació avui (0-100)
     """
     try:
+        # Check cache first (AEMET forecast updates every ~6-12h)
+        cached = get_cached("forecast", FORECAST_TTL)
+        if cached is not None:
+            return cached
+
         data = _aemet_fetch(
             f"/prediccion/especifica/municipio/horaria/{config.AEMET_MUNICIPALITY_CODE}"
         )
@@ -122,6 +128,7 @@ def fetch_hourly_forecast() -> dict:
             f"probTormenta={max_prob_storm}%, "
             f"precipAvui={precip_today}%"
         )
+        set_cached("forecast", result)
         return result
 
     except Exception as e:
