@@ -242,7 +242,7 @@ jobs:
       - name: Build training dataset
         run: |
           python scripts/backfill_ensemble.py
-          python scripts/backfill_xema.py --max-days 15 || echo "XEMA backfill skipped (API limit or no key)"
+          python scripts/backfill_xema.py --max-days 3 || echo "XEMA backfill skipped (API limit or no key)"
           python scripts/build_dataset.py
 
       - name: Train model

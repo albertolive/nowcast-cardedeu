@@ -51,6 +51,13 @@ def fetch_municipal_hourly_forecast() -> dict:
         return result
 
     try:
+        from src.data.meteocat_cache import get_cached, set_cached
+        cache_key = f"smc_forecast_{datetime.now().strftime('%Y%m%d_%H')}"
+        cached = get_cached(cache_key, config.METEOCAT_CACHE_TTL_SMC)
+        if cached is not None:
+            logger.info("SMC forecast: using cached response")
+            return cached
+
         url = (
             f"{config.METEOCAT_BASE_URL}/pronostic/v1/"
             f"municipalHoraria/{config.METEOCAT_MUNICIPALITY_CODE}"
@@ -107,6 +114,7 @@ def fetch_municipal_hourly_forecast() -> dict:
             f"probPrecip6h={result['smc_prob_precip_6h']}%, "
             f"temp={result['smc_temp_forecast']}°C"
         )
+        set_cached(cache_key, result)
         return result
 
     except Exception as e:

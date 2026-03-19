@@ -31,11 +31,19 @@ def fetch_variable_all_stations(var_code: int, target_date: date) -> pd.DataFram
     """
     Obté les dades d'una variable per a TOTES les estacions en un dia.
     Endpoint: /xema/v1/variables/mesurades/{var_code}/{YYYY}/{MM}/{DD}
+    Uses TTL cache to stay within 750 calls/month Meteocat budget.
     Retorna DataFrame amb columnes: station_code, datetime, value
     """
     if not _is_configured():
         logger.warning("Meteocat API key no configurada")
         return pd.DataFrame()
+
+    from src.data.meteocat_cache import get_cached, set_cached
+    cache_key = f"xema_{var_code}_{target_date}"
+    cached = get_cached(cache_key, config.METEOCAT_CACHE_TTL_XEMA)
+    if cached is not None:
+        logger.debug(f"XEMA cache hit: var={var_code}, date={target_date}")
+        return pd.DataFrame(cached)
 
     url = (
         f"{config.METEOCAT_BASE_URL}/xema/v1/variables/mesurades/"
@@ -56,7 +64,7 @@ def fetch_variable_all_stations(var_code: int, target_date: date) -> pd.DataFram
             for lecture in var_info.get("lectures", []):
                 rows.append({
                     "station_code": station_code,
-                    "datetime": pd.to_datetime(lecture["data"]),
+                    "datetime": pd.to_datetime(lecture["data"]).isoformat(),
                     "value": lecture.get("valor"),
                     "estat": lecture.get("estat", "").strip(),
                 })
@@ -65,6 +73,11 @@ def fetch_variable_all_stations(var_code: int, target_date: date) -> pd.DataFram
     if not df.empty:
         # Filtrar lectures invàlides
         df = df[df["estat"] != "T"]  # T = valor no disponible
+        set_cached(cache_key, rows)  # Cache the raw rows (JSON-serializable)
+
+    # Restore datetime type after cache serialization
+    if not df.empty and "datetime" in df.columns:
+        df["datetime"] = pd.to_datetime(df["datetime"])
     return df
 
 
@@ -86,8 +99,12 @@ def fetch_sentinel_latest() -> dict:
         config.XEMA_VAR_PRECIP: "sentinel_precip",
     }
 
+    last_precip_df = None  # Will hold the precipitation data from the loop
+
     for var_code, key in var_map.items():
         df = fetch_variable_all_stations(var_code, today)
+        if var_code == config.XEMA_VAR_PRECIP:
+            last_precip_df = df  # Save for local rain gauge reuse
         if df.empty:
             result[key] = None
             continue
@@ -104,7 +121,8 @@ def fetch_sentinel_latest() -> dict:
         result[f"{key}_time"] = sentinel.iloc[-1]["datetime"].isoformat()
 
     # També obtenir precipitació del pluviòmetre local (ETAP Cardedeu KX)
-    df_precip = fetch_variable_all_stations(config.XEMA_VAR_PRECIP, today)
+    # Reuse the precipitation data already fetched above (saves 1 API call: 4→3)
+    df_precip = last_precip_df if last_precip_df is not None else fetch_variable_all_stations(config.XEMA_VAR_PRECIP, today)
     if not df_precip.empty:
         local = df_precip[df_precip["station_code"] == config.LOCAL_RAIN_STATION_CODE]
         if not local.empty:
