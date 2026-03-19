@@ -78,7 +78,8 @@ def _bearing_to_compass(bearing: float) -> str:
 
 def _scan_radar_spatial(png_bytes: bytes, cx: int, cy: int,
                         radius_km: float, pixel_size_km: float,
-                        wind_from_dir: Optional[float] = None) -> dict:
+                        wind_from_dir: Optional[float] = None,
+                        clutter_mask: Optional[np.ndarray] = None) -> dict:
     """
     Escaneja una zona circular del tile de radar al voltant de Cardedeu.
     Detecta ecos de pluja, calcula distància, cobertura i mètriques espacials.
@@ -90,6 +91,8 @@ def _scan_radar_spatial(png_bytes: bytes, cx: int, cy: int,
         pixel_size_km: Mida de cada píxel en km
         wind_from_dir: Direcció d'on ve el vent (graus, 0=N, 90=E).
                        Si proporcionat, calcula mètriques del sector de sobrevent.
+        clutter_mask: Matriu booleana (mida del tile) amb True als píxels de clutter.
+                      Píxels marcats com a clutter s'exclouen de la detecció d'eco.
 
     Returns:
         Dict amb mètriques espacials del radar.
@@ -124,8 +127,13 @@ def _scan_radar_spatial(png_bytes: bytes, cx: int, cy: int,
     intensity = region[:, :, 0].astype(float)
     alpha = region[:, :, 3]
 
-    # Ecos: intensitat > 10 (~5 dBZ, pluja molt lleugera)
+    # Ecos: alpha > 0 indica cobertura radar, intensity > 10 filtra soroll
     has_echo = (alpha > 0) & (intensity > 10) & in_radius
+
+    # Excloure clutter (ecos permanents detectats en tots els frames)
+    if clutter_mask is not None:
+        clutter_region = clutter_mask[y_lo:y_hi, x_lo:x_hi]
+        has_echo = has_echo & ~clutter_region
 
     if not has_echo.any():
         result = _empty_spatial_result(radius_km)
@@ -196,6 +204,39 @@ def _scan_radar_spatial(png_bytes: bytes, cx: int, cy: int,
         result["upwind_max_dbz"] = 0.0
 
     return result
+
+
+def _build_clutter_mask(tile_bytes_list: list) -> Optional[np.ndarray]:
+    """
+    Construeix una màscara booleana d'ecos permanents (clutter de terra).
+    Un píxel es considera clutter si mostra eco (alpha>0, R>10)
+    en TOTS els frames vàlids. La pluja real es mou entre frames (~1h).
+    Necessita mínim 3 frames vàlids per ser fiable.
+    """
+    from PIL import Image
+
+    echo_count = None
+    valid_count = 0
+
+    for tile_bytes in tile_bytes_list:
+        if tile_bytes is None:
+            continue
+        try:
+            img = Image.open(io.BytesIO(tile_bytes)).convert("RGBA")
+            arr = np.array(img)
+            has_echo = (arr[:, :, 3] > 0) & (arr[:, :, 0] > 10)
+            if echo_count is None:
+                echo_count = has_echo.astype(int)
+            else:
+                echo_count += has_echo.astype(int)
+            valid_count += 1
+        except Exception:
+            continue
+
+    if valid_count < 3 or echo_count is None:
+        return None
+
+    return echo_count >= valid_count
 
 
 def _empty_spatial_result(radius_km: float) -> dict:
@@ -303,8 +344,9 @@ def fetch_radar_at_cardedeu(wind_from_dir: Optional[float] = None) -> dict:
     # Analitzar els últims 6 frames (~1h de radar, cada 10min)
     recent_frames = past_frames[-6:]
     intensities = []
-    spatial_scans = []
+    tile_bytes_list = []
 
+    # Fase 1: Descarregar tots els tiles i extreure intensitat puntual
     for frame in recent_frames:
         tile_url = (
             f"{config.RAINVIEWER_TILE_BASE}{frame['path']}/256/"
@@ -314,29 +356,42 @@ def fetch_radar_at_cardedeu(wind_from_dir: Optional[float] = None) -> dict:
         try:
             r = SESSION.get(tile_url, timeout=5)
             if r.status_code == 200 and len(r.content) > 100:
-                # Intensitat puntual (píxel de Cardedeu)
+                tile_bytes_list.append(r.content)
                 intensity = _extract_pixel_intensity(
                     r.content,
                     config.RAINVIEWER_PIXEL_X,
                     config.RAINVIEWER_PIXEL_Y,
                 )
                 intensities.append(intensity)
-
-                # Escaneig espacial (radi 30km)
-                scan = _scan_radar_spatial(
-                    r.content,
-                    config.RAINVIEWER_PIXEL_X,
-                    config.RAINVIEWER_PIXEL_Y,
-                    config.RADAR_SCAN_RADIUS_KM,
-                    config.RADAR_PIXEL_SIZE_KM,
-                    wind_from_dir=wind_from_dir,
-                )
-                spatial_scans.append(scan)
             else:
+                tile_bytes_list.append(None)
                 intensities.append(0)
-                spatial_scans.append(_empty_spatial_result(config.RADAR_SCAN_RADIUS_KM))
         except Exception:
+            tile_bytes_list.append(None)
             intensities.append(0)
+
+    # Fase 2: Construir màscara de clutter (ecos permanents en tots els frames)
+    clutter_mask = _build_clutter_mask(tile_bytes_list)
+    if clutter_mask is not None:
+        clutter_count = int(clutter_mask.sum())
+        if clutter_count > 0:
+            logger.debug(f"  Clutter mask: {clutter_count} píxels permanents filtrats")
+
+    # Fase 3: Escaneig espacial amb filtre de clutter
+    spatial_scans = []
+    for tile_bytes in tile_bytes_list:
+        if tile_bytes is not None:
+            scan = _scan_radar_spatial(
+                tile_bytes,
+                config.RAINVIEWER_PIXEL_X,
+                config.RAINVIEWER_PIXEL_Y,
+                config.RADAR_SCAN_RADIUS_KM,
+                config.RADAR_PIXEL_SIZE_KM,
+                wind_from_dir=wind_from_dir,
+                clutter_mask=clutter_mask,
+            )
+            spatial_scans.append(scan)
+        else:
             spatial_scans.append(_empty_spatial_result(config.RADAR_SCAN_RADIUS_KM))
 
     # ── Mètriques puntuals (compatibilitat amb l'existent) ──
