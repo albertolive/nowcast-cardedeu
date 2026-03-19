@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Plourà a Cardedeu?</title>
+  <style>
+    :root {
+      --bg: #0d1117;
+      --surface: #161b22;
+      --surface2: #1c2333;
+      --border: #30363d;
+      --text: #e6edf3;
+      --text-muted: #8b949e;
+      --accent-blue: #58a6ff;
+      --accent-green: #3fb950;
+      --accent-red: #f85149;
+      --accent-yellow: #d29922;
+      --rain-yes: #58a6ff;
+      --rain-no: #8b949e;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px 16px;
+    }
+
+    /* Header */
+    header {
+      text-align: center;
+      padding: 32px 0 24px;
+    }
+
+    header h1 {
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    header h1 span { color: var(--accent-blue); }
+
+    header .subtitle {
+      color: var(--text-muted);
+      font-size: 14px;
+    }
+
+    /* Main prediction card — Polymarket style */
+    .prediction-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 32px;
+      margin-bottom: 24px;
+      text-align: center;
+    }
+
+    .prediction-question {
+      font-size: 22px;
+      font-weight: 600;
+      margin-bottom: 24px;
+    }
+
+    .probability-ring {
+      position: relative;
+      width: 200px;
+      height: 200px;
+      margin: 0 auto 24px;
+    }
+
+    .probability-ring svg {
+      transform: rotate(-90deg);
+    }
+
+    .probability-ring .ring-bg {
+      fill: none;
+      stroke: var(--surface2);
+      stroke-width: 12;
+    }
+
+    .probability-ring .ring-fill {
+      fill: none;
+      stroke-width: 12;
+      stroke-linecap: round;
+      transition: stroke-dashoffset 1.5s ease-out, stroke 0.5s;
+    }
+
+    .probability-value {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+    }
+
+    .probability-value .pct {
+      font-size: 52px;
+      font-weight: 800;
+      letter-spacing: -2px;
+      line-height: 1;
+    }
+
+    .probability-value .label {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-top: 4px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    /* Yes/No buttons like Polymarket */
+    .outcome-buttons {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+
+    .outcome-btn {
+      flex: 1;
+      max-width: 180px;
+      padding: 14px 24px;
+      border-radius: 12px;
+      border: 2px solid transparent;
+      font-size: 18px;
+      font-weight: 700;
+      cursor: default;
+      transition: all 0.3s;
+    }
+
+    .outcome-btn.yes {
+      background: rgba(88, 166, 255, 0.12);
+      color: var(--rain-yes);
+      border-color: rgba(88, 166, 255, 0.3);
+    }
+
+    .outcome-btn.yes.active {
+      background: rgba(88, 166, 255, 0.25);
+      border-color: var(--rain-yes);
+    }
+
+    .outcome-btn.no {
+      background: rgba(139, 148, 158, 0.12);
+      color: var(--rain-no);
+      border-color: rgba(139, 148, 158, 0.3);
+    }
+
+    .outcome-btn.no.active {
+      background: rgba(139, 148, 158, 0.25);
+      border-color: var(--rain-no);
+    }
+
+    .outcome-btn .btn-label { display: block; font-size: 12px; opacity: 0.7; margin-bottom: 2px; }
+    .outcome-btn .btn-pct { display: block; font-size: 22px; }
+
+    .prediction-meta {
+      color: var(--text-muted);
+      font-size: 12px;
+    }
+
+    .prediction-meta .confidence-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 600;
+      margin-left: 6px;
+    }
+
+    .confidence-Baixa, .confidence-Molt-Baixa { background: rgba(63, 185, 80, 0.15); color: var(--accent-green); }
+    .confidence-Mitjana { background: rgba(210, 153, 34, 0.15); color: var(--accent-yellow); }
+    .confidence-Alta, .confidence-Molt-Alta { background: rgba(248, 81, 73, 0.15); color: var(--accent-red); }
+
+    /* Chart */
+    .chart-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 24px;
+    }
+
+    .chart-card h2 {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 16px;
+    }
+
+    .chart-container {
+      position: relative;
+      height: 220px;
+      width: 100%;
+    }
+
+    canvas { width: 100% !important; height: 100% !important; }
+
+    /* Conditions grid */
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; margin-bottom: 24px; }
+
+    .info-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+    }
+
+    .info-card h3 {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 14px;
+    }
+
+    .stat-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 6px 0;
+      border-bottom: 1px solid rgba(48, 54, 61, 0.5);
+      font-size: 14px;
+    }
+
+    .stat-row:last-child { border-bottom: none; }
+    .stat-row .stat-label { color: var(--text-muted); }
+    .stat-row .stat-value { font-weight: 600; }
+
+    /* Track record */
+    .track-record {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
+
+    .track-dot {
+      width: 14px;
+      height: 14px;
+      border-radius: 3px;
+      position: relative;
+    }
+
+    .track-dot.correct { background: var(--accent-green); }
+    .track-dot.wrong { background: var(--accent-red); }
+    .track-dot.pending { background: var(--border); }
+
+    .track-dot[title]:hover::after {
+      content: attr(title);
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: 11px;
+      white-space: nowrap;
+      z-index: 10;
+      color: var(--text);
+    }
+
+    /* Rain gate */
+    .gate-indicator {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+      margin-top: 12px;
+    }
+
+    .gate-indicator.open { background: rgba(88, 166, 255, 0.15); color: var(--accent-blue); }
+    .gate-indicator.closed { background: rgba(139, 148, 158, 0.1); color: var(--text-muted); }
+
+    .gate-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+
+    .gate-indicator.open .gate-dot { background: var(--accent-blue); animation: pulse 2s infinite; }
+    .gate-indicator.closed .gate-dot { background: var(--text-muted); }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    /* Data sources */
+    .sources-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .source-chip {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 12px;
+      background: var(--surface2);
+      border-radius: 8px;
+      font-size: 12px;
+    }
+
+    .source-chip .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+    }
+
+    .source-chip .dot.active { background: var(--accent-green); }
+    .source-chip .dot.inactive { background: var(--text-muted); }
+
+    /* Loading */
+    .loading {
+      text-align: center;
+      padding: 60px 0;
+      color: var(--text-muted);
+    }
+
+    .loading .spinner {
+      width: 32px;
+      height: 32px;
+      border: 3px solid var(--border);
+      border-top-color: var(--accent-blue);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 12px;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Footer */
+    footer {
+      text-align: center;
+      padding: 24px 0;
+      color: var(--text-muted);
+      font-size: 12px;
+      border-top: 1px solid var(--border);
+      margin-top: 8px;
+    }
+
+    footer a { color: var(--accent-blue); text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+
+    /* Responsive */
+    @media (max-width: 600px) {
+      .prediction-question { font-size: 18px; }
+      .probability-value .pct { font-size: 42px; }
+      .probability-ring { width: 160px; height: 160px; }
+      .outcome-btn { padding: 10px 16px; }
+      .outcome-btn .btn-pct { font-size: 18px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>🌧️ Plourà a <span>Cardedeu</span>?</h1>
+      <p class="subtitle">Predicció hiperlocal de pluja — IA entrenada amb dades reals</p>
+    </header>
+
+    <div id="app">
+      <div class="loading">
+        <div class="spinner"></div>
+        <p>Carregant predicció...</p>
+      </div>
+    </div>
+
+    <footer>
+      <p>Dades de <a href="https://www.meteo.cat" target="_blank" rel="noopener">Meteocat</a> · <a href="https://www.aemet.es" target="_blank" rel="noopener">AEMET</a> · <a href="https://open-meteo.com" target="_blank" rel="noopener">Open-Meteo</a></p>
+      <p style="margin-top:4px"><a href="https://github.com/albertolive/nowcast-cardedeu" target="_blank" rel="noopener">GitHub</a> · Model XGBoost + calibració isotònica</p>
+    </footer>
+  </div>
+
+<script>
+const REPO = 'albertolive/nowcast-cardedeu';
+const BRANCH = 'main';
+const RAW_BASE = `https://raw.githubusercontent.com/${REPO}/${BRANCH}/data`;
+
+async function fetchJSON(filename) {
+  // Try local (GitHub Pages docs/) first, fall back to raw.githubusercontent.com
+  for (const base of ['.', RAW_BASE]) {
+    try {
+      const r = await fetch(`${base}/${filename}`, { cache: 'no-cache' });
+      if (r.ok) return r.json();
+    } catch {}
+  }
+  throw new Error(`No s'ha pogut carregar ${filename}`);
+}
+
+async function fetchJSONL(filename) {
+  for (const base of ['.', RAW_BASE]) {
+    try {
+      const r = await fetch(`${base}/${filename}`, { cache: 'no-cache' });
+      if (r.ok) {
+        const text = await r.text();
+        return text.trim().split('\n').filter(Boolean).map(line => JSON.parse(line));
+      }
+    } catch {}
+  }
+  throw new Error(`No s'ha pogut carregar ${filename}`);
+}
+
+function fmtTime(iso) {
+  const d = new Date(iso);
+  return d.toLocaleString('ca-ES', {
+    day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit'
+  });
+}
+
+function fmtTimeShort(iso) {
+  const d = new Date(iso);
+  return d.toLocaleString('ca-ES', { hour: '2-digit', minute: '2-digit' });
+}
+
+function getProbColor(pct) {
+  if (pct >= 60) return 'var(--accent-blue)';
+  if (pct >= 35) return 'var(--accent-yellow)';
+  return 'var(--accent-green)';
+}
+
+function renderPrediction(latest, history) {
+  const pct = latest.probability_pct;
+  const noPct = (100 - pct).toFixed(1);
+  const color = getProbColor(pct);
+  const circumference = 2 * Math.PI * 88;
+  const offset = circumference * (1 - pct / 100);
+  const confidenceCls = `confidence-${(latest.confidence || '').replace(/\s+/g, '-')}`;
+  const gateOpen = latest.rain_gate_open;
+
+  // Verified history stats
+  const verified = history.filter(h => h.verified);
+  const correct = verified.filter(h => h.correct).length;
+  const accuracy = verified.length > 0 ? ((correct / verified.length) * 100).toFixed(0) : '—';
+
+  const app = document.getElementById('app');
+  app.innerHTML = `
+    <!-- Main prediction -->
+    <div class="prediction-card">
+      <div class="prediction-question">Plourà a Cardedeu en les properes 4 hores?</div>
+
+      <div class="probability-ring">
+        <svg viewBox="0 0 200 200" width="200" height="200">
+          <circle class="ring-bg" cx="100" cy="100" r="88"/>
+          <circle class="ring-fill" cx="100" cy="100" r="88"
+            stroke="${color}"
+            stroke-dasharray="${circumference}"
+            stroke-dashoffset="${offset}"/>
+        </svg>
+        <div class="probability-value">
+          <div class="pct" style="color:${color}">${pct}%</div>
+          <div class="label">probabilitat</div>
+        </div>
+      </div>
+
+      <div class="outcome-buttons">
+        <div class="outcome-btn yes ${latest.will_rain ? 'active' : ''}">
+          <span class="btn-label">🌧️ Sí</span>
+          <span class="btn-pct">${pct}%</span>
+        </div>
+        <div class="outcome-btn no ${!latest.will_rain ? 'active' : ''}">
+          <span class="btn-label">☀️ No</span>
+          <span class="btn-pct">${noPct}%</span>
+        </div>
+      </div>
+
+      <div class="gate-indicator ${gateOpen ? 'open' : 'closed'}">
+        <span class="gate-dot"></span>
+        ${gateOpen ? '🌧️ Rain Gate OBERT — condicions favorables' : '☀️ Rain Gate tancat — condicions estables'}
+      </div>
+
+      <div class="prediction-meta" style="margin-top: 16px">
+        Última actualització: ${fmtTime(latest.timestamp)}
+        <span class="confidence-badge ${confidenceCls}">${latest.confidence}</span>
+      </div>
+    </div>
+
+    <!-- Probability chart -->
+    <div class="chart-card">
+      <h2>📈 Evolució de la probabilitat (últimes 24h)</h2>
+      <div class="chart-container">
+        <canvas id="probChart"></canvas>
+      </div>
+    </div>
+
+    <div class="grid">
+      <!-- Conditions -->
+      <div class="info-card">
+        <h3>🌡️ Condicions actuals</h3>
+        ${renderConditions(latest)}
+      </div>
+
+      <!-- Radar -->
+      <div class="info-card">
+        <h3>📡 Radar</h3>
+        ${renderRadar(latest)}
+      </div>
+
+      <!-- Model info -->
+      <div class="info-card">
+        <h3>🤖 Model</h3>
+        <div class="stat-row">
+          <span class="stat-label">Features</span>
+          <span class="stat-value">${latest.features_used || '—'}</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Threshold</span>
+          <span class="stat-value">${latest.threshold ? (latest.threshold * 100).toFixed(1) + '%' : '—'}</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Calibrat</span>
+          <span class="stat-value">${latest.calibrated ? '✅ Isotònic' : '❌'}</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Prob. crua</span>
+          <span class="stat-value">${latest.raw_probability != null ? (latest.raw_probability * 100).toFixed(1) + '%' : '—'}</span>
+        </div>
+      </div>
+
+      <!-- Track record -->
+      <div class="info-card">
+        <h3>📊 Historial (${verified.length} prediccions)</h3>
+        <div class="stat-row">
+          <span class="stat-label">Encerts</span>
+          <span class="stat-value" style="color:var(--accent-green)">${correct}/${verified.length}</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Precisió</span>
+          <span class="stat-value">${accuracy}%</span>
+        </div>
+        <div class="track-record">
+          ${history.slice(-40).map(h => {
+            const cls = h.verified ? (h.correct ? 'correct' : 'wrong') : 'pending';
+            const tip = `${fmtTimeShort(h.timestamp)} — ${h.probability_pct}% → ${h.verified ? (h.correct ? '✓' : '✗') : '⏳'}`;
+            return `<div class="track-dot ${cls}" title="${tip}"></div>`;
+          }).join('')}
+        </div>
+      </div>
+
+      <!-- Data sources -->
+      <div class="info-card">
+        <h3>📡 Fonts de dades</h3>
+        <div class="sources-grid">
+          ${renderSources(latest)}
+        </div>
+      </div>
+
+      <!-- Atmospheric -->
+      <div class="info-card">
+        <h3>🌀 Atmosfera</h3>
+        ${renderAtmosphere(latest)}
+      </div>
+    </div>
+  `;
+
+  drawChart(history);
+}
+
+function renderConditions(d) {
+  const c = d.conditions || {};
+  return `
+    <div class="stat-row"><span class="stat-label">Temperatura</span><span class="stat-value">${c.temperature || '—'}°C</span></div>
+    <div class="stat-row"><span class="stat-label">Humitat</span><span class="stat-value">${c.humidity || '—'}%</span></div>
+    <div class="stat-row"><span class="stat-label">Pressió</span><span class="stat-value">${c.pressure || '—'} hPa</span></div>
+    <div class="stat-row"><span class="stat-label">Vent</span><span class="stat-value">${c.wind_speed || '—'} km/h ${c.wind_dir || ''}</span></div>
+    <div class="stat-row"><span class="stat-label">Pluja avui</span><span class="stat-value">${c.rain_today || '0.0'} mm</span></div>
+  `;
+}
+
+function renderRadar(d) {
+  const r = d.radar || {};
+  return `
+    <div class="stat-row"><span class="stat-label">dBZ</span><span class="stat-value">${r.dbz ?? '—'}</span></div>
+    <div class="stat-row"><span class="stat-label">Eco proper</span><span class="stat-value">${r.nearest_echo_km ?? '—'} km ${r.nearest_echo_compass || ''}</span></div>
+    <div class="stat-row"><span class="stat-label">Cobertura 20km</span><span class="stat-value">${r.coverage_20km != null ? r.coverage_20km + '%' : '—'}</span></div>
+    <div class="stat-row"><span class="stat-label">Apropa?</span><span class="stat-value">${r.approaching ? '⚠️ Sí' : '—'}</span></div>
+    <div class="stat-row"><span class="stat-label">ETA</span><span class="stat-value">${r.storm_eta_min ? r.storm_eta_min + ' min' : '—'}</span></div>
+  `;
+}
+
+function renderSources(d) {
+  const sources = [
+    { name: 'XEMA', active: d.conditions?.temperature != null },
+    { name: 'Radar SMC', active: d.radar?.dbz != null },
+    { name: 'XDDE', active: true },
+    { name: 'Predicció SMC', active: d.aemet || true },
+    { name: 'AEMET', active: d.aemet?.prob_precip != null },
+    { name: 'Open-Meteo', active: d.ensemble?.total_models > 0 },
+  ];
+  return sources.map(s => `
+    <div class="source-chip">
+      <span class="dot ${s.active ? 'active' : 'inactive'}"></span>
+      ${s.name}
+    </div>
+  `).join('');
+}
+
+function renderAtmosphere(d) {
+  const p = d.pressure_levels || {};
+  const w = d.wind_regime || {};
+  const regime = w.is_llevantada ? '🌊 Llevantada' :
+                 w.is_tramuntana ? '💨 Tramuntana' :
+                 w.is_migjorn ? '🌡️ Migjorn' :
+                 w.is_garbi ? '🌬️ Garbí' :
+                 w.is_ponent ? '🔥 Ponent' : '— Neutre';
+  return `
+    <div class="stat-row"><span class="stat-label">Règim de vent</span><span class="stat-value">${regime}</span></div>
+    <div class="stat-row"><span class="stat-label">Temp 850hPa</span><span class="stat-value">${p.temp_850 ?? '—'}°C</span></div>
+    <div class="stat-row"><span class="stat-label">VT Index</span><span class="stat-value">${p.vt_index ?? '—'}</span></div>
+    <div class="stat-row"><span class="stat-label">TT Index</span><span class="stat-value">${p.tt_index != null ? p.tt_index.toFixed(1) : '—'}</span></div>
+    <div class="stat-row"><span class="stat-label">Humitat 850hPa</span><span class="stat-value">${p.rh_850 ?? '—'}%</span></div>
+  `;
+}
+
+/* ---- Lightweight Chart (pure Canvas, no dependencies) ---- */
+function drawChart(history) {
+  const canvas = document.getElementById('probChart');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+
+  const rect = canvas.parentElement.getBoundingClientRect();
+  canvas.width = rect.width * dpr;
+  canvas.height = rect.height * dpr;
+  ctx.scale(dpr, dpr);
+  const W = rect.width;
+  const H = rect.height;
+
+  // Data
+  const now = Date.now();
+  const cutoff = now - 24 * 60 * 60 * 1000;
+  const points = history
+    .filter(h => new Date(h.timestamp).getTime() > cutoff)
+    .map(h => ({ t: new Date(h.timestamp).getTime(), p: h.probability_pct }));
+
+  if (points.length < 2) {
+    ctx.fillStyle = '#8b949e';
+    ctx.font = '14px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('Acumulant dades...', W / 2, H / 2);
+    return;
+  }
+
+  const pad = { top: 20, right: 16, bottom: 32, left: 42 };
+  const cW = W - pad.left - pad.right;
+  const cH = H - pad.top - pad.bottom;
+
+  const tMin = points[0].t;
+  const tMax = points[points.length - 1].t;
+  const tRange = tMax - tMin || 1;
+
+  const x = t => pad.left + ((t - tMin) / tRange) * cW;
+  const y = p => pad.top + cH - (p / 100) * cH;
+
+  // Grid lines
+  ctx.strokeStyle = 'rgba(48,54,61,0.5)';
+  ctx.lineWidth = 1;
+  for (let pct of [0, 25, 50, 75, 100]) {
+    const yy = y(pct);
+    ctx.beginPath();
+    ctx.moveTo(pad.left, yy);
+    ctx.lineTo(W - pad.right, yy);
+    ctx.stroke();
+
+    ctx.fillStyle = '#8b949e';
+    ctx.font = '11px sans-serif';
+    ctx.textAlign = 'right';
+    ctx.fillText(pct + '%', pad.left - 6, yy + 4);
+  }
+
+  // Threshold line
+  const threshY = y(35.4);
+  ctx.strokeStyle = 'rgba(248,81,73,0.3)';
+  ctx.setLineDash([4, 4]);
+  ctx.beginPath();
+  ctx.moveTo(pad.left, threshY);
+  ctx.lineTo(W - pad.right, threshY);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Area fill
+  const gradient = ctx.createLinearGradient(0, pad.top, 0, pad.top + cH);
+  gradient.addColorStop(0, 'rgba(88,166,255,0.25)');
+  gradient.addColorStop(1, 'rgba(88,166,255,0.02)');
+  ctx.fillStyle = gradient;
+  ctx.beginPath();
+  ctx.moveTo(x(points[0].t), y(0));
+  for (const pt of points) ctx.lineTo(x(pt.t), y(pt.p));
+  ctx.lineTo(x(points[points.length - 1].t), y(0));
+  ctx.closePath();
+  ctx.fill();
+
+  // Line
+  ctx.strokeStyle = '#58a6ff';
+  ctx.lineWidth = 2.5;
+  ctx.lineJoin = 'round';
+  ctx.beginPath();
+  for (let i = 0; i < points.length; i++) {
+    const px = x(points[i].t);
+    const py = y(points[i].p);
+    i === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+  }
+  ctx.stroke();
+
+  // Latest dot
+  const last = points[points.length - 1];
+  ctx.beginPath();
+  ctx.arc(x(last.t), y(last.p), 5, 0, Math.PI * 2);
+  ctx.fillStyle = '#58a6ff';
+  ctx.fill();
+  ctx.strokeStyle = '#0d1117';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  // Time labels
+  ctx.fillStyle = '#8b949e';
+  ctx.font = '11px sans-serif';
+  ctx.textAlign = 'center';
+  const labelCount = Math.min(6, points.length);
+  const step = Math.floor(points.length / labelCount);
+  for (let i = 0; i < points.length; i += step) {
+    const d = new Date(points[i].t);
+    const lbl = d.toLocaleString('ca-ES', { hour: '2-digit', minute: '2-digit' });
+    ctx.fillText(lbl, x(points[i].t), H - 8);
+  }
+}
+
+/* ---- Init ---- */
+async function init() {
+  try {
+    const [latest, history] = await Promise.all([
+      fetchJSON('latest_prediction.json'),
+      fetchJSONL('predictions_log.jsonl')
+    ]);
+    renderPrediction(latest, history);
+
+    // Resize chart on window resize
+    let resizeTimer;
+    window.addEventListener('resize', () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => drawChart(history), 200);
+    });
+  } catch (err) {
+    document.getElementById('app').innerHTML = `
+      <div class="prediction-card" style="color:var(--accent-red)">
+        <p>Error carregant dades: ${err.message}</p>
+        <p style="color:var(--text-muted);font-size:13px;margin-top:8px">
+          Comprova que el repositori és públic o actualitza la URL.
+        </p>
+      </div>
+    `;
+  }
+}
+
+init();
+</script>
+</body>
+</html>
