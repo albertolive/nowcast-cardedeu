@@ -357,7 +357,7 @@
     footer a { color: var(--accent-blue); text-decoration: none; }
     footer a:hover { text-decoration: underline; }
 
-    /* Resolution History */
+    /* Resolution History — Calendar */
     .history-card {
       background: var(--surface);
       border: 1px solid var(--border);
@@ -369,36 +369,155 @@
     .history-card h2 {
       font-size: 16px;
       font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .history-subtitle {
+      color: var(--text-muted);
+      font-size: 13px;
+      margin-bottom: 20px;
+    }
+
+    /* Month nav */
+    .cal-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .cal-nav-btn {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      padding: 6px 12px;
+      font-size: 13px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .cal-nav-btn:hover { background: rgba(48, 54, 61, 0.8); }
+    .cal-nav-btn:disabled { opacity: 0.3; cursor: default; }
+
+    .cal-month-label {
+      font-weight: 600;
+      font-size: 15px;
+    }
+
+    /* Month stats */
+    .cal-month-stats {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+      padding: 10px 14px;
+      background: var(--surface2);
+      border-radius: 10px;
+      font-size: 13px;
+    }
+
+    .cal-stat { color: var(--text-muted); }
+    .cal-stat strong { color: var(--text); }
+
+    /* Calendar grid */
+    .cal-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 4px;
       margin-bottom: 16px;
     }
 
-    .day-group {
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      margin-bottom: 12px;
-      overflow: hidden;
+    .cal-weekday {
+      text-align: center;
+      font-size: 11px;
+      color: var(--text-muted);
+      padding: 4px 0;
+      font-weight: 600;
+      text-transform: uppercase;
     }
 
-    .day-header {
+    .cal-day {
+      aspect-ratio: 1;
+      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      cursor: default;
+      border: 2px solid transparent;
+      transition: border-color 0.2s, transform 0.15s;
+      position: relative;
+    }
+
+    .cal-day.empty { visibility: hidden; }
+    .cal-day.no-data { background: var(--surface2); color: var(--text-muted); }
+    .cal-day.has-data { cursor: pointer; }
+    .cal-day.has-data:hover { transform: scale(1.1); z-index: 2; }
+    .cal-day.selected { border-color: var(--accent-blue); }
+    .cal-day.today { box-shadow: inset 0 0 0 1px var(--accent-blue); }
+
+    /* Day cell colors */
+    .cal-day.perfect { background: rgba(63, 185, 80, 0.25); color: var(--accent-green); }
+    .cal-day.good { background: rgba(210, 153, 34, 0.2); color: var(--accent-yellow); }
+    .cal-day.bad { background: rgba(248, 81, 73, 0.2); color: var(--accent-red); }
+    .cal-day.pending-day { background: rgba(210, 153, 34, 0.1); color: var(--accent-yellow); }
+    .cal-day.rain-day { background: rgba(88, 166, 255, 0.2); color: var(--accent-blue); }
+
+    .cal-day-num { font-weight: 600; line-height: 1; }
+    .cal-day-icon { font-size: 10px; margin-top: 2px; }
+
+    /* Legend */
+    .cal-legend {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .cal-legend-item {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .cal-legend-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 3px;
+    }
+
+    /* Day detail panel */
+    .day-detail {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      animation: slideDown 0.2s ease-out;
+    }
+
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .day-detail-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
       padding: 14px 16px;
       background: var(--surface2);
-      cursor: pointer;
-      user-select: none;
-      transition: background 0.2s;
     }
 
-    .day-header:hover { background: rgba(48, 54, 61, 0.8); }
-
-    .day-header-left {
+    .day-detail-left {
       display: flex;
       align-items: center;
       gap: 10px;
     }
 
-    .day-date {
+    .day-detail-date {
       font-weight: 600;
       font-size: 15px;
     }
@@ -417,35 +536,26 @@
     .day-resolution.no-rain { background: rgba(139, 148, 158, 0.1); color: var(--text-muted); }
     .day-resolution.pending { background: rgba(210, 153, 34, 0.1); color: var(--accent-yellow); }
 
-    .day-header-right {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .day-accuracy {
+    .day-detail-accuracy {
       font-size: 13px;
       font-weight: 600;
     }
 
-    .day-accuracy.perfect { color: var(--accent-green); }
-    .day-accuracy.good { color: var(--accent-yellow); }
-    .day-accuracy.bad { color: var(--accent-red); }
+    .day-detail-accuracy.perfect { color: var(--accent-green); }
+    .day-detail-accuracy.good { color: var(--accent-yellow); }
+    .day-detail-accuracy.bad { color: var(--accent-red); }
 
-    .day-chevron {
-      font-size: 12px;
+    .day-detail-close {
+      background: none;
+      border: none;
       color: var(--text-muted);
-      transition: transform 0.2s;
+      cursor: pointer;
+      font-size: 18px;
+      padding: 0 4px;
+      line-height: 1;
     }
 
-    .day-group.open .day-chevron { transform: rotate(180deg); }
-
-    .day-predictions {
-      display: none;
-      padding: 0;
-    }
-
-    .day-group.open .day-predictions { display: block; }
+    .day-detail-close:hover { color: var(--text); }
 
     .pred-row {
       display: flex;
@@ -512,6 +622,9 @@
       .outcome-btn .btn-pct { font-size: 18px; }
       .pred-prob-bar { display: none; }
       .pred-row { gap: 8px; }
+      .cal-month-stats { gap: 10px; font-size: 12px; }
+      .cal-day { font-size: 11px; border-radius: 6px; }
+      .day-detail-header { flex-wrap: wrap; gap: 8px; }
     }
   </style>
 </head>
@@ -595,6 +708,11 @@ function renderPrediction(latest, history) {
   const verified = history.filter(h => h.verified);
   const correct = verified.filter(h => h.correct).length;
   const accuracy = verified.length > 0 ? ((correct / verified.length) * 100).toFixed(0) : '—';
+
+  // Overall stats for history header
+  const allVerified = history.filter(h => h.verified);
+  const allCorrect = allVerified.filter(h => h.correct).length;
+  const overallAcc = allVerified.length > 0 ? ((allCorrect / allVerified.length) * 100).toFixed(1) : '—';
 
   const app = document.getElementById('app');
   app.innerHTML = `
@@ -716,16 +834,18 @@ function renderPrediction(latest, history) {
     </div>
 
     <!-- Resolution History -->
-    ${renderHistory(history)}
+    <div class="history-card">
+      <h2>📋 Historial de resolucions</h2>
+      <p class="history-subtitle">
+        Cada predicció es verifica amb dades reals de pluja.
+        Model accuracy: <strong style="color:var(--accent-green)">${overallAcc}%</strong>
+        (${allCorrect}/${allVerified.length} verificades)
+      </p>
+      <div id="calendar-root"></div>
+    </div>
   `;
 
-  // Wire up day-group toggles
-  document.querySelectorAll('.day-header').forEach(hdr => {
-    hdr.addEventListener('click', () => {
-      hdr.closest('.day-group').classList.toggle('open');
-    });
-  });
-
+  initCalendar(history);
   drawChart(history);
 }
 
@@ -785,52 +905,204 @@ function renderAtmosphere(d) {
   `;
 }
 
-/* ---- Resolution History ---- */
-function renderHistory(history) {
+/* ---- Calendar-based Resolution History ---- */
+function initCalendar(history) {
+  const root = document.getElementById('calendar-root');
+  if (!root) return;
+
   // Group predictions by day
-  const days = {};
+  const dayMap = {};
   for (const h of history) {
     const day = h.timestamp.slice(0, 10);
-    if (!days[day]) days[day] = [];
-    days[day].push(h);
+    if (!dayMap[day]) dayMap[day] = [];
+    dayMap[day].push(h);
   }
 
-  const sortedDays = Object.keys(days).sort().reverse();
-  if (sortedDays.length === 0) return '';
+  // Find date range
+  const allDays = Object.keys(dayMap).sort();
+  const today = new Date();
+  let currentYear = today.getFullYear();
+  let currentMonth = today.getMonth();
+  let selectedDay = null;
 
-  const dayRows = sortedDays.map((day, idx) => {
-    const preds = days[day];
+  const WEEKDAYS = ['dl', 'dt', 'dc', 'dj', 'dv', 'ds', 'dg'];
+
+  function getDaySummary(dayKey) {
+    const preds = dayMap[dayKey];
+    if (!preds) return null;
     const verified = preds.filter(p => p.verified);
     const correct = verified.filter(p => p.correct).length;
     const anyRain = preds.some(p => p.actual_rain === true);
     const allPending = verified.length === 0;
     const rainMm = preds.reduce((max, p) => Math.max(max, p.actual_rain_mm || 0), 0);
+    const acc = verified.length > 0 ? (correct / verified.length) : null;
+    return { preds, verified, correct, anyRain, allPending, rainMm, acc, count: preds.length };
+  }
 
-    // Day resolution
+  function render() {
+    const year = currentYear;
+    const month = currentMonth;
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+    const daysInMonth = lastDay.getDate();
+    // Monday=0 start
+    let startWeekday = (firstDay.getDay() + 6) % 7;
+
+    const monthLabel = firstDay.toLocaleDateString('ca-ES', { month: 'long', year: 'numeric' });
+
+    // Month stats
+    let mVerified = 0, mCorrect = 0, mPreds = 0, mRainDays = 0;
+    for (let d = 1; d <= daysInMonth; d++) {
+      const key = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+      const s = getDaySummary(key);
+      if (s) {
+        mPreds += s.count;
+        mVerified += s.verified.length;
+        mCorrect += s.correct;
+        if (s.anyRain) mRainDays++;
+      }
+    }
+    const mAcc = mVerified > 0 ? ((mCorrect / mVerified) * 100).toFixed(0) : '—';
+
+    // Can navigate?
+    const earliest = allDays.length > 0 ? allDays[0] : `${year}-${String(month + 1).padStart(2, '0')}-01`;
+    const earliestDate = new Date(earliest + 'T12:00:00');
+    const canPrev = year > earliestDate.getFullYear() || (year === earliestDate.getFullYear() && month > earliestDate.getMonth());
+    const canNext = year < today.getFullYear() || (year === today.getFullYear() && month < today.getMonth());
+
+    // Build calendar cells
+    let cells = '';
+    // Weekday headers
+    for (const wd of WEEKDAYS) {
+      cells += `<div class="cal-weekday">${wd}</div>`;
+    }
+    // Empty cells before first day
+    for (let i = 0; i < startWeekday; i++) {
+      cells += `<div class="cal-day empty"></div>`;
+    }
+    // Day cells
+    const todayKey = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+    for (let d = 1; d <= daysInMonth; d++) {
+      const key = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+      const s = getDaySummary(key);
+      const isToday = key === todayKey;
+      const isSelected = key === selectedDay;
+
+      let cls = 'cal-day';
+      let icon = '';
+      if (!s) {
+        cls += ' no-data';
+      } else {
+        cls += ' has-data';
+        if (s.allPending) {
+          cls += ' pending-day';
+          icon = '⏳';
+        } else if (s.anyRain) {
+          cls += ' rain-day';
+          icon = '🌧️';
+        } else if (s.acc >= 0.9) {
+          cls += ' perfect';
+          icon = '✓';
+        } else if (s.acc >= 0.6) {
+          cls += ' good';
+          icon = '~';
+        } else {
+          cls += ' bad';
+          icon = '✗';
+        }
+      }
+      if (isToday) cls += ' today';
+      if (isSelected) cls += ' selected';
+
+      cells += `<div class="${cls}" data-day="${key}">
+        <span class="cal-day-num">${d}</span>
+        ${icon ? `<span class="cal-day-icon">${icon}</span>` : ''}
+      </div>`;
+    }
+
+    let html = `
+      <div class="cal-nav">
+        <button class="cal-nav-btn" id="cal-prev" ${canPrev ? '' : 'disabled'}>← Anterior</button>
+        <span class="cal-month-label">${monthLabel.charAt(0).toUpperCase() + monthLabel.slice(1)}</span>
+        <button class="cal-nav-btn" id="cal-next" ${canNext ? '' : 'disabled'}>Següent →</button>
+      </div>
+
+      <div class="cal-month-stats">
+        <span class="cal-stat">Prediccions: <strong>${mPreds}</strong></span>
+        <span class="cal-stat">Verificades: <strong>${mVerified}</strong></span>
+        <span class="cal-stat">Precisió: <strong>${mAcc}%</strong></span>
+        <span class="cal-stat">Dies de pluja: <strong>${mRainDays}</strong></span>
+      </div>
+
+      <div class="cal-grid">${cells}</div>
+
+      <div class="cal-legend">
+        <span class="cal-legend-item"><span class="cal-legend-dot" style="background:rgba(63,185,80,0.25)"></span> Tot correcte</span>
+        <span class="cal-legend-item"><span class="cal-legend-dot" style="background:rgba(88,166,255,0.2)"></span> Dia de pluja</span>
+        <span class="cal-legend-item"><span class="cal-legend-dot" style="background:rgba(210,153,34,0.2)"></span> Pendent</span>
+        <span class="cal-legend-item"><span class="cal-legend-dot" style="background:rgba(248,81,73,0.2)"></span> Errors</span>
+        <span class="cal-legend-item"><span class="cal-legend-dot" style="background:var(--surface2)"></span> Sense dades</span>
+      </div>
+
+      <div id="day-detail-panel"></div>
+    `;
+
+    root.innerHTML = html;
+
+    // If a day is selected, render its detail
+    if (selectedDay && dayMap[selectedDay]) {
+      renderDayDetail(selectedDay);
+    }
+
+    // Event listeners
+    document.getElementById('cal-prev')?.addEventListener('click', () => {
+      currentMonth--;
+      if (currentMonth < 0) { currentMonth = 11; currentYear--; }
+      render();
+    });
+    document.getElementById('cal-next')?.addEventListener('click', () => {
+      currentMonth++;
+      if (currentMonth > 11) { currentMonth = 0; currentYear++; }
+      render();
+    });
+    root.querySelectorAll('.cal-day.has-data').forEach(el => {
+      el.addEventListener('click', () => {
+        const day = el.dataset.day;
+        selectedDay = selectedDay === day ? null : day;
+        render();
+      });
+    });
+  }
+
+  function renderDayDetail(dayKey) {
+    const panel = document.getElementById('day-detail-panel');
+    if (!panel) return;
+    const s = getDaySummary(dayKey);
+    if (!s) { panel.innerHTML = ''; return; }
+
+    const d = new Date(dayKey + 'T12:00:00');
+    const dayLabel = d.toLocaleDateString('ca-ES', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+
     let resolutionCls, resolutionText;
-    if (allPending) {
+    if (s.allPending) {
       resolutionCls = 'pending';
       resolutionText = '⏳ Pendent';
-    } else if (anyRain) {
+    } else if (s.anyRain) {
       resolutionCls = 'rain';
-      resolutionText = `🌧️ Va ploure (${rainMm.toFixed(1)} mm)`;
+      resolutionText = `🌧️ Va ploure (${s.rainMm.toFixed(1)} mm)`;
     } else {
       resolutionCls = 'no-rain';
       resolutionText = '☀️ No va ploure';
     }
 
-    // Day accuracy
     let accCls = '', accText = '';
-    if (verified.length > 0) {
-      const pct = ((correct / verified.length) * 100).toFixed(0);
+    if (s.verified.length > 0) {
+      const pct = ((s.correct / s.verified.length) * 100).toFixed(0);
       accCls = pct >= 90 ? 'perfect' : pct >= 60 ? 'good' : 'bad';
-      accText = `${correct}/${verified.length} encerts`;
+      accText = `${s.correct}/${s.verified.length} encerts`;
     }
 
-    const d = new Date(day + 'T12:00:00');
-    const dayLabel = d.toLocaleDateString('ca-ES', { weekday: 'short', day: 'numeric', month: 'short' });
-
-    const predRows = preds.map(p => {
+    const predRows = s.preds.map(p => {
       const t = new Date(p.timestamp);
       const time = t.toLocaleString('ca-ES', { hour: '2-digit', minute: '2-digit' });
       const pct = p.probability_pct;
@@ -838,17 +1110,13 @@ function renderHistory(history) {
       const said = p.will_rain ? '🌧️ Plou' : '☀️ No plou';
       let result, resultTitle;
       if (!p.verified) {
-        result = '⏳';
-        resultTitle = 'Pendent de verificació';
+        result = '⏳'; resultTitle = 'Pendent de verificació';
       } else if (p.correct) {
-        result = '✅';
-        resultTitle = 'Encert';
+        result = '✅'; resultTitle = 'Encert';
       } else {
-        result = '❌';
-        resultTitle = 'Error';
+        result = '❌'; resultTitle = 'Error';
       }
       const rainInfo = p.actual_rain_mm != null ? `${p.actual_rain_mm.toFixed(1)} mm` : '';
-
       return `
         <div class="pred-row">
           <span class="pred-time">${time}</span>
@@ -860,37 +1128,28 @@ function renderHistory(history) {
         </div>`;
     }).join('');
 
-    return `
-      <div class="day-group ${idx === 0 ? 'open' : ''}">
-        <div class="day-header">
-          <div class="day-header-left">
-            <span class="day-date">${dayLabel}</span>
+    panel.innerHTML = `
+      <div class="day-detail">
+        <div class="day-detail-header">
+          <div class="day-detail-left">
+            <span class="day-detail-date">${dayLabel.charAt(0).toUpperCase() + dayLabel.slice(1)}</span>
             <span class="day-resolution ${resolutionCls}">${resolutionText}</span>
           </div>
-          <div class="day-header-right">
-            <span class="day-accuracy ${accCls}">${accText}</span>
-            <span class="day-chevron">▼</span>
+          <div style="display:flex;align-items:center;gap:10px">
+            <span class="day-detail-accuracy ${accCls}">${accText}</span>
+            <button class="day-detail-close" id="close-detail" title="Tancar">✕</button>
           </div>
         </div>
-        <div class="day-predictions">${predRows}</div>
+        ${predRows}
       </div>`;
-  }).join('');
 
-  // Overall stats
-  const allVerified = history.filter(h => h.verified);
-  const allCorrect = allVerified.filter(h => h.correct).length;
-  const overallAcc = allVerified.length > 0 ? ((allCorrect / allVerified.length) * 100).toFixed(1) : '—';
+    document.getElementById('close-detail')?.addEventListener('click', () => {
+      selectedDay = null;
+      render();
+    });
+  }
 
-  return `
-    <div class="history-card">
-      <h2>📋 Historial de resolucions</h2>
-      <p style="color:var(--text-muted);font-size:13px;margin-bottom:16px">
-        Cada predicció es verifica amb dades reals de pluja.
-        Model accuracy: <strong style="color:var(--accent-green)">${overallAcc}%</strong>
-        (${allCorrect}/${allVerified.length} verificades)
-      </p>
-      ${dayRows}
-    </div>`;
+  render();
 }
 
 /* ---- Lightweight Chart (pure Canvas, no dependencies) ---- */
