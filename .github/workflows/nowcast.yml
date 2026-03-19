@@ -24,7 +24,7 @@ on:
           - retrain
 
 permissions:
-  contents: read
+  contents: write
 
 env:
   TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
@@ -36,6 +36,9 @@ jobs:
   predict:
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    concurrency:
+      group: predict-push
+      cancel-in-progress: false
     if: >-
       github.event.schedule == '*/15 5-22 * * *' ||
       (github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'predict')
@@ -65,37 +68,19 @@ jobs:
       - name: Activate venv
         run: echo "${{ github.workspace }}/.venv/bin" >> $GITHUB_PATH
 
-      - name: Restore notification state
-        uses: actions/cache/restore@v4
-        with:
-          path: data/notification_state.json
-          key: notification-state-${{ github.run_id }}
-          restore-keys: notification-state-
-
-      - name: Restore predictions log
-        uses: actions/cache/restore@v4
-        with:
-          path: data/predictions_log.jsonl
-          key: predictions-log-${{ github.run_id }}
-          restore-keys: predictions-log-
-
       - name: Run prediction
         id: nowcast
         run: python scripts/predict_now.py
 
-      - name: Save notification state
+      - name: Commit prediction data
         if: always()
-        uses: actions/cache/save@v4
-        with:
-          path: data/notification_state.json
-          key: notification-state-${{ github.run_id }}
-
-      - name: Save predictions log
-        if: always()
-        uses: actions/cache/save@v4
-        with:
-          path: data/predictions_log.jsonl
-          key: predictions-log-${{ github.run_id }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git pull --rebase origin main || true
+          git add data/predictions_log.jsonl data/notification_state.json data/latest_prediction.json
+          git diff --cached --quiet || git commit -m "📊 Prediction $(date -u +%Y-%m-%dT%H:%M)"
+          git push || (git pull --rebase origin main && git push)
 
       - name: Upload prediction artifact
         if: always()
@@ -189,13 +174,6 @@ jobs:
       - name: Activate venv
         run: echo "${{ github.workspace }}/.venv/bin" >> $GITHUB_PATH
 
-      - name: Restore predictions log
-        uses: actions/cache/restore@v4
-        with:
-          path: data/predictions_log.jsonl
-          key: predictions-log-accuracy-${{ github.run_id }}
-          restore-keys: predictions-log-
-
       - name: Send accuracy report
         run: python scripts/accuracy_report.py
 
@@ -214,8 +192,6 @@ jobs:
       github.event.schedule == '0 2 * * *' ||
       (github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'retrain')
     timeout-minutes: 30
-    permissions:
-      contents: write
 
     steps:
       - name: Checkout
@@ -241,13 +217,6 @@ jobs:
 
       - name: Activate venv
         run: echo "${{ github.workspace }}/.venv/bin" >> $GITHUB_PATH
-
-      - name: Restore predictions log
-        uses: actions/cache/restore@v4
-        with:
-          path: data/predictions_log.jsonl
-          key: predictions-log-retrain-${{ github.run_id }}
-          restore-keys: predictions-log-
 
       - name: Download historical data
         run: python scripts/download_history.py

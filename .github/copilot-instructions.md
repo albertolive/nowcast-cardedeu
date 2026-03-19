@@ -95,6 +95,6 @@ Secrets: `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID`, `METEOCAT_API_KEY`, `AEMET_AP
 - XDDE (lightning): `/xdde/v1/catalunya/{YYYY}/{MM}/{DD}/{HH}` (lowercase, hour required)
 - Predicció (municipal forecast): `/pronostic/v1/municipalHoraria/080462`
 
-**CI cache strategy:** `predictions_log.jsonl` and `notification_state.json` use `actions/cache/restore` + `actions/cache/save` with unique `run_id` keys. This is required because `actions/cache` is immutable per key — a static key would only save once, losing all subsequent predictions.
+**CI data persistence:** `predictions_log.jsonl`, `notification_state.json`, and `latest_prediction.json` are git-committed by each predict run. This gives permanent, queryable history of every prediction with full diagnostics. The `concurrency: predict-push` group prevents overlapping pushes.
 
 **Note:** GitHub Actions free tier runs `*/15` cron but actual execution is ~hourly due to queue congestion. This is a known limitation — a VPS would give true 15-min resolution.
