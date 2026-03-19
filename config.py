@@ -100,7 +100,7 @@ AEMET_RADAR_BOUNDS = {
 }
 
 # ── Meteocat Predicció Municipal ──
-METEOCAT_MUNICIPALITY_CODE = "080515"  # Cardedeu (codi INE 6 dígits)
+METEOCAT_MUNICIPALITY_CODE = "080462"  # Cardedeu (codi Meteocat via /referencia/v1/municipis)
 
 # ── Rain gate: llindars per decidir si consultar fonts cares ──
 RAIN_GATE_ENSEMBLE_PROB = 0.2   # Fracció de models amb pluja (≥1 de 4 = 0.25)

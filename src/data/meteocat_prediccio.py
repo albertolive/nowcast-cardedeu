@@ -32,7 +32,7 @@ def _is_configured() -> bool:
 def fetch_municipal_hourly_forecast() -> dict:
     """
     Obté la predicció horària a 72h per Cardedeu del Meteocat (SMC).
-    Endpoint: /pronostic/v1/municipal/{codiMunicipi}/horaria
+    Endpoint: /pronostic/v1/municipalHoraria/{codiMunicipi}
 
     El Meteocat (SMC) és l'autoritat meteorològica de Catalunya i
     la seva predicció municipal és específica per l'orografia catalana.
@@ -52,8 +52,8 @@ def fetch_municipal_hourly_forecast() -> dict:
 
     try:
         url = (
-            f"{config.METEOCAT_BASE_URL}/pronostic/v1/municipal/"
-            f"{config.METEOCAT_MUNICIPALITY_CODE}/horaria"
+            f"{config.METEOCAT_BASE_URL}/pronostic/v1/"
+            f"municipalHoraria/{config.METEOCAT_MUNICIPALITY_CODE}"
         )
         r = SESSION.get(url, headers=_headers(), timeout=20)
         r.raise_for_status()
@@ -75,8 +75,9 @@ def fetch_municipal_hourly_forecast() -> dict:
 
         # Cercar l'hora actual o la més propera
         current = None
+        today = now.date()
         for hf in hourly_forecasts:
-            if hf.get("hour") == current_hour:
+            if hf.get("date") == today and hf.get("hour") == current_hour:
                 current = hf
                 break
 
@@ -90,7 +91,8 @@ def fetch_municipal_hourly_forecast() -> dict:
 
         # Màxima probabilitat a 6h
         relevant = [hf for hf in hourly_forecasts
-                     if hf.get("hour", -1) >= current_hour
+                     if hf.get("date") == today
+                     and hf.get("hour", -1) >= current_hour
                      and hf.get("hour", -1) <= current_hour + 6]
         if relevant:
             result["smc_prob_precip_6h"] = max(
@@ -115,56 +117,76 @@ def fetch_municipal_hourly_forecast() -> dict:
 def _extract_hourly(data: dict) -> list[dict]:
     """
     Extreu les previsions horàries de la resposta del Meteocat.
-    L'estructura pot variar, intentem diversos formats possibles.
+    Format real de l'API:
+    {
+      "codiMunicipi": "080462",
+      "dies": [{
+        "data": "2026-03-19Z",
+        "variables": {
+          "temp": {"unitat": "°C", "valors": [{"valor": "9.6", "data": "2026-03-19T00:00Z"}, ...]},
+          "precipitacio": {"unitat": "mm", "valors": [...]},
+          "estatCel": {"valors": [{"valor": "20", "data": "..."}]},
+          "humitat": {"valors": [...]},
+          ...
+        }
+      }]
+    }
     """
     hourly = []
+    dies = data.get("dies", [])
 
-    # Format possible 1: la predicció conté "dies" → cada dia "hores"
-    dies = data.get("dies", data.get("prediccioDies", []))
-    if isinstance(dies, list):
-        for dia in dies:
-            hores = dia.get("variables", dia.get("hores", []))
-            if isinstance(hores, list):
-                for h in hores:
-                    hourly.append({
-                        "hour": h.get("hora", h.get("h")),
-                        "prob_precip": h.get("probabilitatPrecipitacio",
-                                             h.get("probPrecip", 0)),
-                        "precip_intensity": h.get("quantitatPrecipitacio",
-                                                  h.get("precipitacio", 0)),
-                        "temp": h.get("temperatura", h.get("temp")),
-                        "symbol": h.get("simbol", h.get("estatCel")),
-                    })
+    for dia in dies:
+        variables = dia.get("variables", {})
+        if not isinstance(variables, dict):
+            continue
 
-    # Format possible 2: predicció directa amb arrays per variable
-    if not hourly:
-        variables = data.get("variables", [])
-        if isinstance(variables, list):
-            temp_data = {}
-            precip_data = {}
-            for var in variables:
-                codi = var.get("codi", var.get("nom", ""))
-                valors = var.get("valors", [])
-                if "temperatura" in str(codi).lower() or codi == "temp":
-                    for v in valors:
-                        h = v.get("hora", v.get("h"))
-                        if h is not None:
-                            temp_data[h] = v.get("valor")
-                elif "precipitacio" in str(codi).lower() or "precip" in str(codi).lower():
-                    for v in valors:
-                        h = v.get("hora", v.get("h"))
-                        if h is not None:
-                            precip_data[h] = v.get("valor", 0)
+        # Build lookup tables: hour → value for each variable
+        temp_by_dt = {}
+        precip_by_dt = {}
+        symbol_by_dt = {}
+        humidity_by_dt = {}
 
-            all_hours = set(list(temp_data.keys()) + list(precip_data.keys()))
-            for h in sorted(all_hours):
-                hourly.append({
-                    "hour": h,
-                    "prob_precip": precip_data.get(h, 0),
-                    "precip_intensity": 0,
-                    "temp": temp_data.get(h),
-                    "symbol": None,
-                })
+        for var_name, var_data in variables.items():
+            valors = var_data.get("valors", [])
+            for v in valors:
+                dt_str = v.get("data", "")
+                val = v.get("valor")
+                if not dt_str or val is None:
+                    continue
+                try:
+                    dt = datetime.fromisoformat(dt_str.replace("Z", "+00:00"))
+                    hour = dt.hour
+                    # Use (date, hour) as key to handle multi-day
+                    key = (dt.date(), hour)
+                except (ValueError, AttributeError):
+                    continue
+
+                if var_name == "temp":
+                    temp_by_dt[key] = float(val)
+                elif var_name == "precipitacio":
+                    precip_by_dt[key] = float(val)
+                elif var_name == "estatCel":
+                    symbol_by_dt[key] = val
+                elif var_name == "humitat":
+                    humidity_by_dt[key] = float(val)
+
+        # Merge all variables by (date, hour) key
+        all_keys = set()
+        all_keys.update(temp_by_dt.keys(), symbol_by_dt.keys(), humidity_by_dt.keys())
+        if precip_by_dt:
+            all_keys.update(precip_by_dt.keys())
+
+        for key in sorted(all_keys):
+            date_part, hour = key
+            precip_mm = precip_by_dt.get(key, 0)
+            hourly.append({
+                "date": date_part,
+                "hour": hour,
+                "prob_precip": min(precip_mm * 100, 100) if precip_mm > 0 else 0,
+                "precip_intensity": precip_mm,
+                "temp": temp_by_dt.get(key),
+                "symbol": symbol_by_dt.get(key),
+            })
 
     return hourly
 
@@ -186,15 +208,14 @@ def fetch_smc_hourly_df() -> "pd.DataFrame":
     Per injectar a build_features_from_forecast().
     """
     import pandas as pd
-    from datetime import timedelta
 
     if not _is_configured():
         return pd.DataFrame()
 
     try:
         url = (
-            f"{config.METEOCAT_BASE_URL}/pronostic/v1/municipal/"
-            f"{config.METEOCAT_MUNICIPALITY_CODE}/horaria"
+            f"{config.METEOCAT_BASE_URL}/pronostic/v1/"
+            f"municipalHoraria/{config.METEOCAT_MUNICIPALITY_CODE}"
         )
         r = SESSION.get(url, headers=_headers(), timeout=20)
         r.raise_for_status()
@@ -207,22 +228,13 @@ def fetch_smc_hourly_df() -> "pd.DataFrame":
         if not hourly_forecasts:
             return pd.DataFrame()
 
-        # Construir DataFrame amb datetime complet
-        now = datetime.now()
-        today = now.replace(hour=0, minute=0, second=0, microsecond=0)
         rows = []
-        seen_hours = set()
-        day_offset = 0
-
         for hf in hourly_forecasts:
             hour = hf.get("hour")
-            if hour is None:
+            date_part = hf.get("date")
+            if hour is None or date_part is None:
                 continue
-            # Detectar canvi de dia (hora torna a ser menor)
-            if seen_hours and hour < max(seen_hours):
-                day_offset += 1
-            seen_hours.add(hour)
-            dt = today + timedelta(days=day_offset, hours=hour)
+            dt = datetime(date_part.year, date_part.month, date_part.day, hour)
             rows.append({
                 "datetime": dt,
                 "smc_prob_precip_1h": hf.get("prob_precip", np.nan),
