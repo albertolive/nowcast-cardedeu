@@ -185,6 +185,8 @@ def predict_now() -> dict:
             X[col] = [np.nan]
 
     X = X.replace([np.inf, -np.inf], np.nan)
+    # Ensure all columns are numeric (None from closed rain gate → object dtype)
+    X = X.apply(pd.to_numeric, errors="coerce")
 
     # Predicció amb calibratge
     raw_probability = float(model.predict_proba(X)[:, 1][0])
