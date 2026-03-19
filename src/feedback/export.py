@@ -39,6 +39,14 @@ def export_verified_for_training() -> int:
     df["will_rain"] = df["actual_rain"].astype(int)  # Ground truth real
     df["datetime"] = pd.to_datetime(df["timestamp"])
 
+    # Expandir el vector de features complet (guardat pel logger) en columnes
+    if "features" in df.columns:
+        features_df = pd.json_normalize(df["features"])
+        # Afegir les columnes de features al DataFrame, sobreescrivint si ja existeixen
+        for col in features_df.columns:
+            df[col] = features_df[col].values
+        df = df.drop(columns=["features"])
+
     # Guardar com a parquet per fusionar amb el dataset principal
     os.makedirs(os.path.dirname(FEEDBACK_TRAINING_PATH), exist_ok=True)
     df.to_parquet(FEEDBACK_TRAINING_PATH, index=False)

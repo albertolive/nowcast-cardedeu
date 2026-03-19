@@ -52,7 +52,7 @@ def main():
     logger.info("Entrenant XGBoost...")
     logger.info("=" * 60)
 
-    model, metrics = train_model(X, y, n_splits=5)
+    model, metrics, calibrator = train_model(X, y, n_splits=5)
 
     # Importància de features
     fi = get_feature_importance(model, list(X.columns))
@@ -61,14 +61,15 @@ def main():
         bar = "█" * int(row["importance"] * 50)
         logger.info(f"  {row['feature']:30s} {row['importance']:.4f} {bar}")
 
-    # Desar model
-    save_model(model, list(X.columns), metrics)
+    # Desar model + calibrador
+    save_model(model, list(X.columns), metrics, calibrator=calibrator)
 
     logger.info("=" * 60)
     logger.info("Entrenament completat!")
     logger.info(f"  AUC mitjà (CV): {metrics['cv_auc_mean']:.4f} ± {metrics['cv_auc_std']:.4f}")
     logger.info(f"  F1 mitjà (CV):  {metrics['cv_f1_mean']:.4f} ± {metrics['cv_f1_std']:.4f}")
     logger.info(f"  AUC final:      {metrics['final_auc']:.4f}")
+    logger.info(f"  Llindar òptim:  {metrics['optimal_threshold']:.4f}")
     logger.info(f"  Model desat a:  {config.MODEL_PATH}")
     logger.info("=" * 60)
 

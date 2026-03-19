@@ -30,8 +30,7 @@ PREDICTIONS_LOG = os.path.join(config.PROJECT_ROOT, "data", "predictions_log.jso
 def log_prediction(result: dict) -> None:
     """
     Afegeix una predicció al log JSONL.
-    Cada línia conté: timestamp, probability, will_rain, confidence,
-    condicions clau, i un camp 'verified' que es completarà després.
+    Inclou el vector de features complet per alimentar el feedback loop.
     """
     entry = {
         "timestamp": result["timestamp"],
@@ -45,6 +44,8 @@ def log_prediction(result: dict) -> None:
         "radar_dbz": result.get("radar", {}).get("dbz", 0),
         "radar_approaching": result.get("radar", {}).get("approaching", False),
         "sentinel_precip": result.get("sentinel", {}).get("precip"),
+        # Vector de features complet (per feedback loop)
+        "features": result.get("feature_vector", {}),
         # Camps de verificació (es completen després)
         "verified": False,
         "actual_rain": None,

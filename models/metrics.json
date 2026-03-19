@@ -3,31 +3,31 @@
   "cv_auc_std": 0.006816827428742641,
   "cv_f1_mean": 0.671850767914893,
   "cv_f1_std": 0.03327271578086382,
-  "final_auc": 0.9591506598937601,
+  "final_auc": 0.958986127703731,
   "final_report": {
     "0": {
-      "precision": 0.9785402521823472,
-      "recall": 0.9310185719229438,
-      "f1-score": 0.9541880948158658,
+      "precision": 0.9719107754042252,
+      "recall": 0.9499365555427385,
+      "f1-score": 0.9607980399019951,
       "support": 8669.0
     },
     "1": {
-      "precision": 0.6186224489795918,
-      "recall": 0.8456843940714909,
-      "f1-score": 0.714548802946593,
+      "precision": 0.676842889054356,
+      "recall": 0.7925021795989537,
+      "f1-score": 0.7301204819277108,
       "support": 1147.0
     },
-    "accuracy": 0.9210472697636511,
+    "accuracy": 0.9315403422982885,
     "macro avg": {
-      "precision": 0.7985813505809696,
-      "recall": 0.8883514829972173,
-      "f1-score": 0.8343684488812293,
+      "precision": 0.8243768322292906,
+      "recall": 0.8712193675708462,
+      "f1-score": 0.845459260914853,
       "support": 9816.0
     },
     "weighted avg": {
-      "precision": 0.936483842211528,
-      "recall": 0.9210472697636511,
-      "f1-score": 0.926186233795689,
+      "precision": 0.9374320808602867,
+      "recall": 0.9315403422982885,
+      "f1-score": 0.9338433578526365,
       "support": 9816.0
     }
   },
@@ -89,5 +89,9 @@
     "weather_code",
     "model_predicts_precip",
     "shortwave_radiation"
-  ]
+  ],
+  "calibrated": true,
+  "optimal_threshold": 0.3541666666666667,
+  "calibration_oof_f1_uncalibrated": 0.6754485578014989,
+  "calibration_oof_f1_calibrated": 0.6903812609020683
 }
