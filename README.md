@@ -161,7 +161,7 @@ nowcast-cardedeu/
 ├── models/                   # Model entrenat (git tracked)
 ├── data/                     # Dades + logs de prediccions
 ├── requirements.txt          # Dependències Python
-└── .github/workflows/        # Automatització cada 15 min
+└── .github/workflows/        # Automatització cada 10 min
 ```
 
 ## Features del model
@@ -230,7 +230,16 @@ Utilitza l'estació de **Granollers (YM)** com a sentinella: si plou a Granoller
 
 ### Rain gate (estalvi d'API)
 
-Meteocat XEMA té un límit de 750 crides/mes (pla gratuït). El sistema implementa un **rain gate** que només consulta Meteocat quan almenys un senyal independent indica risc de pluja:
+Meteocat té quotes mensuals separades per servei (reset dia 1 a 00:00 UTC):
+
+| Servei | Quota | Endpoint |
+|--------|-------|----------|
+| XEMA (estacions) | 750/mes | `/xema/v1/variables/mesurades/{var}/{YYYY}/{MM}/{DD}` |
+| XDDE (llamps) | 250/mes | `/xdde/v1/catalunya/{YYYY}/{MM}/{DD}/{HH}` |
+| Predicció | 100/mes | `/pronostic/v1/municipalHoraria/080462` |
+| Consum actual | 300/mes | `/quotes/v1/consum-actual` |
+
+**Totes** les crides Meteocat (XDDE, Predicció, XEMA) estan darrere d'un **rain gate** que només les activa quan almenys un senyal independent indica risc de pluja:
 
 | Senyal | Llindar | Font |
 |--------|---------|------|
@@ -238,10 +247,9 @@ Meteocat XEMA té un límit de 750 crides/mes (pla gratuït). El sistema impleme
 | Radar echo | Qualsevol eco detectat | RainViewer |
 | Radar AEMET | Qualsevol eco detectat | AEMET radar Barcelona |
 | AEMET prob. tempesta | ≥ 10% | AEMET OpenData |
-| Llamps detectats | Qualsevol descàrrega | Meteocat XDDE |
 | CAPE (energia convectiva) | ≥ 800 J/kg | Open-Meteo GFS |
 
-Resultat: ~200-400 crides/mes en lloc de ~6,000. Dins el límit gratuït.
+Amb ~8 dies de pluja/mes a Cardedeu i cache TTL, el consum real queda dins de les quotes. Els scripts de backfill comproven la quota via `get_remaining()` abans d'executar-se.
 
 ### Règims eòlics catalans
 
@@ -311,7 +319,7 @@ El sistema verifica automàticament les seves pròpies prediccions i aprèn dels
 ```
 ┌─────────────────┐    +60 min     ┌─────────────────┐    diari      ┌─────────────────┐
 │   Predicció     │──────────▶│  Verificació    │────────────▶│   Re-entrena   │
-│  cada 15 min   │             │ va ploure?     │              │  amb feedback   │
+│  cada 10 min   │             │ va ploure?     │              │  amb feedback   │
 └────────┬────────┘             └────────┬────────┘              └────────┬────────┘
          │                       │                              │
          ▼                       ▼                              │
