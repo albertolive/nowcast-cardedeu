@@ -192,15 +192,15 @@ jobs:
 
       - name: Validate downloaded data
         run: |
-          python -c "
-import pandas as pd, sys
-for f, min_rows in [('data/raw/station_daily.parquet', 1000), ('data/raw/open_meteo_hourly.parquet', 10000)]:
-    df = pd.read_parquet(f)
-    if len(df) < min_rows:
-        print(f'ERROR: {f} té només {len(df)} files (mínim {min_rows})')
-        sys.exit(1)
-    print(f'OK: {f} → {len(df)} files')
-"
+          python << 'EOF'
+          import pandas as pd, sys
+          for f, min_rows in [('data/raw/station_daily.parquet', 1000), ('data/raw/open_meteo_hourly.parquet', 10000)]:
+              df = pd.read_parquet(f)
+              if len(df) < min_rows:
+                  print(f'ERROR: {f} té només {len(df)} files (mínim {min_rows})')
+                  sys.exit(1)
+              print(f'OK: {f} → {len(df)} files')
+          EOF
 
       - name: Build training dataset
         run: python scripts/build_dataset.py
@@ -210,18 +210,18 @@ for f, min_rows in [('data/raw/station_daily.parquet', 1000), ('data/raw/open_me
 
       - name: Validate model quality
         run: |
-          python -c "
-import json, sys
-with open('models/metrics.json') as f:
-    m = json.load(f)
-auc = m.get('cv_auc_mean', 0)
-f1 = m.get('cv_f1_mean', 0)
-print(f'AUC={auc:.4f}, F1={f1:.4f}')
-if auc < 0.70:
-    print(f'ERROR: AUC {auc:.4f} massa baix (mínim 0.70) — model rebutjat')
-    sys.exit(1)
-print('Model quality OK')
-"
+          python << 'EOF'
+          import json, sys
+          with open('models/metrics.json') as f:
+              m = json.load(f)
+          auc = m.get('cv_auc_mean', 0)
+          f1 = m.get('cv_f1_mean', 0)
+          print(f'AUC={auc:.4f}, F1={f1:.4f}')
+          if auc < 0.70:
+              print(f'ERROR: AUC {auc:.4f} massa baix (mínim 0.70) — model rebutjat')
+              sys.exit(1)
+          print('Model quality OK')
+          EOF
 
       - name: Commit updated model
         run: |
