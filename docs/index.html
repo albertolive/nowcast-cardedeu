@@ -357,6 +357,152 @@
     footer a { color: var(--accent-blue); text-decoration: none; }
     footer a:hover { text-decoration: underline; }
 
+    /* Resolution History */
+    .history-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 24px;
+    }
+
+    .history-card h2 {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 16px;
+    }
+
+    .day-group {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      margin-bottom: 12px;
+      overflow: hidden;
+    }
+
+    .day-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 16px;
+      background: var(--surface2);
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.2s;
+    }
+
+    .day-header:hover { background: rgba(48, 54, 61, 0.8); }
+
+    .day-header-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .day-date {
+      font-weight: 600;
+      font-size: 15px;
+    }
+
+    .day-resolution {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .day-resolution.rain { background: rgba(88, 166, 255, 0.15); color: var(--accent-blue); }
+    .day-resolution.no-rain { background: rgba(139, 148, 158, 0.1); color: var(--text-muted); }
+    .day-resolution.pending { background: rgba(210, 153, 34, 0.1); color: var(--accent-yellow); }
+
+    .day-header-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .day-accuracy {
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .day-accuracy.perfect { color: var(--accent-green); }
+    .day-accuracy.good { color: var(--accent-yellow); }
+    .day-accuracy.bad { color: var(--accent-red); }
+
+    .day-chevron {
+      font-size: 12px;
+      color: var(--text-muted);
+      transition: transform 0.2s;
+    }
+
+    .day-group.open .day-chevron { transform: rotate(180deg); }
+
+    .day-predictions {
+      display: none;
+      padding: 0;
+    }
+
+    .day-group.open .day-predictions { display: block; }
+
+    .pred-row {
+      display: flex;
+      align-items: center;
+      padding: 10px 16px;
+      border-top: 1px solid rgba(48, 54, 61, 0.4);
+      font-size: 13px;
+      gap: 12px;
+    }
+
+    .pred-row:hover { background: rgba(48, 54, 61, 0.3); }
+
+    .pred-time {
+      color: var(--text-muted);
+      font-variant-numeric: tabular-nums;
+      min-width: 45px;
+    }
+
+    .pred-prob-bar {
+      flex: 1;
+      max-width: 200px;
+      height: 8px;
+      background: var(--surface);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .pred-prob-fill {
+      height: 100%;
+      border-radius: 4px;
+      transition: width 0.3s;
+    }
+
+    .pred-pct {
+      font-weight: 600;
+      min-width: 42px;
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .pred-said {
+      min-width: 55px;
+      font-size: 12px;
+    }
+
+    .pred-result {
+      min-width: 24px;
+      text-align: center;
+      font-size: 16px;
+    }
+
+    .pred-rain-mm {
+      color: var(--text-muted);
+      font-size: 12px;
+      min-width: 50px;
+    }
+
     /* Responsive */
     @media (max-width: 600px) {
       .prediction-question { font-size: 18px; }
@@ -364,6 +510,8 @@
       .probability-ring { width: 160px; height: 160px; }
       .outcome-btn { padding: 10px 16px; }
       .outcome-btn .btn-pct { font-size: 18px; }
+      .pred-prob-bar { display: none; }
+      .pred-row { gap: 8px; }
     }
   </style>
 </head>
@@ -566,7 +714,17 @@ function renderPrediction(latest, history) {
         ${renderAtmosphere(latest)}
       </div>
     </div>
+
+    <!-- Resolution History -->
+    ${renderHistory(history)}
   `;
+
+  // Wire up day-group toggles
+  document.querySelectorAll('.day-header').forEach(hdr => {
+    hdr.addEventListener('click', () => {
+      hdr.closest('.day-group').classList.toggle('open');
+    });
+  });
 
   drawChart(history);
 }
@@ -625,6 +783,114 @@ function renderAtmosphere(d) {
     <div class="stat-row"><span class="stat-label">TT Index</span><span class="stat-value">${p.tt_index != null ? p.tt_index.toFixed(1) : '—'}</span></div>
     <div class="stat-row"><span class="stat-label">Humitat 850hPa</span><span class="stat-value">${p.rh_850 ?? '—'}%</span></div>
   `;
+}
+
+/* ---- Resolution History ---- */
+function renderHistory(history) {
+  // Group predictions by day
+  const days = {};
+  for (const h of history) {
+    const day = h.timestamp.slice(0, 10);
+    if (!days[day]) days[day] = [];
+    days[day].push(h);
+  }
+
+  const sortedDays = Object.keys(days).sort().reverse();
+  if (sortedDays.length === 0) return '';
+
+  const dayRows = sortedDays.map((day, idx) => {
+    const preds = days[day];
+    const verified = preds.filter(p => p.verified);
+    const correct = verified.filter(p => p.correct).length;
+    const anyRain = preds.some(p => p.actual_rain === true);
+    const allPending = verified.length === 0;
+    const rainMm = preds.reduce((max, p) => Math.max(max, p.actual_rain_mm || 0), 0);
+
+    // Day resolution
+    let resolutionCls, resolutionText;
+    if (allPending) {
+      resolutionCls = 'pending';
+      resolutionText = '⏳ Pendent';
+    } else if (anyRain) {
+      resolutionCls = 'rain';
+      resolutionText = `🌧️ Va ploure (${rainMm.toFixed(1)} mm)`;
+    } else {
+      resolutionCls = 'no-rain';
+      resolutionText = '☀️ No va ploure';
+    }
+
+    // Day accuracy
+    let accCls = '', accText = '';
+    if (verified.length > 0) {
+      const pct = ((correct / verified.length) * 100).toFixed(0);
+      accCls = pct >= 90 ? 'perfect' : pct >= 60 ? 'good' : 'bad';
+      accText = `${correct}/${verified.length} encerts`;
+    }
+
+    const d = new Date(day + 'T12:00:00');
+    const dayLabel = d.toLocaleDateString('ca-ES', { weekday: 'short', day: 'numeric', month: 'short' });
+
+    const predRows = preds.map(p => {
+      const t = new Date(p.timestamp);
+      const time = t.toLocaleString('ca-ES', { hour: '2-digit', minute: '2-digit' });
+      const pct = p.probability_pct;
+      const color = getProbColor(pct);
+      const said = p.will_rain ? '🌧️ Plou' : '☀️ No plou';
+      let result, resultTitle;
+      if (!p.verified) {
+        result = '⏳';
+        resultTitle = 'Pendent de verificació';
+      } else if (p.correct) {
+        result = '✅';
+        resultTitle = 'Encert';
+      } else {
+        result = '❌';
+        resultTitle = 'Error';
+      }
+      const rainInfo = p.actual_rain_mm != null ? `${p.actual_rain_mm.toFixed(1)} mm` : '';
+
+      return `
+        <div class="pred-row">
+          <span class="pred-time">${time}</span>
+          <div class="pred-prob-bar"><div class="pred-prob-fill" style="width:${pct}%;background:${color}"></div></div>
+          <span class="pred-pct" style="color:${color}">${pct}%</span>
+          <span class="pred-said">${said}</span>
+          <span class="pred-result" title="${resultTitle}">${result}</span>
+          <span class="pred-rain-mm">${rainInfo}</span>
+        </div>`;
+    }).join('');
+
+    return `
+      <div class="day-group ${idx === 0 ? 'open' : ''}">
+        <div class="day-header">
+          <div class="day-header-left">
+            <span class="day-date">${dayLabel}</span>
+            <span class="day-resolution ${resolutionCls}">${resolutionText}</span>
+          </div>
+          <div class="day-header-right">
+            <span class="day-accuracy ${accCls}">${accText}</span>
+            <span class="day-chevron">▼</span>
+          </div>
+        </div>
+        <div class="day-predictions">${predRows}</div>
+      </div>`;
+  }).join('');
+
+  // Overall stats
+  const allVerified = history.filter(h => h.verified);
+  const allCorrect = allVerified.filter(h => h.correct).length;
+  const overallAcc = allVerified.length > 0 ? ((allCorrect / allVerified.length) * 100).toFixed(1) : '—';
+
+  return `
+    <div class="history-card">
+      <h2>📋 Historial de resolucions</h2>
+      <p style="color:var(--text-muted);font-size:13px;margin-bottom:16px">
+        Cada predicció es verifica amb dades reals de pluja.
+        Model accuracy: <strong style="color:var(--accent-green)">${overallAcc}%</strong>
+        (${allCorrect}/${allVerified.length} verificades)
+      </p>
+      ${dayRows}
+    </div>`;
 }
 
 /* ---- Lightweight Chart (pure Canvas, no dependencies) ---- */
