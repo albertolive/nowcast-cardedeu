@@ -30,7 +30,7 @@ Utilitza dades reals de l'estació [MeteoCardedeu.net](https://meteocardedeu.net
          │                     │         │                      │
          ▼                     ▼         ▼                      ▼
     ┌──────────────────────────────────────────────────────────────────────┐
-    │                Feature Engineering (192 features)                    │
+    │                Feature Engineering (199 features)                    │
     │  Tendències · Ensemble · 5 nivells pressió · CAPE/CIN · SST · Compostos físics · Radar · Sentinella · Llamps │
     └──────────────────────────────┬───────────────────────────────────────┘
                                   │
@@ -147,7 +147,7 @@ nowcast-cardedeu/
 │   │   ├── meteocat_xdde.py  # API Meteocat XDDE (descàrregues elèctriques)
 │   │   └── meteocat_prediccio.py # API Meteocat Predicció (forecast municipal)
 │   ├── features/
-│   │   ├── engineering.py    # Feature engineering (192 features, 148 historical)
+│   │   ├── engineering.py    # Feature engineering (199 features, 155 historical)
 │   │   └── regime.py         # Detecció de canvis de règim atmosfèric (Llevantada, Garbí, pressió)
 │   ├── model/
 │   │   ├── train.py          # Pipeline d'entrenament (XGBoost + TimeSeriesSplit)
@@ -178,7 +178,7 @@ nowcast-cardedeu/
 
 ## Features del model
 
-El model defineix **192 features** per predicció en temps real. El model s'entrena amb les **192 features completes** (148 amb dades històriques, 44 com a NaN per radar/llamps/AEMET). El **feedback loop** acumula gradualment les 44 features en temps real (radar, llamps, sentinella) a cada predicció verificada, permetent que el model aprengui d'observacions independents amb cada re-entrenament.
+El model defineix **199 features** per predicció en temps real. El model s'entrena amb les **199 features completes** (155 amb dades històriques, 44 com a NaN per radar/llamps/AEMET). El **feedback loop** acumula gradualment les 44 features en temps real (radar, llamps, sentinella) a cada predicció verificada, permetent que el model aprengui d'observacions independents amb cada re-entrenament.
 
 **Ensemble backfill**: Des de gener 2022, dades de 4 models NWP (ECMWF, GFS, ICON, AROME) descarregades via `scripts/backfill_ensemble.py`.
 **XEMA sentinel backfill**: Dades de Granollers (YM) + ETAP Cardedeu (KX) via `scripts/backfill_xema.py` (incremental, 15 dies/execució per respectar el límit API).
@@ -228,7 +228,8 @@ El model defineix **192 features** per predicció en temps real. El model s'entr
 | 🆕 Tier 1 ERA5 | showers, nwp_showers_fraction, et0_fao_evapotranspiration, soil_temperature_0_to_7cm, soil_air_temp_diff, sunshine_duration, sunshine_accum_3h, wind_speed_100m, boundary_layer_shear, wind_dir_shear_100m, snowfall | Xàfecs convectius, evapotranspiració, temperatura sòl, radiació solar directa, cisalla capa límit. ERA5 100% |
 | 🆕 Tier 2 Upper-air | nwp_lifted_index, gph_850, gph_850_change_3h, rh_500, dry_intrusion_500, wind_700_speed, wind_700_dir, steering_onshore_700 | Índex d'inestabilitat directe (LI), alçada geopotencial 850hPa, humitat relativa 500hPa, vent director 700hPa. Historical Forecast API (2021+, 44%) |
 | 🆕 Tier 3 Derivats | rain_ending_signal, cloud_thickness_proxy, radiation_rain_conflict, moisture_flux_change_3h | Senyal fi de pluja, gruix de núvols, conflicte radiació-pluja, canvi de flux d'humitat. Derivats 100% (excepte moisture_flux 44%) |
-| 🆕 Tier 4 Columna atmosfèrica | tcwv, tcwv_change_3h, tcwv_change_6h, boundary_layer_height, blh_change_3h, tcwv_blh_ratio, terrestrial_radiation, soil_moisture_28_to_100cm, soil_saturation_ratio | Aigua precipitable (TCWV), fondària capa límit (BLH), radiació terrestre (detecció núvols nocturna), humitat sòl profund. ERA5 100% |
+| 🆕 Tier 4 Columna atmosfèrica | tcwv, tcwv_change_3h, tcwv_change_6h, boundary_layer_height, blh_change_3h, tcwv_blh_ratio, terrestrial_radiation, soil_moisture_28_to_100cm, soil_saturation_ratio, tcwv_monthly_anomaly | Aigua precipitable (TCWV), fondària capa límit (BLH), radiació terrestre (detecció núvols nocturna), humitat sòl profund, anomalia TCWV mensual. ERA5 100% |
+| 🆕 Tier 5 Blind-spot fixes | hours_since_sunrise, rh_700_change_3h, rh_700_change_6h, temp_850_change_3h, k_index, bulk_richardson | Timing convectiu (hores des de sortida sol), tendència assecat 700hPa (virga), advecció 850hPa, K-index (fondària capa humida), BRN (mode tempesta). PL 44% / ERA5 100% |
 
 ## Fonts de dades
 
@@ -351,14 +352,14 @@ El model AROME de Meteo-France és el 4t model de l'ensemble, amb resolució de 
 
 | Mètrica | Valor |
 |---------|-------|
-| AUC-ROC (CV) | 0.9619 ± 0.005 |
-| F1-Score (CV) | 0.6873 ± 0.032 |
-| F1-Score OOF (calibrat) | 0.6998 |
-| AUC-ROC (final) | 0.9683 |
-| Llindar òptim (calibrat) | 0.3608 |
-| Mostres d'entrenament | 98,362 |
-| Features (training) | 192 (148 històriques, 44 real-time) |
-| Features (total) | 192 |
+| AUC-ROC (CV) | 0.9621 ± 0.005 |
+| F1-Score (CV) | 0.6910 ± 0.028 |
+| F1-Score OOF (calibrat) | 0.7004 |
+| AUC-ROC (final) | 0.9682 |
+| Llindar òptim (calibrat) | 0.3571 |
+| Mostres d'entrenament | 98,366 |
+| Features (training) | 199 (155 històriques, 44 real-time) |
+| Features (total) | 199 |
 | Classe positiva (pluja) | ~9.3% |
 | Cross-validation | TimeSeriesSplit (5 folds) |
 | Calibratge | Isotonic Regression (OOF) |
@@ -371,7 +372,7 @@ El model AROME de Meteo-France és el 4t model de l'ensemble, amb resolució de 
 |-----------|-------|------|
 | n_estimators | 800 | Més arbres per compensar lr baixa |
 | max_depth | 6 | Complexitat intermèdia |
-| learning_rate | 0.02 | Baixa per evitar sobreajust amb 192 features |
+| learning_rate | 0.02 | Baixa per evitar sobreajust amb 199 features |
 | subsample | 0.8 | Bagging row-level |
 | colsample_bytree | 0.7 | Força exploració diversa de features |
 | min_child_weight | 5 | Regularització split mínim |
@@ -380,7 +381,7 @@ El model AROME de Meteo-France és el 4t model de l'ensemble, amb resolució de 
 | reg_lambda | 1.0 | L2 regularització |
 | early_stopping_rounds | 75 | Proporcional a lr baixa |
 
-> **Lliçó d'afinament:** Quan s'afegeixen features noves (160→192), cal reajustar els hiperparàmetres. Amb 192 features, la combinació lr=0.05 + colsample=0.8 (antiga) sobreajustava — baixar lr a 0.02 i colsample a 0.7 va recuperar i superar les mètriques anteriors. Top 3 features (NWP) acumulen ~85% del gain total.
+> **Lliçó d'afinament:** Quan s'afegeixen features noves (160→199), cal reajustar els hiperparàmetres. Amb 199 features, la combinació lr=0.05 + colsample=0.8 (antiga) sobreajustava — baixar lr a 0.02 i colsample a 0.7 va recuperar i superar les mètriques anteriors. Top 3 features (NWP) acumulen ~85% del gain total.
 
 ## Feedback loop (auto-aprenentatge)
 
@@ -403,7 +404,7 @@ El sistema verifica automàticament les seves pròpies prediccions i aprèn dels
 
 ### Com funciona
 
-1. **Log**: Cada predicció es registra a `predictions_log.jsonl` amb un snapshot complet: probabilitat, condicions, radar, AEMET, sentinella, ensemble, nivells de pressió, règim de vent, bias, i les 192 features del model
+1. **Log**: Cada predicció es registra a `predictions_log.jsonl` amb un snapshot complet: probabilitat, condicions, radar, AEMET, sentinella, ensemble, nivells de pressió, règim de vent, bias, i les 199 features del model
 2. **Verificació**: 60-75 min després, el sistema consulta l'estació per veure si realment va ploure
 3. **Classificació**: Cada predicció es marca com TP, FP, TN, o FN
 4. **Informe**: Cada dilluns a les 8:00, reps un report amb accuracy, precisión, recall, F1, i tendència

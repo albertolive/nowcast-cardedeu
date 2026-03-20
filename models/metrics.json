@@ -1,44 +1,45 @@
 {
-  "cv_auc_mean": 0.9618537739247977,
-  "cv_auc_std": 0.0053912614268563554,
-  "cv_f1_mean": 0.6872951804942952,
-  "cv_f1_std": 0.03207202907255148,
-  "final_auc": 0.9682756339761218,
+  "cv_auc_mean": 0.9621405312832833,
+  "cv_auc_std": 0.0053647767797374455,
+  "cv_f1_mean": 0.6910232452102452,
+  "cv_f1_std": 0.02830863392240099,
+  "final_auc": 0.9681749886101333,
   "final_report": {
     "0": {
-      "precision": 0.9706848030018762,
-      "recall": 0.9535767768690243,
-      "f1-score": 0.9620547387994653,
+      "precision": 0.9761535710027424,
+      "recall": 0.9430941135813846,
+      "f1-score": 0.9593391141317085,
       "support": 8681.0
     },
     "1": {
-      "precision": 0.692131398013751,
-      "recall": 0.7837370242214533,
-      "f1-score": 0.7350912778904666,
+      "precision": 0.6593103448275862,
+      "recall": 0.8269896193771626,
+      "f1-score": 0.7336914811972371,
       "support": 1156.0
     },
-    "accuracy": 0.9336179729592355,
+    "accuracy": 0.9294500355799532,
     "macro avg": {
-      "precision": 0.8314081005078136,
-      "recall": 0.8686569005452388,
-      "f1-score": 0.848573008344966,
+      "precision": 0.8177319579151643,
+      "recall": 0.8850418664792736,
+      "f1-score": 0.8465152976644728,
       "support": 9837.0
     },
     "weighted avg": {
-      "precision": 0.9379504595875962,
-      "recall": 0.9336179729592355,
-      "f1-score": 0.9353830135975946,
+      "precision": 0.9389195800036084,
+      "recall": 0.9294500355799532,
+      "f1-score": 0.9328220191157229,
       "support": 9837.0
     }
   },
-  "n_samples": 98362,
+  "n_samples": 98366,
   "n_positive": 9178,
-  "n_features": 192,
+  "n_features": 199,
   "feature_names": [
     "hour_sin",
     "hour_cos",
     "month_sin",
     "month_cos",
+    "hours_since_sunrise",
     "pressure_msl",
     "pressure_change_1h",
     "pressure_change_3h",
@@ -78,6 +79,9 @@
     "rh_850",
     "rh_700",
     "temp_700",
+    "rh_700_change_3h",
+    "rh_700_change_6h",
+    "temp_850_change_3h",
     "wind_300_speed",
     "wind_300_dir",
     "gph_300",
@@ -85,11 +89,13 @@
     "tt_index",
     "li_index",
     "li_unstable",
+    "k_index",
     "moisture_flux_850",
     "moisture_flux_925",
     "theta_e_deficit",
     "inversion_925",
     "deep_layer_shear",
+    "bulk_richardson",
     "jet_speed_300",
     "wind_shear_speed",
     "wind_shear_dir",
@@ -146,6 +152,7 @@
     "terrestrial_radiation",
     "soil_moisture_28_to_100cm",
     "soil_saturation_ratio",
+    "tcwv_monthly_anomaly",
     "shortwave_radiation",
     "radar_dbz",
     "radar_rain_rate",
@@ -229,7 +236,7 @@
     "freezing_level_height"
   ],
   "calibrated": true,
-  "optimal_threshold": 0.36082474226804134,
-  "calibration_oof_f1_uncalibrated": 0.6908856153530136,
-  "calibration_oof_f1_calibrated": 0.6998374796849606
+  "optimal_threshold": 0.35714285714285715,
+  "calibration_oof_f1_uncalibrated": 0.6941770368631134,
+  "calibration_oof_f1_calibrated": 0.7004036013660354
 }
