@@ -565,6 +565,7 @@
     .day-resolution.rain { background: rgba(88, 166, 255, 0.15); color: var(--accent-blue); }
     .day-resolution.no-rain { background: rgba(139, 148, 158, 0.1); color: var(--text-muted); }
     .day-resolution.pending { background: rgba(210, 153, 34, 0.1); color: var(--accent-yellow); }
+    .day-resolution.in-progress { background: rgba(136, 98, 232, 0.15); color: #a78bfa; }
 
     .day-detail-accuracy {
       font-size: 13px;
@@ -1156,9 +1157,12 @@ function initCalendar(history) {
     const correct = verified.filter(p => p.correct).length;
     const anyRain = preds.some(p => p.actual_rain === true);
     const allPending = verified.length === 0;
+    const hasPending = preds.some(p => !p.verified);
     const rainMm = preds.reduce((max, p) => Math.max(max, p.actual_rain_mm || 0), 0);
     const acc = verified.length > 0 ? (correct / verified.length) : null;
-    return { preds, verified, correct, anyRain, allPending, rainMm, acc, count: preds.length };
+    const todayStr = new Date().toISOString().slice(0, 10);
+    const isOngoing = dayKey >= todayStr;
+    return { preds, verified, correct, anyRain, allPending, hasPending, isOngoing, rainMm, acc, count: preds.length };
   }
 
   function render() {
@@ -1224,6 +1228,9 @@ function initCalendar(history) {
         if (s.allPending) {
           cls += ' pending-day';
           icon = '⏳';
+        } else if (s.isOngoing) {
+          cls += ' pending-day';
+          icon = s.anyRain ? '🌧️' : '📊';
         } else if (s.anyRain) {
           cls += ' rain-day';
           icon = '🌧️';
@@ -1265,7 +1272,7 @@ function initCalendar(history) {
       <div class="cal-legend">
         <span class="cal-legend-item"><span class="cal-legend-dot" style="background:rgba(63,185,80,0.25)"></span> Tot correcte</span>
         <span class="cal-legend-item"><span class="cal-legend-dot" style="background:rgba(88,166,255,0.2)"></span> Dia de pluja</span>
-        <span class="cal-legend-item"><span class="cal-legend-dot" style="background:rgba(210,153,34,0.2)"></span> Pendent</span>
+        <span class="cal-legend-item"><span class="cal-legend-dot" style="background:rgba(210,153,34,0.2)"></span> Pendent / En curs</span>
         <span class="cal-legend-item"><span class="cal-legend-dot" style="background:rgba(248,81,73,0.2)"></span> Errors</span>
         <span class="cal-legend-item"><span class="cal-legend-dot" style="background:var(--surface2)"></span> Sense dades</span>
       </div>
@@ -1313,6 +1320,11 @@ function initCalendar(history) {
     if (s.allPending) {
       resolutionCls = 'pending';
       resolutionText = '⏳ Pendent';
+    } else if (s.isOngoing) {
+      resolutionCls = 'in-progress';
+      resolutionText = s.anyRain
+        ? `🌧️ En curs — Ha plogut (${s.rainMm.toFixed(1)} mm)`
+        : '📊 En curs — Encara no ha plogut';
     } else if (s.anyRain) {
       resolutionCls = 'rain';
       resolutionText = `🌧️ Va ploure (${s.rainMm.toFixed(1)} mm)`;
