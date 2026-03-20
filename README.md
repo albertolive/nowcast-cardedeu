@@ -224,6 +224,7 @@ El model defineix **160 features** per predicció en temps real. El model s'entr
 | 🆕 Visibilitat | visibility | Baixa visibilitat = pluja/boira activa. Historical Forecast API (2021+, 44%) |
 | 🆕 Nivell de congelació | freezing_level_height | Alçada isoterma 0°C — clau per tipus/intensitat de precipitació. Historical Forecast API (2021+, 44%) |
 | ❄️ Tramuntana | tramuntana_strength, tramuntana_moisture | Vent polar fred del nord, supressor de pluja (5.8% rain rate) |
+| 🎯 FP-killer NWP | nwp_rain_amount, nwp_rain_drying, nwp_rain_confirmed, afternoon_fp_risk, nwp_rain_dry_air | Reducció de falsos positius: pluja NWP contínua, interaccions amb humitat/sòl/núvols. ERA5 100% |
 
 ## Fonts de dades
 
