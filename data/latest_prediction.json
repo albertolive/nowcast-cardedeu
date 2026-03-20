@@ -3,12 +3,12 @@
   "probability_pct": 0.0,
   "will_rain": false,
   "confidence": "Molt Baixa",
-  "timestamp": "2026-03-20T05:00:57.588676",
+  "timestamp": "2026-03-20T05:10:39.070175",
   "conditions": {
-    "temperature": "3.6",
+    "temperature": "3.5",
     "humidity": 87,
-    "pressure": "1017.5",
-    "wind_speed": "0.0",
+    "pressure": "1017.6",
+    "wind_speed": "1.6",
     "wind_dir": "N",
     "rain_today": "0.0",
     "solar_radiation": 0
@@ -54,7 +54,7 @@
     "prob_storm": 0
   },
   "bias": {
-    "temp": 1.8000000000000003,
+    "temp": 1.9000000000000004,
     "humidity": -14.0
   },
   "wind_regime": {
@@ -83,21 +83,21 @@
   "features_used": 68,
   "threshold": 0.3551401869158878,
   "calibrated": true,
-  "raw_probability": 0.003,
+  "raw_probability": 0.0032,
   "feature_vector": {
     "hour_sin": 0.9659258262890683,
     "hour_cos": 0.25881904510252074,
     "month_sin": 1.0,
     "month_cos": 6.123233995736766e-17,
-    "pressure_msl": 1017.5,
-    "pressure_change_1h": 0.05208333333337123,
-    "pressure_change_3h": -0.7227272727272975,
-    "pressure_change_6h": -1.6200000000000045,
-    "pressure_accel_3h": 0.33911215816704043,
-    "temperature_2m": 3.6,
+    "pressure_msl": 1017.5857142857143,
+    "pressure_change_1h": 0.1377976190476602,
+    "pressure_change_3h": -0.6370129870130086,
+    "pressure_change_6h": -1.5342857142857156,
+    "pressure_accel_3h": 0.4248264438813294,
+    "temperature_2m": 3.585714285714286,
     "relative_humidity_2m": 87.0,
-    "dew_point": 1.6407704371052239,
-    "dew_point_depression": 1.9592295628947762,
+    "dew_point": 1.626715759294066,
+    "dew_point_depression": 1.9589985264202199,
     "humidity_change_1h": -1.375,
     "humidity_change_3h": -2.0909090909090935,
     "vapour_pressure_deficit": null,
@@ -154,5 +154,5 @@
     "ensemble_min_precip": 0.0,
     "ensemble_models_rain": 0.0
   },
-  "pressure_change_3h": -0.7227272727272975
+  "pressure_change_3h": -0.6370129870130086
 }
