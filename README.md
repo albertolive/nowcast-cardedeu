@@ -30,8 +30,8 @@ Utilitza dades reals de l'estació [MeteoCardedeu.net](https://meteocardedeu.net
          │                     │         │                      │
          ▼                     ▼         ▼                      ▼
     ┌──────────────────────────────────────────────────────────────────────┐
-    │                Feature Engineering (131 features)                    │
-    │  Tendències · Ensemble · 5 nivells pressió · Radar · Sentinella · Llamps │
+    │                Feature Engineering (142 features)                    │
+    │  Tendències · Ensemble · 5 nivells pressió · Compostos físics · Radar · Sentinella · Llamps │
     └──────────────────────────────┬───────────────────────────────────────┘
                                   │
                                   ▼
@@ -147,7 +147,7 @@ nowcast-cardedeu/
 │   │   ├── meteocat_xdde.py  # API Meteocat XDDE (descàrregues elèctriques)
 │   │   └── meteocat_prediccio.py # API Meteocat Predicció (forecast municipal)
 │   ├── features/
-│   │   ├── engineering.py    # Feature engineering (131 features, 87 historical)
+│   │   ├── engineering.py    # Feature engineering (142 features, 96 historical)
 │   │   └── regime.py         # Detecció de canvis de règim atmosfèric (Llevantada, Garbí, pressió)
 │   ├── model/
 │   │   ├── train.py          # Pipeline d'entrenament (XGBoost + TimeSeriesSplit)
@@ -178,7 +178,7 @@ nowcast-cardedeu/
 
 ## Features del model
 
-El model defineix **131 features** per predicció en temps real. El model s'entrena amb les **131 features completes** (87 amb dades històriques, 44 com a NaN per radar/llamps/AEMET). El **feedback loop** acumula gradualment les 44 features en temps real (radar, llamps, sentinella) a cada predicció verificada, permetent que el model aprengui d'observacions independents amb cada re-entrenament.
+El model defineix **142 features** per predicció en temps real. El model s'entrena amb les **142 features completes** (96 amb dades històriques, 46 com a NaN per radar/llamps/AEMET/CIN/SST). El **feedback loop** acumula gradualment les 46 features en temps real (radar, llamps, sentinella, CIN, SST) a cada predicció verificada, permetent que el model aprengui d'observacions independents amb cada re-entrenament.
 
 **Ensemble backfill**: Des de gener 2022, dades de 4 models NWP (ECMWF, GFS, ICON, AROME) descarregades via `scripts/backfill_ensemble.py`.
 **XEMA sentinel backfill**: Dades de Granollers (YM) + ETAP Cardedeu (KX) via `scripts/backfill_xema.py` (incremental, 15 dies/execució per respectar el límit API).
@@ -211,6 +211,10 @@ El model defineix **131 features** per predicció en temps real. El model s'entr
 | 🆕 SMC Predicció | prob_precip_1h, prob_precip_6h, intensitat | Previsió municipal calibrada per Cardedeu |
 | 🆕 Radar quadrants | max_dbz i cobertura per N/E/S/W | Consciència direccional: d'on ve la pluja |
 | 🆕 Echo bearing | sin/cos del rumb de l'eco més proper | Direcció de la pluja codificada cíclicament |
+| 🆕 Compostos físics | orographic_forcing, frontal_passage, convective_composite, thermal_buildup, low_level_convergence, dry_intrusion_700 | Interaccions físiques multi-variable (orogràfia, fronts, convecció, convergència) |
+| 🆕 Humitat del sòl | soil_moisture_0_to_7cm, soil_moisture_7_to_28cm, soil_moisture_change_24h | ERA5 archive: sòl saturat amplifica precipitació |
+| 🆕 CIN | convective_inhibition | Inhibició convectiva — energia necessària per trencar la inversió |
+| 🆕 SST Mediterrani | sst_med | Temperatura superficial del mar — alimenta humitat/convecció |
 | ❄️ Tramuntana | tramuntana_strength, tramuntana_moisture | Vent polar fred del nord, supressor de pluja (5.8% rain rate) |
 
 ## Fonts de dades
@@ -226,6 +230,7 @@ El model defineix **131 features** per predicció en temps real. El model s'entr
 | [Meteocat XDDE](https://apidocs.meteocat.gencat.cat) | Descàrregues elèctriques (llamps) a Catalunya | Temps real | Sí (gratuïta) |
 | [AEMET Radar](https://opendata.aemet.es) | Radar C-banda regional Barcelona | Cada ~10 min | Sí (gratuïta) |
 | [SMC Predicció](https://apidocs.meteocat.gencat.cat) | Previsió municipal horària (prob. precip) | Cada 6h | Sí (gratuïta) |
+| [Open-Meteo Marine](https://open-meteo.com) | SST Mediterrani (temperatura superficial del mar) | Cada predicció | No |
 | [GitHub Models](https://github.com/marketplace/models) | IA narrativa (gpt-4o-mini) per resums diaris | 1 crida/dia | No (GITHUB_TOKEN) |
 
 ### Radar RainViewer
@@ -331,14 +336,14 @@ El model AROME de Meteo-France és el 4t model de l'ensemble, amb resolució de 
 
 | Mètrica | Valor |
 |---------|-------|
-| AUC-ROC (CV) | 0.9545 ± 0.008 |
-| F1-Score (CV) | 0.6720 ± 0.031 |
-| F1-Score OOF (calibrat) | 0.6918 |
-| AUC-ROC (final) | 0.9665 |
-| Llindar òptim (calibrat) | 0.4015 |
-| Mostres d'entrenament | 98,313 |
-| Features (training) | 131 |
-| Features (total) | 131 |
+| AUC-ROC (CV) | 0.9551 ± 0.008 |
+| F1-Score (CV) | 0.6748 ± 0.033 |
+| F1-Score OOF (calibrat) | 0.6897 |
+| AUC-ROC (final) | 0.9664 |
+| Llindar òptim (calibrat) | 0.3462 |
+| Mostres d'entrenament | 98,317 |
+| Features (training) | 142 |
+| Features (total) | 142 |
 | Classe positiva (pluja) | ~9.3% |
 | Cross-validation | TimeSeriesSplit (5 folds) |
 | Calibratge | Isotonic Regression (OOF) |
@@ -366,7 +371,7 @@ El sistema verifica automàticament les seves pròpies prediccions i aprèn dels
 
 ### Com funciona
 
-1. **Log**: Cada predicció es registra a `predictions_log.jsonl` amb un snapshot complet: probabilitat, condicions, radar, AEMET, sentinella, ensemble, nivells de pressió, règim de vent, bias, i les 131 features del model
+1. **Log**: Cada predicció es registra a `predictions_log.jsonl` amb un snapshot complet: probabilitat, condicions, radar, AEMET, sentinella, ensemble, nivells de pressió, règim de vent, bias, i les 142 features del model
 2. **Verificació**: 60-75 min després, el sistema consulta l'estació per veure si realment va ploure
 3. **Classificació**: Cada predicció es marca com TP, FP, TN, o FN
 4. **Informe**: Cada dilluns a les 8:00, reps un report amb accuracy, precisión, recall, F1, i tendència
