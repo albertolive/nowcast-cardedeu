@@ -139,28 +139,47 @@ def fetch_current_conditions() -> dict:
         return {}
 
 
-# ── Dades a nivells de pressió (850hPa, 500hPa) ──
+# ── Dades a nivells de pressió (925/850/700/500/300 hPa) ──
 
 PRESSURE_LEVEL_VARS = [
+    # 925hPa — capa límit: low-level jet, inversions, flux d'humitat baix
+    "temperature_925hPa",
+    "relative_humidity_925hPa",
+    "wind_speed_925hPa",
+    "wind_direction_925hPa",
+    # 850hPa — flux sinòptic, classificació de règims
     "wind_speed_850hPa",
     "wind_direction_850hPa",
     "temperature_850hPa",
-    "temperature_500hPa",
-    "geopotential_height_500hPa",
     "relative_humidity_850hPa",
+    # 700hPa — intrusió d'aire sec, capping
     "relative_humidity_700hPa",
     "temperature_700hPa",
+    # 500hPa — aire fred, gradient tèrmic
+    "temperature_500hPa",
+    "geopotential_height_500hPa",
+    # 300hPa — jet stream, cisalla profunda
+    "wind_speed_300hPa",
+    "wind_direction_300hPa",
+    "geopotential_height_300hPa",
 ]
 
 # Mapejat: noms de l'API → noms interns per al model
 _PRESSURE_RENAME = {
+    "temperature_925hPa": "temp_925",
+    "relative_humidity_925hPa": "rh_925",
+    "wind_speed_925hPa": "wind_925_speed",
+    "wind_direction_925hPa": "wind_925_dir",
     "wind_speed_850hPa": "wind_850_speed",
     "wind_direction_850hPa": "wind_850_dir",
     "temperature_850hPa": "temp_850",
-    "temperature_500hPa": "temp_500",
     "relative_humidity_850hPa": "rh_850",
     "relative_humidity_700hPa": "rh_700",
     "temperature_700hPa": "temp_700",
+    "temperature_500hPa": "temp_500",
+    "wind_speed_300hPa": "wind_300_speed",
+    "wind_direction_300hPa": "wind_300_dir",
+    "geopotential_height_300hPa": "gph_300",
 }
 
 
@@ -169,12 +188,11 @@ def fetch_historical_pressure_levels(
     end_date: date,
 ) -> pd.DataFrame:
     """
-    Descarrega dades horàries de nivells de pressió (850/700/500hPa)
+    Descarrega dades horàries de nivells de pressió (925/850/700/500/300 hPa)
     des de l'Historical Forecast API d'Open-Meteo.
 
     Disponible des d'abril 2021. Per dates anteriors retorna DataFrame buit.
-    Les columnes es renomenen als noms interns del model:
-    wind_850_speed, wind_850_dir, temp_850, temp_500, rh_850, rh_700, temp_700.
+    Les columnes es renomenen als noms interns del model.
     """
     # L'API té dades de pressure levels des d'abril 2021
     DATA_START = date(2021, 4, 1)
@@ -236,21 +254,13 @@ def fetch_historical_pressure_levels(
 
 def fetch_pressure_levels() -> dict:
     """
-    Obté dades a 850hPa i 500hPa del forecast d'Open-Meteo.
-    850hPa (~1500m) és el nivell estàndard per classificar règims sinòptics
-    (Llevantada, Garbí, etc.). 500hPa per calcular Vertical Totals (VT).
+    Obté dades a 5 nivells de pressió (925/850/700/500/300 hPa) del forecast d'Open-Meteo.
 
-    Retorna dict amb:
-      - wind_850_speed: velocitat del vent a 850hPa (km/h)
-      - wind_850_dir: direcció del vent a 850hPa (graus)
-      - temp_850: temperatura a 850hPa (°C)
-      - temp_500: temperatura a 500hPa (°C)
-      - rh_850: humitat relativa a 850hPa (%)
-      - rh_700: humitat relativa a 700hPa (%) — clau per tempestes (ref: alexmeteo)
-      - temp_700: temperatura a 700hPa (°C)
-      - vt_index: Vertical Totals = T850 - T500 (índex d'inestabilitat)
-      - tt_index: Total Totals = VT + (Td850 - T500)
-      - li_index: Lifted Index (inestabilitat a 500hPa, negatiu = inestable)
+    925hPa (~750m): capa límit, low-level jet, inversions
+    850hPa (~1500m): flux sinòptic, classificació de règims
+    700hPa (~3000m): intrusió d'aire sec, capping
+    500hPa (~5500m): aire fred, gradient tèrmic, VT/TT/LI
+    300hPa (~9000m): jet stream, cisalla profunda
     """
     import numpy as np
     import math
@@ -275,13 +285,25 @@ def fetch_pressure_levels() -> dict:
             vals = hourly.get(key, [])
             return vals[0] if vals and vals[0] is not None else None
 
+        # 925hPa — boundary layer
+        temp_925 = _first("temperature_925hPa")
+        rh_925 = _first("relative_humidity_925hPa")
+        wind_925_speed = _first("wind_speed_925hPa")
+        wind_925_dir = _first("wind_direction_925hPa")
+        # 850hPa — synoptic flow
         wind_850_speed = _first("wind_speed_850hPa")
         wind_850_dir = _first("wind_direction_850hPa")
         temp_850 = _first("temperature_850hPa")
-        temp_500 = _first("temperature_500hPa")
         rh_850 = _first("relative_humidity_850hPa")
+        # 700hPa — dry air intrusion
         rh_700 = _first("relative_humidity_700hPa")
         temp_700 = _first("temperature_700hPa")
+        # 500hPa — cold pool
+        temp_500 = _first("temperature_500hPa")
+        # 300hPa — jet stream
+        wind_300_speed = _first("wind_speed_300hPa")
+        wind_300_dir = _first("wind_direction_300hPa")
+        gph_300 = _first("geopotential_height_300hPa")
 
         # Vertical Totals (VT) — gradient tèrmic vertical
         # VT > 26: inestabilitat feble, > 30: inestabilitat clara, > 34: forta
@@ -323,36 +345,51 @@ def fetch_pressure_levels() -> dict:
             li_index = temp_500 - t_parcel_500
 
         result = {
+            "temp_925": temp_925,
+            "rh_925": rh_925,
+            "wind_925_speed": wind_925_speed,
+            "wind_925_dir": wind_925_dir,
             "wind_850_speed": wind_850_speed,
             "wind_850_dir": wind_850_dir,
             "temp_850": temp_850,
-            "temp_500": temp_500,
             "rh_850": rh_850,
             "rh_700": rh_700,
             "temp_700": temp_700,
+            "temp_500": temp_500,
+            "wind_300_speed": wind_300_speed,
+            "wind_300_dir": wind_300_dir,
+            "gph_300": gph_300,
             "vt_index": vt_index,
             "tt_index": tt_index,
             "li_index": li_index,
         }
 
         logger.info(
-            f"850hPa: vent {wind_850_dir}° @ {wind_850_speed} km/h, "
-            f"T850={temp_850}°C, T500={temp_500}°C, "
+            f"Nivells pressió: 925={temp_925}°C, "
+            f"850={wind_850_dir}°@{wind_850_speed}km/h T={temp_850}°C, "
+            f"300={wind_300_speed}km/h, "
             f"VT={vt_index:.1f}, TT={tt_index:.1f}" if vt_index and tt_index else
-            f"850hPa: vent {wind_850_dir}° @ {wind_850_speed} km/h"
+            f"Nivells pressió: 850={wind_850_dir}°@{wind_850_speed}km/h"
         )
         return result
 
     except Exception as e:
-        logger.warning(f"Error obtenint dades 850hPa: {e}")
+        logger.warning(f"Error obtenint nivells de pressió: {e}")
         return {
+            "temp_925": None,
+            "rh_925": None,
+            "wind_925_speed": None,
+            "wind_925_dir": None,
             "wind_850_speed": None,
             "wind_850_dir": None,
             "temp_850": None,
-            "temp_500": None,
             "rh_850": None,
             "rh_700": None,
             "temp_700": None,
+            "temp_500": None,
+            "wind_300_speed": None,
+            "wind_300_dir": None,
+            "gph_300": None,
             "vt_index": None,
             "tt_index": None,
             "li_index": None,
@@ -361,9 +398,8 @@ def fetch_pressure_levels() -> dict:
 
 def fetch_pressure_levels_hourly(hours_ahead: int = 48) -> pd.DataFrame:
     """
-    Obté previsió horària de nivells de pressió (850/700/500hPa).
-    Retorna DataFrame amb columnes: datetime, wind_850_speed, wind_850_dir,
-    temp_850, temp_500, rh_850, rh_700, temp_700.
+    Obté previsió horària de nivells de pressió (925/850/700/500/300 hPa).
+    Retorna DataFrame amb totes les columnes de pressió renomenades.
     """
     try:
         params = {

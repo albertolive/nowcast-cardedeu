@@ -1,39 +1,39 @@
 {
-  "cv_auc_mean": 0.9546934658305422,
-  "cv_auc_std": 0.008040808468180642,
-  "cv_f1_mean": 0.6730571915797556,
-  "cv_f1_std": 0.03149341814624329,
-  "final_auc": 0.9668275280954898,
+  "cv_auc_mean": 0.9545042275726716,
+  "cv_auc_std": 0.008075727559112154,
+  "cv_f1_mean": 0.6719980579332795,
+  "cv_f1_std": 0.030511893260429118,
+  "final_auc": 0.9665289922005741,
   "final_report": {
     "0": {
-      "precision": 0.9703504043126685,
-      "recall": 0.9544668587896253,
-      "f1-score": 0.9623430962343096,
-      "support": 8675.0
+      "precision": 0.9669027987457902,
+      "recall": 0.9596588289534348,
+      "f1-score": 0.9632671950020246,
+      "support": 8676.0
     },
     "1": {
-      "precision": 0.6956856702619415,
-      "recall": 0.7811418685121108,
-      "f1-score": 0.7359413202933985,
+      "precision": 0.7133497133497133,
+      "recall": 0.7534602076124568,
+      "f1-score": 0.7328565418594868,
       "support": 1156.0
     },
-    "accuracy": 0.9340860543179738,
+    "accuracy": 0.9354149715215623,
     "macro avg": {
-      "precision": 0.8330180372873051,
-      "recall": 0.8678043636508681,
-      "f1-score": 0.849142208263854,
-      "support": 9831.0
+      "precision": 0.8401262560477518,
+      "recall": 0.8565595182829457,
+      "f1-score": 0.8480618684307557,
+      "support": 9832.0
     },
     "weighted avg": {
-      "precision": 0.9380533406810299,
-      "recall": 0.9340860543179738,
-      "f1-score": 0.9357211398730347,
-      "support": 9831.0
+      "precision": 0.9370912276801002,
+      "recall": 0.9354149715215623,
+      "f1-score": 0.9361766015283901,
+      "support": 9832.0
     }
   },
-  "n_samples": 98310,
+  "n_samples": 98313,
   "n_positive": 9178,
-  "n_features": 120,
+  "n_features": 131,
   "feature_names": [
     "hour_sin",
     "hour_cos",
@@ -67,6 +67,10 @@
     "tramuntana_strength",
     "tramuntana_moisture",
     "wind_dir_change_3h",
+    "temp_925",
+    "rh_925",
+    "wind_925_speed",
+    "wind_925_dir",
     "wind_850_speed",
     "wind_850_dir",
     "temp_850",
@@ -74,12 +78,19 @@
     "rh_850",
     "rh_700",
     "temp_700",
+    "wind_300_speed",
+    "wind_300_dir",
+    "gph_300",
     "vt_index",
     "tt_index",
     "li_index",
     "li_unstable",
     "moisture_flux_850",
+    "moisture_flux_925",
     "theta_e_deficit",
+    "inversion_925",
+    "deep_layer_shear",
+    "jet_speed_300",
     "wind_shear_speed",
     "wind_shear_dir",
     "precipitation",
@@ -157,7 +168,7 @@
     "smc_precip_intensity"
   ],
   "calibrated": true,
-  "optimal_threshold": 0.37423312883435583,
-  "calibration_oof_f1_uncalibrated": 0.6764590016320559,
-  "calibration_oof_f1_calibrated": 0.6931412627344105
+  "optimal_threshold": 0.4014778325123153,
+  "calibration_oof_f1_uncalibrated": 0.6757493188010899,
+  "calibration_oof_f1_calibrated": 0.6917662682602922
 }
