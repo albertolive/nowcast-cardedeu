@@ -241,7 +241,7 @@ def _format_radar_summary(radar: dict) -> str:
 
 
 def format_daily_forecast(prediction: dict, hourly_outlook: list[dict] = None,
-                          next_rain_text: str = None) -> str:
+                          next_rain_text: str = None, ai_narrative: str = None) -> str:
     """
     Resum diari millorat amb previsió hora per hora (matí/tarda/nit)
     corregida pel model ML de Cardedeu.
@@ -273,6 +273,11 @@ def format_daily_forecast(prediction: dict, hourly_outlook: list[dict] = None,
     # Només mostrar règim si és informatiu (no "Variable")
     if regime_text != "Variable":
         lines.append(f"🌬️ {regime_text}")
+
+    # Narrativa IA (generada per OpenRouter, opcional)
+    if ai_narrative:
+        lines.append("")
+        lines.append(f"💬 <i>{ai_narrative}</i>")
 
     lines.append("")
 
@@ -424,9 +429,9 @@ def send_daily_summary(prediction: dict) -> bool:
 
 
 def send_daily_forecast(prediction: dict, hourly_outlook: list[dict] = None,
-                        next_rain_text: str = None) -> bool:
+                        next_rain_text: str = None, ai_narrative: str = None) -> bool:
     """Envia la previsió diària millorada."""
-    return send_telegram_message(format_daily_forecast(prediction, hourly_outlook, next_rain_text))
+    return send_telegram_message(format_daily_forecast(prediction, hourly_outlook, next_rain_text, ai_narrative))
 
 
 def send_regime_change(prediction: dict, regime_change: dict) -> bool:

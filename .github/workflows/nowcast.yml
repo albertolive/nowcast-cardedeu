@@ -32,6 +32,7 @@ env:
   TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
   METEOCAT_API_KEY: ${{ secrets.METEOCAT_API_KEY }}
   AEMET_API_KEY: ${{ secrets.AEMET_API_KEY }}
+  AI_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 jobs:
   predict:

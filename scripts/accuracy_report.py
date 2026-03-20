@@ -11,6 +11,7 @@ import sys
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 from src.feedback.accuracy import compute_accuracy, format_accuracy_report
 from src.notify.telegram import send_telegram_message
+from src.ai.enricher import generate_accuracy_narrative
 
 logging.basicConfig(
     level=logging.INFO,
@@ -41,6 +42,15 @@ def main():
                 f"{metrics_all['accuracy']}% accuracy "
                 f"({metrics_all['verified']} prediccions)"
             )
+
+        # Narrativa IA (opcional, 1 crida/setmana, fallback graciós)
+        try:
+            ai_narrative = generate_accuracy_narrative(metrics_week, metrics_all)
+            if ai_narrative:
+                report += f"\n\n💬 <i>{ai_narrative}</i>"
+                logger.info(f"Narrativa IA afegida a l'informe")
+        except Exception as e:
+            logger.warning(f"Error generant narrativa IA (no bloquejant): {e}")
 
         send_telegram_message(report)
         logger.info("✅ Informe enviat per Telegram")

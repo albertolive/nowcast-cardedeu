@@ -17,6 +17,7 @@ import config
 from src.model.predict import predict_now, predict_hourly_forecast
 from src.data.open_meteo import fetch_forecast
 from src.notify.telegram import send_daily_forecast
+from src.ai.enricher import generate_daily_narrative
 
 logging.basicConfig(
     level=logging.INFO,
@@ -190,10 +191,17 @@ def main():
     if next_rain:
         logger.info(f"  {next_rain}")
 
-    send_daily_forecast(result, hourly_outlook, next_rain_text=next_rain)
-    logger.info("✅ Previsió diària enviada per Telegram")
+    # Narrativa IA (opcional, 1 crida/dia, fallback graciós)
+    ai_narrative = None
+    try:
+        ai_narrative = generate_daily_narrative(result, hourly_outlook, next_rain)
+        if ai_narrative:
+            logger.info(f"Narrativa IA generada: {ai_narrative[:80]}...")
+    except Exception as e:
+        logger.warning(f"Error generant narrativa IA (no bloquejant): {e}")
 
-    return result
+    send_daily_forecast(result, hourly_outlook, next_rain_text=next_rain, ai_narrative=ai_narrative)
+    logger.info("✅ Previsió diària enviada per Telegram")
 
     return result
 

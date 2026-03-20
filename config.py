@@ -123,6 +123,19 @@ REGIME_PRESSURE_DROP_3H = -2.0   # hPa caiguda en 3h per alerta de pressió
 TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "")
 TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID", "")
 
+# ── IA (GitHub Models + OpenRouter fallback) ──
+# Només usat al resum diari (1 crida/dia) i informe d'accuracy (1 crida/setmana).
+# Mai al camí crític d'alertes de pluja.
+# Primari: GitHub Models (gpt-4o-mini via GITHUB_TOKEN, gratuït a GitHub Actions).
+# Fallback: OpenRouter (models gratuïts, requereix AI_API_KEY opcional).
+AI_GITHUB_TOKEN = os.environ.get("AI_GITHUB_TOKEN", os.environ.get("GITHUB_TOKEN", ""))
+AI_GITHUB_MODEL = os.environ.get("AI_GITHUB_MODEL", "gpt-4o-mini")
+AI_GITHUB_BASE_URL = "https://models.inference.ai.azure.com/chat/completions"
+AI_OPENROUTER_KEY = os.environ.get("AI_OPENROUTER_KEY", "")  # Opcional, fallback
+AI_OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1/chat/completions"
+AI_MAX_RETRIES = int(os.environ.get("AI_MAX_RETRIES", "2"))
+AI_RETRY_BASE_DELAY_MS = int(os.environ.get("AI_RETRY_BASE_DELAY_MS", "5000"))
+
 # ── Meteocat API rate limiting ──
 # Separate quotas per service: XDDE 250/month, Predicció 100/month, XEMA 750/month.
 # ALL Meteocat calls are behind the rain gate (only fire when rain is likely).

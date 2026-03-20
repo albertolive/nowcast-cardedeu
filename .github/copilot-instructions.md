@@ -9,6 +9,7 @@ src/data/       → 12 independent API clients (graceful degradation: each retur
 src/features/   → Feature engineering (112 features: 68 with historical data, 44 real-time only) + wind regime detection
 src/features/regime.py → Regime change detection (Llevantada onset, Garbí+instability, pressure drops, backing wind)
 src/model/      → XGBoost training (TimeSeriesSplit CV + IsotonicRegression calibration) + prediction + ML-powered hourly forecast
+src/ai/         → LLM narrative generation (GitHub Models gpt-4o-mini + OpenRouter free fallback) for daily summary and accuracy reports
 src/notify/     → Telegram alerts with state machine (hysteresis: up=0.65, down=0.30) + regime alerts
 src/feedback/   → JSONL prediction log, verification (60+ min later), feedback export for retraining
 scripts/        → Entry points: download_history, build_dataset, train_model, predict_now, daily_summary, accuracy_report, backfill_lightning, backfill_ensemble, backfill_xema
@@ -37,11 +38,13 @@ config.py       → All constants, paths, thresholds, coordinates — single sou
 
 **Key pattern — Feedback loop:** Every prediction is logged to JSONL. 60+ min later, the system verifies against actual MeteoCardedeu station data. Verified predictions feed back into the training set on the next retrain cycle. This is how real-time-only features (radar, AEMET, SMC forecast) gradually enter the training data.
 
-**Key pattern — Notification types:** Four distinct Telegram alerts: `rain_incoming` (prob crosses above 0.65), `rain_clearing` (prob drops below 0.30), `regime_change` (atmospheric setup shifts to historically rainy pattern), and `daily_summary` (morning 3-slot outlook at 7:00). State machine with hysteresis prevents notification spam.
+**Key pattern — Notification types:** Four distinct Telegram alerts: `rain_incoming` (prob crosses above 0.65), `rain_clearing` (prob drops below 0.30), `regime_change` (atmospheric setup shifts to historically rainy pattern), and `daily_summary` (morning 3-slot outlook at 7:00 with optional AI narrative). State machine with hysteresis prevents notification spam.
 
 **Key pattern — Daily forecast progressive disclosure:** The daily summary uses a dual-audience design. Top: outlook + ML time slots + next rain (general audience). Middle: compact conditions (temp + humidity + dewpoint, pressure with numeric 3h trend, wind + cloud cover). Bottom: "Detall tècnic" section with ensemble count, 850hPa wind/temp/RH, instability indices (TT/LI/VT), and smart radar summary. Radar display filters non-significant echoes (needs both <10km proximity AND >5% coverage to show).
 
 **Key pattern — Slot datetime filtering:** When building hourly outlook slots (Matí/Tarda/Nit), always filter by explicit datetime ranges (not hour-only), to prevent tomorrow's cold morning hours from contaminating today's temperature ranges.
+
+**Key pattern — AI narrative enrichment:** The daily summary (7:00) and weekly accuracy report include an optional LLM-generated narrative paragraph in Catalan. Uses GitHub Models gpt-4o-mini (free via GITHUB_TOKEN in Actions) as primary, OpenRouter free models as fallback. The AI call is NEVER in the critical alert path (predict_now.py / rain alerts) — only in low-frequency scripts (1 call/day, 1 call/week). All AI calls are wrapped in try/except with graceful fallback to the existing template output. The enricher module is at `src/ai/enricher.py` following the dual-provider retry+fallback pattern from gencat-cultural-agenda.
 
 ## Build and Test
 
@@ -78,6 +81,7 @@ No formal test suite exists (`tests/` is empty). Validation relies on the feedba
 - **New data sources:** Add as independent module in `src/data/`, follow existing pattern (try/except → logger.warning → return dict with NaN). Gate behind `rain_gate` if the API is rate-limited or expensive.
 - **Features:** Register new features in `src/features/engineering.py`. Training features go in historical pipeline; real-time-only features (radar, sentinel, ensemble, lightning) are added only in `predict_now.py`.
 - **Config:** All thresholds, paths, and coordinates live in `config.py` — never hardcode magic numbers in modules.
+- **AI narratives:** LLM calls live in `src/ai/enricher.py`. NEVER add AI calls to predict_now.py or the rain alert path. Only use in low-frequency scripts (daily_summary.py, accuracy_report.py). Always wrap in try/except with graceful fallback.
 - **Feature design:** Prefer continuous features over binary indicators. Binary threshold features (e.g., `cape_high`, `cold_500_moderate`) consistently show zero importance because XGBoost can learn any threshold from the continuous source. Use interaction terms (regime × magnitude) for wind patterns. Run `python scripts/feature_analysis.py` after adding features to verify they contribute.
 
 ## CI/CD
@@ -89,6 +93,7 @@ GitHub Actions (`.github/workflows/nowcast.yml`):
 - **retrain**: Daily 3:00 Barcelona → download + build + train + git commit model
 
 Secrets: `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID`, `METEOCAT_API_KEY`, `AEMET_API_KEY`
+`AI_GITHUB_TOKEN` uses the automatic `GITHUB_TOKEN` (no extra secret needed). Optional: `AI_OPENROUTER_KEY` for fallback to OpenRouter free models.
 
 **Meteocat API endpoints (all working):**
 - XEMA (sentinel stations): `/xema/v1/variables/mesurades/{var}/{YYYY}/{MM}/{DD}`
