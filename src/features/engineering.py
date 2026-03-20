@@ -142,11 +142,18 @@ def _add_wind_regime_features(df: pd.DataFrame,
     """
     df = df.copy()
 
-    # Preferir 850hPa per a la classificació sinòptica, fallback a 10m
+    # Use 850hPa ONLY for synoptic regime classification.
+    # Surface wind (10m) at Cardedeu has only 26% agreement with 850hPa due to
+    # Montseny katabatic drainage, valley channeling, and thermal breezes.
+    # Mixing the two creates semantically inconsistent features that confuse the model.
+    # When 850hPa is NaN (pre-2021), the regime flags are 0 — clean signal that
+    # XGBoost learns to handle. The raw surface wind (wind_u, wind_v) is still
+    # available as a separate feature for the model to use directly.
     if "wind_850_dir" in df.columns and df["wind_850_dir"].notna().any():
         synoptic_dir = pd.to_numeric(df["wind_850_dir"], errors="coerce")
         synoptic_speed = pd.to_numeric(df.get("wind_850_speed", pd.Series(dtype=float)), errors="coerce").fillna(0)
     elif dir_col in df.columns:
+        # Fallback: real-time prediction without pressure data
         synoptic_dir = pd.to_numeric(df[dir_col], errors="coerce")
         synoptic_speed = pd.to_numeric(df.get(speed_col, pd.Series(dtype=float)), errors="coerce").fillna(0)
     else:
@@ -167,7 +174,7 @@ def _add_wind_regime_features(df: pd.DataFrame,
     # Garbí × velocitat: "Anuncia borrasques amb fortes precipitacions" (ref: alexmeteo)
     df["garbi_strength"] = df["is_garbi"] * synoptic_speed
 
-    # Tramuntana × velocitat/humitat: historically 13.8% of rain events (not negligible)
+    # Tramuntana × velocitat/humitat (4.8% rain rate — lowest, mostly dry Montseny air)
     df["tramuntana_strength"] = df["is_tramuntana"] * synoptic_speed
     df["tramuntana_moisture"] = df["is_tramuntana"] * (humidity / 100.0)
 
@@ -245,6 +252,33 @@ def _add_pressure_level_features(df: pd.DataFrame) -> pd.DataFrame:
         df["li_unstable"] = (li < -2).astype(int)
         df["li_very_unstable"] = (li < -6).astype(int)
 
+    # ── Moisture flux proxy: wind_speed × specific_humidity ──
+    # This is the physical driver of precipitation: how much water is being
+    # transported towards the area. Better than wind or humidity alone.
+    if "wind_850_speed" in df.columns and "rh_850" in df.columns and "temp_850" in df.columns:
+        w850 = pd.to_numeric(df["wind_850_speed"], errors="coerce")
+        rh850 = pd.to_numeric(df["rh_850"], errors="coerce").clip(lower=1)
+        t850 = pd.to_numeric(df["temp_850"], errors="coerce")
+        # Approximate specific humidity from T and RH at 850hPa (Clausius-Clapeyron)
+        es = 6.112 * np.exp(17.67 * t850 / (t850 + 243.5))  # sat. vapor pressure (hPa)
+        q_approx = (rh850 / 100.0) * es  # mixing ratio proxy
+        df["moisture_flux_850"] = w850 * q_approx
+
+    # ── Θe lapse rate proxy (convective instability) ──
+    # The difference between surface equivalent potential temperature and 850hPa.
+    # When surface Θe >> 850hPa Θe, the atmosphere is convectively unstable.
+    if all(c in df.columns for c in ["temperature_2m", "relative_humidity_2m", "temp_850", "rh_850"]):
+        t_sfc = pd.to_numeric(df["temperature_2m"], errors="coerce")
+        rh_sfc = pd.to_numeric(df["relative_humidity_2m"], errors="coerce").clip(lower=1)
+        es_sfc = 6.112 * np.exp(17.67 * t_sfc / (t_sfc + 243.5))
+        # Simplified Θe proxy: T + L/cp * q ≈ T + 2.5 * (RH/100) * es
+        theta_e_sfc = t_sfc + 2.5 * (rh_sfc / 100.0) * es_sfc
+        t850_ = pd.to_numeric(df["temp_850"], errors="coerce")
+        rh850_ = pd.to_numeric(df["rh_850"], errors="coerce").clip(lower=1)
+        es_850 = 6.112 * np.exp(17.67 * t850_ / (t850_ + 243.5))
+        theta_e_850 = t850_ + 2.5 * (rh850_ / 100.0) * es_850
+        df["theta_e_deficit"] = theta_e_sfc - theta_e_850
+
     return df
 
 
@@ -280,10 +314,31 @@ def _add_model_features(df: pd.DataFrame) -> pd.DataFrame:
 
     # Weather code simplificat (WMO codes)
     if "weather_code" in df.columns:
+        wc = pd.to_numeric(df["weather_code"], errors="coerce")
         # Codes >= 50 indiquen precipitació
-        df["model_predicts_precip"] = (df["weather_code"] >= 50).astype(int)
+        df["model_predicts_precip"] = (wc >= 50).astype(int)
         # Codes >= 80 indiquen xàfecs
-        df["model_predicts_showers"] = (df["weather_code"] >= 80).astype(int)
+        df["model_predicts_showers"] = (wc >= 80).astype(int)
+        # Weather code decomposition: thunderstorm vs stratiform vs drizzle
+        # have very different predictability and physical drivers
+        df["wc_is_thunderstorm"] = ((wc >= 95) | ((wc >= 17) & (wc <= 19))).astype(int)
+        df["wc_is_rain"] = (((wc >= 60) & (wc <= 69)) | ((wc >= 80) & (wc <= 82))).astype(int)
+        df["wc_is_drizzle"] = ((wc >= 50) & (wc <= 59)).astype(int)
+
+    # NWP error detection: when model says rain but surface conditions are dry,
+    # this is likely a false positive (43% of NWP rain predictions are FP).
+    # When model says no rain but humidity is very high, likely a false negative.
+    if "model_predicts_precip" in df.columns and "relative_humidity_2m" in df.columns:
+        rh = pd.to_numeric(df["relative_humidity_2m"], errors="coerce")
+        mpp = df["model_predicts_precip"]
+        df["nwp_dry_conflict"] = (mpp.eq(1) & rh.lt(65)).astype(int)
+        df["nwp_wet_conflict"] = (mpp.eq(0) & rh.gt(90)).astype(int)
+
+    # CAPE change rate: rapid CAPE build-up = convective environment developing
+    # faster than NWP resolution can capture
+    if "cape" in df.columns:
+        cape = pd.to_numeric(df["cape"], errors="coerce")
+        df["cape_change_3h"] = cape.diff(3)
 
     return df
 
@@ -514,6 +569,10 @@ FEATURE_COLUMNS = [
     # Índexs d'inestabilitat (Skew-T + Lifted Index)
     "vt_index", "tt_index", "li_index",
     "li_unstable",  # li_very_unstable: zero importance (fires too rarely)
+    # Physics: moisture flux at 850hPa (wind × humidity = water transport)
+    "moisture_flux_850",
+    # Physics: Θe lapse rate proxy (convective instability)
+    "theta_e_deficit",
     # Cisalla de vent (wind shear) — clau per tempestes organitzades
     "wind_shear_speed", "wind_shear_dir",
     # Llindars d'aire fred a 500hPa
@@ -524,7 +583,12 @@ FEATURE_COLUMNS = [
     "cloud_cover", "cloud_change_1h", "cloud_change_3h", "is_overcast",
     # cape, cape_high, cape_very_high: zero importance
     "weather_code", "model_predicts_precip",
-    # model_predicts_showers: zero importance (redundant with weather_code)
+    # Weather code decomposition (different physics for each precipitation type)
+    "wc_is_thunderstorm", "wc_is_rain", "wc_is_drizzle",
+    # NWP error detection (when model disagrees with surface conditions)
+    "nwp_dry_conflict", "nwp_wet_conflict",
+    # CAPE change rate (rapid destabilization)
+    "cape_change_3h",
     # Radiació solar
     "shortwave_radiation",
     # Radar (RainViewer) — puntual + espacial
