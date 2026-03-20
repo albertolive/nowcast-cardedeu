@@ -125,6 +125,19 @@ def predict_now() -> dict:
     # Afegir features sentinella
     latest_data_station = fetch_latest()
     current = latest_data_station.get("dades_act", {})
+    if not current and not station_df.empty:
+        # Fallback: usar última lectura de la sèrie temporal si fetch_latest() falla
+        last_row = station_df.iloc[-1]
+        logger.warning("Usant última lectura de sèrie com a fallback per dades actuals")
+        current = {
+            "TEMP": last_row.get("TEMP"),
+            "HUM": last_row.get("HUM"),
+            "BAR": last_row.get("BAR"),
+            "VEL": last_row.get("VEL"),
+            "DIR": last_row.get("DIR"),
+            "PINT": last_row.get("PINT"),
+            "SUN": last_row.get("SUN"),
+        }
     station_temp = float(current.get("TEMP", 0) or 0)
     station_hum = int(current.get("HUM", 0) or 0)
     sentinel_features = compute_sentinel_features(sentinel_data, station_temp, station_hum)

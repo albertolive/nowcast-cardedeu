@@ -13,11 +13,11 @@ import requests
 import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 import config
+from src.data._http import create_session
 
 logger = logging.getLogger(__name__)
 
-SESSION = requests.Session()
-SESSION.headers.update({"User-Agent": "NowcastCardedeu/1.0 (research)"})
+SESSION = create_session()
 
 
 def fetch_historical_hourly(
@@ -76,27 +76,32 @@ def fetch_forecast(hours_ahead: int = 48) -> pd.DataFrame:
     Obté la previsió actual d'Open-Meteo per a les properes `hours_ahead` hores.
     Utilitza el model "best_match" que tria el millor model disponible automàticament.
     """
-    params = {
-        "latitude": config.LATITUDE,
-        "longitude": config.LONGITUDE,
-        "hourly": ",".join(config.OPEN_METEO_HOURLY_VARS),
-        "timezone": "Europe/Madrid",
-        "forecast_hours": hours_ahead,
-        "models": ",".join(config.OPEN_METEO_FORECAST_MODELS),
-    }
+    try:
+        params = {
+            "latitude": config.LATITUDE,
+            "longitude": config.LONGITUDE,
+            "hourly": ",".join(config.OPEN_METEO_HOURLY_VARS),
+            "timezone": "Europe/Madrid",
+            "forecast_hours": hours_ahead,
+            "models": ",".join(config.OPEN_METEO_FORECAST_MODELS),
+        }
 
-    r = SESSION.get(config.OPEN_METEO_FORECAST_URL, params=params, timeout=30)
-    r.raise_for_status()
-    data = r.json()
+        r = SESSION.get(config.OPEN_METEO_FORECAST_URL, params=params, timeout=30)
+        r.raise_for_status()
+        data = r.json()
 
-    if "hourly" not in data:
-        raise ValueError(f"No forecast data: {data}")
+        if "hourly" not in data:
+            logger.warning(f"Open-Meteo: no hourly data in forecast response")
+            return pd.DataFrame()
 
-    hourly = data["hourly"]
-    df = pd.DataFrame(hourly)
-    df["datetime"] = pd.to_datetime(df["time"])
-    df = df.drop(columns=["time"])
-    return df
+        hourly = data["hourly"]
+        df = pd.DataFrame(hourly)
+        df["datetime"] = pd.to_datetime(df["time"])
+        df = df.drop(columns=["time"])
+        return df
+    except Exception as e:
+        logger.warning(f"Error obtenint forecast d'Open-Meteo: {e}")
+        return pd.DataFrame()
 
 
 def fetch_current_conditions() -> dict:
@@ -104,30 +109,34 @@ def fetch_current_conditions() -> dict:
     Obté les condicions actuals d'Open-Meteo (última hora + properes 2 hores).
     Retorna un diccionari amb les dades.
     """
-    params = {
-        "latitude": config.LATITUDE,
-        "longitude": config.LONGITUDE,
-        "current": ",".join([
-            "temperature_2m",
-            "relative_humidity_2m",
-            "pressure_msl",
-            "surface_pressure",
-            "precipitation",
-            "rain",
-            "cloud_cover",
-            "wind_speed_10m",
-            "wind_direction_10m",
-            "wind_gusts_10m",
-            "weather_code",
-        ]),
-        "timezone": "Europe/Madrid",
-    }
+    try:
+        params = {
+            "latitude": config.LATITUDE,
+            "longitude": config.LONGITUDE,
+            "current": ",".join([
+                "temperature_2m",
+                "relative_humidity_2m",
+                "pressure_msl",
+                "surface_pressure",
+                "precipitation",
+                "rain",
+                "cloud_cover",
+                "wind_speed_10m",
+                "wind_direction_10m",
+                "wind_gusts_10m",
+                "weather_code",
+            ]),
+            "timezone": "Europe/Madrid",
+        }
 
-    r = SESSION.get(config.OPEN_METEO_FORECAST_URL, params=params, timeout=15)
-    r.raise_for_status()
-    data = r.json()
+        r = SESSION.get(config.OPEN_METEO_FORECAST_URL, params=params, timeout=15)
+        r.raise_for_status()
+        data = r.json()
 
-    return data.get("current", {})
+        return data.get("current", {})
+    except Exception as e:
+        logger.warning(f"Error obtenint condicions actuals d'Open-Meteo: {e}")
+        return {}
 
 
 # ── Dades a nivells de pressió (850hPa, 500hPa) ──

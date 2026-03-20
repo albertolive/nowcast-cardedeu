@@ -24,15 +24,12 @@ import requests
 import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 import config
+from src.data._http import create_session
 from src.data.aemet_cache import get_cached, set_cached, RADAR_TTL
 
 logger = logging.getLogger(__name__)
 
-SESSION = requests.Session()
-SESSION.headers.update({
-    "User-Agent": "NowcastCardedeu/1.0 (research)",
-    "api_key": config.AEMET_API_KEY,
-})
+SESSION = create_session({"api_key": config.AEMET_API_KEY})
 
 AEMET_BASE = "https://opendata.aemet.es/opendata/api"
 

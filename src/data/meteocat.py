@@ -13,10 +13,11 @@ import requests
 import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 import config
+from src.data._http import create_session
 
 logger = logging.getLogger(__name__)
 
-SESSION = requests.Session()
+SESSION = create_session()
 
 
 def _headers() -> dict:
@@ -81,6 +82,10 @@ def fetch_variable_all_stations(var_code: int, target_date: date) -> pd.DataFram
     return df
 
 
+def _empty_sentinel() -> dict:
+    return {"sentinel_temp": None, "sentinel_humidity": None, "sentinel_precip": None}
+
+
 def fetch_sentinel_latest() -> dict:
     """
     Obté les últimes lectures de l'estació sentinella (Granollers).
@@ -88,6 +93,14 @@ def fetch_sentinel_latest() -> dict:
     """
     if not _is_configured():
         return _empty_sentinel()
+    try:
+        return _fetch_sentinel_latest_inner()
+    except Exception as e:
+        logger.warning(f"Error obtenint dades sentinella: {e}")
+        return _empty_sentinel()
+
+
+def _fetch_sentinel_latest_inner() -> dict:
 
     today = date.today()
     result = {}
@@ -181,37 +194,40 @@ def compute_sentinel_features(sentinel_data: dict, station_temp: float, station_
     - Diferencial de temperatura Granollers→Cardedeu (si baixa a Granollers primer = front s'acosta)
     - Diferencial d'humitat
     """
-    features = {
-        "sentinel_temp_diff": None,
-        "sentinel_humidity_diff": None,
-        "sentinel_precip": None,
-    }
+    try:
+        features = {
+            "sentinel_temp_diff": None,
+            "sentinel_humidity_diff": None,
+            "sentinel_precip": None,
+        }
 
-    s_temp = sentinel_data.get("sentinel_temp")
-    s_hum = sentinel_data.get("sentinel_humidity")
-    s_precip = sentinel_data.get("sentinel_precip")
+        s_temp = sentinel_data.get("sentinel_temp")
+        s_hum = sentinel_data.get("sentinel_humidity")
+        s_precip = sentinel_data.get("sentinel_precip")
 
-    if s_temp is not None and station_temp is not None:
-        # Si Granollers és més freda que Cardedeu → possible front fred entrant
-        features["sentinel_temp_diff"] = station_temp - s_temp
+        if s_temp is not None and station_temp is not None:
+            # Si Granollers és més freda que Cardedeu → possible front fred entrant
+            features["sentinel_temp_diff"] = station_temp - s_temp
 
-    if s_hum is not None and station_humidity is not None:
-        # Si Granollers té més humitat → aire humit s'acosta
-        features["sentinel_humidity_diff"] = s_hum - station_humidity
+        if s_hum is not None and station_humidity is not None:
+            # Si Granollers té més humitat → aire humit s'acosta
+            features["sentinel_humidity_diff"] = s_hum - station_humidity
 
-    if s_precip is not None:
-        features["sentinel_precip"] = s_precip
+        if s_precip is not None:
+            features["sentinel_precip"] = s_precip
 
-    features["sentinel_raining"] = int(s_precip is not None and s_precip > 0)
-    features["local_rain_xema"] = sentinel_data.get("local_rain_xema")
-    features["local_rain_xema_3h"] = sentinel_data.get("local_rain_xema_3h")
+        features["sentinel_raining"] = int(s_precip is not None and s_precip > 0)
+        features["local_rain_xema"] = sentinel_data.get("local_rain_xema")
+        features["local_rain_xema_3h"] = sentinel_data.get("local_rain_xema_3h")
 
-    return features
-
-
-def _empty_sentinel() -> dict:
-    return {
-        "sentinel_temp": None,
-        "sentinel_humidity": None,
-        "sentinel_precip": None,
-    }
+        return features
+    except Exception as e:
+        logger.warning(f"Error calculant features sentinella: {e}")
+        return {
+            "sentinel_temp_diff": None,
+            "sentinel_humidity_diff": None,
+            "sentinel_precip": None,
+            "sentinel_raining": 0,
+            "local_rain_xema": None,
+            "local_rain_xema_3h": None,
+        }

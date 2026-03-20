@@ -13,11 +13,11 @@ import requests
 import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 import config
+from src.data._http import create_session
 
 logger = logging.getLogger(__name__)
 
-SESSION = requests.Session()
-SESSION.headers.update({"User-Agent": "NowcastCardedeu/1.0 (research)"})
+SESSION = create_session()
 
 ENSEMBLE_URL = "https://api.open-meteo.com/v1/forecast"
 ENSEMBLE_MODELS = ["ecmwf_ifs025", "gfs_global", "icon_global", "meteofrance_arome_france0025"]

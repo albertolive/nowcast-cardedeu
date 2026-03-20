@@ -8,24 +8,29 @@ import logging
 from datetime import datetime
 from typing import Optional
 
+import numpy as np
 import pandas as pd
 import requests
 
 import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 import config
+from src.data._http import create_session
 
 logger = logging.getLogger(__name__)
 
-SESSION = requests.Session()
-SESSION.headers.update({"User-Agent": "NowcastCardedeu/1.0 (research)"})
+SESSION = create_session()
 
 
 def fetch_latest() -> dict:
     """Retorna l'últim registre disponible de l'estació."""
-    r = SESSION.get(config.LATEST_URL, timeout=15)
-    r.raise_for_status()
-    return r.json()
+    try:
+        r = SESSION.get(config.LATEST_URL, timeout=15)
+        r.raise_for_status()
+        return r.json()
+    except Exception as e:
+        logger.warning(f"Error obtenint dades actuals de MeteoCardedeu: {e}")
+        return {}
 
 
 def fetch_series(hours: int = 24) -> pd.DataFrame:
@@ -33,27 +38,32 @@ def fetch_series(hours: int = 24) -> pd.DataFrame:
     Retorna un DataFrame amb dades minut-a-minut de les últimes `hours` hores.
     Columnes: ts, dt_local, TEMP, HUM, VEL, DIR, DIR_DEG, BAR, PREC, PINT, SUN, UVI
     """
-    params = {
-        "slug": config.SLUG,
-        "hours": hours,
-        "vars": config.SERIES_VARS,
-        "keys": config.SERIES_VARS,
-        "nocache": int(time.time() * 1000),
-    }
-    r = SESSION.get(config.SERIES_URL, params=params, timeout=30)
-    r.raise_for_status()
-    data = r.json()
+    try:
+        params = {
+            "slug": config.SLUG,
+            "hours": hours,
+            "vars": config.SERIES_VARS,
+            "keys": config.SERIES_VARS,
+            "nocache": int(time.time() * 1000),
+        }
+        r = SESSION.get(config.SERIES_URL, params=params, timeout=30)
+        r.raise_for_status()
+        data = r.json()
 
-    if not data.get("ok") or "rows" not in data:
-        raise ValueError(f"API error: {data}")
+        if not data.get("ok") or "rows" not in data:
+            logger.warning(f"MeteoCardedeu API error (series): {data}")
+            return pd.DataFrame()
 
-    df = pd.DataFrame(data["rows"])
-    if df.empty:
+        df = pd.DataFrame(data["rows"])
+        if df.empty:
+            return df
+
+        df["datetime"] = pd.to_datetime(df["dt_local"])
+        df = df.sort_values("datetime").reset_index(drop=True)
         return df
-
-    df["datetime"] = pd.to_datetime(df["dt_local"])
-    df = df.sort_values("datetime").reset_index(drop=True)
-    return df
+    except Exception as e:
+        logger.warning(f"Error obtenint sèrie de MeteoCardedeu: {e}")
+        return pd.DataFrame()
 
 
 def fetch_history_list() -> list[dict]:

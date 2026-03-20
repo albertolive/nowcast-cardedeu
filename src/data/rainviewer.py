@@ -16,11 +16,11 @@ import requests
 import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 import config
+from src.data._http import create_session
 
 logger = logging.getLogger(__name__)
 
-SESSION = requests.Session()
-SESSION.headers.update({"User-Agent": "NowcastCardedeu/1.0 (research)"})
+SESSION = create_session()
 
 
 def _get_radar_frames() -> dict:
