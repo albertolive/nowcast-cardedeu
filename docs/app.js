@@ -76,7 +76,7 @@ function renderPrediction(latest, history) {
   app.innerHTML = `
     <!-- Main prediction -->
     <div class="prediction-card">
-      <div class="prediction-question">Plourà a Cardedeu en les properes 4 hores?</div>
+      <div class="prediction-question">Plourà a Cardedeu en la propera hora?</div>
       <div class="prediction-subtext">${fmtTime(latest.timestamp)}</div>
 
       <div class="probability-ring">
