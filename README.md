@@ -30,8 +30,8 @@ Utilitza dades reals de l'estació [MeteoCardedeu.net](https://meteocardedeu.net
          │                     │         │                      │
          ▼                     ▼         ▼                      ▼
     ┌──────────────────────────────────────────────────────────────────────┐
-    │                Feature Engineering (120 features)                    │
-    │  Tendències · Ensemble · 850hPa · Radar · Sentinella · Llamps · Vent │
+    │                Feature Engineering (131 features)                    │
+    │  Tendències · Ensemble · 5 nivells pressió · Radar · Sentinella · Llamps │
     └──────────────────────────────┬───────────────────────────────────────┘
                                   │
                                   ▼
@@ -147,7 +147,7 @@ nowcast-cardedeu/
 │   │   ├── meteocat_xdde.py  # API Meteocat XDDE (descàrregues elèctriques)
 │   │   └── meteocat_prediccio.py # API Meteocat Predicció (forecast municipal)
 │   ├── features/
-│   │   ├── engineering.py    # Feature engineering (120 features, 76 historical)
+│   │   ├── engineering.py    # Feature engineering (131 features, 87 historical)
 │   │   └── regime.py         # Detecció de canvis de règim atmosfèric (Llevantada, Garbí, pressió)
 │   ├── model/
 │   │   ├── train.py          # Pipeline d'entrenament (XGBoost + TimeSeriesSplit)
@@ -178,7 +178,7 @@ nowcast-cardedeu/
 
 ## Features del model
 
-El model defineix **120 features** per predicció en temps real. El model s'entrena amb les **120 features completes** (76 amb dades històriques, 44 com a NaN per radar/llamps/AEMET). El **feedback loop** acumula gradualment les 44 features en temps real (radar, llamps, sentinella) a cada predicció verificada, permetent que el model aprengui d'observacions independents amb cada re-entrenament.
+El model defineix **131 features** per predicció en temps real. El model s'entrena amb les **131 features completes** (87 amb dades històriques, 44 com a NaN per radar/llamps/AEMET). El **feedback loop** acumula gradualment les 44 features en temps real (radar, llamps, sentinella) a cada predicció verificada, permetent que el model aprengui d'observacions independents amb cada re-entrenament.
 
 **Ensemble backfill**: Des de gener 2022, dades de 4 models NWP (ECMWF, GFS, ICON, AROME) descarregades via `scripts/backfill_ensemble.py`.
 **XEMA sentinel backfill**: Dades de Granollers (YM) + ETAP Cardedeu (KX) via `scripts/backfill_xema.py` (incremental, 15 dies/execució per respectar el límit API).
@@ -190,14 +190,16 @@ El model defineix **120 features** per predicció en temps real. El model s'entr
 | Humitat | Valor + punt rosada + depressió + tendència + VPD + vpd_change_3h | Saturació = pluja imminent. VPD=0 → aire saturat |
 | Vent | Components U/V + canvis + marinada | Marinada del mar = aire sec |
 | Règims eòlics | Tramuntana, Llevantada, Migjorn, Garbí, Ponent (850hPa) + garbi_strength | Llevantada (E/SE) = pluja #1 a Cardedeu |
-| Nivells pressió | Vent/T/RH a 850hPa, T/RH a 700hPa, T a 500hPa | Flux sinòptic real a 3 nivells |
+| Nivells pressió | T/RH/Vent a 925hPa, Vent/T/RH a 850hPa, T/RH a 700hPa, T a 500hPa, Vent a 300hPa | Perfil vertical complet a 5 nivells |
 | 🆕 Índexs inestabilitat | VT, TT, LI, li_unstable, li_very_unstable | Skew-T: detecció de convecció severa |
 | 🆕 Cisalla de vent | wind_shear_speed, wind_shear_dir | Tempestes organitzades (supercèl·lules) |
 | 🆕 Aire fred 500hPa | cold_500_moderate (<-17°C), cold_500_strong (<-24°C) | "Petita bomba" mediterrània (alexmeteo) |
 | Pluja recent | Acumulat 3h/6h + ha plogut? | Context de fronts actius |
 | Models NWP | CAPE, núvols, weather code, descomposició WC (thunderstorm/rain/drizzle) | Què diuen els models globals |
 | 🆕 Detecció d'error NWP | nwp_dry_conflict, nwp_wet_conflict | Quan el NWP es contradiu amb les condicions reals |
-| 🆕 Física convecció | moisture_flux_850, theta_e_deficit, cape_change_3h | Transport d'humitat, inestabilitat convectiva, destabilització ràpida |
+| 🆕 Física convecció | moisture_flux_850, moisture_flux_925, theta_e_deficit, cape_change_3h | Transport d'humitat a 2 nivells, inestabilitat convectiva, destabilització ràpida |
+| 🆕 925hPa (capa límit) | inversion_925 (T925−T_sfc) | Inversió tèrmica: supressor de convecció, boira/estrat |
+| 🆕 300hPa (jet stream) | deep_layer_shear, jet_speed_300 | Cisalla profunda (850–300hPa), trigger dinàmic del jet |
 | Radiació | Solar W/m² | Indicador indirecte de núvols |
 | Radar | Intensitat, dBZ, mm/h, eco, tendència, aprox. | Precipitació real en temps real |
 | Sentinella | Temp/hum Granollers + diffs amb Cardedeu + precip | Gradient territorial = front actiu |
@@ -285,7 +287,15 @@ La **Llevantada** és el patró més important: quan el vent bufa de l'est amb h
 
 ### Índexs d'inestabilitat (Skew-T)
 
-A més del vent a 850hPa, el sistema obté dades de temperatura a 850hPa i 500hPa per calcular índexs clàssics de radiosondatge ([ref: Anàlisis Skew-T](https://alexmeteo.com/2025/07/11/analisis-dun-radiosondatge-diagrames-termodinamics-skew-t/)):
+A més del vent a 850hPa, el sistema obté dades a **5 nivells de pressió** (925/850/700/500/300 hPa) per construir un perfil vertical complet:
+
+- **925hPa** (~750m): capa límit — low-level jet, inversions tèrmiques, flux d'humitat baix (Llevantada)
+- **850hPa** (~1500m): flux sinòptic — règims, transport d'humitat
+- **700hPa** (~3000m): intrusió d'aire sec — capping, inhibició de tempestes
+- **500hPa** (~5500m): aire fred — gradient tèrmic, VT/TT/LI
+- **300hPa** (~9000m): jet stream — cisalla profunda, trigger dinàmic
+
+Amb les dades de temperatura a 850hPa i 500hPa calcula índexs clàssics de radiosondatge ([ref: Anàlisis Skew-T](https://alexmeteo.com/2025/07/11/analisis-dun-radiosondatge-diagrames-termodinamics-skew-t/)):
 
 | Índex | Fórmula | Significat |
 |-------|---------|------------|
@@ -308,6 +318,10 @@ Inspirats per l'anàlisi del blog [alexmeteo.com](https://alexmeteo.com), el sis
 | `garbi_strength` | is_garbi × velocitat sinòptica | "Anuncia borrasques amb fortes precipitacions" |
 | `rh_700` | Humitat relativa a 700hPa | "Baixa mediterrània" — aire sec a 700hPa inhibeix conveció |
 | `temp_700` | Temperatura a 700hPa | Perfil tèrmic vertical complet |
+| `inversion_925` | T925 − T_superficie | Inversió tèrmica: positiu = aire fred atrapat (boira/estrat) |
+| `moisture_flux_925` | wind925 × q925 | Flux d'humitat a la capa límit (gruix de la Llevantada) |
+| `deep_layer_shear` | \|wind300 − wind850\| | Cisalla profunda: organitza supercèl·lules i MCS |
+| `jet_speed_300` | Velocitat del vent a 300hPa | Jet stream: divergència superior = trigger dinàmic |
 
 ### AROME: resolució 2.5km
 
@@ -317,14 +331,14 @@ El model AROME de Meteo-France és el 4t model de l'ensemble, amb resolució de 
 
 | Mètrica | Valor |
 |---------|-------|
-| AUC-ROC (CV) | 0.9547 ± 0.008 |
-| F1-Score (CV) | 0.6731 ± 0.032 |
-| F1-Score OOF (calibrat) | 0.6931 |
-| AUC-ROC (final) | 0.9668 |
-| Llindar òptim (calibrat) | 0.3742 |
-| Mostres d'entrenament | 98,310 |
-| Features (training) | 120 |
-| Features (total) | 120 |
+| AUC-ROC (CV) | 0.9545 ± 0.008 |
+| F1-Score (CV) | 0.6720 ± 0.031 |
+| F1-Score OOF (calibrat) | 0.6918 |
+| AUC-ROC (final) | 0.9665 |
+| Llindar òptim (calibrat) | 0.4015 |
+| Mostres d'entrenament | 98,313 |
+| Features (training) | 131 |
+| Features (total) | 131 |
 | Classe positiva (pluja) | ~9.3% |
 | Cross-validation | TimeSeriesSplit (5 folds) |
 | Calibratge | Isotonic Regression (OOF) |
@@ -352,7 +366,7 @@ El sistema verifica automàticament les seves pròpies prediccions i aprèn dels
 
 ### Com funciona
 
-1. **Log**: Cada predicció es registra a `predictions_log.jsonl` amb un snapshot complet: probabilitat, condicions, radar, AEMET, sentinella, ensemble, nivells de pressió, règim de vent, bias, i les 68 features del model
+1. **Log**: Cada predicció es registra a `predictions_log.jsonl` amb un snapshot complet: probabilitat, condicions, radar, AEMET, sentinella, ensemble, nivells de pressió, règim de vent, bias, i les 131 features del model
 2. **Verificació**: 60-75 min després, el sistema consulta l'estació per veure si realment va ploure
 3. **Classificació**: Cada predicció es marca com TP, FP, TN, o FN
 4. **Informe**: Cada dilluns a les 8:00, reps un report amb accuracy, precisión, recall, F1, i tendència
@@ -425,6 +439,7 @@ El resum diari (7:00) està dissenyat per doble audiència — públic general i
 **Detall tècnic (entusiastes meteo):**
 - Ensemble: quants models prediuen pluja
 - Vent sinòptic a 850hPa amb direcció, velocitat, T850 i humitat relativa 850/700hPa
+- Perfil vertical complet: 925/850/700/500/300 hPa
 - Índexs d'inestabilitat (TT, LI, VT)
 - Resum intel·ligent del radar (filtra ecos no significatius)
 
