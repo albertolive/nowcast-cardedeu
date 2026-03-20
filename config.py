@@ -65,6 +65,11 @@ OPEN_METEO_HOURLY_VARS = [
     "wind_speed_100m",               # Vent a 100m — detecció low-level jet
     "wind_direction_100m",           # Direcció del vent a 100m
     "snowfall",                      # Neu — tipus de precipitació
+    # Tier 4 — ERA5 surface expansion (100% coverage 2015+)
+    "total_column_integrated_water_vapour",  # TCWV (kg/m²) — precipitable water
+    "boundary_layer_height",                 # PBL depth (m) — convective mixing
+    "terrestrial_radiation",                 # Longwave IR (W/m²) — night cloud detect
+    "soil_moisture_28_to_100cm",             # Deep soil moisture (m³/m³)
 ]
 
 # Variables del model per al forecast

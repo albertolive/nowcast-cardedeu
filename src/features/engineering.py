@@ -445,6 +445,51 @@ def _add_soil_moisture_features(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
+def _add_atmospheric_column_features(df: pd.DataFrame) -> pd.DataFrame:
+    """Features de columna atmosfèrica — TCWV, BLH, radiació terrestre, sòl profund."""
+    df = df.copy()
+
+    # TCWV (Total Column Integrated Water Vapour) — precipitable water (kg/m²)
+    # The single strongest ERA5 predictor for precipitation
+    if "total_column_integrated_water_vapour" in df.columns:
+        tcwv = pd.to_numeric(df["total_column_integrated_water_vapour"], errors="coerce")
+        df["tcwv"] = tcwv
+        # TCWV change 3h — moisture loading/advection (front approaching)
+        df["tcwv_change_3h"] = tcwv.diff(3)
+        # TCWV change 6h — synoptic-scale moisture trend
+        df["tcwv_change_6h"] = tcwv.diff(6)
+
+    # Boundary Layer Height (m) — convective mixing depth
+    # High BLH = deep convective mixing, low BLH = stable/suppressed
+    if "boundary_layer_height" in df.columns:
+        blh = pd.to_numeric(df["boundary_layer_height"], errors="coerce")
+        df["boundary_layer_height"] = blh
+        # BLH change 3h — deepening = convective development
+        df["blh_change_3h"] = blh.diff(3)
+
+    # TCWV/BLH ratio — moisture per unit mixing depth = convective efficiency
+    # High TCWV + shallow BLH = trapped moisture → rain likely
+    if "tcwv" in df.columns and "boundary_layer_height" in df.columns:
+        blh_safe = df["boundary_layer_height"].clip(lower=50)  # avoid /0
+        df["tcwv_blh_ratio"] = df["tcwv"] / blh_safe * 100  # scale to ~0-10
+
+    # Terrestrial radiation (longwave IR, W/m²) — nighttime cloud detection
+    # High = clear sky radiative cooling, low = clouds trapping heat
+    if "terrestrial_radiation" in df.columns:
+        df["terrestrial_radiation"] = pd.to_numeric(df["terrestrial_radiation"], errors="coerce")
+
+    # Deep soil moisture (28-100cm) — antecedent saturation
+    if "soil_moisture_28_to_100cm" in df.columns:
+        df["soil_moisture_28_to_100cm"] = pd.to_numeric(df["soil_moisture_28_to_100cm"], errors="coerce")
+        # Saturation ratio: shallow vs deep — high = recent rain fully infiltrated
+        if "soil_moisture_0_to_7cm" in df.columns:
+            shallow = pd.to_numeric(df["soil_moisture_0_to_7cm"], errors="coerce")
+            deep = df["soil_moisture_28_to_100cm"].clip(lower=0.01)
+            df["soil_saturation_ratio"] = shallow / deep
+
+    return df
+
+
 def _add_cloud_layer_features(df: pd.DataFrame) -> pd.DataFrame:
     """Features de capes de núvols — diferenciar núvols baixos (pluja) d'alts (cirrus)."""
     df = df.copy()
@@ -843,6 +888,7 @@ def build_features_from_hourly(df: pd.DataFrame) -> pd.DataFrame:
     df = _add_pressure_level_features(df)
     df = _add_physics_composites(df)
     df = _add_soil_moisture_features(df)
+    df = _add_atmospheric_column_features(df)
     df = _add_cloud_layer_features(df)
     df = _add_wet_bulb_features(df)
     df = _add_radiation_features(df)
@@ -895,6 +941,8 @@ def build_features_from_realtime(station_df: pd.DataFrame, forecast_df: pd.DataF
             "visibility", "freezing_level_height",
             "showers", "et0_fao_evapotranspiration", "soil_temperature_0_to_7cm",
             "sunshine_duration", "wind_speed_100m", "wind_direction_100m", "snowfall",
+            "total_column_integrated_water_vapour", "boundary_layer_height",
+            "terrestrial_radiation", "soil_moisture_28_to_100cm",
         ]
         available_extra = [c for c in extra_cols if c in forecast_df.columns]
 
@@ -1015,6 +1063,16 @@ FEATURE_COLUMNS = [
     "moisture_flux_change_3h", # Canvi flux d'humitat — front que s'apropa/passa
     # CAPE change rate (rapid destabilization)
     "cape_change_3h",
+    # Tier 4 — ERA5 surface expansion (100% coverage 2015+)
+    "tcwv",                     # Total Column Water Vapour (kg/m²) — precipitable water
+    "tcwv_change_3h",           # Càrrega/advecció d'humitat (front que arriba)
+    "tcwv_change_6h",           # Tendència d'humitat sinòptica
+    "boundary_layer_height",    # Alçada capa límit (m) — fondària convecció
+    "blh_change_3h",            # Canvi BLH — aprofundiment = desenvolupament convectiu
+    "tcwv_blh_ratio",           # Humitat / fondària mescla = eficiència convectiva
+    "terrestrial_radiation",    # Radiació terrestre (W/m²) — detecció núvols nocturna
+    "soil_moisture_28_to_100cm", # Humitat sòl profund — saturació antecedent
+    "soil_saturation_ratio",    # Superficial / profund — infiltració recent
     # Radiació solar
     "shortwave_radiation",
     # Radar (RainViewer) — puntual + espacial
