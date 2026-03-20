@@ -90,6 +90,12 @@ def main():
         pressure_df = pd.read_parquet(pressure_path)
         pressure_df["datetime"] = pd.to_datetime(pressure_df["datetime"])
         hourly_df["datetime"] = pd.to_datetime(hourly_df["datetime"])
+        # CAPE/CIN come from both Archive (all NULL) and Historical Forecast (2021+).
+        # Drop the Archive NULL columns before merging to avoid _x/_y conflicts.
+        overlap_cols = [c for c in pressure_df.columns if c in hourly_df.columns and c != "datetime"]
+        if overlap_cols:
+            hourly_df = hourly_df.drop(columns=overlap_cols)
+            logger.info(f"Dropped Archive columns superseded by Historical Forecast: {overlap_cols}")
         hourly_df = hourly_df.merge(pressure_df, on="datetime", how="left")
         logger.info(f"Pressure levels merged: {len(pressure_df)} registres, "
                     f"columnes afegides: {[c for c in pressure_df.columns if c != 'datetime']}")
@@ -109,6 +115,21 @@ def main():
                     f"{n_valid}/{len(hourly_df)} hores amb dades ({100*n_valid/len(hourly_df):.1f}%)")
     else:
         logger.info("No ensemble data (run: .venv/bin/python scripts/backfill_ensemble.py)")
+
+    # ── Afegir SST històric (NOAA OISST) si existeix ──
+    sst_path = os.path.join(config.DATA_RAW_DIR, "sst_historical.parquet")
+    if os.path.exists(sst_path):
+        sst_df = pd.read_parquet(sst_path)
+        sst_df["datetime"] = pd.to_datetime(sst_df["datetime"], utc=True).dt.tz_localize(None)
+        # SST is daily — forward-fill to hourly resolution
+        hourly_df["datetime"] = pd.to_datetime(hourly_df["datetime"])
+        sst_df = sst_df.set_index("datetime").resample("1h").ffill().reset_index()
+        hourly_df = hourly_df.merge(sst_df, on="datetime", how="left")
+        n_valid = hourly_df["sst_med"].notna().sum() if "sst_med" in hourly_df.columns else 0
+        logger.info(f"SST merged: {len(sst_df)} registres, "
+                    f"{n_valid}/{len(hourly_df)} hores amb dades ({100*n_valid/len(hourly_df):.1f}%)")
+    else:
+        logger.info("No SST data (run download_history.py to fetch NOAA OISST)")
 
     # ── Afegir dades sentinella XEMA si existeixen ──
     xema_path = os.path.join(config.DATA_PROCESSED_DIR, "xema_sentinel_cache.parquet")

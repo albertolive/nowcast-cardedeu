@@ -99,7 +99,7 @@ Rain gate signals (checked in `predict_now.py`, not in the module):
 
 | Module | API Key | Rain-gated | Notes |
 |--------|---------|------------|-------|
-| `open_meteo.py` | No | No | Surface + pressure levels (850/700/500hPa), historical + forecast |
+| `open_meteo.py` | No | No | Surface + pressure levels (925/850/700/500/300hPa), CAPE/CIN backfill (Historical Forecast API, April 2021+), historical + forecast + NOAA ERDDAP SST (2015-present) |
 | `meteocardedeu.py` | No | No | Real-time station + NOAA historical |
 | `rainviewer.py` | No | No | Radar tiles → dBZ/mm/h, spatial scan 30km, storm tracking |
 | `ensemble.py` | No | No | ECMWF + GFS + ICON + AROME agreement |

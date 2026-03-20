@@ -14,7 +14,7 @@ from datetime import date, timedelta
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 import config
 from src.data.meteocardedeu import download_all_history
-from src.data.open_meteo import fetch_historical_hourly, fetch_historical_pressure_levels
+from src.data.open_meteo import fetch_historical_hourly, fetch_historical_pressure_levels, fetch_historical_sst
 
 logging.basicConfig(
     level=logging.INFO,
@@ -73,7 +73,20 @@ def main():
         logger.info(f"  Pressure: {pressure_data['datetime'].min()} → {pressure_data['datetime'].max()}")
     logger.info("=" * 60)
 
-    # ── 4. Ensemble historical (multi-model agreement) ──
+    # ── 4. SST històric (NOAA OISST via ERDDAP) ──
+    logger.info("=" * 60)
+    logger.info("Descarregant SST històric del Mediterrani (NOAA OISST)...")
+    logger.info("=" * 60)
+
+    sst_data = fetch_historical_sst(start, end)
+    sst_path = os.path.join(config.DATA_RAW_DIR, "sst_historical.parquet")
+    if not sst_data.empty:
+        sst_data.to_parquet(sst_path, index=False)
+        logger.info(f"SST historical: {len(sst_data)} dies → {sst_path}")
+    else:
+        logger.warning("No s'han obtingut dades de SST històric")
+
+    # ── 5. Ensemble historical (multi-model agreement) ──
     logger.info("=" * 60)
     logger.info("Descarregant ensemble historical (backfill_ensemble)...")
     logger.info("=" * 60)

@@ -170,6 +170,9 @@ PRESSURE_LEVEL_VARS = [
     "wind_speed_300hPa",
     "wind_direction_300hPa",
     "geopotential_height_300hPa",
+    # Convective parameters (available from Historical Forecast API, 2021-04+)
+    "cape",
+    "convective_inhibition",
 ]
 
 # Mapejat: noms de l'API → noms interns per al model
@@ -253,8 +256,11 @@ def fetch_historical_pressure_levels(
 
         # Renomenar columnes API → noms interns
         df = df.rename(columns=_PRESSURE_RENAME)
-        # Eliminar columnes no mapejades (ex: geopotential_height_500hPa)
-        df = df[["datetime"] + [c for c in _PRESSURE_RENAME.values() if c in df.columns]]
+        # Keep renamed pressure columns + passthrough columns (cape, convective_inhibition)
+        _PASSTHROUGH_COLS = ["cape", "convective_inhibition"]
+        keep_cols = [c for c in _PRESSURE_RENAME.values() if c in df.columns]
+        keep_cols += [c for c in _PASSTHROUGH_COLS if c in df.columns]
+        df = df[["datetime"] + keep_cols]
 
         all_dfs.append(df)
         chunk_start = chunk_end + timedelta(days=1)
@@ -479,3 +485,80 @@ def fetch_sst_forecast() -> dict:
     except Exception as e:
         logger.warning(f"Error obtenint SST: {e}")
         return {"sst_med": None}
+
+
+# ── SST històric — NOAA OISST v2.1 (ERDDAP) ──
+
+NOAA_ERDDAP_OISST_CSV = "https://coastwatch.pfeg.noaa.gov/erddap/griddap/ncdcOisst21Agg.csv"
+
+
+def fetch_historical_sst(
+    start_date: date,
+    end_date: date,
+) -> pd.DataFrame:
+    """
+    Descarrega SST diària històrica del Mediterrani prop de Cardedeu
+    des de NOAA OISST v2.1 via ERDDAP (gratuït, sense API key).
+
+    Resolució: 0.25°, diària. Cobertura: 1981-present.
+    Retorna DataFrame amb columnes: datetime, sst_med.
+    Les dades diàries s'interpolen a horària al fer merge.
+    """
+    import time as _time
+    import io
+
+    all_rows = []
+    chunk_start = start_date
+
+    # Use 1-year chunks with CSV format (much faster than JSON)
+    while chunk_start < end_date:
+        chunk_end = min(chunk_start + timedelta(days=365), end_date)
+
+        lat = config.SEA_LATITUDE
+        lon = config.SEA_LONGITUDE
+
+        constraint = (
+            f"?sst[({chunk_start.isoformat()}T00:00:00Z):1:({chunk_end.isoformat()}T00:00:00Z)]"
+            f"[(0.0)][({lat})][({lon})]"
+        )
+
+        logger.info(f"NOAA OISST: {chunk_start} → {chunk_end}")
+
+        r = None
+        for attempt in range(3):
+            try:
+                r = requests.get(NOAA_ERDDAP_OISST_CSV + constraint, timeout=120)
+                if r.status_code == 200:
+                    break
+                if r.status_code == 429:
+                    _time.sleep(10 * (attempt + 1))
+                    continue
+                logger.warning(f"NOAA OISST HTTP {r.status_code} for {chunk_start}")
+                break
+            except Exception as e:
+                logger.warning(f"NOAA OISST attempt {attempt+1}/3 error: {e}")
+                _time.sleep(5)
+                r = None
+
+        try:
+            if r is not None and r.status_code == 200:
+                # CSV: skip units row (row 1), parse time/zlev/lat/lon/sst
+                df_chunk = pd.read_csv(io.StringIO(r.text), skiprows=[1])
+                df_chunk = df_chunk.rename(columns={"time": "datetime", "sst": "sst_med"})
+                df_chunk = df_chunk[["datetime", "sst_med"]].dropna(subset=["sst_med"])
+                all_rows.append(df_chunk)
+        except Exception as e:
+            logger.warning(f"Error parsing NOAA OISST response: {e}")
+
+        chunk_start = chunk_end + timedelta(days=1)
+        _time.sleep(0.5)
+
+    if not all_rows:
+        logger.warning("No SST data obtained from NOAA ERDDAP")
+        return pd.DataFrame()
+
+    result = pd.concat(all_rows, ignore_index=True)
+    result["datetime"] = pd.to_datetime(result["datetime"])
+    result = result.sort_values("datetime").reset_index(drop=True)
+    logger.info(f"NOAA SST: {len(result)} dies ({result['datetime'].min()} → {result['datetime'].max()})")
+    return result
