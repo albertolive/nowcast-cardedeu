@@ -209,6 +209,13 @@ header .subtitle {
 
 canvas { width: 100% !important; height: 100% !important; }
 
+.chart-hint {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+  opacity: 0.7;
+}
+
 /* Conditions grid */
 .grid {
   display: grid;
@@ -287,6 +294,8 @@ canvas { width: 100% !important; height: 100% !important; }
 .expand-content .stat-row:first-child {
   padding-top: 8px;
 }
+
+
 
 /* Sources bar */
 .sources-bar {

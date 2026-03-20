@@ -119,6 +119,7 @@ function renderPrediction(latest, history) {
     <!-- Probability chart -->
     <div class="chart-card">
       <h2>📈 Com ha canviat la probabilitat (últimes 24h)</h2>
+      <p class="chart-hint">Toca o passa el ratolí per veure els valors</p>
       <div class="chart-container">
         <canvas id="probChart"></canvas>
       </div>
@@ -224,110 +225,77 @@ function renderWhyPrediction(d) {
   const e = d.ensemble || {};
   const a = d.aemet || {};
   const p = d.pressure_levels || {};
-  const c = d.conditions || {};
-  const gateOpen = d.rain_gate_open;
 
-  // Build signals array: {icon, label, detail, status: 'green'|'yellow'|'red'}
-  const signals = [];
-
-  // 1. Radar signal
+  // Radar
+  let radarText, radarColor;
   if (r.approaching) {
-    signals.push({ icon: '📡', label: 'Radar', detail: `Pluja detectada a ${r.nearest_echo_km || '?'} km i acostant-se`, status: 'red' });
+    radarText = `⚠️ Pluja a ${r.nearest_echo_km || '?'} km, acostant-se`;
+    radarColor = 'var(--accent-red)';
   } else if (r.has_echo || r.dbz > 5) {
-    signals.push({ icon: '📡', label: 'Radar', detail: `Ecos a ${r.nearest_echo_km || '?'} km, sense moviment cap aquí`, status: 'yellow' });
+    radarText = `Ecos a ${r.nearest_echo_km || '?'} km, estàtica`;
+    radarColor = 'var(--accent-yellow)';
   } else {
-    signals.push({ icon: '📡', label: 'Radar', detail: 'Cap pluja detectada al voltant', status: 'green' });
+    radarText = 'Sense pluja';
+    radarColor = 'var(--accent-green)';
   }
 
-  // 2. NWP model consensus
+  // NWP consensus
   const modelsRain = e.models_rain || 0;
   const totalModels = e.total_models || 4;
+  let modelsText, modelsColor;
   if (modelsRain === 0) {
-    signals.push({ icon: '🌐', label: 'Models globals', detail: `Cap dels ${totalModels} models preveu pluja`, status: 'green' });
+    modelsText = `0/${totalModels} preveuen pluja`;
+    modelsColor = 'var(--accent-green)';
   } else if (modelsRain <= totalModels / 2) {
-    signals.push({ icon: '🌐', label: 'Models globals', detail: `${modelsRain} de ${totalModels} models preveuen pluja`, status: 'yellow' });
+    modelsText = `${modelsRain}/${totalModels} preveuen pluja`;
+    modelsColor = 'var(--accent-yellow)';
   } else {
-    signals.push({ icon: '🌐', label: 'Models globals', detail: `${modelsRain} de ${totalModels} models preveuen pluja`, status: 'red' });
+    modelsText = `${modelsRain}/${totalModels} preveuen pluja`;
+    modelsColor = 'var(--accent-red)';
   }
 
-  // 3. Atmospheric stability
+  // Stability
+  let stabilityText = '—', stabilityColor = 'var(--text-muted)';
   if (p.li_index != null) {
-    if (p.li_index < -3) {
-      signals.push({ icon: '🌀', label: 'Estabilitat', detail: 'Atmosfera inestable — risc de tempestes', status: 'red' });
-    } else if (p.li_index < 0) {
-      signals.push({ icon: '🌀', label: 'Estabilitat', detail: 'Lleugera inestabilitat atmosfèrica', status: 'yellow' });
-    } else {
-      signals.push({ icon: '🌀', label: 'Estabilitat', detail: 'Atmosfera estable — difícil que plogui', status: 'green' });
-    }
+    if (p.li_index < -3) { stabilityText = '⛈️ Inestable'; stabilityColor = 'var(--accent-red)'; }
+    else if (p.li_index < 0) { stabilityText = '⚠️ Lleugerament inestable'; stabilityColor = 'var(--accent-yellow)'; }
+    else { stabilityText = '☀️ Estable'; stabilityColor = 'var(--accent-green)'; }
   } else if (p.tt_index != null) {
-    if (p.tt_index > 50) {
-      signals.push({ icon: '🌀', label: 'Estabilitat', detail: 'Atmosfera inestable — risc de tempestes', status: 'red' });
-    } else if (p.tt_index > 44) {
-      signals.push({ icon: '🌀', label: 'Estabilitat', detail: 'Lleugera inestabilitat atmosfèrica', status: 'yellow' });
-    } else {
-      signals.push({ icon: '🌀', label: 'Estabilitat', detail: 'Atmosfera estable — difícil que plogui', status: 'green' });
-    }
+    if (p.tt_index > 50) { stabilityText = '⛈️ Inestable'; stabilityColor = 'var(--accent-red)'; }
+    else if (p.tt_index > 44) { stabilityText = '⚠️ Lleugerament inestable'; stabilityColor = 'var(--accent-yellow)'; }
+    else { stabilityText = '☀️ Estable'; stabilityColor = 'var(--accent-green)'; }
   }
 
-  // 4. Official forecast (AEMET)
+  // AEMET
   const aemetProb = a.prob_precip ?? null;
+  let aemetText = '—', aemetColor = 'var(--text-muted)';
   if (aemetProb != null) {
-    if (aemetProb >= 50) {
-      signals.push({ icon: '🏛️', label: 'AEMET', detail: `Previsió oficial: ${aemetProb}% de probabilitat`, status: 'red' });
-    } else if (aemetProb >= 20) {
-      signals.push({ icon: '🏛️', label: 'AEMET', detail: `Previsió oficial: ${aemetProb}% de probabilitat`, status: 'yellow' });
-    } else {
-      signals.push({ icon: '🏛️', label: 'AEMET', detail: `Previsió oficial: ${aemetProb}% de probabilitat`, status: 'green' });
-    }
+    aemetText = aemetProb + '%';
+    aemetColor = aemetProb >= 50 ? 'var(--accent-red)' : aemetProb >= 20 ? 'var(--accent-yellow)' : 'var(--accent-green)';
   }
 
-  // 5. Humidity at altitude (moisture availability)
+  // Humidity at altitude
+  let humText = '—', humColor = 'var(--text-muted)';
   if (p.rh_700 != null) {
-    if (p.rh_700 > 70) {
-      signals.push({ icon: '💧', label: 'Humitat en altura', detail: `${p.rh_700}% a 3.000m — aire molt humit`, status: 'red' });
-    } else if (p.rh_700 > 50) {
-      signals.push({ icon: '💧', label: 'Humitat en altura', detail: `${p.rh_700}% a 3.000m — moderadament humit`, status: 'yellow' });
-    } else {
-      signals.push({ icon: '💧', label: 'Humitat en altura', detail: `${p.rh_700}% a 3.000m — aire sec`, status: 'green' });
-    }
-  }
-
-  // Build summary sentence
-  const redCount = signals.filter(s => s.status === 'red').length;
-  const greenCount = signals.filter(s => s.status === 'green').length;
-  let summary;
-  if (redCount >= 3) {
-    summary = 'Múltiples senyals apunten a pluja imminent.';
-  } else if (redCount >= 1) {
-    summary = 'Algunes senyals de pluja, però no totes coincideixen.';
-  } else if (greenCount === signals.length) {
-    summary = 'Totes les fonts coincideixen: no es preveu pluja.';
-  } else {
-    summary = 'La majoria de senyals són favorables, amb alguna incertesa.';
+    if (p.rh_700 > 70) { humText = `${p.rh_700}% — Molt humit`; humColor = 'var(--accent-red)'; }
+    else if (p.rh_700 > 50) { humText = `${p.rh_700}% — Moderat`; humColor = 'var(--accent-yellow)'; }
+    else { humText = `${p.rh_700}% — Sec`; humColor = 'var(--accent-green)'; }
   }
 
   const detailId = 'why-detail-' + Date.now();
   return `
-    <p class="why-summary">${summary}</p>
-    <div class="signal-list">
-      ${signals.map(s => `
-        <div class="signal-row">
-          <span class="signal-dot signal-${s.status}"></span>
-          <span class="signal-icon">${s.icon}</span>
-          <span class="signal-body">
-            <span class="signal-label">${s.label}</span>
-            <span class="signal-detail">${s.detail}</span>
-          </span>
-        </div>
-      `).join('')}
-    </div>
+    <div class="stat-row"><span class="stat-label">Radar</span><span class="stat-value" style="color:${radarColor}">${radarText}</span></div>
+    <div class="stat-row"><span class="stat-label">Models globals</span><span class="stat-value" style="color:${modelsColor}">${modelsText}</span></div>
+    <div class="stat-row"><span class="stat-label">Estabilitat</span><span class="stat-value" style="color:${stabilityColor}">${stabilityText}</span></div>
+    <div class="stat-row"><span class="stat-label">Previsió AEMET</span><span class="stat-value" style="color:${aemetColor}">${aemetText}</span></div>
+    <div class="stat-row"><span class="stat-label">Humitat en altura</span><span class="stat-value" style="color:${humColor}">${humText}</span></div>
 
     <button class="expand-toggle" onclick="this.classList.toggle('open');document.getElementById('${detailId}').classList.toggle('open')">
       <span class="chevron">▶</span> Detalls tècnics
     </button>
     <div id="${detailId}" class="expand-content">
       <div class="stat-row">
-        <span class="stat-label">Prob. del model (sense calibrar)</span>
+        <span class="stat-label">Prob. sense calibrar</span>
         <span class="stat-value">${d.raw_probability != null ? (d.raw_probability * 100).toFixed(1) + '%' : '—'}</span>
       </div>
       <div class="stat-row">
@@ -335,16 +303,16 @@ function renderWhyPrediction(d) {
         <span class="stat-value">${d.probability_pct}%</span>
       </div>
       <div class="stat-row">
-        <span class="stat-label">Llindar per dir "plourà"</span>
+        <span class="stat-label">Llindar sí/no</span>
         <span class="stat-value">${d.threshold ? (d.threshold * 100).toFixed(1) + '%' : '—'}</span>
       </div>
       <div class="stat-row">
-        <span class="stat-label">Variables analitzades</span>
+        <span class="stat-label">Variables</span>
         <span class="stat-value">${d.features_used || '—'}</span>
       </div>
       <div class="stat-row">
         <span class="stat-label">Algoritme</span>
-        <span class="stat-value">XGBoost + calibració isotònica</span>
+        <span class="stat-value">XGBoost + cal. isotònica</span>
       </div>
     </div>
   `;
