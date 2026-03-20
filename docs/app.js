@@ -156,7 +156,7 @@ function renderPrediction(latest, history) {
         </div>
         <div class="stat-row">
           <span class="stat-label">Variables analitzades</span>
-          <span class="stat-value">${latest.features_used || '—'} de 155</span>
+          <span class="stat-value">${latest.features_used || '—'} de 160</span>
         </div>
 
         <button class="expand-toggle" onclick="this.classList.toggle('open');document.getElementById('model-detail').classList.toggle('open')">
