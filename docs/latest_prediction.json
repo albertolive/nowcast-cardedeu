@@ -3,7 +3,7 @@
   "probability_pct": 0.0,
   "will_rain": false,
   "confidence": "Molt Baixa",
-  "timestamp": "2026-03-20T20:20:38.975214",
+  "timestamp": "2026-03-20T20:30:50.528623",
   "conditions": {
     "temperature": "10.9",
     "humidity": 59,
@@ -54,8 +54,8 @@
     "prob_storm": 0
   },
   "bias": {
-    "temp": -0.9000000000000004,
-    "humidity": 4.0
+    "temp": -3.2,
+    "humidity": 9.0
   },
   "wind_regime": {
     "level": "850hPa",
@@ -249,8 +249,8 @@
     "ensemble_max_precip": 0.0,
     "ensemble_min_precip": 0.0,
     "ensemble_models_rain": 0.0,
-    "forecast_temp_bias": -0.9000000000000004,
-    "forecast_humidity_bias": 4.0,
+    "forecast_temp_bias": -3.2,
+    "forecast_humidity_bias": 9.0,
     "aemet_prob_precip": 0.0,
     "aemet_prob_storm": 0.0,
     "aemet_precip_today": 0.0,
@@ -263,10 +263,10 @@
     "lightning_has_activity": null,
     "aemet_radar_dbz": 0.0,
     "aemet_radar_has_echo": 0.0,
-    "aemet_radar_nearest_echo_km": 6.0,
-    "aemet_radar_max_dbz_20km": 40.0,
-    "aemet_radar_coverage_20km": 0.0396,
-    "aemet_radar_echoes_found": 1.0,
+    "aemet_radar_nearest_echo_km": 30.0,
+    "aemet_radar_max_dbz_20km": 0.0,
+    "aemet_radar_coverage_20km": 0.0,
+    "aemet_radar_echoes_found": 0.0,
     "smc_prob_precip_1h": null,
     "smc_prob_precip_6h": null,
     "smc_precip_intensity": null,
