@@ -255,6 +255,46 @@
     .stat-row .stat-label { color: var(--text-muted); }
     .stat-row .stat-value { font-weight: 600; }
 
+    /* Expandable details */
+    .expand-toggle {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 0 2px;
+      font-size: 12px;
+      color: var(--accent-blue);
+      cursor: pointer;
+      border: none;
+      background: none;
+      font-family: inherit;
+      width: 100%;
+    }
+
+    .expand-toggle:hover { opacity: 0.8; }
+
+    .expand-toggle .chevron {
+      transition: transform 0.2s;
+      font-size: 10px;
+    }
+
+    .expand-toggle.open .chevron {
+      transform: rotate(90deg);
+    }
+
+    .expand-content {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease-out;
+    }
+
+    .expand-content.open {
+      max-height: 500px;
+    }
+
+    .expand-content .stat-row:first-child {
+      padding-top: 8px;
+    }
+
     /* Sources bar */
     .sources-bar {
       display: flex;
@@ -910,7 +950,7 @@ function renderPrediction(latest, history) {
 
       <!-- Atmospheric -->
       <div class="info-card">
-        <h3>🌀 Atmosfera (5 nivells)</h3>
+        <h3>🌀 Atmosfera</h3>
         ${renderAtmosphere(latest)}
       </div>
 
@@ -918,24 +958,30 @@ function renderPrediction(latest, history) {
       <div class="info-card">
         <h3>🤖 Model</h3>
         <div class="stat-row">
-          <span class="stat-label">Prob. crua</span>
-          <span class="stat-value">${latest.raw_probability != null ? (latest.raw_probability * 100).toFixed(1) + '%' : '—'}</span>
-        </div>
-        <div class="stat-row">
-          <span class="stat-label">Prob. calibrada</span>
+          <span class="stat-label">Probabilitat</span>
           <span class="stat-value" style="color:${color}">${pct}%</span>
         </div>
         <div class="stat-row">
-          <span class="stat-label">Llindar</span>
-          <span class="stat-value">${latest.threshold ? (latest.threshold * 100).toFixed(1) + '%' : '—'}</span>
-        </div>
-        <div class="stat-row">
           <span class="stat-label">Calibració</span>
-          <span class="stat-value">${latest.calibrated ? 'Isotònica' : 'No'}</span>
+          <span class="stat-value">${latest.calibrated ? '✅ Isotònica' : '❌ No'}</span>
         </div>
         <div class="stat-row">
           <span class="stat-label">Senyals analitzats</span>
           <span class="stat-value">${latest.features_used || '—'} de 131</span>
+        </div>
+
+        <button class="expand-toggle" onclick="this.classList.toggle('open');document.getElementById('model-detail').classList.toggle('open')">
+          <span class="chevron">▶</span> Detalls tècnics
+        </button>
+        <div id="model-detail" class="expand-content">
+          <div class="stat-row">
+            <span class="stat-label">Prob. crua (sense calibrar)</span>
+            <span class="stat-value">${latest.raw_probability != null ? (latest.raw_probability * 100).toFixed(1) + '%' : '—'}</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">Llindar de decisió</span>
+            <span class="stat-value">${latest.threshold ? (latest.threshold * 100).toFixed(1) + '%' : '—'}</span>
+          </div>
         </div>
       </div>
     </div>
@@ -1017,15 +1063,60 @@ function renderAtmosphere(d) {
                  w.is_migjorn ? '🌡️ Migjorn' :
                  w.is_garbi ? '🌬️ Garbí' :
                  w.is_ponent ? '🔥 Ponent' : '🧭 Neutre';
+
+  // Human-readable stability assessment from indices
+  let stabilityText = '—';
+  let stabilityColor = 'var(--text-muted)';
+  if (p.li_index != null) {
+    if (p.li_index < -6) { stabilityText = '⛈️ Molt inestable'; stabilityColor = 'var(--accent-red)'; }
+    else if (p.li_index < -3) { stabilityText = '🌩️ Inestable'; stabilityColor = 'var(--accent-yellow)'; }
+    else if (p.li_index < 0) { stabilityText = '⚠️ Lleugerament inestable'; stabilityColor = 'var(--accent-yellow)'; }
+    else if (p.li_index < 3) { stabilityText = '🌤️ Estable'; stabilityColor = 'var(--accent-green)'; }
+    else { stabilityText = '☀️ Molt estable'; stabilityColor = 'var(--accent-green)'; }
+  } else if (p.tt_index != null) {
+    if (p.tt_index > 55) { stabilityText = '⛈️ Molt inestable'; stabilityColor = 'var(--accent-red)'; }
+    else if (p.tt_index > 50) { stabilityText = '🌩️ Inestable'; stabilityColor = 'var(--accent-yellow)'; }
+    else if (p.tt_index > 44) { stabilityText = '⚠️ Lleugerament inestable'; stabilityColor = 'var(--accent-yellow)'; }
+    else { stabilityText = '☀️ Estable'; stabilityColor = 'var(--accent-green)'; }
+  }
+
+  // Human-readable humidity at altitude
+  let humidityText = '—';
+  if (p.rh_700 != null) {
+    if (p.rh_700 > 80) humidityText = '💧 Molt humit';
+    else if (p.rh_700 > 60) humidityText = '🌥️ Humit';
+    else if (p.rh_700 > 40) humidityText = '⛅ Moderat';
+    else humidityText = '☀️ Sec';
+  }
+
+  // Jet stream interpretation
+  let jetText = '—';
+  if (p.wind_300_speed_kmh != null) {
+    if (p.wind_300_speed_kmh > 120) jetText = '💨 Molt fort (' + Math.round(p.wind_300_speed_kmh) + ' km/h)';
+    else if (p.wind_300_speed_kmh > 80) jetText = '🌬️ Fort (' + Math.round(p.wind_300_speed_kmh) + ' km/h)';
+    else if (p.wind_300_speed_kmh > 40) jetText = 'Moderat (' + Math.round(p.wind_300_speed_kmh) + ' km/h)';
+    else jetText = 'Feble (' + Math.round(p.wind_300_speed_kmh) + ' km/h)';
+  }
+
+  const detailId = 'atmo-detail-' + Date.now();
   return `
     <div class="stat-row"><span class="stat-label">Règim de vent</span><span class="stat-value">${regime}</span></div>
-    <div class="stat-row"><span class="stat-label">T 925hPa (capa límit)</span><span class="stat-value">${p.temp_925 ?? '—'}°C · ${p.rh_925 ?? '—'}%</span></div>
-    <div class="stat-row"><span class="stat-label">T 850hPa (flux sinòptic)</span><span class="stat-value">${p.temp_850 ?? '—'}°C · ${p.rh_850 ?? '—'}%</span></div>
-    <div class="stat-row"><span class="stat-label">Humitat 700hPa</span><span class="stat-value">${p.rh_700 ?? '—'}%</span></div>
-    <div class="stat-row"><span class="stat-label">T 500hPa (aire fred)</span><span class="stat-value">${p.temp_500 ?? '—'}°C</span></div>
-    <div class="stat-row"><span class="stat-label">Jet 300hPa</span><span class="stat-value">${p.wind_300_speed_kmh != null ? p.wind_300_speed_kmh + ' km/h' : '—'}</span></div>
-    <div class="stat-row"><span class="stat-label">Inestabilitat (VT/TT)</span><span class="stat-value">${p.vt_index != null ? p.vt_index.toFixed(1) : '—'} / ${p.tt_index != null ? p.tt_index.toFixed(1) : '—'}</span></div>
-    <div class="stat-row"><span class="stat-label">Lifted Index</span><span class="stat-value">${p.li_index != null ? p.li_index.toFixed(1) : '—'}</span></div>
+    <div class="stat-row"><span class="stat-label">Estabilitat</span><span class="stat-value" style="color:${stabilityColor}">${stabilityText}</span></div>
+    <div class="stat-row"><span class="stat-label">Humitat en altitud</span><span class="stat-value">${humidityText}</span></div>
+    <div class="stat-row"><span class="stat-label">Corrent en jet</span><span class="stat-value">${jetText}</span></div>
+
+    <button class="expand-toggle" onclick="this.classList.toggle('open');document.getElementById('${detailId}').classList.toggle('open')">
+      <span class="chevron">▶</span> Dades per nivell de pressió
+    </button>
+    <div id="${detailId}" class="expand-content">
+      <div class="stat-row"><span class="stat-label">925 hPa · capa límit</span><span class="stat-value">${p.temp_925 ?? '—'}°C · ${p.rh_925 ?? '—'}%</span></div>
+      <div class="stat-row"><span class="stat-label">850 hPa · flux sinòptic</span><span class="stat-value">${p.temp_850 ?? '—'}°C · ${p.rh_850 ?? '—'}%</span></div>
+      <div class="stat-row"><span class="stat-label">700 hPa · aire sec</span><span class="stat-value">${p.temp_700 ?? '—'}°C · ${p.rh_700 ?? '—'}%</span></div>
+      <div class="stat-row"><span class="stat-label">500 hPa · aire fred</span><span class="stat-value">${p.temp_500 ?? '—'}°C</span></div>
+      <div class="stat-row"><span class="stat-label">300 hPa · jet stream</span><span class="stat-value">${p.wind_300_speed_kmh != null ? Math.round(p.wind_300_speed_kmh) + ' km/h' : '—'}</span></div>
+      <div class="stat-row"><span class="stat-label">Índex VT / TT</span><span class="stat-value">${p.vt_index != null ? p.vt_index.toFixed(1) : '—'} / ${p.tt_index != null ? p.tt_index.toFixed(1) : '—'}</span></div>
+      <div class="stat-row"><span class="stat-label">Lifted Index</span><span class="stat-value">${p.li_index != null ? p.li_index.toFixed(1) : '—'}</span></div>
+    </div>
   `;
 }
 
