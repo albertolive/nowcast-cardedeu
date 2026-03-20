@@ -287,13 +287,20 @@ def predict_now() -> dict:
             "wind_dir_change_3h": float(latest.get("wind_dir_change_3h", pd.Series([0])).values[0]) if pd.notna(latest.get("wind_dir_change_3h", pd.Series([np.nan])).values[0]) else None,
         },
         "pressure_levels": {
+            "temp_925": pressure_data.get("temp_925"),
+            "rh_925": pressure_data.get("rh_925"),
+            "wind_925_speed_kmh": pressure_data.get("wind_925_speed"),
+            "wind_925_dir": pressure_data.get("wind_925_dir"),
             "wind_850_dir": pressure_data.get("wind_850_dir"),
             "wind_850_speed_kmh": pressure_data.get("wind_850_speed"),
             "temp_850": pressure_data.get("temp_850"),
-            "temp_500": pressure_data.get("temp_500"),
             "rh_850": pressure_data.get("rh_850"),
             "rh_700": pressure_data.get("rh_700"),
             "temp_700": pressure_data.get("temp_700"),
+            "temp_500": pressure_data.get("temp_500"),
+            "wind_300_speed_kmh": pressure_data.get("wind_300_speed"),
+            "wind_300_dir": pressure_data.get("wind_300_dir"),
+            "gph_300": pressure_data.get("gph_300"),
             "vt_index": pressure_data.get("vt_index"),
             "tt_index": pressure_data.get("tt_index"),
             "li_index": pressure_data.get("li_index"),
@@ -303,7 +310,7 @@ def predict_now() -> dict:
         "threshold": threshold,
         "calibrated": calibrator is not None,
         "raw_probability": round(raw_probability, 4),
-        # Save ALL 112 FEATURE_COLUMNS (not just model's 68 feature_names)
+        # Save ALL 131 FEATURE_COLUMNS (not just model's feature_names)
         # so the feedback loop accumulates radar/lightning/sentinel data for retraining
         "feature_vector": {
             col: (float(latest[col].values[0]) if col in latest.columns and pd.notna(latest[col].values[0]) else None)

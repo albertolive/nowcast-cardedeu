@@ -763,7 +763,7 @@
 
     <footer>
       <p>Dades de <a href="https://meteocardedeu.net" target="_blank" rel="noopener">MeteoCardedeu.net</a> · <a href="https://www.meteo.cat" target="_blank" rel="noopener">Meteocat</a> · <a href="https://www.aemet.es" target="_blank" rel="noopener">AEMET</a> · <a href="https://open-meteo.com" target="_blank" rel="noopener">Open-Meteo</a></p>
-      <p style="margin-top:4px"><a href="https://github.com/albertolive/nowcast-cardedeu" target="_blank" rel="noopener">GitHub</a> · Model XGBoost + calibració isotònica</p>
+      <p style="margin-top:4px"><a href="https://github.com/albertolive/nowcast-cardedeu" target="_blank" rel="noopener">GitHub</a> · Model XGBoost 131 features · 5 nivells de pressió · calibració isotònica</p>
     </footer>
   </div>
 
@@ -910,7 +910,7 @@ function renderPrediction(latest, history) {
 
       <!-- Atmospheric -->
       <div class="info-card">
-        <h3>🌀 Atmosfera</h3>
+        <h3>🌀 Atmosfera (5 nivells)</h3>
         ${renderAtmosphere(latest)}
       </div>
 
@@ -935,7 +935,7 @@ function renderPrediction(latest, history) {
         </div>
         <div class="stat-row">
           <span class="stat-label">Senyals analitzats</span>
-          <span class="stat-value">${latest.features_used || '—'} de 112</span>
+          <span class="stat-value">${latest.features_used || '—'} de 131</span>
         </div>
       </div>
     </div>
@@ -957,7 +957,7 @@ function renderPrediction(latest, history) {
   `;
 
   initCalendar(history);
-  drawChart(history);
+  drawChart(history, latest);
 }
 
 function renderConditions(d) {
@@ -1019,10 +1019,13 @@ function renderAtmosphere(d) {
                  w.is_ponent ? '🔥 Ponent' : '🧭 Neutre';
   return `
     <div class="stat-row"><span class="stat-label">Règim de vent</span><span class="stat-value">${regime}</span></div>
-    <div class="stat-row"><span class="stat-label">Temperatura en altitud</span><span class="stat-value">${p.temp_850 ?? '—'}°C</span></div>
-    <div class="stat-row"><span class="stat-label">Inestabilitat vertical</span><span class="stat-value">${p.vt_index ?? '—'}</span></div>
-    <div class="stat-row"><span class="stat-label">Inestabilitat total</span><span class="stat-value">${p.tt_index != null ? p.tt_index.toFixed(1) : '—'}</span></div>
-    <div class="stat-row"><span class="stat-label">Humitat en altitud</span><span class="stat-value">${p.rh_850 ?? '—'}%</span></div>
+    <div class="stat-row"><span class="stat-label">T 925hPa (capa límit)</span><span class="stat-value">${p.temp_925 ?? '—'}°C · ${p.rh_925 ?? '—'}%</span></div>
+    <div class="stat-row"><span class="stat-label">T 850hPa (flux sinòptic)</span><span class="stat-value">${p.temp_850 ?? '—'}°C · ${p.rh_850 ?? '—'}%</span></div>
+    <div class="stat-row"><span class="stat-label">Humitat 700hPa</span><span class="stat-value">${p.rh_700 ?? '—'}%</span></div>
+    <div class="stat-row"><span class="stat-label">T 500hPa (aire fred)</span><span class="stat-value">${p.temp_500 ?? '—'}°C</span></div>
+    <div class="stat-row"><span class="stat-label">Jet 300hPa</span><span class="stat-value">${p.wind_300_speed_kmh != null ? p.wind_300_speed_kmh + ' km/h' : '—'}</span></div>
+    <div class="stat-row"><span class="stat-label">Inestabilitat (VT/TT)</span><span class="stat-value">${p.vt_index != null ? p.vt_index.toFixed(1) : '—'} / ${p.tt_index != null ? p.tt_index.toFixed(1) : '—'}</span></div>
+    <div class="stat-row"><span class="stat-label">Lifted Index</span><span class="stat-value">${p.li_index != null ? p.li_index.toFixed(1) : '—'}</span></div>
   `;
 }
 
@@ -1292,7 +1295,7 @@ function initCalendar(history) {
 }
 
 /* ---- Lightweight Chart (pure Canvas, no dependencies) ---- */
-function drawChart(history) {
+function drawChart(history, latest) {
   const canvas = document.getElementById('probChart');
   if (!canvas) return;
   const ctx = canvas.getContext('2d');
@@ -1348,7 +1351,7 @@ function drawChart(history) {
   }
 
   // Threshold line
-  const threshY = y(35.4);
+  const threshY = y(latest.threshold ? latest.threshold * 100 : 40);
   ctx.strokeStyle = 'rgba(248,81,73,0.3)';
   ctx.setLineDash([4, 4]);
   ctx.beginPath();
@@ -1430,7 +1433,7 @@ async function init() {
     let resizeTimer;
     window.addEventListener('resize', () => {
       clearTimeout(resizeTimer);
-      resizeTimer = setTimeout(() => drawChart(history), 200);
+      resizeTimer = setTimeout(() => drawChart(history, latest), 200);
     });
   } catch (err) {
     document.getElementById('app').innerHTML = `
