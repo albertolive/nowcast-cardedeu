@@ -38,11 +38,19 @@ def prepare_training_data(df: pd.DataFrame) -> tuple[pd.DataFrame, pd.Series]:
     # Filtrar files on no tenim target (últimes hores sense futur conegut)
     df = df.dropna(subset=["will_rain"])
 
-    # Seleccionar features disponibles
+    # Use ALL FEATURE_COLUMNS so the model can learn from feedback data
+    # that includes radar/lightning/sentinel features.
+    # Missing columns are added as NaN (XGBoost handles this natively).
     available_features = [c for c in FEATURE_COLUMNS if c in df.columns]
+    missing_features = [c for c in FEATURE_COLUMNS if c not in df.columns]
     logger.info(f"Features disponibles: {len(available_features)}/{len(FEATURE_COLUMNS)}")
 
     X = df[available_features].copy()
+    # Add any missing FEATURE_COLUMNS as NaN so the model trains on all 112
+    for col in missing_features:
+        X[col] = np.nan
+    # Reorder to match FEATURE_COLUMNS canonical order
+    X = X[[c for c in FEATURE_COLUMNS if c in X.columns]]
     y = df["will_rain"].copy()
 
     # Convertir totes les columnes a numèric (algunes poden ser 'object' per valors mixtos)

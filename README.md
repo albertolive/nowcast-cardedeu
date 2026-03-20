@@ -30,7 +30,7 @@ Utilitza dades reals de l'estació [MeteoCardedeu.net](https://meteocardedeu.net
          │                     │         │                      │
          ▼                     ▼         ▼                      ▼
     ┌──────────────────────────────────────────────────────────────────────┐
-    │                Feature Engineering (112 features)                    │
+    │                Feature Engineering (120 features)                    │
     │  Tendències · Ensemble · 850hPa · Radar · Sentinella · Llamps · Vent │
     └──────────────────────────────┬───────────────────────────────────────┘
                                   │
@@ -147,7 +147,7 @@ nowcast-cardedeu/
 │   │   ├── meteocat_xdde.py  # API Meteocat XDDE (descàrregues elèctriques)
 │   │   └── meteocat_prediccio.py # API Meteocat Predicció (forecast municipal)
 │   ├── features/
-│   │   ├── engineering.py    # Feature engineering (112 features, 68 historical)
+│   │   ├── engineering.py    # Feature engineering (120 features, 76 historical)
 │   │   └── regime.py         # Detecció de canvis de règim atmosfèric (Llevantada, Garbí, pressió)
 │   ├── model/
 │   │   ├── train.py          # Pipeline d'entrenament (XGBoost + TimeSeriesSplit)
@@ -178,7 +178,7 @@ nowcast-cardedeu/
 
 ## Features del model
 
-El model defineix **112 features** per predicció en temps real. Per entrenament, **68 estan disponibles** amb dades històriques (54 originals + 6 ensemble + 6 sentinella + 2 Tramuntana). Les 44 restants (radar, AEMET, llamps XDDE, radar AEMET, predicció SMC, quadrants radar, bearing cíclic) s'incorporen progressivament via backfill i feedback loop.
+El model defineix **120 features** per predicció en temps real. El model s'entrena amb les **120 features completes** (76 amb dades històriques, 44 com a NaN per radar/llamps/AEMET). El **feedback loop** acumula gradualment les 44 features en temps real (radar, llamps, sentinella) a cada predicció verificada, permetent que el model aprengui d'observacions independents amb cada re-entrenament.
 
 **Ensemble backfill**: Des de gener 2022, dades de 4 models NWP (ECMWF, GFS, ICON, AROME) descarregades via `scripts/backfill_ensemble.py`.
 **XEMA sentinel backfill**: Dades de Granollers (YM) + ETAP Cardedeu (KX) via `scripts/backfill_xema.py` (incremental, 15 dies/execució per respectar el límit API).
@@ -195,7 +195,9 @@ El model defineix **112 features** per predicció en temps real. Per entrenament
 | 🆕 Cisalla de vent | wind_shear_speed, wind_shear_dir | Tempestes organitzades (supercèl·lules) |
 | 🆕 Aire fred 500hPa | cold_500_moderate (<-17°C), cold_500_strong (<-24°C) | "Petita bomba" mediterrània (alexmeteo) |
 | Pluja recent | Acumulat 3h/6h + ha plogut? | Context de fronts actius |
-| Models NWP | CAPE, núvols, weather code | Què diuen els models globals |
+| Models NWP | CAPE, núvols, weather code, descomposició WC (thunderstorm/rain/drizzle) | Què diuen els models globals |
+| 🆕 Detecció d'error NWP | nwp_dry_conflict, nwp_wet_conflict | Quan el NWP es contradiu amb les condicions reals |
+| 🆕 Física convecció | moisture_flux_850, theta_e_deficit, cape_change_3h | Transport d'humitat, inestabilitat convectiva, destabilització ràpida |
 | Radiació | Solar W/m² | Indicador indirecte de núvols |
 | Radar | Intensitat, dBZ, mm/h, eco, tendència, aprox. | Precipitació real en temps real |
 | Sentinella | Temp/hum Granollers + diffs amb Cardedeu + precip | Gradient territorial = front actiu |
@@ -315,14 +317,14 @@ El model AROME de Meteo-France és el 4t model de l'ensemble, amb resolució de 
 
 | Mètrica | Valor |
 |---------|-------|
-| AUC-ROC (CV) | 0.9545 ± 0.008 |
-| F1-Score (CV) | 0.6723 ± 0.032 |
-| F1-Score OOF (calibrat) | 0.6917 |
-| AUC-ROC (final) | 0.9664 |
-| Llindar òptim (calibrat) | 0.3465 |
-| Mostres d'entrenament | 98,306 |
-| Features (training) | 68 |
-| Features (total) | 112 |
+| AUC-ROC (CV) | 0.9547 ± 0.008 |
+| F1-Score (CV) | 0.6731 ± 0.032 |
+| F1-Score OOF (calibrat) | 0.6931 |
+| AUC-ROC (final) | 0.9668 |
+| Llindar òptim (calibrat) | 0.3742 |
+| Mostres d'entrenament | 98,310 |
+| Features (training) | 120 |
+| Features (total) | 120 |
 | Classe positiva (pluja) | ~9.3% |
 | Cross-validation | TimeSeriesSplit (5 folds) |
 | Calibratge | Isotonic Regression (OOF) |

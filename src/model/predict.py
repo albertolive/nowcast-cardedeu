@@ -303,7 +303,12 @@ def predict_now() -> dict:
         "threshold": threshold,
         "calibrated": calibrator is not None,
         "raw_probability": round(raw_probability, 4),
-        "feature_vector": {col: float(X[col].values[0]) if pd.notna(X[col].values[0]) else None for col in feature_names},
+        # Save ALL 112 FEATURE_COLUMNS (not just model's 68 feature_names)
+        # so the feedback loop accumulates radar/lightning/sentinel data for retraining
+        "feature_vector": {
+            col: (float(latest[col].values[0]) if col in latest.columns and pd.notna(latest[col].values[0]) else None)
+            for col in FEATURE_COLUMNS
+        },
         "pressure_change_3h": float(latest.get("pressure_change_3h", pd.Series([np.nan])).values[0])
             if pd.notna(latest.get("pressure_change_3h", pd.Series([np.nan])).values[0]) else None,
     }

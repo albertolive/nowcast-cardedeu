@@ -173,6 +173,10 @@ def main():
     missing = [c for c in FEATURE_COLUMNS if c not in final_df.columns]
     if missing:
         logger.info(f"Features no disponibles (s'ompliran amb NaN): {missing}")
+        # Add missing columns as NaN so the model trains on ALL 112 features.
+        # This allows feedback rows (with radar/lightning data) to be absorbed directly.
+        for col in missing:
+            final_df[col] = np.nan
 
     # Desar
     output_path = os.path.join(config.DATA_PROCESSED_DIR, "training_dataset.parquet")
