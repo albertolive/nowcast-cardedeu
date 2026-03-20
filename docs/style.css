@@ -1,0 +1,781 @@
+:root {
+  --bg: #0d1117;
+  --surface: #161b22;
+  --surface2: #1c2333;
+  --border: #30363d;
+  --text: #e6edf3;
+  --text-muted: #8b949e;
+  --accent-blue: #58a6ff;
+  --accent-green: #3fb950;
+  --accent-red: #f85149;
+  --accent-yellow: #d29922;
+  --rain-yes: #58a6ff;
+  --rain-no: #8b949e;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+.container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 24px 16px;
+}
+
+/* Header */
+header {
+  text-align: center;
+  padding: 32px 0 24px;
+}
+
+header h1 {
+  font-size: 28px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+header h1 span { color: var(--accent-blue); }
+
+header .subtitle {
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+/* Main prediction card — Polymarket style */
+.prediction-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 32px;
+  margin-bottom: 24px;
+  text-align: center;
+}
+
+.prediction-question {
+  font-size: 22px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.prediction-subtext {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-bottom: 20px;
+}
+
+.probability-ring {
+  position: relative;
+  width: 200px;
+  height: 200px;
+  margin: 0 auto 24px;
+}
+
+.probability-ring svg {
+  transform: rotate(-90deg);
+  width: 100%;
+  height: 100%;
+}
+
+.probability-ring .ring-bg {
+  fill: none;
+  stroke: var(--surface2);
+  stroke-width: 12;
+}
+
+.probability-ring .ring-fill {
+  fill: none;
+  stroke-width: 12;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 1.5s ease-out, stroke 0.5s;
+}
+
+.probability-value {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+}
+
+.probability-value .pct {
+  font-size: 52px;
+  font-weight: 800;
+  letter-spacing: -2px;
+  line-height: 1;
+}
+
+.probability-value .label {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 2px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.probability-value .conf {
+  font-size: 12px;
+  margin-top: 4px;
+  font-weight: 600;
+}
+
+/* Yes/No buttons like Polymarket */
+.outcome-buttons {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.outcome-btn {
+  flex: 1;
+  max-width: 180px;
+  padding: 14px 24px;
+  border-radius: 12px;
+  border: 2px solid transparent;
+  font-size: 18px;
+  font-weight: 700;
+  cursor: default;
+  transition: all 0.3s;
+}
+
+.outcome-btn.yes {
+  background: rgba(139, 148, 158, 0.06);
+  color: var(--text-muted);
+  border-color: rgba(139, 148, 158, 0.15);
+  opacity: 0.5;
+}
+
+.outcome-btn.yes.active {
+  background: rgba(88, 166, 255, 0.2);
+  color: var(--rain-yes);
+  border-color: var(--rain-yes);
+  opacity: 1;
+}
+
+.outcome-btn.no {
+  background: rgba(139, 148, 158, 0.06);
+  color: var(--text-muted);
+  border-color: rgba(139, 148, 158, 0.15);
+  opacity: 0.5;
+}
+
+.outcome-btn.no.active {
+  background: rgba(63, 185, 80, 0.15);
+  color: var(--accent-green);
+  border-color: var(--accent-green);
+  opacity: 1;
+}
+
+.outcome-btn .btn-label { display: block; font-size: 14px; margin-bottom: 2px; }
+.outcome-btn .btn-pct { display: block; font-size: 22px; }
+.outcome-btn .btn-sub { display: block; font-size: 11px; opacity: 0.6; margin-top: 2px; }
+
+.prediction-meta {
+  color: var(--text-muted);
+  font-size: 12px;
+  margin-top: 16px;
+}
+
+.conf-low { color: var(--accent-green); }
+.conf-medium { color: var(--accent-yellow); }
+.conf-high { color: var(--accent-red); }
+
+/* Chart */
+.chart-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 24px;
+}
+
+.chart-card h2 {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+
+.chart-container {
+  position: relative;
+  height: 220px;
+  width: 100%;
+}
+
+canvas { width: 100% !important; height: 100% !important; }
+
+/* Conditions grid */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.info-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.info-card h3 {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.stat-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(48, 54, 61, 0.5);
+  font-size: 14px;
+}
+
+.stat-row:last-child { border-bottom: none; }
+.stat-row .stat-label { color: var(--text-muted); }
+.stat-row .stat-value { font-weight: 600; }
+
+/* Expandable details */
+.expand-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 0 2px;
+  font-size: 12px;
+  color: var(--accent-blue);
+  cursor: pointer;
+  border: none;
+  background: none;
+  font-family: inherit;
+  width: 100%;
+}
+
+.expand-toggle:hover { opacity: 0.8; }
+
+.expand-toggle .chevron {
+  transition: transform 0.2s;
+  font-size: 10px;
+}
+
+.expand-toggle.open .chevron {
+  transform: rotate(90deg);
+}
+
+.expand-content {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease-out;
+}
+
+.expand-content.open {
+  max-height: 500px;
+}
+
+.expand-content .stat-row:first-child {
+  padding-top: 8px;
+}
+
+/* Sources bar */
+.sources-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 12px 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  margin-bottom: 24px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.sources-bar .source-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.sources-bar .dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+.sources-bar .dot.active { background: var(--accent-green); }
+.sources-bar .dot.inactive { background: var(--text-muted); }
+
+/* Rain gate */
+.gate-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  margin-top: 12px;
+}
+
+.gate-indicator.open { background: rgba(88, 166, 255, 0.15); color: var(--accent-blue); }
+.gate-indicator.closed { background: rgba(139, 148, 158, 0.1); color: var(--text-muted); }
+
+.gate-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.gate-indicator.open .gate-dot { background: var(--accent-blue); animation: pulse 2s infinite; }
+.gate-indicator.closed .gate-dot { background: var(--text-muted); }
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+/* Loading */
+.loading {
+  text-align: center;
+  padding: 60px 0;
+  color: var(--text-muted);
+}
+
+.loading .spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--border);
+  border-top-color: var(--accent-blue);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin: 0 auto 12px;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Footer */
+footer {
+  text-align: center;
+  padding: 24px 0;
+  color: var(--text-muted);
+  font-size: 12px;
+  border-top: 1px solid var(--border);
+  margin-top: 8px;
+}
+
+footer a { color: var(--accent-blue); text-decoration: none; }
+footer a:hover { text-decoration: underline; }
+
+/* Resolution History — Calendar */
+.history-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 24px;
+}
+
+.history-card h2 {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.history-subtitle {
+  color: var(--text-muted);
+  font-size: 13px;
+  margin-bottom: 20px;
+}
+
+/* Month nav */
+.cal-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.cal-nav-btn {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  padding: 6px 12px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.cal-nav-btn:hover { background: rgba(48, 54, 61, 0.8); }
+.cal-nav-btn:disabled { opacity: 0.3; cursor: default; }
+
+.cal-month-label {
+  font-weight: 600;
+  font-size: 15px;
+}
+
+/* Month stats */
+.cal-month-stats {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+  padding: 10px 14px;
+  background: var(--surface2);
+  border-radius: 10px;
+  font-size: 13px;
+}
+
+.cal-stat { color: var(--text-muted); }
+.cal-stat strong { color: var(--text); }
+
+/* Calendar grid */
+.cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+  margin-bottom: 16px;
+}
+
+.cal-weekday {
+  text-align: center;
+  font-size: 11px;
+  color: var(--text-muted);
+  padding: 4px 0;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.cal-day {
+  aspect-ratio: 1;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  cursor: default;
+  border: 2px solid transparent;
+  transition: border-color 0.2s, transform 0.15s;
+  position: relative;
+}
+
+.cal-day.empty { visibility: hidden; }
+.cal-day.no-data { background: var(--surface2); color: var(--text-muted); }
+.cal-day.has-data { cursor: pointer; }
+.cal-day.has-data:hover { transform: scale(1.1); z-index: 2; }
+.cal-day.selected { border-color: var(--accent-blue); }
+.cal-day.today { box-shadow: inset 0 0 0 1px var(--accent-blue); }
+
+/* Day cell colors */
+.cal-day.perfect { background: rgba(63, 185, 80, 0.25); color: var(--accent-green); }
+.cal-day.good { background: rgba(210, 153, 34, 0.2); color: var(--accent-yellow); }
+.cal-day.bad { background: rgba(248, 81, 73, 0.2); color: var(--accent-red); }
+.cal-day.pending-day { background: rgba(210, 153, 34, 0.1); color: var(--accent-yellow); }
+.cal-day.rain-day { background: rgba(88, 166, 255, 0.2); color: var(--accent-blue); }
+
+.cal-day-num { font-weight: 600; line-height: 1; }
+.cal-day-icon { font-size: 10px; margin-top: 2px; }
+
+/* Legend */
+.cal-legend {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.cal-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.cal-legend-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+}
+
+/* Day detail panel */
+.day-detail {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  animation: slideDown 0.2s ease-out;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.day-detail-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 16px;
+  background: var(--surface2);
+}
+
+.day-detail-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.day-detail-date {
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.day-resolution {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.day-resolution.rain { background: rgba(88, 166, 255, 0.15); color: var(--accent-blue); }
+.day-resolution.no-rain { background: rgba(139, 148, 158, 0.1); color: var(--text-muted); }
+.day-resolution.pending { background: rgba(210, 153, 34, 0.1); color: var(--accent-yellow); }
+.day-resolution.in-progress { background: rgba(136, 98, 232, 0.15); color: #a78bfa; }
+
+.day-detail-accuracy {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.day-detail-accuracy.perfect { color: var(--accent-green); }
+.day-detail-accuracy.good { color: var(--accent-yellow); }
+.day-detail-accuracy.bad { color: var(--accent-red); }
+
+.day-detail-close {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 18px;
+  padding: 0 4px;
+  line-height: 1;
+}
+
+.day-detail-close:hover { color: var(--text); }
+
+.pred-header {
+  display: flex;
+  align-items: center;
+  padding: 8px 16px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  gap: 12px;
+  border-top: 1px solid rgba(48, 54, 61, 0.4);
+  background: rgba(48, 54, 61, 0.15);
+}
+
+.pred-row {
+  display: flex;
+  align-items: center;
+  padding: 10px 16px;
+  border-top: 1px solid rgba(48, 54, 61, 0.4);
+  font-size: 13px;
+  gap: 12px;
+}
+
+.pred-row:hover { background: rgba(48, 54, 61, 0.3); }
+
+.pred-time {
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+  min-width: 45px;
+}
+
+.pred-prob-bar {
+  flex: 1;
+  max-width: 200px;
+  height: 8px;
+  background: var(--surface);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.pred-prob-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.3s;
+}
+
+.pred-pct {
+  font-weight: 600;
+  min-width: 42px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.pred-said {
+  min-width: 70px;
+  font-size: 12px;
+}
+
+.pred-result {
+  min-width: 70px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.pred-result.correct { color: var(--accent-green); }
+.pred-result.wrong { color: var(--accent-red); }
+.pred-result.pending { color: var(--accent-yellow); }
+
+.pred-rain-mm {
+  color: var(--text-muted);
+  font-size: 12px;
+  min-width: 55px;
+}
+
+/* Responsive — Tablet */
+@media (max-width: 768px) {
+  .container { padding: 16px 12px; }
+
+  header { padding: 24px 0 16px; }
+  header h1 { font-size: 24px; }
+
+  .prediction-card { padding: 24px 16px; }
+  .prediction-question { font-size: 20px; }
+  .probability-ring { width: 170px; height: 170px; }
+  .probability-value .pct { font-size: 46px; }
+
+  .outcome-btn { padding: 12px 18px; }
+  .outcome-btn .btn-pct { font-size: 20px; }
+
+  .grid { gap: 12px; }
+  .info-card { padding: 16px; }
+
+  .chart-card { padding: 20px 16px; }
+  .chart-container { height: 180px; }
+
+  .history-card { padding: 20px 16px; }
+
+  .pred-row { padding: 8px 12px; gap: 10px; }
+  .pred-header { padding: 8px 12px; }
+
+  .gate-indicator { font-size: 12px; padding: 6px 12px; }
+
+  .cal-month-stats { gap: 12px; font-size: 12px; padding: 8px 12px; }
+}
+
+/* Responsive — Mobile */
+@media (max-width: 600px) {
+  .container { padding: 12px 10px; }
+
+  header { padding: 20px 0 12px; }
+  header h1 { font-size: 22px; }
+  header .subtitle { font-size: 13px; }
+
+  .prediction-card { padding: 20px 14px; border-radius: 12px; margin-bottom: 16px; }
+  .prediction-question { font-size: 18px; }
+  .prediction-subtext { font-size: 12px; margin-bottom: 16px; }
+  .probability-ring { width: 150px; height: 150px; }
+  .probability-value .pct { font-size: 40px; }
+  .probability-value .label { font-size: 10px; }
+
+  .outcome-buttons { gap: 8px; }
+  .outcome-btn { padding: 10px 14px; border-radius: 10px; }
+  .outcome-btn .btn-label { font-size: 13px; }
+  .outcome-btn .btn-pct { font-size: 18px; }
+
+  .gate-indicator { font-size: 11px; padding: 5px 10px; }
+
+  .prediction-meta { font-size: 11px; }
+
+  .chart-card { padding: 16px 12px; border-radius: 12px; margin-bottom: 16px; }
+  .chart-card h2 { font-size: 14px; }
+  .chart-container { height: 160px; }
+
+  .grid { grid-template-columns: 1fr; gap: 12px; margin-bottom: 12px; }
+  .info-card { padding: 14px; border-radius: 10px; }
+  .info-card h3 { font-size: 12px; margin-bottom: 10px; }
+  .stat-row { font-size: 13px; padding: 5px 0; }
+
+  .sources-bar { padding: 10px 12px; gap: 10px; font-size: 11px; border-radius: 8px; margin-bottom: 16px; }
+
+  .history-card { padding: 16px 12px; border-radius: 12px; margin-bottom: 16px; }
+  .history-card h2 { font-size: 14px; }
+  .history-subtitle { font-size: 12px; margin-bottom: 14px; }
+
+  .cal-nav-btn { padding: 5px 10px; font-size: 12px; }
+  .cal-month-label { font-size: 14px; }
+  .cal-month-stats { gap: 8px; font-size: 11px; padding: 8px 10px; flex-wrap: wrap; }
+  .cal-day { font-size: 11px; border-radius: 6px; }
+  .cal-day-icon { font-size: 9px; }
+  .cal-weekday { font-size: 10px; }
+  .cal-legend { gap: 8px; font-size: 11px; }
+
+  .day-detail-header { flex-wrap: wrap; gap: 8px; padding: 12px; }
+  .day-detail-date { font-size: 13px; }
+  .day-resolution { font-size: 11px; padding: 2px 8px; }
+  .day-detail-accuracy { font-size: 12px; }
+
+  .pred-header { display: none; }
+  .pred-row { padding: 8px 12px; gap: 6px; font-size: 12px; flex-wrap: wrap; }
+  .pred-prob-bar { display: none; }
+  .pred-time { min-width: 40px; font-size: 12px; }
+  .pred-pct { min-width: 36px; font-size: 12px; }
+  .pred-said { min-width: 60px; font-size: 11px; }
+  .pred-result { min-width: 60px; font-size: 11px; }
+  .pred-rain-mm { min-width: 45px; font-size: 11px; }
+
+  footer { padding: 16px 0; font-size: 11px; }
+}
+
+/* Responsive — Small phones */
+@media (max-width: 380px) {
+  .container { padding: 10px 8px; }
+
+  header h1 { font-size: 19px; }
+
+  .prediction-card { padding: 16px 10px; }
+  .prediction-question { font-size: 16px; }
+  .probability-ring { width: 130px; height: 130px; }
+  .probability-value .pct { font-size: 34px; }
+
+  .outcome-buttons { flex-direction: column; align-items: center; }
+  .outcome-btn { max-width: 100%; width: 100%; }
+
+  .gate-indicator { font-size: 10px; text-align: center; line-height: 1.4; }
+
+  .cal-grid { gap: 3px; }
+  .cal-day { border-radius: 4px; }
+  .cal-day-num { font-size: 10px; }
+  .cal-day-icon { font-size: 8px; }
+
+  .cal-month-stats { flex-direction: column; gap: 4px; }
+
+  .pred-row { gap: 4px; }
+  .pred-said { display: none; }
+  .pred-rain-mm { display: none; }
+
+  .sources-bar { flex-direction: column; gap: 6px; align-items: flex-start; }
+}
