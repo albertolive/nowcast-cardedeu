@@ -31,7 +31,7 @@ Utilitza dades reals de l'estació [MeteoCardedeu.net](https://meteocardedeu.net
          ▼                     ▼         ▼                      ▼
     ┌──────────────────────────────────────────────────────────────────────┐
     │                Feature Engineering (142 features)                    │
-    │  Tendències · Ensemble · 5 nivells pressió · Compostos físics · Radar · Sentinella · Llamps │
+    │  Tendències · Ensemble · 5 nivells pressió · CAPE/CIN · SST · Compostos físics · Radar · Sentinella · Llamps │
     └──────────────────────────────┬───────────────────────────────────────┘
                                   │
                                   ▼
@@ -138,7 +138,7 @@ nowcast-cardedeu/
 ├── src/
 │   ├── data/
 │   │   ├── meteocardedeu.py  # API meteocardedeu.net (sèries minut a minut + NOAA)
-│   │   ├── open_meteo.py     # API Open-Meteo (històric + forecast + pressure levels)
+│   │   ├── open_meteo.py     # API Open-Meteo (històric + forecast + pressure levels + CAPE/CIN) + NOAA ERDDAP SST
 │   │   ├── ensemble.py       # Acord entre ECMWF/GFS/ICON/AROME + forecast bias
 │   │   ├── rainviewer.py     # API RainViewer (radar precipitació + màscara clutter)
 │   │   ├── aemet.py          # API AEMET OpenData (probTormenta/probPrecip)
@@ -147,7 +147,7 @@ nowcast-cardedeu/
 │   │   ├── meteocat_xdde.py  # API Meteocat XDDE (descàrregues elèctriques)
 │   │   └── meteocat_prediccio.py # API Meteocat Predicció (forecast municipal)
 │   ├── features/
-│   │   ├── engineering.py    # Feature engineering (142 features, 96 historical)
+│   │   ├── engineering.py    # Feature engineering (142 features, 98 historical)
 │   │   └── regime.py         # Detecció de canvis de règim atmosfèric (Llevantada, Garbí, pressió)
 │   ├── model/
 │   │   ├── train.py          # Pipeline d'entrenament (XGBoost + TimeSeriesSplit)
@@ -178,10 +178,12 @@ nowcast-cardedeu/
 
 ## Features del model
 
-El model defineix **142 features** per predicció en temps real. El model s'entrena amb les **142 features completes** (96 amb dades històriques, 46 com a NaN per radar/llamps/AEMET/CIN/SST). El **feedback loop** acumula gradualment les 46 features en temps real (radar, llamps, sentinella, CIN, SST) a cada predicció verificada, permetent que el model aprengui d'observacions independents amb cada re-entrenament.
+El model defineix **142 features** per predicció en temps real. El model s'entrena amb les **142 features completes** (98 amb dades històriques, 44 com a NaN per radar/llamps/AEMET). El **feedback loop** acumula gradualment les 44 features en temps real (radar, llamps, sentinella) a cada predicció verificada, permetent que el model aprengui d'observacions independents amb cada re-entrenament.
 
 **Ensemble backfill**: Des de gener 2022, dades de 4 models NWP (ECMWF, GFS, ICON, AROME) descarregades via `scripts/backfill_ensemble.py`.
 **XEMA sentinel backfill**: Dades de Granollers (YM) + ETAP Cardedeu (KX) via `scripts/backfill_xema.py` (incremental, 15 dies/execució per respectar el límit API).
+**CAPE/CIN backfill**: CAPE i CIN des d'abril 2021 via Open-Meteo Historical Forecast API (44% de cobertura).
+**SST backfill**: Temperatura superficial del mar (Mediterrani) des de 2015 via NOAA ERDDAP OISST v2.1 (98% de cobertura).
 
 | Categoria | Features | Per què? |
 |-----------|----------|----------|
@@ -213,8 +215,8 @@ El model defineix **142 features** per predicció en temps real. El model s'entr
 | 🆕 Echo bearing | sin/cos del rumb de l'eco més proper | Direcció de la pluja codificada cíclicament |
 | 🆕 Compostos físics | orographic_forcing, frontal_passage, convective_composite, thermal_buildup, low_level_convergence, dry_intrusion_700 | Interaccions físiques multi-variable (orogràfia, fronts, convecció, convergència) |
 | 🆕 Humitat del sòl | soil_moisture_0_to_7cm, soil_moisture_7_to_28cm, soil_moisture_change_24h | ERA5 archive: sòl saturat amplifica precipitació |
-| 🆕 CIN | convective_inhibition | Inhibició convectiva — energia necessària per trencar la inversió |
-| 🆕 SST Mediterrani | sst_med | Temperatura superficial del mar — alimenta humitat/convecció |
+| 🆕 CIN | convective_inhibition | Inhibició convectiva — energia necessària per trencar la inversió. Backfill des d'abril 2021 (Historical Forecast API) |
+| 🆕 SST Mediterrani | sst_med | Temperatura superficial del mar — alimenta humitat/convecció. Backfill des de 2015 (NOAA ERDDAP OISST v2.1) |
 | ❄️ Tramuntana | tramuntana_strength, tramuntana_moisture | Vent polar fred del nord, supressor de pluja (5.8% rain rate) |
 
 ## Fonts de dades
@@ -230,7 +232,9 @@ El model defineix **142 features** per predicció en temps real. El model s'entr
 | [Meteocat XDDE](https://apidocs.meteocat.gencat.cat) | Descàrregues elèctriques (llamps) a Catalunya | Temps real | Sí (gratuïta) |
 | [AEMET Radar](https://opendata.aemet.es) | Radar C-banda regional Barcelona | Cada ~10 min | Sí (gratuïta) |
 | [SMC Predicció](https://apidocs.meteocat.gencat.cat) | Previsió municipal horària (prob. precip) | Cada 6h | Sí (gratuïta) |
-| [Open-Meteo Marine](https://open-meteo.com) | SST Mediterrani (temperatura superficial del mar) | Cada predicció | No |
+| [Open-Meteo Marine](https://open-meteo.com) | SST Mediterrani (temperatura superficial del mar) — temps real | Cada predicció | No |
+| [NOAA ERDDAP OISST](https://coastwatch.pfeg.noaa.gov/erddap/) | SST Mediterrani històric (v2.1, 0.25°, diària, des de 1981) | Històric | No |
+| [Open-Meteo Historical Forecast](https://open-meteo.com) | CAPE + CIN backfill (des d'abril 2021) | Històric | No |
 | [GitHub Models](https://github.com/marketplace/models) | IA narrativa (gpt-4o-mini) per resums diaris | 1 crida/dia | No (GITHUB_TOKEN) |
 
 ### Radar RainViewer
@@ -336,13 +340,13 @@ El model AROME de Meteo-France és el 4t model de l'ensemble, amb resolució de 
 
 | Mètrica | Valor |
 |---------|-------|
-| AUC-ROC (CV) | 0.9551 ± 0.008 |
-| F1-Score (CV) | 0.6748 ± 0.033 |
-| F1-Score OOF (calibrat) | 0.6897 |
-| AUC-ROC (final) | 0.9664 |
-| Llindar òptim (calibrat) | 0.3462 |
-| Mostres d'entrenament | 98,317 |
-| Features (training) | 142 |
+| AUC-ROC (CV) | 0.9549 ± 0.007 |
+| F1-Score (CV) | 0.6731 ± 0.033 |
+| F1-Score OOF (calibrat) | 0.6890 |
+| AUC-ROC (final) | 0.9666 |
+| Llindar òptim (calibrat) | 0.3580 |
+| Mostres d'entrenament | 98,319 |
+| Features (training) | 142 (98 històriques, 44 real-time) |
 | Features (total) | 142 |
 | Classe positiva (pluja) | ~9.3% |
 | Cross-validation | TimeSeriesSplit (5 folds) |
