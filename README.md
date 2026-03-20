@@ -350,12 +350,12 @@ El model AROME de Meteo-France és el 4t model de l'ensemble, amb resolució de 
 
 | Mètrica | Valor |
 |---------|-------|
-| AUC-ROC (CV) | 0.9606 ± 0.005 |
-| F1-Score (CV) | 0.6836 ± 0.028 |
-| F1-Score OOF (calibrat) | 0.6957 |
-| AUC-ROC (final) | 0.9671 |
-| Llindar òptim (calibrat) | 0.3557 |
-| Mostres d'entrenament | 98,349 |
+| AUC-ROC (CV) | 0.9616 ± 0.005 |
+| F1-Score (CV) | 0.6877 ± 0.030 |
+| F1-Score OOF (calibrat) | 0.6984 |
+| AUC-ROC (final) | 0.9672 |
+| Llindar òptim (calibrat) | 0.3664 |
+| Mostres d'entrenament | 98,358 |
 | Features (training) | 183 (139 històriques, 44 real-time) |
 | Features (total) | 183 |
 | Classe positiva (pluja) | ~9.3% |

@@ -82,13 +82,15 @@ def train_model(
     logger.info(f"Dataset: {len(y)} mostres, {n_positive} pluja ({100*n_positive/len(y):.1f}%), "
                 f"scale_pos_weight={scale_pos_weight:.2f}")
 
-    # Paràmetres XGBoost optimitzats per nowcasting
+    # Paràmetres XGBoost optimitzats per nowcasting (183 features)
+    # Tuned via CV grid search: lower lr + more trees + less colsample
+    # to handle 183 features without overfitting to noise columns
     model = xgb.XGBClassifier(
-        n_estimators=500,
+        n_estimators=800,
         max_depth=6,
-        learning_rate=0.05,
+        learning_rate=0.02,
         subsample=0.8,
-        colsample_bytree=0.8,
+        colsample_bytree=0.7,
         scale_pos_weight=scale_pos_weight,
         min_child_weight=5,
         gamma=0.1,
@@ -97,7 +99,7 @@ def train_model(
         objective="binary:logistic",
         eval_metric="aucpr",  # Area Under Precision-Recall (millor per dades desbalancejades)
         random_state=42,
-        early_stopping_rounds=30,
+        early_stopping_rounds=75,  # Scaled up from 30 to match lower lr (0.02 vs 0.05)
         enable_categorical=False,
     )
 
