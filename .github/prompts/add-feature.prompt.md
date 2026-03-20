@@ -10,7 +10,7 @@ Add a new derived feature to the XGBoost prediction pipeline.
 
 - **Feature name(s)** (snake_case, e.g., "fog_risk_index"): `${input:featureNames}`
 - **Source columns** (existing columns needed to compute this): `${input:sourceColumns}`
-- **Available in historical data?** (yes = in Open-Meteo/training, no = real-time only): `${input:hasHistorical}`
+- **Available in historical data?** (yes = in Open-Meteo/training with values, no = NaN in historical, populated by feedback loop): `${input:hasHistorical}`
 - **Description** (what it captures meteorologically): `${input:description}`
 
 ## Steps
@@ -51,10 +51,12 @@ def build_features_from_hourly(df: pd.DataFrame) -> pd.DataFrame:
 
 **If the feature is real-time only** (radar, sentinel, ensemble, lightning, AEMET):
 
-The feature columns will be NaN in training data. XGBoost handles this natively. Add the computation either:
+The feature columns will be NaN in historical training data but are included in the model as NaN columns from day 1. As verified predictions accumulate via the feedback loop, these columns get populated and XGBoost learns from them automatically. Add the computation either:
 - In the data module's `fetch_*()` return dict (if it's a raw measurement)
 - In the `_add_*_features()` function (if it's derived from multiple sources)
 - Wire it in `scripts/predict_now.py` where real-time features are merged
+
+IMPORTANT: `predict.py` saves ALL `FEATURE_COLUMNS` in the logged feature_vector. This ensures radar/lightning/sentinel data flows into `feedback_verified.parquet` for retraining.
 
 ### 3. Register in FEATURE_COLUMNS
 
@@ -92,7 +94,7 @@ If the feature uses thresholds (e.g., "moderate if > X"):
 - **Cyclic encoding**: Use sin/cos for periodic features (hour, month): `hour_sin = sin(2π × hour/24)`
 - **Temporal derivatives**: Add `_change_1h`, `_change_3h`, `_change_6h` for trending signals (pressure, humidity, VPD)
 - **Prefixing**: All features from the same source share a prefix (e.g., `radar_*`, `sentinel_*`, `lightning_*`)
-- **Wind regimes at 850hPa**: Wind classification must use 850hPa synoptic wind (not 10m surface wind distorted by Montseny orography). Fallback to 10m only when 850hPa is unavailable.
+- **Wind regimes at 850hPa**: Wind classification must use 850hPa synoptic wind (not 10m surface wind distorted by Montseny orography). Never use surface wind as a fallback — only 26% agreement with 850hPa. XGBoost handles NaN natively for pre-2021 rows.
 - **Always validate**: Run `python scripts/feature_analysis.py` after retrain. If a new feature shows zero gain/splits, reconsider it.
 
 ## Validation Checklist
