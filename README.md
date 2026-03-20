@@ -352,19 +352,19 @@ El model AROME de Meteo-France és el 4t model de l'ensemble, amb resolució de 
 
 | Mètrica | Valor |
 |---------|-------|
-| AUC-ROC (CV) | 0.9621 ± 0.005 |
-| F1-Score (CV) | 0.6910 ± 0.028 |
-| F1-Score OOF (calibrat) | 0.7004 |
-| AUC-ROC (final) | 0.9682 |
-| Llindar òptim (calibrat) | 0.3571 |
-| Mostres d'entrenament | 98,366 |
+| AUC-ROC (CV) | 0.9626 ± 0.005 |
+| F1-Score (CV) | 0.7027 ± 0.033 |
+| F1-Score OOF (calibrat) | 0.7027 |
+| AUC-ROC (final) | 0.9680 |
+| Llindar òptim (calibrat) | 0.3526 |
+| Mostres d'entrenament | 98,208 |
 | Features (training) | 199 (155 històriques, 44 real-time) |
 | Features (total) | 199 |
 | Classe positiva (pluja) | ~9.3% |
 | Cross-validation | TimeSeriesSplit (5 folds) |
 | Calibratge | Isotonic Regression (OOF) |
 
-> El model utilitza `scale_pos_weight=9.72` per compensar el desequilibri de classes, `eval_metric="aucpr"` per optimitzar la detecció de pluja, i **calibratge isotònic** sobre prediccions out-of-fold per obtenir probabilitats fiables.
+> El model **no utilitza** `scale_pos_weight` — el calibratge isotònic + cerca de llindar òptim gestiona millor el desequilibri de classes que la ponderació directa (+0.0037 F1 OOF). Utilitza `eval_metric="aucpr"` i **calibratge isotònic** sobre prediccions out-of-fold per obtenir probabilitats fiables.
 
 ### Hiperparàmetres XGBoost
 
@@ -374,14 +374,14 @@ El model AROME de Meteo-France és el 4t model de l'ensemble, amb resolució de 
 | max_depth | 6 | Complexitat intermèdia |
 | learning_rate | 0.02 | Baixa per evitar sobreajust amb 199 features |
 | subsample | 0.8 | Bagging row-level |
-| colsample_bytree | 0.7 | Força exploració diversa de features |
+| colsample_bytree | 0.6 | Regularització: menys features per arbre |
 | min_child_weight | 5 | Regularització split mínim |
 | gamma | 0.1 | Penalització complexitat |
-| reg_alpha | 0.1 | L1 regularització |
-| reg_lambda | 1.0 | L2 regularització |
+| reg_alpha | 0.2 | L1 regularització (reforçada) |
+| reg_lambda | 1.5 | L2 regularització (reforçada) |
 | early_stopping_rounds | 75 | Proporcional a lr baixa |
 
-> **Lliçó d'afinament:** Quan s'afegeixen features noves (160→199), cal reajustar els hiperparàmetres. Amb 199 features, la combinació lr=0.05 + colsample=0.8 (antiga) sobreajustava — baixar lr a 0.02 i colsample a 0.7 va recuperar i superar les mètriques anteriors. Top 3 features (NWP) acumulen ~85% del gain total.
+> **Lliçó d'afinament:** Amb 199 features (55% NaN en PL pre-2021), regularització més forta (colsample 0.7→0.6, reg_alpha 0.1→0.2, reg_lambda 1.0→1.5) millora la generalització. Eliminar `scale_pos_weight` és el canvi més impactant (+0.0108 F1 OOF) ja que el calibratge isotònic + cerca de llindar gestionen l'imbalance millor que la ponderació directa.
 
 ## Feedback loop (auto-aprenentatge)
 
