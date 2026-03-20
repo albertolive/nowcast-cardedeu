@@ -143,43 +143,10 @@ function renderPrediction(latest, history) {
         ${renderAtmosphere(latest)}
       </div>
 
-      <!-- Model info -->
+      <!-- Why this prediction -->
       <div class="info-card">
-        <h3>🤖 Com funciona</h3>
-        <div class="stat-row">
-          <span class="stat-label">Probabilitat de pluja</span>
-          <span class="stat-value" style="color:${color}">${pct}%</span>
-        </div>
-        <div class="stat-row">
-          <span class="stat-label">Precisió ajustada</span>
-          <span class="stat-value">${latest.calibrated ? '✅ Sí' : '❌ No'}</span>
-        </div>
-        <div class="stat-row">
-          <span class="stat-label">Variables analitzades</span>
-          <span class="stat-value">${latest.features_used || '—'} de 183</span>
-        </div>
-
-        <button class="expand-toggle" onclick="this.classList.toggle('open');document.getElementById('model-detail').classList.toggle('open')">
-          <span class="chevron">▶</span> Per als curiosos
-        </button>
-        <div id="model-detail" class="expand-content">
-          <div class="stat-row">
-            <span class="stat-label">Prob. original del model</span>
-            <span class="stat-value">${latest.raw_probability != null ? (latest.raw_probability * 100).toFixed(1) + '%' : '—'}</span>
-          </div>
-          <div class="stat-row">
-            <span class="stat-label">Llindar sí/no</span>
-            <span class="stat-value">${latest.threshold ? (latest.threshold * 100).toFixed(1) + '%' : '—'}</span>
-          </div>
-          <div class="stat-row">
-            <span class="stat-label">Calibració</span>
-            <span class="stat-value">Isotònica</span>
-          </div>
-          <div class="stat-row">
-            <span class="stat-label">Algoritme</span>
-            <span class="stat-value">XGBoost</span>
-          </div>
-        </div>
+        <h3>🧠 Per què aquesta predicció?</h3>
+        ${renderWhyPrediction(latest)}
       </div>
     </div>
 
@@ -250,6 +217,137 @@ function renderSources(d) {
       ${s.name}
     </span>
   `).join('');
+}
+
+function renderWhyPrediction(d) {
+  const r = d.radar || {};
+  const e = d.ensemble || {};
+  const a = d.aemet || {};
+  const p = d.pressure_levels || {};
+  const c = d.conditions || {};
+  const gateOpen = d.rain_gate_open;
+
+  // Build signals array: {icon, label, detail, status: 'green'|'yellow'|'red'}
+  const signals = [];
+
+  // 1. Radar signal
+  if (r.approaching) {
+    signals.push({ icon: '📡', label: 'Radar', detail: `Pluja detectada a ${r.nearest_echo_km || '?'} km i acostant-se`, status: 'red' });
+  } else if (r.has_echo || r.dbz > 5) {
+    signals.push({ icon: '📡', label: 'Radar', detail: `Ecos a ${r.nearest_echo_km || '?'} km, sense moviment cap aquí`, status: 'yellow' });
+  } else {
+    signals.push({ icon: '📡', label: 'Radar', detail: 'Cap pluja detectada al voltant', status: 'green' });
+  }
+
+  // 2. NWP model consensus
+  const modelsRain = e.models_rain || 0;
+  const totalModels = e.total_models || 4;
+  if (modelsRain === 0) {
+    signals.push({ icon: '🌐', label: 'Models globals', detail: `Cap dels ${totalModels} models preveu pluja`, status: 'green' });
+  } else if (modelsRain <= totalModels / 2) {
+    signals.push({ icon: '🌐', label: 'Models globals', detail: `${modelsRain} de ${totalModels} models preveuen pluja`, status: 'yellow' });
+  } else {
+    signals.push({ icon: '🌐', label: 'Models globals', detail: `${modelsRain} de ${totalModels} models preveuen pluja`, status: 'red' });
+  }
+
+  // 3. Atmospheric stability
+  if (p.li_index != null) {
+    if (p.li_index < -3) {
+      signals.push({ icon: '🌀', label: 'Estabilitat', detail: 'Atmosfera inestable — risc de tempestes', status: 'red' });
+    } else if (p.li_index < 0) {
+      signals.push({ icon: '🌀', label: 'Estabilitat', detail: 'Lleugera inestabilitat atmosfèrica', status: 'yellow' });
+    } else {
+      signals.push({ icon: '🌀', label: 'Estabilitat', detail: 'Atmosfera estable — difícil que plogui', status: 'green' });
+    }
+  } else if (p.tt_index != null) {
+    if (p.tt_index > 50) {
+      signals.push({ icon: '🌀', label: 'Estabilitat', detail: 'Atmosfera inestable — risc de tempestes', status: 'red' });
+    } else if (p.tt_index > 44) {
+      signals.push({ icon: '🌀', label: 'Estabilitat', detail: 'Lleugera inestabilitat atmosfèrica', status: 'yellow' });
+    } else {
+      signals.push({ icon: '🌀', label: 'Estabilitat', detail: 'Atmosfera estable — difícil que plogui', status: 'green' });
+    }
+  }
+
+  // 4. Official forecast (AEMET)
+  const aemetProb = a.prob_precip ?? null;
+  if (aemetProb != null) {
+    if (aemetProb >= 50) {
+      signals.push({ icon: '🏛️', label: 'AEMET', detail: `Previsió oficial: ${aemetProb}% de probabilitat`, status: 'red' });
+    } else if (aemetProb >= 20) {
+      signals.push({ icon: '🏛️', label: 'AEMET', detail: `Previsió oficial: ${aemetProb}% de probabilitat`, status: 'yellow' });
+    } else {
+      signals.push({ icon: '🏛️', label: 'AEMET', detail: `Previsió oficial: ${aemetProb}% de probabilitat`, status: 'green' });
+    }
+  }
+
+  // 5. Humidity at altitude (moisture availability)
+  if (p.rh_700 != null) {
+    if (p.rh_700 > 70) {
+      signals.push({ icon: '💧', label: 'Humitat en altura', detail: `${p.rh_700}% a 3.000m — aire molt humit`, status: 'red' });
+    } else if (p.rh_700 > 50) {
+      signals.push({ icon: '💧', label: 'Humitat en altura', detail: `${p.rh_700}% a 3.000m — moderadament humit`, status: 'yellow' });
+    } else {
+      signals.push({ icon: '💧', label: 'Humitat en altura', detail: `${p.rh_700}% a 3.000m — aire sec`, status: 'green' });
+    }
+  }
+
+  // Build summary sentence
+  const redCount = signals.filter(s => s.status === 'red').length;
+  const greenCount = signals.filter(s => s.status === 'green').length;
+  let summary;
+  if (redCount >= 3) {
+    summary = 'Múltiples senyals apunten a pluja imminent.';
+  } else if (redCount >= 1) {
+    summary = 'Algunes senyals de pluja, però no totes coincideixen.';
+  } else if (greenCount === signals.length) {
+    summary = 'Totes les fonts coincideixen: no es preveu pluja.';
+  } else {
+    summary = 'La majoria de senyals són favorables, amb alguna incertesa.';
+  }
+
+  const detailId = 'why-detail-' + Date.now();
+  return `
+    <p class="why-summary">${summary}</p>
+    <div class="signal-list">
+      ${signals.map(s => `
+        <div class="signal-row">
+          <span class="signal-dot signal-${s.status}"></span>
+          <span class="signal-icon">${s.icon}</span>
+          <span class="signal-body">
+            <span class="signal-label">${s.label}</span>
+            <span class="signal-detail">${s.detail}</span>
+          </span>
+        </div>
+      `).join('')}
+    </div>
+
+    <button class="expand-toggle" onclick="this.classList.toggle('open');document.getElementById('${detailId}').classList.toggle('open')">
+      <span class="chevron">▶</span> Detalls tècnics
+    </button>
+    <div id="${detailId}" class="expand-content">
+      <div class="stat-row">
+        <span class="stat-label">Prob. del model (sense calibrar)</span>
+        <span class="stat-value">${d.raw_probability != null ? (d.raw_probability * 100).toFixed(1) + '%' : '—'}</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">Prob. calibrada</span>
+        <span class="stat-value">${d.probability_pct}%</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">Llindar per dir "plourà"</span>
+        <span class="stat-value">${d.threshold ? (d.threshold * 100).toFixed(1) + '%' : '—'}</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">Variables analitzades</span>
+        <span class="stat-value">${d.features_used || '—'}</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">Algoritme</span>
+        <span class="stat-value">XGBoost + calibració isotònica</span>
+      </div>
+    </div>
+  `;
 }
 
 function renderAtmosphere(d) {
@@ -630,93 +728,223 @@ function drawChart(history, latest) {
   const tMax = points[points.length - 1].t;
   const tRange = tMax - tMin || 1;
 
-  const x = t => pad.left + ((t - tMin) / tRange) * cW;
-  const y = p => pad.top + cH - (p / 100) * cH;
+  const xScale = t => pad.left + ((t - tMin) / tRange) * cW;
+  const yScale = p => pad.top + cH - (p / 100) * cH;
 
-  // Grid lines
-  ctx.strokeStyle = 'rgba(48,54,61,0.5)';
-  ctx.lineWidth = 1;
-  for (let pct of [0, 25, 50, 75, 100]) {
-    const yy = y(pct);
+  function paintChart(hoverIdx) {
+    ctx.save();
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, W, H);
+
+    // Grid lines
+    ctx.strokeStyle = 'rgba(48,54,61,0.5)';
+    ctx.lineWidth = 1;
+    for (let pct of [0, 25, 50, 75, 100]) {
+      const yy = yScale(pct);
+      ctx.beginPath();
+      ctx.moveTo(pad.left, yy);
+      ctx.lineTo(W - pad.right, yy);
+      ctx.stroke();
+
+      ctx.fillStyle = '#8b949e';
+      ctx.font = '11px sans-serif';
+      ctx.textAlign = 'right';
+      ctx.fillText(pct + '%', pad.left - 6, yy + 4);
+    }
+
+    // Threshold line
+    const threshY = yScale(latest.threshold ? latest.threshold * 100 : 40);
+    ctx.strokeStyle = 'rgba(248,81,73,0.3)';
+    ctx.setLineDash([4, 4]);
     ctx.beginPath();
-    ctx.moveTo(pad.left, yy);
-    ctx.lineTo(W - pad.right, yy);
+    ctx.moveTo(pad.left, threshY);
+    ctx.lineTo(W - pad.right, threshY);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Area fill
+    const gradient = ctx.createLinearGradient(0, pad.top, 0, pad.top + cH);
+    gradient.addColorStop(0, 'rgba(88,166,255,0.25)');
+    gradient.addColorStop(1, 'rgba(88,166,255,0.02)');
+    ctx.fillStyle = gradient;
+    ctx.beginPath();
+    ctx.moveTo(xScale(points[0].t), yScale(0));
+    for (const pt of points) ctx.lineTo(xScale(pt.t), yScale(pt.p));
+    ctx.lineTo(xScale(points[points.length - 1].t), yScale(0));
+    ctx.closePath();
+    ctx.fill();
+
+    // Line
+    ctx.strokeStyle = '#58a6ff';
+    ctx.lineWidth = 2.5;
+    ctx.lineJoin = 'round';
+    ctx.beginPath();
+    for (let i = 0; i < points.length; i++) {
+      const px = xScale(points[i].t);
+      const py = yScale(points[i].p);
+      i === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+    }
     ctx.stroke();
 
+    // Latest dot
+    const last = points[points.length - 1];
+    ctx.beginPath();
+    ctx.arc(xScale(last.t), yScale(last.p), 5, 0, Math.PI * 2);
+    ctx.fillStyle = '#58a6ff';
+    ctx.fill();
+    ctx.strokeStyle = '#0d1117';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // Time labels
     ctx.fillStyle = '#8b949e';
     ctx.font = '11px sans-serif';
-    ctx.textAlign = 'right';
-    ctx.fillText(pct + '%', pad.left - 6, yy + 4);
+    ctx.textAlign = 'center';
+    const maxLabels = Math.min(6, Math.floor(cW / 70));
+    const minLabelGap = 60;
+    let lastLabelX = -Infinity;
+    for (let i = 0; i <= maxLabels; i++) {
+      const t = tMin + (tRange * i) / maxLabels;
+      const px = xScale(t);
+      if (px - lastLabelX < minLabelGap) continue;
+      const d = new Date(t);
+      const h = String(d.getHours()).padStart(2, '0');
+      const m = String(d.getMinutes()).padStart(2, '0');
+      ctx.fillText(`${h}:${m}`, px, H - 8);
+      lastLabelX = px;
+    }
+
+    // Threshold label
+    ctx.fillStyle = 'rgba(248,81,73,0.5)';
+    ctx.font = '10px sans-serif';
+    ctx.textAlign = 'left';
+    ctx.fillText('llindar', pad.left + 4, threshY - 4);
+
+    // Hover crosshair + tooltip
+    if (hoverIdx != null && hoverIdx >= 0 && hoverIdx < points.length) {
+      const pt = points[hoverIdx];
+      const hx = xScale(pt.t);
+      const hy = yScale(pt.p);
+
+      // Vertical line
+      ctx.strokeStyle = 'rgba(230,237,243,0.3)';
+      ctx.lineWidth = 1;
+      ctx.setLineDash([3, 3]);
+      ctx.beginPath();
+      ctx.moveTo(hx, pad.top);
+      ctx.lineTo(hx, pad.top + cH);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Horizontal line
+      ctx.strokeStyle = 'rgba(230,237,243,0.2)';
+      ctx.setLineDash([3, 3]);
+      ctx.beginPath();
+      ctx.moveTo(pad.left, hy);
+      ctx.lineTo(W - pad.right, hy);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Highlighted dot
+      ctx.beginPath();
+      ctx.arc(hx, hy, 6, 0, Math.PI * 2);
+      ctx.fillStyle = '#58a6ff';
+      ctx.fill();
+      ctx.strokeStyle = '#e6edf3';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      // Tooltip
+      const d = new Date(pt.t);
+      const timeStr = d.toLocaleString('ca-ES', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+      const probStr = pt.p.toFixed(1) + '%';
+      const tooltipText = `${timeStr}  ·  ${probStr}`;
+      ctx.font = '600 12px -apple-system, BlinkMacSystemFont, sans-serif';
+      const tw = ctx.measureText(tooltipText).width;
+      const tPad = 8;
+      const tH = 28;
+      let tx = hx - (tw + tPad * 2) / 2;
+      // Keep tooltip within bounds
+      if (tx < pad.left) tx = pad.left;
+      if (tx + tw + tPad * 2 > W - pad.right) tx = W - pad.right - tw - tPad * 2;
+      let ty = hy - tH - 12;
+      if (ty < 4) ty = hy + 12;
+
+      // Tooltip background
+      ctx.fillStyle = 'rgba(22,27,34,0.95)';
+      ctx.beginPath();
+      const cr = 6;
+      ctx.moveTo(tx + cr, ty);
+      ctx.lineTo(tx + tw + tPad * 2 - cr, ty);
+      ctx.quadraticCurveTo(tx + tw + tPad * 2, ty, tx + tw + tPad * 2, ty + cr);
+      ctx.lineTo(tx + tw + tPad * 2, ty + tH - cr);
+      ctx.quadraticCurveTo(tx + tw + tPad * 2, ty + tH, tx + tw + tPad * 2 - cr, ty + tH);
+      ctx.lineTo(tx + cr, ty + tH);
+      ctx.quadraticCurveTo(tx, ty + tH, tx, ty + tH - cr);
+      ctx.lineTo(tx, ty + cr);
+      ctx.quadraticCurveTo(tx, ty, tx + cr, ty);
+      ctx.closePath();
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(48,54,61,0.8)';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+
+      // Tooltip text
+      ctx.fillStyle = '#e6edf3';
+      ctx.font = '600 12px -apple-system, BlinkMacSystemFont, sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillText(tooltipText, tx + tPad, ty + tH / 2 + 4);
+    }
+
+    ctx.restore();
   }
 
-  // Threshold line
-  const threshY = y(latest.threshold ? latest.threshold * 100 : 40);
-  ctx.strokeStyle = 'rgba(248,81,73,0.3)';
-  ctx.setLineDash([4, 4]);
-  ctx.beginPath();
-  ctx.moveTo(pad.left, threshY);
-  ctx.lineTo(W - pad.right, threshY);
-  ctx.stroke();
-  ctx.setLineDash([]);
+  // Initial paint
+  paintChart(null);
 
-  // Area fill
-  const gradient = ctx.createLinearGradient(0, pad.top, 0, pad.top + cH);
-  gradient.addColorStop(0, 'rgba(88,166,255,0.25)');
-  gradient.addColorStop(1, 'rgba(88,166,255,0.02)');
-  ctx.fillStyle = gradient;
-  ctx.beginPath();
-  ctx.moveTo(x(points[0].t), y(0));
-  for (const pt of points) ctx.lineTo(x(pt.t), y(pt.p));
-  ctx.lineTo(x(points[points.length - 1].t), y(0));
-  ctx.closePath();
-  ctx.fill();
-
-  // Line
-  ctx.strokeStyle = '#58a6ff';
-  ctx.lineWidth = 2.5;
-  ctx.lineJoin = 'round';
-  ctx.beginPath();
-  for (let i = 0; i < points.length; i++) {
-    const px = x(points[i].t);
-    const py = y(points[i].p);
-    i === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
-  }
-  ctx.stroke();
-
-  // Latest dot
-  const last = points[points.length - 1];
-  ctx.beginPath();
-  ctx.arc(x(last.t), y(last.p), 5, 0, Math.PI * 2);
-  ctx.fillStyle = '#58a6ff';
-  ctx.fill();
-  ctx.strokeStyle = '#0d1117';
-  ctx.lineWidth = 2;
-  ctx.stroke();
-
-  // Time labels — evenly spaced along time axis, with collision avoidance
-  ctx.fillStyle = '#8b949e';
-  ctx.font = '11px sans-serif';
-  ctx.textAlign = 'center';
-  const maxLabels = Math.min(6, Math.floor(cW / 70));
-  const minLabelGap = 60;
-  let lastLabelX = -Infinity;
-
-  for (let i = 0; i <= maxLabels; i++) {
-    const t = tMin + (tRange * i) / maxLabels;
-    const px = x(t);
-    if (px - lastLabelX < minLabelGap) continue;
-    const d = new Date(t);
-    const h = String(d.getHours()).padStart(2, '0');
-    const m = String(d.getMinutes()).padStart(2, '0');
-    ctx.fillText(`${h}:${m}`, px, H - 8);
-    lastLabelX = px;
+  // Find nearest point to a canvas-relative x coordinate
+  function findNearest(canvasX) {
+    let best = 0;
+    let bestDist = Infinity;
+    for (let i = 0; i < points.length; i++) {
+      const dist = Math.abs(xScale(points[i].t) - canvasX);
+      if (dist < bestDist) { bestDist = dist; best = i; }
+    }
+    return bestDist < 40 ? best : null;
   }
 
-  // Threshold label
-  ctx.fillStyle = 'rgba(248,81,73,0.5)';
-  ctx.font = '10px sans-serif';
-  ctx.textAlign = 'left';
-  ctx.fillText('threshold', pad.left + 4, threshY - 4);
+  function getCanvasX(e) {
+    const r = canvas.getBoundingClientRect();
+    if (e.touches && e.touches.length > 0) return e.touches[0].clientX - r.left;
+    return e.clientX - r.left;
+  }
+
+  // Mouse events
+  canvas.addEventListener('mousemove', e => {
+    paintChart(findNearest(getCanvasX(e)));
+    canvas.style.cursor = 'crosshair';
+  });
+  canvas.addEventListener('mouseleave', () => {
+    paintChart(null);
+    canvas.style.cursor = '';
+  });
+
+  // Touch events for mobile
+  canvas.addEventListener('touchstart', e => {
+    const idx = findNearest(getCanvasX(e));
+    if (idx != null) {
+      e.preventDefault();
+      paintChart(idx);
+    }
+  }, { passive: false });
+  canvas.addEventListener('touchmove', e => {
+    const idx = findNearest(getCanvasX(e));
+    if (idx != null) {
+      e.preventDefault();
+      paintChart(idx);
+    }
+  }, { passive: false });
+  canvas.addEventListener('touchend', () => paintChart(null));
 }
 
 /* ---- Init ---- */

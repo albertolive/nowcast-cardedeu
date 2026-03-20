@@ -44,6 +44,38 @@ def _add_temporal_features(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
+def _add_solar_timing_features(df: pd.DataFrame) -> pd.DataFrame:
+    """Hours since sunrise — convective initiation timing for Cardedeu (41.633°N)."""
+    df = df.copy()
+    if "datetime" not in df.columns:
+        return df
+
+    dt = pd.to_datetime(df["datetime"])
+    doy = dt.dt.dayofyear
+    hour_frac = dt.dt.hour + dt.dt.minute / 60.0
+
+    # Solar declination
+    decl = np.radians(23.44) * np.sin(2 * np.pi * (doy - 81) / 365)
+    lat_rad = np.radians(41.633)
+
+    # Half day length in hours
+    cos_ha = (-np.tan(lat_rad) * np.tan(decl)).clip(-1, 1)
+    half_day = np.degrees(np.arccos(cos_ha)) / 15
+
+    # Solar noon in Europe/Madrid local time
+    # Longitude 2.364°E → solar noon at UTC 11:84h (12 - 2.364/15)
+    # CET (UTC+1) ≈ 12:51 local, CEST (UTC+2) ≈ 13:51 local
+    # Approximate DST: months 4-9 = CEST (+2), rest = CET (+1)
+    month = dt.dt.month
+    tz_offset = np.where((month >= 4) & (month <= 9), 2.0, 1.0)
+    solar_noon_local = (12.0 - 2.364 / 15) + tz_offset
+
+    sunrise = solar_noon_local - half_day
+    df["hours_since_sunrise"] = (hour_frac - sunrise).clip(lower=0)
+
+    return df
+
+
 def _add_pressure_features(df: pd.DataFrame, pressure_col: str = "pressure_msl") -> pd.DataFrame:
     """Tendència de la pressió (clau per predir inestabilitat)."""
     df = df.copy()
@@ -314,6 +346,48 @@ def _add_pressure_level_features(df: pd.DataFrame) -> pd.DataFrame:
         theta_e_850 = t850_ + 2.5 * (rh850_ / 100.0) * es_850
         df["theta_e_deficit"] = theta_e_sfc - theta_e_850
 
+    # ── Mid-level drying trend at 700hPa ──
+    # Controls virga (rain evaporating before surface) and entrainment.
+    # Rapid drying at 700hPa kills convection by entraining dry air.
+    if "rh_700" in df.columns:
+        rh700 = pd.to_numeric(df["rh_700"], errors="coerce")
+        df["rh_700_change_3h"] = rh700.diff(3)
+        df["rh_700_change_6h"] = rh700.diff(6)
+
+    # ── 850hPa temperature trend — warm/cold advection proxy ──
+    # Positive = warm advection (isentropic lift → stratiform rain)
+    # Negative = cold advection (post-frontal instability)
+    if "temp_850" in df.columns:
+        t850_trend = pd.to_numeric(df["temp_850"], errors="coerce")
+        df["temp_850_change_3h"] = t850_trend.diff(3)
+
+    # ── K-index: moist-layer depth ──
+    # K = (T850 - T500) + Td850 - (T700 - Td700)
+    # Captures "how deep is the moist layer?" — TT/VT miss this.
+    # K > 25 = scattered storms, K > 35 = widespread severe
+    if all(c in df.columns for c in ["temp_850", "temp_500", "rh_850", "temp_700", "rh_700"]):
+        t850_k = pd.to_numeric(df["temp_850"], errors="coerce")
+        t500_k = pd.to_numeric(df["temp_500"], errors="coerce")
+        t700_k = pd.to_numeric(df["temp_700"], errors="coerce")
+        rh850_k = pd.to_numeric(df["rh_850"], errors="coerce").clip(lower=1)
+        rh700_k = pd.to_numeric(df["rh_700"], errors="coerce").clip(lower=1)
+        a, b = 17.27, 237.7
+        alpha_850k = (a * t850_k) / (b + t850_k) + np.log(rh850_k / 100.0)
+        td_850_k = (b * alpha_850k) / (a - alpha_850k)
+        alpha_700k = (a * t700_k) / (b + t700_k) + np.log(rh700_k / 100.0)
+        td_700_k = (b * alpha_700k) / (a - alpha_700k)
+        df["k_index"] = (t850_k - t500_k) + td_850_k - (t700_k - td_700_k)
+
+    # ── Bulk Richardson Number ──
+    # BRN = CAPE / (0.5 × shear²)
+    # Determines storm mode: BRN < 10 → supercell, 10-45 → possible, > 45 → multicell
+    # Supercells vs multicells produce very different precip signatures over Cardedeu.
+    if "cape" in df.columns and "deep_layer_shear" in df.columns:
+        cape_brn = pd.to_numeric(df["cape"], errors="coerce")
+        shear_brn = pd.to_numeric(df["deep_layer_shear"], errors="coerce")
+        shear_sq = (0.5 * shear_brn ** 2).clip(lower=1)  # avoid /0
+        df["bulk_richardson"] = cape_brn / shear_sq
+
     return df
 
 
@@ -458,6 +532,16 @@ def _add_atmospheric_column_features(df: pd.DataFrame) -> pd.DataFrame:
         df["tcwv_change_3h"] = tcwv.diff(3)
         # TCWV change 6h — synoptic-scale moisture trend
         df["tcwv_change_6h"] = tcwv.diff(6)
+
+        # TCWV monthly anomaly — 30mm TCWV in January is exceptional, normal in August.
+        # Ratio to ERA5 climatological mean for Cardedeu (41.633°N, 2015-2025).
+        _TCWV_CLIM = {
+            1: 10.3, 2: 10.9, 3: 12.8, 4: 15.0, 5: 18.9, 6: 24.9,
+            7: 28.4, 8: 29.0, 9: 25.1, 10: 20.8, 11: 14.6, 12: 12.1,
+        }
+        if "month" in df.columns:
+            clim = df["month"].map(_TCWV_CLIM).clip(lower=1)
+            df["tcwv_monthly_anomaly"] = tcwv / clim
 
     # Boundary Layer Height (m) — convective mixing depth
     # High BLH = deep convective mixing, low BLH = stable/suppressed
@@ -873,6 +957,7 @@ def build_features_from_hourly(df: pd.DataFrame) -> pd.DataFrame:
     Sortida: DataFrame amb totes les features calculades.
     """
     df = _add_temporal_features(df)
+    df = _add_solar_timing_features(df)
     df = _add_pressure_features(df, "pressure_msl")
     df = _add_humidity_features(df, "temperature_2m", "relative_humidity_2m")
     df = _add_wind_features(df, "wind_speed_10m", "wind_direction_10m")
@@ -976,6 +1061,7 @@ def build_features_from_realtime(station_df: pd.DataFrame, forecast_df: pd.DataF
 FEATURE_COLUMNS = [
     # Temporals
     "hour_sin", "hour_cos", "month_sin", "month_cos",
+    "hours_since_sunrise",  # Convective initiation timing (2-4h lag after sunrise)
     # Pressió
     "pressure_msl", "pressure_change_1h", "pressure_change_3h",
     "pressure_change_6h", "pressure_accel_3h",
@@ -1000,10 +1086,13 @@ FEATURE_COLUMNS = [
     "wind_850_speed", "wind_850_dir",
     "temp_850", "temp_500", "rh_850",
     "rh_700", "temp_700",
+    "rh_700_change_3h", "rh_700_change_6h",  # Mid-level drying (virga/entrainment)
+    "temp_850_change_3h",   # Warm/cold advection proxy
     "wind_300_speed", "wind_300_dir", "gph_300",
     # Índexs d'inestabilitat (Skew-T + Lifted Index)
     "vt_index", "tt_index", "li_index",
     "li_unstable",  # li_very_unstable: zero importance (fires too rarely)
+    "k_index",              # K-index: moist layer depth (TT/VT miss this)
     # Physics: moisture flux (wind × humidity = water transport)
     "moisture_flux_850",
     "moisture_flux_925",  # low-level: bulk of Llevantada moisture
@@ -1013,6 +1102,7 @@ FEATURE_COLUMNS = [
     "inversion_925",  # T925 - T_sfc: positiu = inversió (fog/stratus suppressor)
     # 300hPa: jet stream physics
     "deep_layer_shear",  # 850-300hPa speed diff: tempestes organitzades
+    "bulk_richardson",      # BRN = CAPE/shear²: storm mode (supercell vs multicell)
     "jet_speed_300",  # jet stream intensity: dynamic lifting trigger
     # Cisalla de vent (wind shear) — clau per tempestes organitzades
     "wind_shear_speed", "wind_shear_dir",
@@ -1073,6 +1163,7 @@ FEATURE_COLUMNS = [
     "terrestrial_radiation",    # Radiació terrestre (W/m²) — detecció núvols nocturna
     "soil_moisture_28_to_100cm", # Humitat sòl profund — saturació antecedent
     "soil_saturation_ratio",    # Superficial / profund — infiltració recent
+    "tcwv_monthly_anomaly",     # TCWV relatiu a climatologia mensual
     # Radiació solar
     "shortwave_radiation",
     # Radar (RainViewer) — puntual + espacial
