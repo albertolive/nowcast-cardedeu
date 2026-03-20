@@ -95,6 +95,8 @@ If the feature uses thresholds (e.g., "moderate if > X"):
 - **Temporal derivatives**: Add `_change_1h`, `_change_3h`, `_change_6h` for trending signals (pressure, humidity, VPD)
 - **Prefixing**: All features from the same source share a prefix (e.g., `radar_*`, `sentinel_*`, `lightning_*`)
 - **Pressure level features**: 5 levels are available (925/850/700/500/300 hPa, from April 2021). Derived features include `inversion_925`, `moisture_flux_925`, `moisture_flux_850`, `deep_layer_shear`, `jet_speed_300`, `theta_e_deficit`. When adding pressure-level features, guard with column existence checks — pre-2021 rows are NaN.
+- **Physics composites**: Multi-variable interaction features like `orographic_forcing` (wind⊥mountain×humidity), `frontal_passage` (combined pressure+wind+temp changes), `convective_composite` (instability×moisture×shear). These are computed from existing historical variables and available in training data from 2021+.
+- **Soil and ocean features**: `soil_moisture_*` (ERA5 archive, historical from 2015), `sst_med` (Marine API forecast, real-time only), `convective_inhibition` (CIN, forecast API, real-time only). Follow the same guard pattern for partial historical coverage.
 - **Wind regimes at 850hPa**: Wind classification must use 850hPa synoptic wind (not 10m surface wind distorted by Montseny orography). Never use surface wind as a fallback — only 26% agreement with 850hPa. XGBoost handles NaN natively for pre-2021 rows.
 - **Always validate**: Run `python scripts/feature_analysis.py` after retrain. If a new feature shows zero gain/splits, reconsider it.
 
