@@ -46,7 +46,15 @@ def fetch_historical_hourly(
         }
 
         logger.info(f"Open-Meteo històric: {chunk_start} → {chunk_end}")
-        r = SESSION.get(config.OPEN_METEO_HISTORICAL_URL, params=params, timeout=60)
+        import time as _time
+        for attempt in range(3):
+            r = SESSION.get(config.OPEN_METEO_HISTORICAL_URL, params=params, timeout=60)
+            if r.status_code == 429:
+                wait = 10 * (attempt + 1)
+                logger.warning(f"Rate limited (429), esperant {wait}s...")
+                _time.sleep(wait)
+                continue
+            break
         r.raise_for_status()
         data = r.json()
 
@@ -218,11 +226,19 @@ def fetch_historical_pressure_levels(
         }
 
         logger.info(f"Pressure levels històric: {chunk_start} → {chunk_end}")
-        r = SESSION.get(
-            config.OPEN_METEO_HISTORICAL_FORECAST_URL,
-            params=params,
-            timeout=60,
-        )
+        import time as _time
+        for attempt in range(3):
+            r = SESSION.get(
+                config.OPEN_METEO_HISTORICAL_FORECAST_URL,
+                params=params,
+                timeout=60,
+            )
+            if r.status_code == 429:
+                wait = 10 * (attempt + 1)
+                logger.warning(f"Rate limited (429), esperant {wait}s...")
+                _time.sleep(wait)
+                continue
+            break
         r.raise_for_status()
         data = r.json()
 
@@ -429,3 +445,37 @@ def fetch_pressure_levels_hourly(hours_ahead: int = 48) -> pd.DataFrame:
     except Exception as e:
         logger.warning(f"Error obtenint pressure levels horari: {e}")
         return pd.DataFrame()
+
+
+# ── SST (Sea Surface Temperature) — Marine API ──
+
+def fetch_sst_forecast() -> dict:
+    """
+    Obté la temperatura superficial del mar (SST) actual del Mediterrani
+    proper a Cardedeu (costa Maresme) via l'API Marine d'Open-Meteo.
+
+    Només disponible com a forecast (no històric).
+    Les dades s'acumularan via feedback loop per a entrenament futur.
+    """
+    try:
+        params = {
+            "latitude": config.SEA_LATITUDE,
+            "longitude": config.SEA_LONGITUDE,
+            "hourly": "sea_surface_temperature",
+            "timezone": "Europe/Madrid",
+            "forecast_hours": 6,
+        }
+        r = SESSION.get(config.OPEN_METEO_MARINE_URL, params=params, timeout=15)
+        r.raise_for_status()
+        data = r.json()
+
+        hourly = data.get("hourly", {})
+        vals = hourly.get("sea_surface_temperature", [])
+        sst = vals[0] if vals and vals[0] is not None else None
+
+        logger.info(f"SST Mediterrani: {sst}°C")
+        return {"sst_med": sst}
+
+    except Exception as e:
+        logger.warning(f"Error obtenint SST: {e}")
+        return {"sst_med": None}
