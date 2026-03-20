@@ -1,39 +1,39 @@
 {
-  "cv_auc_mean": 0.961555372005438,
-  "cv_auc_std": 0.005343079820633672,
-  "cv_f1_mean": 0.6876705912617929,
-  "cv_f1_std": 0.029691515210230925,
-  "final_auc": 0.967163805750004,
+  "cv_auc_mean": 0.9618537739247977,
+  "cv_auc_std": 0.0053912614268563554,
+  "cv_f1_mean": 0.6872951804942952,
+  "cv_f1_std": 0.03207202907255148,
+  "final_auc": 0.9682756339761218,
   "final_report": {
     "0": {
-      "precision": 0.9721763734968167,
-      "recall": 0.95,
-      "f1-score": 0.9609602610418366,
-      "support": 8680.0
+      "precision": 0.9706848030018762,
+      "recall": 0.9535767768690243,
+      "f1-score": 0.9620547387994653,
+      "support": 8681.0
     },
     "1": {
-      "precision": 0.6794682422451994,
-      "recall": 0.7958477508650519,
-      "f1-score": 0.7330677290836654,
+      "precision": 0.692131398013751,
+      "recall": 0.7837370242214533,
+      "f1-score": 0.7350912778904666,
       "support": 1156.0
     },
-    "accuracy": 0.9318828792191948,
+    "accuracy": 0.9336179729592355,
     "macro avg": {
-      "precision": 0.8258223078710081,
-      "recall": 0.8729238754325259,
-      "f1-score": 0.847013995062751,
-      "support": 9836.0
+      "precision": 0.8314081005078136,
+      "recall": 0.8686569005452388,
+      "f1-score": 0.848573008344966,
+      "support": 9837.0
     },
     "weighted avg": {
-      "precision": 0.9377751331829828,
-      "recall": 0.9318828792191948,
-      "f1-score": 0.9341766328450447,
-      "support": 9836.0
+      "precision": 0.9379504595875962,
+      "recall": 0.9336179729592355,
+      "f1-score": 0.9353830135975946,
+      "support": 9837.0
     }
   },
-  "n_samples": 98358,
+  "n_samples": 98362,
   "n_positive": 9178,
-  "n_features": 183,
+  "n_features": 192,
   "feature_names": [
     "hour_sin",
     "hour_cos",
@@ -137,6 +137,15 @@
     "radiation_rain_conflict",
     "moisture_flux_change_3h",
     "cape_change_3h",
+    "tcwv",
+    "tcwv_change_3h",
+    "tcwv_change_6h",
+    "boundary_layer_height",
+    "blh_change_3h",
+    "tcwv_blh_ratio",
+    "terrestrial_radiation",
+    "soil_moisture_28_to_100cm",
+    "soil_saturation_ratio",
     "shortwave_radiation",
     "radar_dbz",
     "radar_rain_rate",
@@ -220,7 +229,7 @@
     "freezing_level_height"
   ],
   "calibrated": true,
-  "optimal_threshold": 0.36637931034482757,
-  "calibration_oof_f1_uncalibrated": 0.6910109082424313,
-  "calibration_oof_f1_calibrated": 0.6983922829581993
+  "optimal_threshold": 0.36082474226804134,
+  "calibration_oof_f1_uncalibrated": 0.6908856153530136,
+  "calibration_oof_f1_calibrated": 0.6998374796849606
 }

@@ -219,8 +219,8 @@ def fetch_historical_pressure_levels(
     Disponible des d'abril 2021. Per dates anteriors retorna DataFrame buit.
     Les columnes es renomenen als noms interns del model.
     """
-    # L'API té dades de pressure levels des d'abril 2021
-    DATA_START = date(2021, 4, 1)
+    # L'API té dades de pressure levels des de ~22-23 març 2021
+    DATA_START = date(2021, 3, 23)
     effective_start = max(start_date, DATA_START)
 
     if effective_start >= end_date:
