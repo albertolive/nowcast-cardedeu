@@ -376,7 +376,7 @@ function renderAtmosphere(d) {
       <div class="stat-row"><span class="stat-label">850 hPa · ~1.500m</span><span class="stat-value">${p.temp_850 ?? '—'}°C · ${p.rh_850 ?? '—'}%</span></div>
       <div class="stat-row"><span class="stat-label">700 hPa · ~3.000m</span><span class="stat-value">${p.temp_700 ?? '—'}°C · ${p.rh_700 ?? '—'}%</span></div>
       <div class="stat-row"><span class="stat-label">500 hPa · ~5.500m</span><span class="stat-value">${p.temp_500 ?? '—'}°C</span></div>
-      <div class="stat-row"><span class="stat-label">300 hPa · ~9.000m</span><span class="stat-value">${p.wind_300_speed_kmh != null ? Math.round(p.wind_300_speed_kmh) + ' km/h' : '—'}</span></div>
+      <div class="stat-row"><span class="stat-label">300 hPa · ~9.000m</span><span class="stat-value">vent ${p.wind_300_speed_kmh != null ? Math.round(p.wind_300_speed_kmh) + ' km/h' : '—'}</span></div>
       <div class="stat-row"><span class="stat-label">Índex VT / TT</span><span class="stat-value">${p.vt_index != null ? p.vt_index.toFixed(1) : '—'} / ${p.tt_index != null ? p.tt_index.toFixed(1) : '—'}</span></div>
       <div class="stat-row"><span class="stat-label">Lifted Index</span><span class="stat-value">${p.li_index != null ? p.li_index.toFixed(1) : '—'}</span></div>
     </div>
