@@ -25,6 +25,11 @@ SERIES_VARS = "TEMP,HUM,VEL,DIR,PREC,BAR,SUN,UVI,PINT"
 OPEN_METEO_FORECAST_URL = "https://api.open-meteo.com/v1/forecast"
 OPEN_METEO_HISTORICAL_URL = "https://archive-api.open-meteo.com/v1/archive"
 OPEN_METEO_HISTORICAL_FORECAST_URL = "https://historical-forecast-api.open-meteo.com/v1/forecast"
+OPEN_METEO_MARINE_URL = "https://marine-api.open-meteo.com/v1/marine"
+
+# Coordenades per SST (punt de mar proper — costa Maresme)
+SEA_LATITUDE = 41.4
+SEA_LONGITUDE = 2.5
 
 # Variables horàries que demanem a Open-Meteo (forecast i històric)
 OPEN_METEO_HOURLY_VARS = [
@@ -43,6 +48,9 @@ OPEN_METEO_HOURLY_VARS = [
     "shortwave_radiation",
     "weather_code",
     "vapour_pressure_deficit", # VPD (kPa) — indicador directe de saturació
+    "convective_inhibition",   # CIN — supressió de convecció (J/kg)
+    "soil_moisture_0_to_7cm",  # Humitat del sòl superficial (m³/m³)
+    "soil_moisture_7_to_28cm", # Humitat del sòl profund (m³/m³)
 ]
 
 # Variables del model per al forecast

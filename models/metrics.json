@@ -1,39 +1,39 @@
 {
-  "cv_auc_mean": 0.9545042275726716,
-  "cv_auc_std": 0.008075727559112154,
-  "cv_f1_mean": 0.6719980579332795,
-  "cv_f1_std": 0.030511893260429118,
-  "final_auc": 0.9665289922005741,
+  "cv_auc_mean": 0.955136182231605,
+  "cv_auc_std": 0.007674321068745432,
+  "cv_f1_mean": 0.6748062364339898,
+  "cv_f1_std": 0.03336465373746578,
+  "final_auc": 0.9664187668802775,
   "final_report": {
     "0": {
-      "precision": 0.9669027987457902,
-      "recall": 0.9596588289534348,
-      "f1-score": 0.9632671950020246,
+      "precision": 0.9691444600280504,
+      "recall": 0.9557399723374828,
+      "f1-score": 0.9623955431754875,
       "support": 8676.0
     },
     "1": {
-      "precision": 0.7133497133497133,
-      "recall": 0.7534602076124568,
-      "f1-score": 0.7328565418594868,
+      "precision": 0.6990595611285266,
+      "recall": 0.7716262975778547,
+      "f1-score": 0.7335526315789473,
       "support": 1156.0
     },
-    "accuracy": 0.9354149715215623,
+    "accuracy": 0.934092758340114,
     "macro avg": {
-      "precision": 0.8401262560477518,
-      "recall": 0.8565595182829457,
-      "f1-score": 0.8480618684307557,
+      "precision": 0.8341020105782886,
+      "recall": 0.8636831349576688,
+      "f1-score": 0.8479740873772175,
       "support": 9832.0
     },
     "weighted avg": {
-      "precision": 0.9370912276801002,
-      "recall": 0.9354149715215623,
-      "f1-score": 0.9361766015283901,
+      "precision": 0.9373891566179763,
+      "recall": 0.934092758340114,
+      "f1-score": 0.9354892773287014,
       "support": 9832.0
     }
   },
-  "n_samples": 98313,
+  "n_samples": 98317,
   "n_positive": 9178,
-  "n_features": 131,
+  "n_features": 142,
   "feature_names": [
     "hour_sin",
     "hour_cos",
@@ -165,10 +165,21 @@
     "aemet_radar_echoes_found",
     "smc_prob_precip_1h",
     "smc_prob_precip_6h",
-    "smc_precip_intensity"
+    "smc_precip_intensity",
+    "orographic_forcing",
+    "frontal_passage",
+    "convective_composite",
+    "thermal_buildup",
+    "low_level_convergence",
+    "dry_intrusion_700",
+    "soil_moisture_0_to_7cm",
+    "soil_moisture_7_to_28cm",
+    "soil_moisture_change_24h",
+    "convective_inhibition",
+    "sst_med"
   ],
   "calibrated": true,
-  "optimal_threshold": 0.4014778325123153,
-  "calibration_oof_f1_uncalibrated": 0.6757493188010899,
-  "calibration_oof_f1_calibrated": 0.6917662682602922
+  "optimal_threshold": 0.34615384615384615,
+  "calibration_oof_f1_uncalibrated": 0.6784960346893365,
+  "calibration_oof_f1_calibrated": 0.689712673165726
 }

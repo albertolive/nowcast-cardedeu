@@ -12,7 +12,7 @@ import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 import config
 from src.data.meteocardedeu import fetch_series, fetch_latest
-from src.data.open_meteo import fetch_forecast, fetch_pressure_levels
+from src.data.open_meteo import fetch_forecast, fetch_pressure_levels, fetch_sst_forecast
 from src.data.rainviewer import fetch_radar_at_cardedeu
 from src.data.meteocat import fetch_sentinel_latest, compute_sentinel_features
 from src.data.meteocat_xdde import compute_lightning_features
@@ -47,6 +47,9 @@ def predict_now() -> dict:
 
     logger.info("Obtenint dades a 850hPa (flux sinòptic)...")
     pressure_data = fetch_pressure_levels()
+
+    logger.info("Obtenint SST Mediterrani (Marine API)...")
+    sst_data = fetch_sst_forecast()
 
     logger.info("Obtenint dades de radar (RainViewer)...")
     # Passar la direcció del vent a 850hPa per escaneig del sector de sobrevent
@@ -181,6 +184,11 @@ def predict_now() -> dict:
         if k in FEATURE_COLUMNS:
             latest[k] = v
 
+    # Afegir SST Mediterrani
+    for k, v in sst_data.items():
+        if k in FEATURE_COLUMNS:
+            latest[k] = v
+
     logger.info("Carregant model...")
     model, feature_names, calibrator, threshold = load_model()
 
@@ -304,6 +312,9 @@ def predict_now() -> dict:
             "vt_index": pressure_data.get("vt_index"),
             "tt_index": pressure_data.get("tt_index"),
             "li_index": pressure_data.get("li_index"),
+        },
+        "sst": {
+            "sst_med": sst_data.get("sst_med"),
         },
         "rain_gate_open": rain_signals,
         "features_used": len(feature_names),

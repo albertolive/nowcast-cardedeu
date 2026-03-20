@@ -317,6 +317,128 @@ def _add_pressure_level_features(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
+def _add_physics_composites(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Features composites basades en física atmosfèrica.
+    Combinen múltiples variables existents per capturar processos
+    que els models NWP aproximen malament a escala local.
+
+    Totes les features es construeixen a partir de dades ja disponibles
+    (superfície + pressure levels), sense necessitat de noves APIs.
+    """
+    df = df.copy()
+
+    # ── 1. Orographic Forcing Index ──
+    # Quan flux humit mediterrani xoca amb Serralada Prelitoral / Montseny,
+    # l'ascens forçat desencadena precipitació orographic enhancement.
+    # Component del vent perpendicular a la cresta × humitat.
+    # Orientació de la Serralada: ~NE-SW (azimut ~45°), normal = ~135° (SE)
+    RIDGE_NORMAL_RAD = np.radians(135)  # perpendicular a la Serralada
+    if "wind_850_dir" in df.columns and "wind_850_speed" in df.columns and "rh_850" in df.columns:
+        w850_dir = pd.to_numeric(df["wind_850_dir"], errors="coerce")
+        w850_spd = pd.to_numeric(df["wind_850_speed"], errors="coerce")
+        rh850 = pd.to_numeric(df["rh_850"], errors="coerce")
+        # Component del vent perpendicular a la cresta
+        wind_rad = np.radians(w850_dir)
+        perp_component = w850_spd * np.cos(wind_rad - RIDGE_NORMAL_RAD)
+        # Positiu = flux cap a la muntanya. Multiplicat per humitat normalitzada.
+        df["orographic_forcing"] = perp_component.clip(lower=0) * (rh850 / 100.0)
+
+    # ── 2. Frontal Passage Indicator ──
+    # Detecció de pas de fronts a partir de canvis ràpids de pressió + vent + temperatura.
+    # Front fred: caiguda de pressió → pujada + veering (gir horari) + caiguda de temp.
+    # Front càlid: caiguda sostinguda de pressió + backing + pujada de temp + alta humitat.
+    if all(c in df.columns for c in ["pressure_change_3h", "wind_dir_change_3h", "temperature_2m"]):
+        p_change = pd.to_numeric(df["pressure_change_3h"], errors="coerce")
+        wind_shift = pd.to_numeric(df["wind_dir_change_3h"], errors="coerce").abs()
+        temp_change = pd.to_numeric(df["temperature_2m"], errors="coerce").diff(3)
+        # Frontal signal: strong when pressure drops + wind shifts + temp changes
+        # Normalized components to ~[0,1] range, then combined
+        p_signal = (-p_change / 5.0).clip(0, 1)  # 5hPa/3h drop = max signal
+        w_signal = (wind_shift / 60.0).clip(0, 1)  # 60° shift = max signal
+        t_signal = (temp_change.abs() / 5.0).clip(0, 1)  # 5°C change = max signal
+        df["frontal_passage"] = p_signal * w_signal + t_signal * p_signal
+
+    # ── 3. Convective Composite Index ──
+    # Combina inestabilitat (TT/LI) + humitat + trigger mecànic (shear).
+    # Tots els ingredients han de ser presents → producte.
+    # Ref: alexmeteo "Ingredients per formar Tempestes": inestabilitat + humitat + trigger
+    composites_available = []
+    if "tt_index" in df.columns:
+        tt = pd.to_numeric(df["tt_index"], errors="coerce")
+        # TT > 44 = convecció moderada, > 50 = severa. Normalize to ~[0,1]
+        tt_signal = ((tt - 40) / 15.0).clip(0, 1)
+        composites_available.append(tt_signal)
+    if "moisture_flux_850" in df.columns:
+        mf = pd.to_numeric(df["moisture_flux_850"], errors="coerce")
+        mf_signal = (mf / 200.0).clip(0, 1)  # High moisture flux
+        composites_available.append(mf_signal)
+    if "deep_layer_shear" in df.columns:
+        dls = pd.to_numeric(df["deep_layer_shear"], errors="coerce")
+        shear_signal = (dls / 30.0).clip(0, 1)  # 30 m/s shear = max
+        composites_available.append(shear_signal)
+    if len(composites_available) >= 2:
+        composite = composites_available[0]
+        for c in composites_available[1:]:
+            composite = composite * c
+        df["convective_composite"] = composite
+
+    # ── 4. Thermal Buildup Index ──
+    # Calentament diürn → termals → convecció tarda.
+    # Alt a l'estiu quan el terra calent genera termals.
+    # Combinació: amplitud tèrmica recent × hora del dia (pic 12-18h) × radiació.
+    if "temperature_2m" in df.columns:
+        temp = pd.to_numeric(df["temperature_2m"], errors="coerce")
+        # Amplitud tèrmica en les últimes 12h (rolling max - min)
+        temp_range_12h = temp.rolling(12, min_periods=3).max() - temp.rolling(12, min_periods=3).min()
+        # Fracció del cicle diürn (pic a 15h local)
+        if "hour" in df.columns:
+            hour = pd.to_numeric(df["hour"], errors="coerce")
+        elif "datetime" in df.columns:
+            hour = pd.to_datetime(df["datetime"]).dt.hour
+        else:
+            hour = pd.Series(12, index=df.index)
+        # Gaussian-like peak at 15h for solar heating
+        diurnal_factor = np.exp(-0.5 * ((hour - 15) / 3.0) ** 2)
+        df["thermal_buildup"] = temp_range_12h * diurnal_factor / 15.0  # Normalize by 15°C range
+
+    # ── 5. Low-Level Convergence Proxy ──
+    # Quan masses d'aire convergeixen → ascens → precipitació.
+    # Aproximat per canvis ràpids de vent + humitat + caiguda de pressió simultanis.
+    if all(c in df.columns for c in ["wind_speed_change_3h", "humidity_change_3h", "pressure_change_3h"]):
+        wind_decel = pd.to_numeric(df["wind_speed_change_3h"], errors="coerce")
+        hum_rise = pd.to_numeric(df["humidity_change_3h"], errors="coerce")
+        p_drop = pd.to_numeric(df["pressure_change_3h"], errors="coerce")
+        # Convergence: wind slowing + humidity rising + pressure dropping
+        wind_conv = (-wind_decel / 10.0).clip(0, 1)  # Decelerating wind
+        hum_conv = (hum_rise / 20.0).clip(0, 1)  # Rising humidity
+        p_conv = (-p_drop / 3.0).clip(0, 1)  # Falling pressure
+        df["low_level_convergence"] = wind_conv + hum_conv + p_conv
+
+    # ── 6. Dry Air Intrusion (capping) ──
+    # Aire sec a 700hPa sobre aire humit a 850hPa → capping inversion.
+    # Pot suprimir convecció feble però energitzar tempestes fortes (loaded gun).
+    if "rh_700" in df.columns and "rh_850" in df.columns:
+        rh700 = pd.to_numeric(df["rh_700"], errors="coerce")
+        rh850 = pd.to_numeric(df["rh_850"], errors="coerce")
+        # Gran diferència = cape atrapada → tempestes potents si es trenca la capa
+        df["dry_intrusion_700"] = (rh850 - rh700).clip(lower=0) / 100.0
+
+    return df
+
+
+def _add_soil_moisture_features(df: pd.DataFrame) -> pd.DataFrame:
+    """Features d'humitat del sòl — present en dades d'arxiu (ERA5) des de 2015."""
+    df = df.copy()
+    for col in ["soil_moisture_0_to_7cm", "soil_moisture_7_to_28cm"]:
+        if col in df.columns:
+            df[col] = pd.to_numeric(df[col], errors="coerce")
+    # Canvi d'humitat del sòl (indica infiltració recent per pluja)
+    if "soil_moisture_0_to_7cm" in df.columns:
+        df["soil_moisture_change_24h"] = df["soil_moisture_0_to_7cm"].diff(24)
+    return df
+
+
 def _add_rain_context(df: pd.DataFrame, precip_col: str = "precipitation") -> pd.DataFrame:
     """Context de pluja recent (últimes hores)."""
     df = df.copy()
@@ -506,6 +628,8 @@ def build_features_from_hourly(df: pd.DataFrame) -> pd.DataFrame:
     df = _add_smc_forecast_features(df)
     df = _add_ensemble_features(df)
     df = _add_pressure_level_features(df)
+    df = _add_physics_composites(df)
+    df = _add_soil_moisture_features(df)
     return df
 
 
@@ -672,6 +796,20 @@ FEATURE_COLUMNS = [
     # Predicció municipal SMC (Meteocat)
     "smc_prob_precip_1h", "smc_prob_precip_6h",
     "smc_precip_intensity",
+    # Physics composites (features derivades de variables existents)
+    "orographic_forcing",     # flux humit perpendicular a la Serralada × humitat
+    "frontal_passage",        # detecció de pas de front (pressió + vent + temp)
+    "convective_composite",   # inestabilitat × humitat × cisalla (tots alhora)
+    "thermal_buildup",        # calentament diürn → termals → convecció tarda
+    "low_level_convergence",  # convergència: vent frenant + humitat pujant + pressió baixant
+    "dry_intrusion_700",      # aire sec a 700hPa sobre humit a 850hPa (loaded gun)
+    # Soil moisture (ERA5 archive 2015+; predicció: últim valor conegut)
+    "soil_moisture_0_to_7cm", "soil_moisture_7_to_28cm",
+    "soil_moisture_change_24h",
+    # Convective inhibition (CIN) — supressió de convecció
+    "convective_inhibition",
+    # SST Marine (forecast only — s'acumula via feedback loop)
+    "sst_med",
 ]
 
 
