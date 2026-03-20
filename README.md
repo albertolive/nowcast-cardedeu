@@ -30,7 +30,7 @@ Utilitza dades reals de l'estació [MeteoCardedeu.net](https://meteocardedeu.net
          │                     │         │                      │
          ▼                     ▼         ▼                      ▼
     ┌──────────────────────────────────────────────────────────────────────┐
-    │                Feature Engineering (142 features)                    │
+    │                Feature Engineering (155 features)                    │
     │  Tendències · Ensemble · 5 nivells pressió · CAPE/CIN · SST · Compostos físics · Radar · Sentinella · Llamps │
     └──────────────────────────────┬───────────────────────────────────────┘
                                   │
@@ -147,7 +147,7 @@ nowcast-cardedeu/
 │   │   ├── meteocat_xdde.py  # API Meteocat XDDE (descàrregues elèctriques)
 │   │   └── meteocat_prediccio.py # API Meteocat Predicció (forecast municipal)
 │   ├── features/
-│   │   ├── engineering.py    # Feature engineering (142 features, 98 historical)
+│   │   ├── engineering.py    # Feature engineering (155 features, 111 historical)
 │   │   └── regime.py         # Detecció de canvis de règim atmosfèric (Llevantada, Garbí, pressió)
 │   ├── model/
 │   │   ├── train.py          # Pipeline d'entrenament (XGBoost + TimeSeriesSplit)
@@ -178,7 +178,7 @@ nowcast-cardedeu/
 
 ## Features del model
 
-El model defineix **142 features** per predicció en temps real. El model s'entrena amb les **142 features completes** (98 amb dades històriques, 44 com a NaN per radar/llamps/AEMET). El **feedback loop** acumula gradualment les 44 features en temps real (radar, llamps, sentinella) a cada predicció verificada, permetent que el model aprengui d'observacions independents amb cada re-entrenament.
+El model defineix **155 features** per predicció en temps real. El model s'entrena amb les **155 features completes** (111 amb dades històriques, 44 com a NaN per radar/llamps/AEMET). El **feedback loop** acumula gradualment les 44 features en temps real (radar, llamps, sentinella) a cada predicció verificada, permetent que el model aprengui d'observacions independents amb cada re-entrenament.
 
 **Ensemble backfill**: Des de gener 2022, dades de 4 models NWP (ECMWF, GFS, ICON, AROME) descarregades via `scripts/backfill_ensemble.py`.
 **XEMA sentinel backfill**: Dades de Granollers (YM) + ETAP Cardedeu (KX) via `scripts/backfill_xema.py` (incremental, 15 dies/execució per respectar el límit API).
@@ -217,6 +217,12 @@ El model defineix **142 features** per predicció en temps real. El model s'entr
 | 🆕 Humitat del sòl | soil_moisture_0_to_7cm, soil_moisture_7_to_28cm, soil_moisture_change_24h | ERA5 archive: sòl saturat amplifica precipitació |
 | 🆕 CIN | convective_inhibition | Inhibició convectiva — energia necessària per trencar la inversió. Backfill des d'abril 2021 (Historical Forecast API) |
 | 🆕 SST Mediterrani | sst_med | Temperatura superficial del mar — alimenta humitat/convecció. Backfill des de 2015 (NOAA ERDDAP OISST v2.1) |
+| 🆕 Capes de núvols | cloud_cover_low, cloud_cover_mid, cloud_cover_high, cloud_low_fraction | Diferenciació núvols baixos (pluja) vs alts (cirrus). ERA5 100% cobertura |
+| 🆕 Bulb humit | wet_bulb_temperature_2m, wet_bulb_depression | Saturació de l'aire — depressió petita = pluja imminent. ERA5 100% |
+| 🆕 Radiació directa/difusa | direct_radiation, diffuse_radiation, diffuse_fraction | Ratio difusa indica gruix de núvols (proxy). ERA5 100% |
+| 🆕 Ràfegues de vent | wind_gusts_10m, gust_factor | Factor de ràfega alt = turbulència convectiva. ERA5 100% |
+| 🆕 Visibilitat | visibility | Baixa visibilitat = pluja/boira activa. Historical Forecast API (2021+, 44%) |
+| 🆕 Nivell de congelació | freezing_level_height | Alçada isoterma 0°C — clau per tipus/intensitat de precipitació. Historical Forecast API (2021+, 44%) |
 | ❄️ Tramuntana | tramuntana_strength, tramuntana_moisture | Vent polar fred del nord, supressor de pluja (5.8% rain rate) |
 
 ## Fonts de dades
@@ -340,14 +346,14 @@ El model AROME de Meteo-France és el 4t model de l'ensemble, amb resolució de 
 
 | Mètrica | Valor |
 |---------|-------|
-| AUC-ROC (CV) | 0.9549 ± 0.007 |
-| F1-Score (CV) | 0.6731 ± 0.033 |
-| F1-Score OOF (calibrat) | 0.6890 |
-| AUC-ROC (final) | 0.9666 |
-| Llindar òptim (calibrat) | 0.3580 |
-| Mostres d'entrenament | 98,319 |
-| Features (training) | 142 (98 històriques, 44 real-time) |
-| Features (total) | 142 |
+| AUC-ROC (CV) | 0.9607 ± 0.005 |
+| F1-Score (CV) | 0.6813 ± 0.030 |
+| F1-Score OOF (calibrat) | 0.6953 |
+| AUC-ROC (final) | 0.9675 |
+| Llindar òptim (calibrat) | 0.3750 |
+| Mostres d'entrenament | 98,335 |
+| Features (training) | 155 (111 històriques, 44 real-time) |
+| Features (total) | 155 |
 | Classe positiva (pluja) | ~9.3% |
 | Cross-validation | TimeSeriesSplit (5 folds) |
 | Calibratge | Isotonic Regression (OOF) |
@@ -375,7 +381,7 @@ El sistema verifica automàticament les seves pròpies prediccions i aprèn dels
 
 ### Com funciona
 
-1. **Log**: Cada predicció es registra a `predictions_log.jsonl` amb un snapshot complet: probabilitat, condicions, radar, AEMET, sentinella, ensemble, nivells de pressió, règim de vent, bias, i les 142 features del model
+1. **Log**: Cada predicció es registra a `predictions_log.jsonl` amb un snapshot complet: probabilitat, condicions, radar, AEMET, sentinella, ensemble, nivells de pressió, règim de vent, bias, i les 155 features del model
 2. **Verificació**: 60-75 min després, el sistema consulta l'estació per veure si realment va ploure
 3. **Classificació**: Cada predicció es marca com TP, FP, TN, o FN
 4. **Informe**: Cada dilluns a les 8:00, reps un report amb accuracy, precisión, recall, F1, i tendència

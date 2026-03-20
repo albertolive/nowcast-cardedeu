@@ -47,10 +47,10 @@ def fetch_historical_hourly(
 
         logger.info(f"Open-Meteo històric: {chunk_start} → {chunk_end}")
         import time as _time
-        for attempt in range(3):
+        for attempt in range(6):
             r = SESSION.get(config.OPEN_METEO_HISTORICAL_URL, params=params, timeout=60)
             if r.status_code == 429:
-                wait = 10 * (attempt + 1)
+                wait = 15 * (attempt + 1)
                 logger.warning(f"Rate limited (429), esperant {wait}s...")
                 _time.sleep(wait)
                 continue
@@ -173,6 +173,9 @@ PRESSURE_LEVEL_VARS = [
     # Convective parameters (available from Historical Forecast API, 2021-04+)
     "cape",
     "convective_inhibition",
+    # Visibility & freezing level (Historical Forecast API only, 2021-04+)
+    "visibility",
+    "freezing_level_height",
 ]
 
 # Mapejat: noms de l'API → noms interns per al model
@@ -257,7 +260,7 @@ def fetch_historical_pressure_levels(
         # Renomenar columnes API → noms interns
         df = df.rename(columns=_PRESSURE_RENAME)
         # Keep renamed pressure columns + passthrough columns (cape, convective_inhibition)
-        _PASSTHROUGH_COLS = ["cape", "convective_inhibition"]
+        _PASSTHROUGH_COLS = ["cape", "convective_inhibition", "visibility", "freezing_level_height"]
         keep_cols = [c for c in _PRESSURE_RENAME.values() if c in df.columns]
         keep_cols += [c for c in _PASSTHROUGH_COLS if c in df.columns]
         df = df[["datetime"] + keep_cols]

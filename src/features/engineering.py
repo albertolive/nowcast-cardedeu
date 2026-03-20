@@ -439,6 +439,71 @@ def _add_soil_moisture_features(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
+def _add_cloud_layer_features(df: pd.DataFrame) -> pd.DataFrame:
+    """Features de capes de núvols — diferenciar núvols baixos (pluja) d'alts (cirrus)."""
+    df = df.copy()
+    for col in ["cloud_cover_low", "cloud_cover_mid", "cloud_cover_high"]:
+        if col in df.columns:
+            df[col] = pd.to_numeric(df[col], errors="coerce")
+    # Proporció de núvols baixos vs total — alt = pluja probable
+    if "cloud_cover_low" in df.columns and "cloud_cover" in df.columns:
+        total = df["cloud_cover"].clip(lower=1)  # evitar divisió per zero
+        df["cloud_low_fraction"] = df["cloud_cover_low"] / total
+    return df
+
+
+def _add_wet_bulb_features(df: pd.DataFrame) -> pd.DataFrame:
+    """Temperatura de bulb humit — indica saturació i tipus de precipitació."""
+    df = df.copy()
+    if "wet_bulb_temperature_2m" in df.columns:
+        df["wet_bulb_temperature_2m"] = pd.to_numeric(df["wet_bulb_temperature_2m"], errors="coerce")
+        # Depressió de bulb humit: gran = aire sec, petit = gairebé saturat
+        if "temperature_2m" in df.columns:
+            df["wet_bulb_depression"] = df["temperature_2m"] - df["wet_bulb_temperature_2m"]
+    return df
+
+
+def _add_radiation_features(df: pd.DataFrame) -> pd.DataFrame:
+    """Features de radiació — ratio difusa/total indica gruix de núvols."""
+    df = df.copy()
+    for col in ["direct_radiation", "diffuse_radiation"]:
+        if col in df.columns:
+            df[col] = pd.to_numeric(df[col], errors="coerce")
+    # Ratio difusa = difusa / (directa + difusa). Proper a 1 = cel cobert/pluja
+    if "direct_radiation" in df.columns and "diffuse_radiation" in df.columns:
+        total = (df["direct_radiation"] + df["diffuse_radiation"]).clip(lower=1)
+        df["diffuse_fraction"] = df["diffuse_radiation"] / total
+    return df
+
+
+def _add_visibility_features(df: pd.DataFrame) -> pd.DataFrame:
+    """Visibilitat — baixa = pluja/boira activa. Historical Forecast API (2021-04+)."""
+    df = df.copy()
+    if "visibility" in df.columns:
+        df["visibility"] = pd.to_numeric(df["visibility"], errors="coerce")
+    return df
+
+
+def _add_freezing_level_features(df: pd.DataFrame) -> pd.DataFrame:
+    """Nivell de congelació (alçada isoterma 0°C) — clau per tipus/intensitat de precipitació."""
+    df = df.copy()
+    if "freezing_level_height" in df.columns:
+        df["freezing_level_height"] = pd.to_numeric(df["freezing_level_height"], errors="coerce")
+    return df
+
+
+def _add_wind_gust_features(df: pd.DataFrame) -> pd.DataFrame:
+    """Ràfega de vent — fronts de ratxa convectiusindiquen tempestes."""
+    df = df.copy()
+    if "wind_gusts_10m" in df.columns:
+        df["wind_gusts_10m"] = pd.to_numeric(df["wind_gusts_10m"], errors="coerce")
+        # Gust factor: ràfega / vent mitjà. Alt = turbulència convectiva
+        if "wind_speed_10m" in df.columns:
+            mean_wind = df["wind_speed_10m"].clip(lower=0.5)
+            df["gust_factor"] = df["wind_gusts_10m"] / mean_wind
+    return df
+
+
 def _add_rain_context(df: pd.DataFrame, precip_col: str = "precipitation") -> pd.DataFrame:
     """Context de pluja recent (últimes hores)."""
     df = df.copy()
@@ -630,6 +695,12 @@ def build_features_from_hourly(df: pd.DataFrame) -> pd.DataFrame:
     df = _add_pressure_level_features(df)
     df = _add_physics_composites(df)
     df = _add_soil_moisture_features(df)
+    df = _add_cloud_layer_features(df)
+    df = _add_wet_bulb_features(df)
+    df = _add_radiation_features(df)
+    df = _add_visibility_features(df)
+    df = _add_freezing_level_features(df)
+    df = _add_wind_gust_features(df)
     return df
 
 
@@ -669,7 +740,12 @@ def build_features_from_realtime(station_df: pd.DataFrame, forecast_df: pd.DataF
         forecast_df["datetime"] = pd.to_datetime(forecast_df["datetime"])
 
         # Afegir columnes del forecast que no tenim a l'estació
-        extra_cols = ["cape", "cloud_cover", "weather_code", "wind_gusts_10m", "dew_point_2m", "rain"]
+        extra_cols = [
+            "cape", "cloud_cover", "weather_code", "wind_gusts_10m", "dew_point_2m", "rain",
+            "cloud_cover_low", "cloud_cover_mid", "cloud_cover_high",
+            "direct_radiation", "diffuse_radiation", "wet_bulb_temperature_2m",
+            "visibility", "freezing_level_height",
+        ]
         available_extra = [c for c in extra_cols if c in forecast_df.columns]
 
         if available_extra:
@@ -810,6 +886,19 @@ FEATURE_COLUMNS = [
     "convective_inhibition",
     # SST Marine (forecast only — s'acumula via feedback loop)
     "sst_med",
+    # Cloud layers (ERA5 archive 2015+)
+    "cloud_cover_low", "cloud_cover_mid", "cloud_cover_high",
+    "cloud_low_fraction",
+    # Wet bulb temperature (ERA5 archive 2015+)
+    "wet_bulb_temperature_2m", "wet_bulb_depression",
+    # Radiation breakdown (ERA5 archive 2015+)
+    "direct_radiation", "diffuse_radiation", "diffuse_fraction",
+    # Wind gusts (ERA5 archive 2015+)
+    "wind_gusts_10m", "gust_factor",
+    # Visibility (Historical Forecast API 2021-04+)
+    "visibility",
+    # Freezing level (Historical Forecast API 2021-04+)
+    "freezing_level_height",
 ]
 
 
