@@ -45,6 +45,14 @@ Utilitza dades reals de l'estació [MeteoCardedeu.net](https://meteocardedeu.net
                        │  Probabilitat de │──→ 🔔 Telegram
                        │  pluja (0-100%)  │
                        └──────────────────┘
+                                 │
+                    Resum diari / Accuracy
+                                 │
+                                 ▼
+                       ┌──────────────────┐
+                       │  Narrativa IA    │──→ 💬 Català fluid
+                       │ (GitHub Models)  │     (1 crida/dia)
+                       └──────────────────┘
 ```
 
 ## Filosofia
@@ -119,6 +127,8 @@ El workflow `.github/workflows/nowcast.yml`:
   - `TELEGRAM_CHAT_ID`
   - `METEOCAT_API_KEY`
   - `AEMET_API_KEY`
+  - `AI_GITHUB_TOKEN` usa automàticament `GITHUB_TOKEN` (gratuït, sense configuració extra)
+  - `AI_OPENROUTER_KEY` (opcional, fallback a models gratuïts d'OpenRouter)
 
 ## Estructura
 
@@ -142,6 +152,8 @@ nowcast-cardedeu/
 │   ├── model/
 │   │   ├── train.py          # Pipeline d'entrenament (XGBoost + TimeSeriesSplit)
 │   │   └── predict.py        # Predicció en temps real (fusió 6 fonts + rain gate)
+│   ├── ai/
+│   │   └── enricher.py       # Narratives IA en català (GitHub Models + OpenRouter fallback)
 │   ├── notify/
 │   │   ├── telegram.py       # Missatges Telegram (3 tipus: alerta, clearing, resum)
 │   │   └── state.py          # Màquina d'estats per notificacions (histèresi + cooldown)
@@ -195,7 +207,7 @@ El model defineix **112 features** per predicció en temps real. Per entrenament
 | 🆕 SMC Predicció | prob_precip_1h, prob_precip_6h, intensitat | Previsió municipal calibrada per Cardedeu |
 | 🆕 Radar quadrants | max_dbz i cobertura per N/E/S/W | Consciència direccional: d'on ve la pluja |
 | 🆕 Echo bearing | sin/cos del rumb de l'eco més proper | Direcció de la pluja codificada cíclicament |
-| 🆕 Tramuntana | tramuntana_strength, tramuntana_moisture | 13.8% de la pluja ve amb vent del nord |
+| ❄️ Tramuntana | tramuntana_strength, tramuntana_moisture | Vent polar fred del nord, supressor de pluja (5.8% rain rate) |
 
 ## Fonts de dades
 
@@ -210,6 +222,7 @@ El model defineix **112 features** per predicció en temps real. Per entrenament
 | [Meteocat XDDE](https://apidocs.meteocat.gencat.cat) | Descàrregues elèctriques (llamps) a Catalunya | Temps real | Sí (gratuïta) |
 | [AEMET Radar](https://opendata.aemet.es) | Radar C-banda regional Barcelona | Cada ~10 min | Sí (gratuïta) |
 | [SMC Predicció](https://apidocs.meteocat.gencat.cat) | Previsió municipal horària (prob. precip) | Cada 6h | Sí (gratuïta) |
+| [GitHub Models](https://github.com/marketplace/models) | IA narrativa (gpt-4o-mini) per resums diaris | 1 crida/dia | No (GITHUB_TOKEN) |
 
 ### Radar RainViewer
 El sistema descarrega tiles de radar (zoom 8, tile 134/94) i fa dues coses:
@@ -259,9 +272,11 @@ Cardedeu se situa al peu de la Serralada Prelitoral, a la confluència d'aire me
 
 | Règim | Direcció | Efecte a Cardedeu | Feature |
 |-------|----------|-------------------|---------|
-| 🌊 **Llevantada** | E/SE (60°-150°) | Humitat mediterrània contra les muntanyes → pluja #1 | `is_llevantada`, `llevantada_strength`, `llevantada_moisture` |
-| 🌀 **Garbí/Xaloc** | SW (190°-250°) | Aire càlid inestable → tempestes convectives | `is_garbi`, `garbi_strength` |
-| 🏔️ **Ponent/Mestral** | W/NW (260°-340°) | Aire sec continental (Foehn) → supressor de pluja | `is_ponent` |
+| 🌊 **Llevantada** | E/SE (60°-150°) | Humitat mediterrània contra les muntanyes → pluja #1 (14.1%) | `is_llevantada`, `llevantada_strength`, `llevantada_moisture` |
+| 🌀 **Garbí/Xaloc** | SW (190°-250°) | Aire càlid inestable → tempestes convectives (10.9%) | `is_garbi`, `garbi_strength` |
+| ☀️ **Migjorn** | S (150°-190°) | Aire africà càlid, segon en pluja (14.8%) | `is_migjorn` |
+| 🏔️ **Ponent/Mestral** | W/NW (260°-340°) | Aire sec continental (Foehn) → supressor de pluja (5.7%) | `is_ponent` |
+| ❄️ **Tramuntana** | N (340°-30°) | Vent polar fred del Montseny → supressor de pluja (5.8%) | `is_tramuntana`, `tramuntana_strength`, `tramuntana_moisture` |
 | 🔄 **Backing wind** | Gir antihorari | Aproximació de front càlid o baixa → pluja imminent | `wind_dir_change_3h` (negatiu) |
 
 La **Llevantada** és el patró més important: quan el vent bufa de l'est amb humitat alta, la pluja a Cardedeu és quasi segura. El model captura aquesta interacció amb `llevantada_moisture` = is_llevantada × humitat relativa.
@@ -300,12 +315,12 @@ El model AROME de Meteo-France és el 4t model de l'ensemble, amb resolució de 
 
 | Mètrica | Valor |
 |---------|-------|
-| AUC-ROC (CV) | 0.9548 ± 0.008 |
-| F1-Score (CV) | 0.6743 ± 0.030 |
-| F1-Score OOF (calibrat) | 0.6929 |
-| AUC-ROC (final) | 0.9654 |
-| Llindar òptim (calibrat) | 0.3513 |
-| Mostres d'entrenament | 98,183 |
+| AUC-ROC (CV) | 0.9545 ± 0.008 |
+| F1-Score (CV) | 0.6723 ± 0.032 |
+| F1-Score OOF (calibrat) | 0.6917 |
+| AUC-ROC (final) | 0.9664 |
+| Llindar òptim (calibrat) | 0.3465 |
+| Mostres d'entrenament | 98,306 |
 | Features (training) | 68 |
 | Features (total) | 112 |
 | Classe positiva (pluja) | ~9.3% |
@@ -396,6 +411,7 @@ El resum diari (7:00) està dissenyat per doble audiència — públic general i
 
 **Part superior (tothom):**
 - Outlook del dia (☀️/🌥️/🌧️) + probabilitat actual
+- 🆕 Narrativa IA en català (paràgraf fluid generat per GitHub Models gpt-4o-mini)
 - Previsió ML per franges: Matí (7-13h), Tarda (13-19h), Nit (19-1h) amb rang de temperatura
 - Propera pluja prevista (48h)
 
@@ -409,6 +425,28 @@ El resum diari (7:00) està dissenyat per doble audiència — públic general i
 - Vent sinòptic a 850hPa amb direcció, velocitat, T850 i humitat relativa 850/700hPa
 - Índexs d'inestabilitat (TT, LI, VT)
 - Resum intel·ligent del radar (filtra ecos no significatius)
+
+### Narrativa IA (GitHub Models)
+
+El resum diari i l'informe setmanal d'accuracy inclouen un paràgraf generat per IA en català que interpreta les dades meteorològiques de manera natural:
+
+```
+💬 Avui a Cardedeu, el dia es presenta amb temperatures suaus que oscil·len
+   entre els 10 i els 17 graus. Al matí, les probabilitats de pluja són mínimes,
+   però a mesura que avanci la tarda, el risc de ruixats augmentarà una mica.
+   El vent bufa lleugerament del nord-est, i la pressió ha baixat lleugerament,
+   cosa que pot indicar canvis en el temps.
+```
+
+**Arquitectura (dual-provider, patró gencat-cultural-agenda):**
+1. **GitHub Models gpt-4o-mini** (primari) — gratuït via `GITHUB_TOKEN` automàtic a GitHub Actions
+2. **OpenRouter models gratuïts** (fallback) — gpt-oss-120b, llama-3.3, gemma-3, etc.
+
+**Principis de disseny:**
+- **Mai al camí crític**: Les crides IA NO estan a `predict_now.py` ni a les alertes de pluja. Només als scripts de baixa freqüència (1 crida/dia + 1 crida/setmana)
+- **Fallback graciós**: Si la IA falla, s'envia el missatge template existent sense narrativa
+- **Zero dependències noves**: Usa `requests` (ja inclòs) per cridar l'API compatible amb OpenAI
+- **Zero cost**: `GITHUB_TOKEN` és automàtic i gratuït; OpenRouter free tier com a fallback
 
 ### Disseny anti-spam
 
