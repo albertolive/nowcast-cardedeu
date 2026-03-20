@@ -1,39 +1,39 @@
 {
-  "cv_auc_mean": 0.9548819451042203,
-  "cv_auc_std": 0.007457013644503973,
-  "cv_f1_mean": 0.6731049606327771,
-  "cv_f1_std": 0.0332950924956749,
-  "final_auc": 0.9666192264066964,
+  "cv_auc_mean": 0.9607296531319583,
+  "cv_auc_std": 0.005200988351456659,
+  "cv_f1_mean": 0.6813334174785604,
+  "cv_f1_std": 0.030073741265684375,
+  "final_auc": 0.9674988496544178,
   "final_report": {
     "0": {
-      "precision": 0.9711301490435394,
-      "recall": 0.9537805440295067,
-      "f1-score": 0.9623771588067687,
-      "support": 8676.0
+      "precision": 0.96910341611286,
+      "recall": 0.957824383498502,
+      "f1-score": 0.9634308895972182,
+      "support": 8678.0
     },
     "1": {
-      "precision": 0.6941266209000763,
-      "recall": 0.78719723183391,
-      "f1-score": 0.7377381434941224,
+      "precision": 0.7088305489260143,
+      "recall": 0.7707612456747405,
+      "f1-score": 0.7384997927890593,
       "support": 1156.0
     },
-    "accuracy": 0.9341944670463792,
+    "accuracy": 0.9358348586536506,
     "macro avg": {
-      "precision": 0.8326283849718079,
-      "recall": 0.8704888879317083,
-      "f1-score": 0.8500576511504455,
-      "support": 9832.0
+      "precision": 0.8389669825194371,
+      "recall": 0.8642928145866212,
+      "f1-score": 0.8509653411931388,
+      "support": 9834.0
     },
     "weighted avg": {
-      "precision": 0.9385613859705285,
-      "recall": 0.9341944670463792,
-      "f1-score": 0.9359651671772506,
-      "support": 9832.0
+      "precision": 0.9385079885688299,
+      "recall": 0.9358348586536506,
+      "f1-score": 0.936989934959204,
+      "support": 9834.0
     }
   },
-  "n_samples": 98319,
+  "n_samples": 98335,
   "n_positive": 9178,
-  "n_features": 142,
+  "n_features": 155,
   "feature_names": [
     "hour_sin",
     "hour_cos",
@@ -176,10 +176,23 @@
     "soil_moisture_7_to_28cm",
     "soil_moisture_change_24h",
     "convective_inhibition",
-    "sst_med"
+    "sst_med",
+    "cloud_cover_low",
+    "cloud_cover_mid",
+    "cloud_cover_high",
+    "cloud_low_fraction",
+    "wet_bulb_temperature_2m",
+    "wet_bulb_depression",
+    "direct_radiation",
+    "diffuse_radiation",
+    "diffuse_fraction",
+    "wind_gusts_10m",
+    "gust_factor",
+    "visibility",
+    "freezing_level_height"
   ],
   "calibrated": true,
-  "optimal_threshold": 0.35802469135802467,
-  "calibration_oof_f1_uncalibrated": 0.6771392665371873,
-  "calibration_oof_f1_calibrated": 0.6889841899763169
+  "optimal_threshold": 0.375,
+  "calibration_oof_f1_uncalibrated": 0.6846162697042918,
+  "calibration_oof_f1_calibrated": 0.6952857519094021
 }

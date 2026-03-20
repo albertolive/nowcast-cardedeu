@@ -41,14 +41,20 @@ OPEN_METEO_HOURLY_VARS = [
     "precipitation",
     "rain",
     "cloud_cover",
+    "cloud_cover_low",              # Núvols baixos (< 2km) — boira, estrat, nimboestrat
+    "cloud_cover_mid",              # Núvols mitjos (2-6km) — altoestrat, altocúmul
+    "cloud_cover_high",             # Núvols alts (> 6km) — cirrus, cirroestrat
     "wind_speed_10m",
     "wind_direction_10m",
     "wind_gusts_10m",
     "cape",                    # Convective Available Potential Energy
     "shortwave_radiation",
+    "direct_radiation",             # Radiació solar directa (W/m²)
+    "diffuse_radiation",            # Radiació solar difusa (W/m²) — alta = núvols gruixuts
     "weather_code",
     "vapour_pressure_deficit", # VPD (kPa) — indicador directe de saturació
     "convective_inhibition",   # CIN — supressió de convecció (J/kg)
+    "wet_bulb_temperature_2m",      # Temp bulb humit — fog/precip type indicator
     "soil_moisture_0_to_7cm",  # Humitat del sòl superficial (m³/m³)
     "soil_moisture_7_to_28cm", # Humitat del sòl profund (m³/m³)
 ]
