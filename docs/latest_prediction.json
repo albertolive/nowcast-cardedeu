@@ -3,15 +3,15 @@
   "probability_pct": 0.0,
   "will_rain": false,
   "confidence": "Molt Baixa",
-  "timestamp": "2026-03-20T07:10:38.743033",
+  "timestamp": "2026-03-20T07:20:35.153825",
   "conditions": {
-    "temperature": "2.3",
-    "humidity": 90,
+    "temperature": "2.4",
+    "humidity": 91,
     "pressure": "1018.1",
     "wind_speed": "0.0",
     "wind_dir": "E",
     "rain_today": "0.0",
-    "solar_radiation": 16
+    "solar_radiation": 47
   },
   "radar": {
     "dbz": 0.0,
@@ -54,8 +54,8 @@
     "prob_storm": 0
   },
   "bias": {
-    "temp": 2.8,
-    "humidity": -16.0
+    "temp": 2.6999999999999997,
+    "humidity": -17.0
   },
   "wind_regime": {
     "level": "850hPa",
@@ -89,17 +89,17 @@
     "hour_cos": -0.25881904510252063,
     "month_sin": 1.0,
     "month_cos": 6.123233995736766e-17,
-    "pressure_msl": 1018.075,
-    "pressure_change_1h": 0.056632653061228666,
-    "pressure_change_3h": 0.6270833333334167,
-    "pressure_change_6h": -0.43475609756092126,
-    "pressure_accel_3h": 0.2976048752834686,
-    "temperature_2m": 2.3,
-    "relative_humidity_2m": 90.125,
-    "dew_point": 0.8499336095753557,
-    "dew_point_depression": 1.4500663904246442,
-    "humidity_change_1h": -0.09948979591837315,
-    "humidity_change_3h": 1.75,
+    "pressure_msl": 1018.0866666666667,
+    "pressure_change_1h": 0.06829931972788472,
+    "pressure_change_3h": 0.6387500000000728,
+    "pressure_change_6h": -0.4230894308942652,
+    "pressure_accel_3h": 0.30927154195012463,
+    "temperature_2m": 2.306666666666666,
+    "relative_humidity_2m": 90.13333333333334,
+    "dew_point": 0.857801749009646,
+    "dew_point_depression": 1.44886491765702,
+    "humidity_change_1h": -0.09115646258503318,
+    "humidity_change_3h": 1.75833333333334,
     "vapour_pressure_deficit": null,
     "vpd_change_3h": null,
     "wind_speed_10m": 0.0,
@@ -112,7 +112,7 @@
     "is_garbi": 0.0,
     "is_ponent": 0.0,
     "llevantada_strength": 0.0,
-    "llevantada_moisture": 0.90125,
+    "llevantada_moisture": 0.9013333333333334,
     "garbi_strength": 0.0,
     "tramuntana_strength": 0.0,
     "tramuntana_moisture": 0.0,
@@ -140,7 +140,7 @@
     "is_overcast": 0.0,
     "weather_code": 0.0,
     "model_predicts_precip": 0.0,
-    "shortwave_radiation": 10.25,
+    "shortwave_radiation": 17.733333333333334,
     "sentinel_temp_diff": null,
     "sentinel_humidity_diff": null,
     "sentinel_precip": null,
@@ -154,5 +154,5 @@
     "ensemble_min_precip": 0.0,
     "ensemble_models_rain": 0.0
   },
-  "pressure_change_3h": 0.6270833333334167
+  "pressure_change_3h": 0.6387500000000728
 }
