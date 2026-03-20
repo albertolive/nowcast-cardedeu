@@ -562,6 +562,41 @@ def _add_model_features(df: pd.DataFrame) -> pd.DataFrame:
         cape = pd.to_numeric(df["cape"], errors="coerce")
         df["cape_change_3h"] = cape.diff(3)
 
+    # ── FP-killer features ──
+    # Deep analysis shows 9,478 FP vs 8,940 TP. FP signature:
+    # NWP says "maybe rain" but humidity is dropping and air is drier.
+    # These interactions directly encode the error patterns.
+
+    # 1. NWP rain amount (continuous) — much more informative than binary
+    #    NWP predicting 5mm = frontal event (likely real), 0.1mm = marginal (likely FP)
+    if "rain" in df.columns:
+        df["nwp_rain_amount"] = pd.to_numeric(df["rain"], errors="coerce")
+
+    # 2. NWP rain + drying humidity = classic FP pattern
+    #    High value = NWP says rain but humidity is dropping → FP likely
+    mpp_col = "model_predicts_precip" if "model_predicts_precip" in df.columns else None
+    if mpp_col and "relative_humidity_2m" in df.columns:
+        rh = pd.to_numeric(df["relative_humidity_2m"], errors="coerce")
+        rh_change = rh.diff(3)
+        df["nwp_rain_drying"] = df[mpp_col] * (-rh_change).clip(lower=0)
+
+    # 3. NWP rain confidence: model says rain AND it's already raining = high confidence
+    if mpp_col and "rain_accum_3h" in df.columns:
+        df["nwp_rain_confirmed"] = df[mpp_col] * df["rain_accum_3h"]
+
+    # 4. Afternoon convective uncertainty: NWP rain in afternoon with
+    #    no low clouds = likely overestimating convection (biggest FP source)
+    if mpp_col and "cloud_cover_low" in df.columns:
+        hour = pd.to_datetime(df.get("datetime", pd.NaT)).dt.hour
+        is_afternoon = ((hour >= 11) & (hour <= 17)).astype(float)
+        low_clouds = pd.to_numeric(df["cloud_cover_low"], errors="coerce") / 100
+        df["afternoon_fp_risk"] = is_afternoon * df[mpp_col] * (1 - low_clouds)
+
+    # 5. Dew point gap when NWP says rain — large gap = air too dry for rain to reach surface
+    if mpp_col and "dew_point_depression" in df.columns:
+        dpd = pd.to_numeric(df["dew_point_depression"], errors="coerce")
+        df["nwp_rain_dry_air"] = df[mpp_col] * dpd
+
     return df
 
 
@@ -830,6 +865,13 @@ FEATURE_COLUMNS = [
     "wc_is_thunderstorm", "wc_is_rain", "wc_is_drizzle",
     # NWP error detection (when model disagrees with surface conditions)
     "nwp_dry_conflict", "nwp_wet_conflict",
+    # NWP rain amount (continuous — more informative than binary model_predicts_precip)
+    "nwp_rain_amount",
+    # FP-killer interactions (target the 9K false positives)
+    "nwp_rain_drying",      # NWP rain + humidity dropping → FP signal
+    "nwp_rain_confirmed",   # NWP rain + already raining → high confidence TP
+    "afternoon_fp_risk",    # afternoon + NWP rain + no low clouds → convective FP
+    "nwp_rain_dry_air",     # NWP rain + large dew point gap → virga/evaporation
     # CAPE change rate (rapid destabilization)
     "cape_change_3h",
     # Radiació solar

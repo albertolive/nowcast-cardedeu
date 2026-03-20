@@ -1,39 +1,39 @@
 {
-  "cv_auc_mean": 0.9607296531319583,
-  "cv_auc_std": 0.005200988351456659,
-  "cv_f1_mean": 0.6813334174785604,
-  "cv_f1_std": 0.030073741265684375,
-  "final_auc": 0.9674988496544178,
+  "cv_auc_mean": 0.9610461691292796,
+  "cv_auc_std": 0.0055130706019580755,
+  "cv_f1_mean": 0.6859762882827015,
+  "cv_f1_std": 0.02852481363099359,
+  "final_auc": 0.9671805547415688,
   "final_report": {
     "0": {
-      "precision": 0.96910341611286,
-      "recall": 0.957824383498502,
-      "f1-score": 0.9634308895972182,
-      "support": 8678.0
+      "precision": 0.9718177548144669,
+      "recall": 0.9535660790413643,
+      "f1-score": 0.9626054085489968,
+      "support": 8679.0
     },
     "1": {
-      "precision": 0.7088305489260143,
-      "recall": 0.7707612456747405,
-      "f1-score": 0.7384997927890593,
+      "precision": 0.6944655041698257,
+      "recall": 0.7923875432525952,
+      "f1-score": 0.7402020202020202,
       "support": 1156.0
     },
-    "accuracy": 0.9358348586536506,
+    "accuracy": 0.9346212506354855,
     "macro avg": {
-      "precision": 0.8389669825194371,
-      "recall": 0.8642928145866212,
-      "f1-score": 0.8509653411931388,
-      "support": 9834.0
+      "precision": 0.8331416294921463,
+      "recall": 0.8729768111469798,
+      "f1-score": 0.8514037143755084,
+      "support": 9835.0
     },
     "weighted avg": {
-      "precision": 0.9385079885688299,
-      "recall": 0.9358348586536506,
-      "f1-score": 0.936989934959204,
-      "support": 9834.0
+      "precision": 0.9392179376568455,
+      "recall": 0.9346212506354855,
+      "f1-score": 0.9364642477021127,
+      "support": 9835.0
     }
   },
-  "n_samples": 98335,
+  "n_samples": 98341,
   "n_positive": 9178,
-  "n_features": 155,
+  "n_features": 160,
   "feature_names": [
     "hour_sin",
     "hour_cos",
@@ -108,6 +108,11 @@
     "wc_is_drizzle",
     "nwp_dry_conflict",
     "nwp_wet_conflict",
+    "nwp_rain_amount",
+    "nwp_rain_drying",
+    "nwp_rain_confirmed",
+    "afternoon_fp_risk",
+    "nwp_rain_dry_air",
     "cape_change_3h",
     "shortwave_radiation",
     "radar_dbz",
@@ -192,7 +197,7 @@
     "freezing_level_height"
   ],
   "calibrated": true,
-  "optimal_threshold": 0.375,
-  "calibration_oof_f1_uncalibrated": 0.6846162697042918,
-  "calibration_oof_f1_calibrated": 0.6952857519094021
+  "optimal_threshold": 0.40221914008321774,
+  "calibration_oof_f1_uncalibrated": 0.6889846297158826,
+  "calibration_oof_f1_calibrated": 0.6976502661300792
 }
