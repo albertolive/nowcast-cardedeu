@@ -362,7 +362,24 @@ El model AROME de Meteo-France és el 4t model de l'ensemble, amb resolució de 
 | Cross-validation | TimeSeriesSplit (5 folds) |
 | Calibratge | Isotonic Regression (OOF) |
 
-> El model utilitza `scale_pos_weight=9.71` per compensar el desequilibri de classes, `eval_metric="aucpr"` per optimitzar la detecció de pluja, i **calibratge isotònic** sobre prediccions out-of-fold per obtenir probabilitats fiables.
+> El model utilitza `scale_pos_weight=9.72` per compensar el desequilibri de classes, `eval_metric="aucpr"` per optimitzar la detecció de pluja, i **calibratge isotònic** sobre prediccions out-of-fold per obtenir probabilitats fiables.
+
+### Hiperparàmetres XGBoost
+
+| Paràmetre | Valor | Nota |
+|-----------|-------|------|
+| n_estimators | 800 | Més arbres per compensar lr baixa |
+| max_depth | 6 | Complexitat intermèdia |
+| learning_rate | 0.02 | Baixa per evitar sobreajust amb 183 features |
+| subsample | 0.8 | Bagging row-level |
+| colsample_bytree | 0.7 | Força exploració diversa de features |
+| min_child_weight | 5 | Regularització split mínim |
+| gamma | 0.1 | Penalització complexitat |
+| reg_alpha | 0.1 | L1 regularització |
+| reg_lambda | 1.0 | L2 regularització |
+| early_stopping_rounds | 75 | Proporcional a lr baixa |
+
+> **Lliçó d'afinament:** Quan s'afegeixen features noves (160→183), cal reajustar els hiperparàmetres. Amb 183 features, la combinació lr=0.05 + colsample=0.8 (antiga) sobreajustava — baixar lr a 0.02 i colsample a 0.7 va recuperar i superar les mètriques anteriors. Top 3 features (NWP) acumulen ~85% del gain total.
 
 ## Feedback loop (auto-aprenentatge)
 
