@@ -186,19 +186,24 @@ def _add_wind_regime_features(df: pd.DataFrame,
 
 def _add_pressure_level_features(df: pd.DataFrame) -> pd.DataFrame:
     """
-    Features de nivells de pressió (850hPa, 700hPa, 500hPa).
-    Inclou índexs d'inestabilitat del Skew-T:
-    - VT (Vertical Totals) = T850 - T500: gradient tèrmic vertical
-    - TT (Total Totals) = VT + (Td850 - T500): combina gradient + humitat
-    - LI (Lifted Index): inestabilitat a 500hPa (negatiu = inestable)
+    Features de nivells de pressió (925/850/700/500/300 hPa).
+
+    925hPa (~750m): capa límit — low-level jet, inversions, flux d'humitat baix
+    850hPa (~1500m): flux sinòptic — règims, transport humitat
+    700hPa (~3000m): intrusió d'aire sec — capping, inhib tempestes
+    500hPa (~5500m): aire fred — gradient tèrmic, VT/TT/LI
+    300hPa (~9000m): jet stream — cisalla profunda, trigger dinàmic
 
     Ref: alexmeteo.com — Skew-T analysis, "Ingredients per formar Tempestes"
     """
     import math
 
     df = df.copy()
-    for col in ["wind_850_speed", "wind_850_dir", "temp_850", "temp_500",
-                "rh_850", "rh_700", "temp_700", "vt_index", "tt_index", "li_index"]:
+    for col in ["wind_925_speed", "wind_925_dir", "temp_925", "rh_925",
+                "wind_850_speed", "wind_850_dir", "temp_850", "temp_500",
+                "rh_850", "rh_700", "temp_700",
+                "wind_300_speed", "wind_300_dir", "gph_300",
+                "vt_index", "tt_index", "li_index"]:
         if col in df.columns:
             df[col] = pd.to_numeric(df[col], errors="coerce")
 
@@ -238,6 +243,36 @@ def _add_pressure_level_features(df: pd.DataFrame) -> pd.DataFrame:
         # Directional shear: canvi de direcció entre superfície i 850hPa
         diff = d850 - d10
         df["wind_shear_dir"] = ((diff + 180) % 360) - 180
+
+    # ── 925hPa: boundary layer features ──
+    # Inversió tèrmica: quan T925 > T_sfc, aire fred atrapat a baix → boira/estrat
+    if "temp_925" in df.columns and "temperature_2m" in df.columns:
+        t925 = pd.to_numeric(df["temp_925"], errors="coerce")
+        t_sfc = pd.to_numeric(df["temperature_2m"], errors="coerce")
+        df["inversion_925"] = t925 - t_sfc  # positiu = inversió
+
+    # Low-level moisture flux a 925hPa — el gruix del transport d'humitat
+    # en events de Llevantada és sovint a 925, no a 850 (per sobre del Montseny)
+    if "wind_925_speed" in df.columns and "rh_925" in df.columns and "temp_925" in df.columns:
+        w925 = pd.to_numeric(df["wind_925_speed"], errors="coerce")
+        rh925 = pd.to_numeric(df["rh_925"], errors="coerce").clip(lower=1)
+        t925 = pd.to_numeric(df["temp_925"], errors="coerce")
+        es_925 = 6.112 * np.exp(17.67 * t925 / (t925 + 243.5))
+        q_925 = (rh925 / 100.0) * es_925
+        df["moisture_flux_925"] = w925 * q_925
+
+    # ── 300hPa: jet stream features ──
+    # Deep-layer shear (850-300hPa): organitza supercèl·lules i MCS
+    # Més important que low-level shear per persistència de tempestes
+    if "wind_300_speed" in df.columns and "wind_850_speed" in df.columns:
+        w300 = pd.to_numeric(df["wind_300_speed"], errors="coerce")
+        w850_dl = pd.to_numeric(df["wind_850_speed"], errors="coerce")
+        df["deep_layer_shear"] = (w300 - w850_dl).abs()
+
+    # Jet stream intensity — upper divergence proxy
+    # Strong jet overhead = dynamic lifting = trigger for organized rain
+    if "wind_300_speed" in df.columns:
+        df["jet_speed_300"] = pd.to_numeric(df["wind_300_speed"], errors="coerce")
 
     # ── Cold air at 500hPa: llindars de tempesta ──
     # Ref: alexmeteo — -17°C a l'estiu = "petita bomba", -22/-24°C primavera
@@ -562,17 +597,25 @@ FEATURE_COLUMNS = [
     "llevantada_strength", "llevantada_moisture", "garbi_strength",
     "tramuntana_strength", "tramuntana_moisture",
     "wind_dir_change_3h",
-    # Nivells de pressió (850hPa, 700hPa, 500hPa) — flux sinòptic real
+    # Nivells de pressió (925/850/700/500/300 hPa) — perfil vertical complet
+    "temp_925", "rh_925", "wind_925_speed", "wind_925_dir",
     "wind_850_speed", "wind_850_dir",
     "temp_850", "temp_500", "rh_850",
     "rh_700", "temp_700",
+    "wind_300_speed", "wind_300_dir", "gph_300",
     # Índexs d'inestabilitat (Skew-T + Lifted Index)
     "vt_index", "tt_index", "li_index",
     "li_unstable",  # li_very_unstable: zero importance (fires too rarely)
-    # Physics: moisture flux at 850hPa (wind × humidity = water transport)
+    # Physics: moisture flux (wind × humidity = water transport)
     "moisture_flux_850",
+    "moisture_flux_925",  # low-level: bulk of Llevantada moisture
     # Physics: Θe lapse rate proxy (convective instability)
     "theta_e_deficit",
+    # 925hPa: boundary layer physics
+    "inversion_925",  # T925 - T_sfc: positiu = inversió (fog/stratus suppressor)
+    # 300hPa: jet stream physics
+    "deep_layer_shear",  # 850-300hPa speed diff: tempestes organitzades
+    "jet_speed_300",  # jet stream intensity: dynamic lifting trigger
     # Cisalla de vent (wind shear) — clau per tempestes organitzades
     "wind_shear_speed", "wind_shear_dir",
     # Llindars d'aire fred a 500hPa
