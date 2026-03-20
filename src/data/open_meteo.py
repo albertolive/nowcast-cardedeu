@@ -176,6 +176,12 @@ PRESSURE_LEVEL_VARS = [
     # Visibility & freezing level (Historical Forecast API only, 2021-04+)
     "visibility",
     "freezing_level_height",
+    # Tier 2 — noves variables Historical Forecast (des d'abril 2021, ~44% cobertura)
+    "lifted_index",                  # LI directe del NWP (millor que el derivat)
+    "geopotential_height_850hPa",    # Topografia bàrica — depressió/anticicló
+    "relative_humidity_500hPa",      # Humitat a 500hPa — intrusió seca mid-trop
+    "wind_speed_700hPa",             # Vent de guia (steering level)
+    "wind_direction_700hPa",         # Direcció del vent de guia
 ]
 
 # Mapejat: noms de l'API → noms interns per al model
@@ -194,6 +200,11 @@ _PRESSURE_RENAME = {
     "wind_speed_300hPa": "wind_300_speed",
     "wind_direction_300hPa": "wind_300_dir",
     "geopotential_height_300hPa": "gph_300",
+    # Tier 2 — noves variables
+    "geopotential_height_850hPa": "gph_850",
+    "relative_humidity_500hPa": "rh_500",
+    "wind_speed_700hPa": "wind_700_speed",
+    "wind_direction_700hPa": "wind_700_dir",
 }
 
 
@@ -260,7 +271,7 @@ def fetch_historical_pressure_levels(
         # Renomenar columnes API → noms interns
         df = df.rename(columns=_PRESSURE_RENAME)
         # Keep renamed pressure columns + passthrough columns (cape, convective_inhibition)
-        _PASSTHROUGH_COLS = ["cape", "convective_inhibition", "visibility", "freezing_level_height"]
+        _PASSTHROUGH_COLS = ["cape", "convective_inhibition", "visibility", "freezing_level_height", "lifted_index"]
         keep_cols = [c for c in _PRESSURE_RENAME.values() if c in df.columns]
         keep_cols += [c for c in _PASSTHROUGH_COLS if c in df.columns]
         df = df[["datetime"] + keep_cols]

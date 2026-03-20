@@ -424,6 +424,12 @@ def _add_physics_composites(df: pd.DataFrame) -> pd.DataFrame:
         # Gran diferència = cape atrapada → tempestes potents si es trenca la capa
         df["dry_intrusion_700"] = (rh850 - rh700).clip(lower=0) / 100.0
 
+    # ── 7. Moisture Flux Convergence ──
+    # Canvi en el flux d'humitat: augmentant = front que s'apropa, disminuint = front que passa
+    if "moisture_flux_850" in df.columns:
+        mf = pd.to_numeric(df["moisture_flux_850"], errors="coerce")
+        df["moisture_flux_change_3h"] = mf.diff(3)
+
     return df
 
 
@@ -596,6 +602,113 @@ def _add_model_features(df: pd.DataFrame) -> pd.DataFrame:
     if mpp_col and "dew_point_depression" in df.columns:
         dpd = pd.to_numeric(df["dew_point_depression"], errors="coerce")
         df["nwp_rain_dry_air"] = df[mpp_col] * dpd
+
+    # ── Tier 1: New ERA5 features (100% coverage 2015+) ──
+
+    # Showers (convective rain) — separate from stratiform rain
+    if "showers" in df.columns:
+        df["showers"] = pd.to_numeric(df["showers"], errors="coerce")
+        # Convective fraction: how much of NWP rain is convective showers
+        if "rain" in df.columns:
+            total_rain = pd.to_numeric(df["rain"], errors="coerce") + df["showers"]
+            df["nwp_showers_fraction"] = df["showers"] / total_rain.clip(lower=0.01)
+            df["nwp_showers_fraction"] = df["nwp_showers_fraction"].where(total_rain > 0.05, 0)
+
+    # Evapotranspiration — surface moisture flux (FAO reference ET)
+    if "et0_fao_evapotranspiration" in df.columns:
+        df["et0_fao_evapotranspiration"] = pd.to_numeric(df["et0_fao_evapotranspiration"], errors="coerce")
+
+    # Soil temperature — warm soil + moist soil = thunderstorm fuel
+    if "soil_temperature_0_to_7cm" in df.columns:
+        df["soil_temperature_0_to_7cm"] = pd.to_numeric(df["soil_temperature_0_to_7cm"], errors="coerce")
+        # Soil-air temperature gap: warm soil vs cool air = enhanced evaporation
+        if "temperature_2m" in df.columns:
+            df["soil_air_temp_diff"] = df["soil_temperature_0_to_7cm"] - df["temperature_2m"]
+
+    # Sunshine duration — hours of direct sun
+    if "sunshine_duration" in df.columns:
+        # API returns seconds of sunshine per hour (0-3600)
+        df["sunshine_duration"] = pd.to_numeric(df["sunshine_duration"], errors="coerce")
+        # Cumulative sun in last 3h — boundary layer heating proxy
+        df["sunshine_accum_3h"] = df["sunshine_duration"].rolling(3, min_periods=1).sum()
+
+    # 100m wind — low-level jet detection
+    if "wind_speed_100m" in df.columns:
+        df["wind_speed_100m"] = pd.to_numeric(df["wind_speed_100m"], errors="coerce")
+        # Wind shear 10m-100m: large = boundary layer instability
+        if "wind_speed_10m" in df.columns:
+            df["boundary_layer_shear"] = df["wind_speed_100m"] - df["wind_speed_10m"]
+
+    if "wind_direction_100m" in df.columns:
+        df["wind_direction_100m"] = pd.to_numeric(df["wind_direction_100m"], errors="coerce")
+        # Directional shear: wind backing/veering with height = frontal signal
+        if "wind_direction_10m" in df.columns:
+            dir10 = pd.to_numeric(df["wind_direction_10m"], errors="coerce")
+            dir100 = df["wind_direction_100m"]
+            diff = dir100 - dir10
+            # Normalize to [-180, 180]
+            df["wind_dir_shear_100m"] = ((diff + 180) % 360) - 180
+
+    # Snowfall — precipitation type discriminator
+    if "snowfall" in df.columns:
+        df["snowfall"] = pd.to_numeric(df["snowfall"], errors="coerce")
+
+    # ── Tier 2: Historical Forecast API features (from April 2021, ~44%) ──
+
+    # Lifted index from NWP (more accurate than our derived version)
+    if "lifted_index" in df.columns:
+        df["nwp_lifted_index"] = pd.to_numeric(df["lifted_index"], errors="coerce")
+
+    # Geopotential height at 850hPa — baric topography
+    if "gph_850" in df.columns:
+        gph850 = pd.to_numeric(df["gph_850"], errors="coerce")
+        df["gph_850"] = gph850
+        # Falling gph = approaching trough = frontogenesis
+        df["gph_850_change_3h"] = gph850.diff(3)
+
+    # Humidity at 500hPa — mid-tropospheric moisture
+    if "rh_500" in df.columns:
+        df["rh_500"] = pd.to_numeric(df["rh_500"], errors="coerce")
+        # Dry intrusion at 500hPa (better than 700hPa — deeper layer)
+        if "rh_850" in df.columns:
+            rh850 = pd.to_numeric(df["rh_850"], errors="coerce")
+            df["dry_intrusion_500"] = (rh850 - df["rh_500"]).clip(lower=0)
+
+    # 700hPa wind — steering level for convective cells
+    if "wind_700_speed" in df.columns:
+        df["wind_700_speed"] = pd.to_numeric(df["wind_700_speed"], errors="coerce")
+    if "wind_700_dir" in df.columns:
+        df["wind_700_dir"] = pd.to_numeric(df["wind_700_dir"], errors="coerce")
+        # SE steering flow pushes Mediterranean moisture against Montseny
+        dir700 = pd.to_numeric(df["wind_700_dir"], errors="coerce")
+        speed700 = pd.to_numeric(df.get("wind_700_speed", pd.Series(dtype=float)), errors="coerce")
+        # SE sector = 90-180° — onshore Mediterranean flow at steering level
+        is_se = ((dir700 >= 90) & (dir700 <= 180)).astype(float)
+        df["steering_onshore_700"] = is_se * speed700
+
+    # ── Tier 3: Derived interaction features (no new data) ──
+
+    # Rain ending signal: rained recently but conditions are drying
+    # 70% of FP occur at rain endings — this directly targets that
+    if "rained_last_3h" in df.columns and "humidity_change_3h" in df.columns:
+        rained = df["rained_last_3h"]
+        hum_drop = (-pd.to_numeric(df["humidity_change_3h"], errors="coerce")).clip(lower=0)
+        cloud_drop = 0
+        if "cloud_change_3h" in df.columns:
+            cloud_drop = (-pd.to_numeric(df["cloud_change_3h"], errors="coerce")).clip(lower=0) / 100
+        df["rain_ending_signal"] = rained * (hum_drop + cloud_drop * 10)
+
+    # Cloud thickness proxy: thick low+mid = nimbostratus (real rain), high only = cirrus
+    if "cloud_cover_low" in df.columns and "cloud_cover_mid" in df.columns and "cloud_cover_high" in df.columns:
+        low = pd.to_numeric(df["cloud_cover_low"], errors="coerce")
+        mid = pd.to_numeric(df["cloud_cover_mid"], errors="coerce")
+        high = pd.to_numeric(df["cloud_cover_high"], errors="coerce")
+        df["cloud_thickness_proxy"] = ((low + mid) / 2 - high) / 100
+
+    # Radiation-rain conflict: sunshine + NWP rain = contradiction (FP signal)
+    if mpp_col and "shortwave_radiation" in df.columns:
+        rad = pd.to_numeric(df["shortwave_radiation"], errors="coerce")
+        df["radiation_rain_conflict"] = df[mpp_col] * rad / 500  # normalize ~0-1
 
     return df
 
@@ -780,6 +893,8 @@ def build_features_from_realtime(station_df: pd.DataFrame, forecast_df: pd.DataF
             "cloud_cover_low", "cloud_cover_mid", "cloud_cover_high",
             "direct_radiation", "diffuse_radiation", "wet_bulb_temperature_2m",
             "visibility", "freezing_level_height",
+            "showers", "et0_fao_evapotranspiration", "soil_temperature_0_to_7cm",
+            "sunshine_duration", "wind_speed_100m", "wind_direction_100m", "snowfall",
         ]
         available_extra = [c for c in extra_cols if c in forecast_df.columns]
 
@@ -872,6 +987,32 @@ FEATURE_COLUMNS = [
     "nwp_rain_confirmed",   # NWP rain + already raining → high confidence TP
     "afternoon_fp_risk",    # afternoon + NWP rain + no low clouds → convective FP
     "nwp_rain_dry_air",     # NWP rain + large dew point gap → virga/evaporation
+    # Tier 1 — ERA5 new vars (100% coverage 2015+)
+    "showers",              # Pluja convectiva (xàfecs) separada de l'estratiforme
+    "nwp_showers_fraction", # Fracció convectiva del total NWP rain
+    "et0_fao_evapotranspiration",   # Evapotranspiració de referència FAO (mm)
+    "soil_temperature_0_to_7cm",  # Temperatura del sòl
+    "soil_air_temp_diff",   # Sòl calent vs aire fred = evaporació forçada
+    "sunshine_duration",    # Durada de sol (s per hora)
+    "sunshine_accum_3h",    # Sol acumulat 3h — proxy calentament capa límit
+    "wind_speed_100m",      # Vent a 100m — low-level jet
+    "boundary_layer_shear", # Cisalla 10m-100m = inestabilitat capa límit
+    "wind_dir_shear_100m",  # Cisalla direccional 10m-100m = front
+    "snowfall",             # Neu — discriminador tipus precipitació
+    # Tier 2 — Historical Forecast API (des d'abril 2021, ~44%)
+    "nwp_lifted_index",     # LI directe del NWP (millor que el derivat)
+    "gph_850",              # Alçada geopotencial 850hPa
+    "gph_850_change_3h",    # Canvi gph 850 — depressió/anticicló que s'apropa
+    "rh_500",               # Humitat a 500hPa
+    "dry_intrusion_500",    # Intrussió seca 850-500hPa (loaded gun profund)
+    "wind_700_speed",       # Vent de guia (steering level)
+    "wind_700_dir",         # Direcció del vent de guia
+    "steering_onshore_700", # Flux marítim SE a 700hPa → humitat Mediterrània
+    # Tier 3 — Derived interaction features
+    "rain_ending_signal",   # Pluja acabant-se + condicions assequen-se → FP
+    "cloud_thickness_proxy",# Gruix de núvols baixos+mitjos vs alts
+    "radiation_rain_conflict", # Sol + NWP pluja = contradicció → FP
+    "moisture_flux_change_3h", # Canvi flux d'humitat — front que s'apropa/passa
     # CAPE change rate (rapid destabilization)
     "cape_change_3h",
     # Radiació solar

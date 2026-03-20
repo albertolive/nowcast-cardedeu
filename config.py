@@ -57,6 +57,14 @@ OPEN_METEO_HOURLY_VARS = [
     "wet_bulb_temperature_2m",      # Temp bulb humit — fog/precip type indicator
     "soil_moisture_0_to_7cm",  # Humitat del sòl superficial (m³/m³)
     "soil_moisture_7_to_28cm", # Humitat del sòl profund (m³/m³)
+    # Tier 1 — noves variables ERA5 (100% cobertura des de 2015)
+    "showers",                      # Pluja convectiva separada de l'estratiforme
+    "et0_fao_evapotranspiration",    # Evapotranspiració de referència FAO (mm)
+    "soil_temperature_0_to_7cm",     # Temperatura del sòl — motor tèrmic convectiu
+    "sunshine_duration",             # Durada de sol (s) — proxy calentament solar
+    "wind_speed_100m",               # Vent a 100m — detecció low-level jet
+    "wind_direction_100m",           # Direcció del vent a 100m
+    "snowfall",                      # Neu — tipus de precipitació
 ]
 
 # Variables del model per al forecast
