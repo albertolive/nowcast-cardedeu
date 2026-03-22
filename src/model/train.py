@@ -89,12 +89,17 @@ def train_model(
     #     stronger regularization matches deeper trees to prevent overfitting
     #   - min_child_weight 5→6: higher to compensate for depth=7
     #   Result: Cal F1 0.7033→0.7061 (+0.0028), top-3 gain 82%→74%
+    # Round 3 (2026-03-22): 210 features (cape + nwp_precip_severity)
+    #   - colsample_bytree 0.5→0.7, colsample_bynode=0.7: combined diversity at tree+split level
+    #     Top-3 gain 80%→74%, more features contribute
+    #   Result: Cal F1 0.7061→0.7070 (+0.0009)
     model = xgb.XGBClassifier(
         n_estimators=1200,
         max_depth=7,
         learning_rate=0.012,
         subsample=0.75,
-        colsample_bytree=0.5,
+        colsample_bytree=0.7,
+        colsample_bynode=0.7,
         min_child_weight=6,
         gamma=0.15,
         reg_alpha=0.3,

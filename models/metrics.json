@@ -1,39 +1,39 @@
 {
-  "cv_auc_mean": 0.9630190824656223,
-  "cv_auc_std": 0.005331778177037317,
-  "cv_f1_mean": 0.7027140229335865,
-  "cv_f1_std": 0.033010881426415846,
-  "final_auc": 0.9683205198667282,
+  "cv_auc_mean": 0.9632096982409113,
+  "cv_auc_std": 0.005407174667637683,
+  "cv_f1_mean": 0.7039786276870585,
+  "cv_f1_std": 0.0314125665645609,
+  "final_auc": 0.9677799889714056,
   "final_report": {
     "0": {
-      "precision": 0.9683894785417628,
-      "recall": 0.9625042999656003,
-      "f1-score": 0.9654379205244695,
+      "precision": 0.9672433679354094,
+      "recall": 0.9615869739708749,
+      "f1-score": 0.9644068771203496,
       "support": 8721.0
     },
     "1": {
-      "precision": 0.7238175675675675,
-      "recall": 0.757736516357206,
-      "f1-score": 0.7403887688984881,
+      "precision": 0.7165820642978004,
+      "recall": 0.748894783377542,
+      "f1-score": 0.7323821876351059,
       "support": 1131.0
     },
-    "accuracy": 0.9389971579374746,
+    "accuracy": 0.9371701177425903,
     "macro avg": {
-      "precision": 0.8461035230546652,
-      "recall": 0.8601204081614031,
-      "f1-score": 0.8529133447114788,
+      "precision": 0.8419127161166049,
+      "recall": 0.8552408786742085,
+      "f1-score": 0.8483945323777278,
       "support": 9852.0
     },
     "weighted avg": {
-      "precision": 0.9403128614780382,
-      "recall": 0.9389971579374746,
-      "f1-score": 0.9396024972105246,
+      "precision": 0.9384676945275596,
+      "recall": 0.9371701177425903,
+      "f1-score": 0.9377706688572749,
       "support": 9852.0
     }
   },
-  "n_samples": 98515,
+  "n_samples": 98518,
   "n_positive": 9178,
-  "n_features": 208,
+  "n_features": 210,
   "feature_names": [
     "hour_sin",
     "hour_cos",
@@ -115,6 +115,7 @@
     "wc_is_thunderstorm",
     "wc_is_rain",
     "wc_is_drizzle",
+    "nwp_precip_severity",
     "nwp_dry_conflict",
     "nwp_wet_conflict",
     "nwp_rain_amount",
@@ -150,6 +151,7 @@
     "cloud_thickness_proxy",
     "radiation_rain_conflict",
     "moisture_flux_change_3h",
+    "cape",
     "cape_change_3h",
     "cape_diurnal_weighted",
     "tcwv",
@@ -245,7 +247,7 @@
     "freezing_level_height"
   ],
   "calibrated": true,
-  "optimal_threshold": 0.37254901960784315,
-  "calibration_oof_f1_uncalibrated": 0.6373912336342197,
-  "calibration_oof_f1_calibrated": 0.7060673568339667
+  "optimal_threshold": 0.4,
+  "calibration_oof_f1_uncalibrated": 0.6362007168458781,
+  "calibration_oof_f1_calibrated": 0.7070185883442482
 }

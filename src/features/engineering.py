@@ -699,6 +699,17 @@ def _add_model_features(df: pd.DataFrame) -> pd.DataFrame:
         df["wc_is_rain"] = (((wc >= 60) & (wc <= 69)) | ((wc >= 80) & (wc <= 82))).astype(int)
         df["wc_is_drizzle"] = ((wc >= 50) & (wc <= 59)).astype(int)
 
+        # NWP precipitation severity: continuous mapping of WMO code intensity.
+        # Drizzle (51-55) has 48.8% FP rate vs rain (61-65) at 13.3%.
+        # This continuous feature lets XGBoost learn the reliability gradient
+        # instead of relying on the binary model_predicts_precip (54% gain).
+        # 0=no precip, 1=drizzle, 2=rain, 3=showers, 4=snow, 5=thunderstorm
+        import numpy as _np
+        df["nwp_precip_severity"] = _np.select(
+            [wc < 50, (wc >= 50) & (wc <= 59), (wc >= 60) & (wc <= 69),
+             (wc >= 80) & (wc <= 84), (wc >= 70) & (wc <= 79), wc >= 95],
+            [0, 1, 2, 3, 4, 5], default=0)
+
     # NWP error detection: when model says rain but surface conditions are dry,
     # this is likely a false positive (43% of NWP rain predictions are FP).
     # When model says no rain but humidity is very high, likely a false negative.
@@ -712,6 +723,8 @@ def _add_model_features(df: pd.DataFrame) -> pd.DataFrame:
     # faster than NWP resolution can capture
     if "cape" in df.columns:
         cape = pd.to_numeric(df["cape"], errors="coerce")
+        # Raw CAPE continu (44.5% cobertura) — més informatiu que cape_high binari
+        df["cape"] = cape
         df["cape_change_3h"] = cape.diff(3)
 
         # CAPE × hora del dia: convecció solar requereix CAPE + escalfament diürn
@@ -1176,6 +1189,9 @@ FEATURE_COLUMNS = [
     "weather_code", "model_predicts_precip",
     # Weather code decomposition (different physics for each precipitation type)
     "wc_is_thunderstorm", "wc_is_rain", "wc_is_drizzle",
+    # NWP precipitation severity (continuous 0-5 scale: drizzle=1, rain=2, showers=3, snow=4, thunder=5)
+    # WMO 51 (drizzle) = 83% of all FP. This continuous feature encodes reliability gradient.
+    "nwp_precip_severity",
     # NWP error detection (when model disagrees with surface conditions)
     "nwp_dry_conflict", "nwp_wet_conflict",
     # NWP rain amount (continuous — more informative than binary model_predicts_precip)
@@ -1218,6 +1234,7 @@ FEATURE_COLUMNS = [
     "radiation_rain_conflict", # Sol + NWP pluja = contradicció → FP
     "moisture_flux_change_3h", # Canvi flux d'humitat — front que s'apropa/passa
     # CAPE change rate (rapid destabilization)
+    "cape",                     # CAPE continu brut (44.5% cobertura) — més informatiu que binari
     "cape_change_3h",
     "cape_diurnal_weighted",   # CAPE × hora diürna — convecció solar
     # Tier 4 — ERA5 surface expansion (100% coverage 2015+)

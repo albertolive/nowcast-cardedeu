@@ -25,41 +25,42 @@ logger = logging.getLogger(__name__)
 
 # ── Hyperparameter configurations to test ──
 CONFIGS = {
-    # ROUND 2: Refine around diversity_50 winner
-    "div50_base": {
-        "n_estimators": 1000, "max_depth": 6, "learning_rate": 0.015,
-        "subsample": 0.8, "colsample_bytree": 0.5, "min_child_weight": 5,
-        "gamma": 0.1, "reg_alpha": 0.2, "reg_lambda": 1.5,
-    },
-    # More trees - let the model converge further with diversity
-    "div50_1500trees": {
-        "n_estimators": 1500, "max_depth": 6, "learning_rate": 0.012,
-        "subsample": 0.8, "colsample_bytree": 0.5, "min_child_weight": 5,
-        "gamma": 0.1, "reg_alpha": 0.2, "reg_lambda": 1.5,
-    },
-    # More trees + slightly higher regularization
-    "div50_1500_reg": {
-        "n_estimators": 1500, "max_depth": 6, "learning_rate": 0.012,
-        "subsample": 0.75, "colsample_bytree": 0.5, "min_child_weight": 5,
-        "gamma": 0.15, "reg_alpha": 0.3, "reg_lambda": 2.0,
-    },
-    # Depth 7 + diversity 50 (allow more complex interactions)
-    "div50_deep7": {
+    # ROUND 3: Current best (baseline for comparison)
+    "current_best": {
         "n_estimators": 1200, "max_depth": 7, "learning_rate": 0.012,
         "subsample": 0.75, "colsample_bytree": 0.5, "min_child_weight": 6,
         "gamma": 0.15, "reg_alpha": 0.3, "reg_lambda": 2.0,
     },
-    # colsample_bynode instead of bytree (diversity at split level)
-    "div50_rowsamp": {
-        "n_estimators": 1200, "max_depth": 6, "learning_rate": 0.012,
-        "subsample": 0.7, "colsample_bytree": 0.5, "min_child_weight": 5,
-        "gamma": 0.1, "reg_alpha": 0.2, "reg_lambda": 1.5,
+    # colsample_bynode instead of bytree: diversity at SPLIT level, not tree level
+    # Each split point in each tree sees a different random 50% of features
+    "bynode_50": {
+        "n_estimators": 1200, "max_depth": 7, "learning_rate": 0.012,
+        "subsample": 0.75, "colsample_bytree": 1.0, "colsample_bynode": 0.5,
+        "min_child_weight": 6, "gamma": 0.15, "reg_alpha": 0.3, "reg_lambda": 2.0,
     },
-    # Sweet spot attempt: moderate everything
-    "sweet_spot": {
-        "n_estimators": 1200, "max_depth": 6, "learning_rate": 0.015,
-        "subsample": 0.8, "colsample_bytree": 0.5, "min_child_weight": 5,
-        "gamma": 0.1, "reg_alpha": 0.25, "reg_lambda": 1.8,
+    # Combined: moderate bytree + bynode (strongest diversity)
+    "bytree_bynode": {
+        "n_estimators": 1200, "max_depth": 7, "learning_rate": 0.012,
+        "subsample": 0.75, "colsample_bytree": 0.7, "colsample_bynode": 0.7,
+        "min_child_weight": 6, "gamma": 0.15, "reg_alpha": 0.3, "reg_lambda": 2.0,
+    },
+    # bylevel: resample per depth level (intermediate between bytree and bynode)
+    "bylevel_50": {
+        "n_estimators": 1200, "max_depth": 7, "learning_rate": 0.012,
+        "subsample": 0.75, "colsample_bytree": 1.0, "colsample_bylevel": 0.5,
+        "min_child_weight": 6, "gamma": 0.15, "reg_alpha": 0.3, "reg_lambda": 2.0,
+    },
+    # More trees with bynode (more budget to explore with stronger diversity)
+    "bynode_1500": {
+        "n_estimators": 1500, "max_depth": 7, "learning_rate": 0.010,
+        "subsample": 0.75, "colsample_bytree": 1.0, "colsample_bynode": 0.5,
+        "min_child_weight": 6, "gamma": 0.15, "reg_alpha": 0.3, "reg_lambda": 2.0,
+    },
+    # bynode + shallower depth (less risk of overfitting with per-node diversity)
+    "bynode_d6": {
+        "n_estimators": 1200, "max_depth": 6, "learning_rate": 0.012,
+        "subsample": 0.75, "colsample_bytree": 1.0, "colsample_bynode": 0.5,
+        "min_child_weight": 5, "gamma": 0.15, "reg_alpha": 0.3, "reg_lambda": 2.0,
     },
 }
 
