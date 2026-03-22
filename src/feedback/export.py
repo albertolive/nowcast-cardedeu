@@ -52,10 +52,17 @@ def export_verified_for_training() -> int:
     # Normalitzar columnes booleanes a tipus consistent
     for col in df.columns:
         if df[col].dtype == object:
+            # Convert bool-like objects to int, then try numeric
             try:
+                df[col] = df[col].map(lambda x: int(x) if isinstance(x, bool) else x)
                 df[col] = pd.to_numeric(df[col])
             except (ValueError, TypeError):
                 pass
+
+    # Drop columns that are still object type (nested dicts, strings, etc.)
+    obj_cols = df.select_dtypes(include=["object"]).columns.tolist()
+    if obj_cols:
+        df = df.drop(columns=obj_cols)
 
     # Guardar com a parquet per fusionar amb el dataset principal
     os.makedirs(os.path.dirname(FEEDBACK_TRAINING_PATH), exist_ok=True)

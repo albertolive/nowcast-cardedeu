@@ -1,39 +1,39 @@
 {
-  "cv_auc_mean": 0.9632096982409113,
-  "cv_auc_std": 0.005407174667637683,
-  "cv_f1_mean": 0.7039786276870585,
-  "cv_f1_std": 0.0314125665645609,
-  "final_auc": 0.9677799889714056,
+  "cv_auc_mean": 0.963123322559594,
+  "cv_auc_std": 0.005546127459221681,
+  "cv_f1_mean": 0.7028492193384327,
+  "cv_f1_std": 0.032171098470530506,
+  "final_auc": 0.9675768947942288,
   "final_report": {
     "0": {
-      "precision": 0.9672433679354094,
-      "recall": 0.9615869739708749,
-      "f1-score": 0.9644068771203496,
-      "support": 8721.0
+      "precision": 0.9705711968485691,
+      "recall": 0.9601146131805157,
+      "f1-score": 0.9653145886148882,
+      "support": 8725.0
     },
     "1": {
-      "precision": 0.7165820642978004,
-      "recall": 0.748894783377542,
-      "f1-score": 0.7323821876351059,
-      "support": 1131.0
+      "precision": 0.7156862745098039,
+      "recall": 0.7752212389380531,
+      "f1-score": 0.7442650807136788,
+      "support": 1130.0
     },
-    "accuracy": 0.9371701177425903,
+    "accuracy": 0.9389142567224759,
     "macro avg": {
-      "precision": 0.8419127161166049,
-      "recall": 0.8552408786742085,
-      "f1-score": 0.8483945323777278,
-      "support": 9852.0
+      "precision": 0.8431287356791866,
+      "recall": 0.8676679260592843,
+      "f1-score": 0.8547898346642835,
+      "support": 9855.0
     },
     "weighted avg": {
-      "precision": 0.9384676945275596,
-      "recall": 0.9371701177425903,
-      "f1-score": 0.9377706688572749,
-      "support": 9852.0
+      "precision": 0.9413454269609177,
+      "recall": 0.9389142567224759,
+      "f1-score": 0.9399684755830905,
+      "support": 9855.0
     }
   },
-  "n_samples": 98518,
+  "n_samples": 98549,
   "n_positive": 9178,
-  "n_features": 210,
+  "n_features": 209,
   "feature_names": [
     "hour_sin",
     "hour_cos",
@@ -59,9 +59,6 @@
     "wind_speed_change_1h",
     "wind_speed_change_3h",
     "is_sea_breeze",
-    "is_migjorn",
-    "is_garbi",
-    "is_ponent",
     "llevantada_strength",
     "llevantada_moisture",
     "garbi_strength",
@@ -177,6 +174,8 @@
     "radar_upwind_nearest_echo_km",
     "radar_upwind_max_dbz",
     "radar_storm_velocity_kmh",
+    "radar_storm_velocity_ns",
+    "radar_storm_velocity_ew",
     "radar_storm_approaching",
     "radar_quadrant_max_dbz_N",
     "radar_quadrant_max_dbz_E",
@@ -247,7 +246,7 @@
     "freezing_level_height"
   ],
   "calibrated": true,
-  "optimal_threshold": 0.4,
-  "calibration_oof_f1_uncalibrated": 0.6362007168458781,
-  "calibration_oof_f1_calibrated": 0.7070185883442482
+  "optimal_threshold": 0.375,
+  "calibration_oof_f1_uncalibrated": 0.6394015773640134,
+  "calibration_oof_f1_calibrated": 0.703997916395364
 }
