@@ -1,6 +1,13 @@
 name: "🌧️ Nowcast Cardedeu"
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - "src/**"
+      - "config.py"
+      - "tests/**"
+      - "requirements.txt"
   schedule:
     # Daily summary + accuracy report → ClawCloud container (Docker)
     # Re-entrenar setmanalment (diumenge 3:00 Barcelona = 2:00 UTC estiu)
@@ -30,6 +37,41 @@ env:
   AI_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    if: >-
+      github.event_name == 'push' ||
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'retrain')
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Cache venv
+        id: cache-venv
+        uses: actions/cache@v4
+        with:
+          path: .venv
+          key: venv-${{ runner.os }}-py3.12-${{ hashFiles('requirements.txt') }}
+
+      - name: Install dependencies
+        if: steps.cache-venv.outputs.cache-hit != 'true'
+        run: |
+          python -m venv .venv
+          .venv/bin/pip install -r requirements.txt
+
+      - name: Activate venv
+        run: echo "${{ github.workspace }}/.venv/bin" >> $GITHUB_PATH
+
+      - name: Run offline tests
+        run: python -m pytest tests/ -m "not network" -v --tb=short
+
   predict:
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -181,6 +223,7 @@ jobs:
 
   # Re-entrenar el model setmanalment (diumenge a les 3am)
   retrain:
+    needs: test
     runs-on: ubuntu-latest
     if: >-
       github.event.schedule == '0 2 * * 0' ||
