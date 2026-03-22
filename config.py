@@ -90,13 +90,13 @@ NOTIFICATION_COOLDOWN_MIN = 30      # Minuts mínims entre alertes
 # ── RainViewer (radar, sense API key) ──
 RAINVIEWER_API_URL = "https://api.rainviewer.com/public/weather-maps.json"
 RAINVIEWER_TILE_BASE = "https://tilecache.rainviewer.com"
-# Tile zoom=8 → cada tile ~1.5km. Cardedeu cau al tile x=134, y=94
+# Tile zoom=8 → cada tile ~1.5°. Cardedeu (41.633°N, 2.364°E) cau al tile x=129, y=95
 RAINVIEWER_TILE_ZOOM = 8
-RAINVIEWER_TILE_X = 134
-RAINVIEWER_TILE_Y = 94
+RAINVIEWER_TILE_X = 129
+RAINVIEWER_TILE_Y = 95
 # Píxel dins del tile on cau Cardedeu (256x256)
-RAINVIEWER_PIXEL_X = 88
-RAINVIEWER_PIXEL_Y = 125
+RAINVIEWER_PIXEL_X = 174
+RAINVIEWER_PIXEL_Y = 97
 
 # ── Meteocat XEMA API ──
 METEOCAT_API_KEY = os.environ.get("METEOCAT_API_KEY", "")
