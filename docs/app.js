@@ -198,8 +198,7 @@ function renderPrediction(latest, history) {
 
       <!-- Why this prediction -->
       <div class="info-card" id="sources-card">
-        <h3>🔎 Què diuen les fonts?</h3>
-        <p class="card-intro">Aquestes són les entrades que el nostre model analitza — no la predicció final.</p>
+        <h3>�️ Què diuen les fonts?</h3>
         ${renderWhyPrediction(latest)}
       </div>
     </div>
@@ -373,60 +372,108 @@ function renderWhyPrediction(d) {
   const r = d.radar || {};
   const e = d.ensemble || {};
   const a = d.aemet || {};
-  const p = d.pressure_levels || {};
+  const fv = d.feature_vector || {};
+  const pct = d.probability_pct;
+
+  // Build source votes
+  const votes = [];
 
   // Radar
-  let radarText, radarColor;
-  if (r.approaching) {
-    radarText = `⚠️ Pluja a ${r.nearest_echo_km || '?'} km, acostant-se`;
-    radarColor = 'var(--accent-red)';
-  } else if (r.has_echo || r.dbz > 5) {
-    radarText = `Ecos a ${r.nearest_echo_km || '?'} km, estàtica`;
-    radarColor = 'var(--accent-yellow)';
-  } else {
-    radarText = 'Sense pluja';
-    radarColor = 'var(--accent-green)';
+  const radarRain = r.approaching || r.has_echo || (r.dbz > 5);
+  votes.push({
+    name: 'Radar (RainViewer)',
+    rain: radarRain,
+    detail: radarRain
+      ? (r.approaching ? `Pluja a ${r.nearest_echo_km || '?'} km, acostant-se` : `Ecos a ${r.nearest_echo_km || '?'} km`)
+      : 'Sense ecos en 30 km'
+  });
+
+  // AEMET Radar
+  const aemetRadarRain = fv.aemet_radar_has_echo > 0;
+  if (fv.aemet_radar_has_echo != null) {
+    votes.push({
+      name: 'Radar (AEMET)',
+      rain: aemetRadarRain,
+      detail: aemetRadarRain ? `Ecos detectats` : 'Sense ecos'
+    });
   }
 
-  // NWP consensus
+  // NWP models
   const modelsRain = e.models_rain || 0;
   const totalModels = e.total_models || 4;
-  let modelsText, modelsColor;
-  if (modelsRain === 0) {
-    modelsText = `0/${totalModels} preveuen pluja`;
-    modelsColor = 'var(--accent-green)';
-  } else if (modelsRain <= totalModels / 2) {
-    modelsText = `${modelsRain}/${totalModels} preveuen pluja`;
-    modelsColor = 'var(--accent-yellow)';
-  } else {
-    modelsText = `${modelsRain}/${totalModels} preveuen pluja`;
-    modelsColor = 'var(--accent-red)';
-  }
+  const mn = fv.ensemble_min_precip, mx = fv.ensemble_max_precip;
+  const rangeText = mn != null && mx != null && modelsRain > 0 ? ` (${mn.toFixed(1)}–${mx.toFixed(1)} mm)` : '';
+  votes.push({
+    name: `Models globals (${modelsRain}/${totalModels})`,
+    rain: modelsRain > totalModels / 2,
+    detail: modelsRain === 0 ? 'Cap preveu pluja' : `${modelsRain} de ${totalModels} preveuen pluja${rangeText}`
+  });
 
-  // AEMET
-  const aemetProb = a.prob_precip ?? null;
-  let aemetText = '—', aemetColor = 'var(--text-muted)';
+  // AEMET prob
+  const aemetProb = a.prob_precip;
   if (aemetProb != null) {
-    aemetText = aemetProb + '%';
-    aemetColor = aemetProb >= 50 ? 'var(--accent-red)' : aemetProb >= 20 ? 'var(--accent-yellow)' : 'var(--accent-green)';
+    votes.push({
+      name: 'AEMET (meteoròlegs)',
+      rain: aemetProb >= 40,
+      detail: `${aemetProb}% probabilitat de pluja`
+    });
   }
 
-  // AEMET storm
-  const stormProb = a.prob_storm ?? null;
-  let stormText = '—', stormColor = 'var(--text-muted)';
-  if (stormProb != null) {
-    stormText = stormProb + '%';
-    stormColor = stormProb >= 40 ? 'var(--accent-red)' : stormProb >= 15 ? 'var(--accent-yellow)' : 'var(--accent-green)';
+  // Lightning
+  const lightning = fv.lightning_count_30km;
+  if (lightning != null && lightning > 0) {
+    votes.push({ name: 'Llamps (XDDE)', rain: true, detail: `${Math.round(lightning)} detectats en 30 km` });
   }
+
+  // Tally
+  const rainVotes = votes.filter(v => v.rain).length;
+  const totalVotes = votes.length;
+  const noRainVotes = totalVotes - rainVotes;
+
+  const voteRows = votes.map(v => `
+    <div class="source-vote">
+      <span class="vote-badge ${v.rain ? 'rain' : 'no-rain'}">${v.rain ? '🌧️' : '☀️'}</span>
+      <div class="vote-info">
+        <span class="vote-name">${v.name}</span>
+        <span class="vote-detail">${v.detail}</span>
+      </div>
+    </div>
+  `).join('');
+
+  // Storm prob as separate note if high
+  const stormNote = (a.prob_storm || 0) >= 10
+    ? `<div class="source-vote storm-note"><span class="vote-badge rain">⚡</span><div class="vote-info"><span class="vote-name">Risc de tronada</span><span class="vote-detail">${a.prob_storm}% segons AEMET</span></div></div>`
+    : '';
+
+  // ML verdict
+  const mlRain = d.will_rain;
+  const verdictText = rainVotes >= totalVotes / 2
+    ? (mlRain
+      ? `${rainVotes} de ${totalVotes} fonts diuen pluja — el sistema hi està d'acord (${pct}%).`
+      : `${rainVotes} de ${totalVotes} fonts diuen pluja — però el sistema, amb 12 anys de dades locals, diu que <strong>no</strong> (${pct}%).`)
+    : (mlRain
+      ? `Només ${rainVotes} de ${totalVotes} fonts veuen pluja — però el sistema detecta patrons locals que sí (${pct}%).`
+      : `${noRainVotes} de ${totalVotes} fonts descarten pluja — el sistema confirma: ${pct}%.`);
 
   const detailId = 'why-detail-' + Date.now();
   return `
-    <div class="stat-row"><span class="stat-label">Radar</span><span class="stat-value" style="color:${radarColor}">${radarText}</span></div>
-    <div class="stat-row"><span class="stat-label">Models globals</span><span class="stat-value" style="color:${modelsColor}">${modelsText}</span></div>
-    ${(() => { const fv = d.feature_vector || {}; const mn = fv.ensemble_min_precip, mx = fv.ensemble_max_precip; return mn != null && mx != null && modelsRain > 0 ? `<div class="stat-row"><span class="stat-label">Previsió pluja</span><span class="stat-value">${mn.toFixed(1)} – ${mx.toFixed(1)} mm</span></div>` : ''; })()}
-    <div class="stat-row"><span class="stat-label">Prob. pluja (AEMET)</span><span class="stat-value" style="color:${aemetColor}">${aemetText}</span></div>
-    <div class="stat-row"><span class="stat-label">Prob. tronada (AEMET)</span><span class="stat-value" style="color:${stormColor}">${stormText}</span></div>
-    <p class="card-hint">Les prob. AEMET són calibrades per meteoròlegs cada 6h</p>
+    <div class="source-votes">
+      ${voteRows}
+      ${stormNote}
+    </div>
+    <div class="vote-tally">
+      <div class="tally-bar">
+        <div class="tally-rain" style="width:${(rainVotes / totalVotes * 100).toFixed(0)}%"></div>
+      </div>
+      <div class="tally-labels">
+        <span>🌧️ ${rainVotes}</span>
+        <span>☀️ ${noRainVotes}</span>
+      </div>
+    </div>
+    <div class="ml-verdict">
+      <span class="ml-verdict-badge">🧠 ${pct}%</span>
+      <p>${verdictText}</p>
+    </div>
 
     <button class="expand-toggle" onclick="this.classList.toggle('open');document.getElementById('${detailId}').classList.toggle('open')">
       <span class="chevron">▶</span> Com s'ha calculat
