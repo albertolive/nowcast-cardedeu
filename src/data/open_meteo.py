@@ -202,9 +202,14 @@ _PRESSURE_RENAME = {
     "geopotential_height_300hPa": "gph_300",
     # Tier 2 — noves variables
     "geopotential_height_850hPa": "gph_850",
+    "geopotential_height_500hPa": "gph_500",
     "relative_humidity_500hPa": "rh_500",
     "wind_speed_700hPa": "wind_700_speed",
     "wind_direction_700hPa": "wind_700_dir",
+    # Convective + surface vars (no canvi de nom, ja coincideixen)
+    "lifted_index": "nwp_lifted_index",
+    "visibility": "visibility",
+    "freezing_level_height": "freezing_level_height",
 }
 
 
@@ -432,9 +437,10 @@ def fetch_pressure_levels() -> dict:
         }
 
 
-def fetch_pressure_levels_hourly(hours_ahead: int = 48) -> pd.DataFrame:
+def fetch_pressure_levels_hourly(hours_ahead: int = 48, past_hours: int = 0) -> pd.DataFrame:
     """
     Obté previsió horària de nivells de pressió (925/850/700/500/300 hPa).
+    Inclou opcionalment hores passades per permetre càlcul de diff/tendències.
     Retorna DataFrame amb totes les columnes de pressió renomenades.
     """
     try:
@@ -445,6 +451,8 @@ def fetch_pressure_levels_hourly(hours_ahead: int = 48) -> pd.DataFrame:
             "timezone": "Europe/Madrid",
             "forecast_hours": hours_ahead,
         }
+        if past_hours > 0:
+            params["past_hours"] = past_hours
 
         r = SESSION.get(config.OPEN_METEO_FORECAST_URL, params=params, timeout=15)
         r.raise_for_status()
@@ -458,9 +466,17 @@ def fetch_pressure_levels_hourly(hours_ahead: int = 48) -> pd.DataFrame:
         df["datetime"] = pd.to_datetime(df["time"])
         df = df.drop(columns=["time"])
         df = df.rename(columns=_PRESSURE_RENAME)
-        # Keep only renamed columns + datetime
-        keep = ["datetime"] + [c for c in _PRESSURE_RENAME.values() if c in df.columns]
-        return df[keep]
+        # Mantenir columnes renomenades + qualsevol que ja existia sense renomenar
+        renamed_cols = set(_PRESSURE_RENAME.values())
+        keep = ["datetime"] + [c for c in df.columns if c in renamed_cols or c == "datetime"]
+        # Eliminar duplicats mantenint ordre
+        seen = set()
+        keep_unique = []
+        for c in keep:
+            if c not in seen:
+                seen.add(c)
+                keep_unique.append(c)
+        return df[keep_unique]
 
     except Exception as e:
         logger.warning(f"Error obtenint pressure levels horari: {e}")

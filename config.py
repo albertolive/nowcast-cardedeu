@@ -55,8 +55,8 @@ OPEN_METEO_HOURLY_VARS = [
     "vapour_pressure_deficit", # VPD (kPa) — indicador directe de saturació
     "convective_inhibition",   # CIN — supressió de convecció (J/kg)
     "wet_bulb_temperature_2m",      # Temp bulb humit — fog/precip type indicator
-    "soil_moisture_0_to_7cm",  # Humitat del sòl superficial (m³/m³)
-    "soil_moisture_7_to_28cm", # Humitat del sòl profund (m³/m³)
+    "soil_moisture_0_to_7cm",  # Humitat del sòl superficial (m³/m³) — només Archive/ERA5, NaN a forecast
+    "soil_moisture_7_to_28cm", # Humitat del sòl profund (m³/m³) — només Archive/ERA5, NaN a forecast
     # Tier 1 — noves variables ERA5 (100% cobertura des de 2015)
     "showers",                      # Pluja convectiva separada de l'estratiforme
     "et0_fao_evapotranspiration",    # Evapotranspiració de referència FAO (mm)
@@ -65,6 +65,8 @@ OPEN_METEO_HOURLY_VARS = [
     "wind_speed_100m",               # Vent a 100m — detecció low-level jet
     "wind_direction_100m",           # Direcció del vent a 100m
     "snowfall",                      # Neu — tipus de precipitació
+    # soil_temperature_0_to_7cm: només Archive/ERA5, NaN a forecast (XGBoost ho gestiona)
+    "soil_temperature_0_to_7cm",     # Temperatura del sòl — motor tèrmic convectiu
     # Tier 4 — ERA5 surface expansion (100% coverage 2015+)
     "total_column_integrated_water_vapour",  # TCWV (kg/m²) — precipitable water
     "boundary_layer_height",                 # PBL depth (m) — convective mixing

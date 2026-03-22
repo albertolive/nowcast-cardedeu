@@ -3,6 +3,7 @@ Feature Engineering per al model de Nowcasting.
 Crea les features (columnes) que alimenten XGBoost.
 Combina dades locals (meteocardedeu) + exteriors (Open-Meteo).
 """
+import logging
 import math
 import numpy as np
 import pandas as pd
@@ -10,6 +11,8 @@ import pandas as pd
 import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 import config
+
+logger = logging.getLogger(__name__)
 
 
 def dew_point(temp_c: float, humidity_pct: float) -> float:
@@ -1064,7 +1067,19 @@ def build_features_from_realtime(station_df: pd.DataFrame, forecast_df: pd.DataF
     """
     Combina dades en temps real de l'estació amb la previsió d'Open-Meteo.
     Retorna un DataFrame amb una fila per cada moment amb totes les features.
+    Si l'estació no està disponible, usa només el forecast com a base.
     """
+    if station_df.empty or "datetime" not in station_df.columns:
+        # Fallback: usar forecast com a base horària quan l'estació no respon
+        logger.warning("Estació no disponible — usant forecast com a base horària")
+        if forecast_df.empty:
+            return pd.DataFrame()
+        hourly = forecast_df.copy()
+        hourly["datetime"] = pd.to_datetime(hourly["datetime"])
+        # Aplicar feature engineering i retornar
+        hourly = build_features_from_hourly(hourly)
+        return hourly
+
     # Remapejar columnes de l'estació al format d'Open-Meteo
     station = station_df.rename(columns={
         "TEMP": "temperature_2m",
@@ -1101,7 +1116,9 @@ def build_features_from_realtime(station_df: pd.DataFrame, forecast_df: pd.DataF
             "cloud_cover_low", "cloud_cover_mid", "cloud_cover_high",
             "direct_radiation", "diffuse_radiation", "wet_bulb_temperature_2m",
             "visibility", "freezing_level_height",
+            "vapour_pressure_deficit", "convective_inhibition",
             "showers", "et0_fao_evapotranspiration", "soil_temperature_0_to_7cm",
+            "soil_moisture_0_to_7cm", "soil_moisture_7_to_28cm",
             "sunshine_duration", "wind_speed_100m", "wind_direction_100m", "snowfall",
             "total_column_integrated_water_vapour", "boundary_layer_height",
             "terrestrial_radiation", "soil_moisture_28_to_100cm",
@@ -1110,6 +1127,9 @@ def build_features_from_realtime(station_df: pd.DataFrame, forecast_df: pd.DataF
             "wind_925_dir", "wind_925_speed", "temp_925", "rh_925",
             "rh_700", "temp_700", "temp_500",
             "wind_300_speed", "wind_300_dir", "gph_300",
+            # Tier 2 — pressure levels extra
+            "gph_850", "rh_500", "wind_700_speed", "wind_700_dir",
+            "nwp_lifted_index",
         ]
         available_extra = [c for c in extra_cols if c in forecast_df.columns]
 

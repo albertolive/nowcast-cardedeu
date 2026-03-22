@@ -231,3 +231,47 @@ def compute_sentinel_features(sentinel_data: dict, station_temp: float, station_
             "local_rain_xema": None,
             "local_rain_xema_3h": None,
         }
+
+
+def fetch_kx_precipitation_series(hours: int = 3) -> pd.DataFrame:
+    """
+    Obté les dades de precipitació del pluviòmetre XEMA KX (La Roca - ETAP Cardedeu)
+    per les últimes `hours` hores. Fallback per a verificació quan MeteoCardedeu.net no respon.
+
+    Retorna DataFrame amb columnes: datetime, PREC
+    Compatible amb el format que usa verify.py.
+    Consumeix 1 crida XEMA (variable 35 = precipitació, dia actual).
+    """
+    if not _is_configured():
+        logger.warning("Meteocat API key no configurada — no es pot usar KX com a fallback")
+        return pd.DataFrame()
+
+    try:
+        today = date.today()
+        df = fetch_variable_all_stations(config.XEMA_VAR_PRECIP, today)
+        if df.empty:
+            logger.warning("KX fallback: sense dades de precipitació XEMA avui")
+            return pd.DataFrame()
+
+        # Filtrar per estació KX
+        kx = df[df["station_code"] == config.LOCAL_RAIN_STATION_CODE].copy()
+        if kx.empty:
+            logger.warning("KX fallback: estació KX no trobada a les dades XEMA")
+            return pd.DataFrame()
+
+        kx = kx.sort_values("datetime")
+        kx["datetime"] = pd.to_datetime(kx["datetime"]).dt.tz_localize(None)
+
+        # Filtrar a les últimes N hores
+        cutoff = datetime.now() - timedelta(hours=hours)
+        kx = kx[kx["datetime"] >= cutoff]
+
+        # Retornar en format compatible amb verify.py (columnes: datetime, PREC)
+        result = kx[["datetime", "value"]].rename(columns={"value": "PREC"})
+        result = result.reset_index(drop=True)
+        logger.info(f"KX fallback: {len(result)} lectures de precipitació (últimes {hours}h)")
+        return result
+
+    except Exception as e:
+        logger.warning(f"Error obtenint precipitació KX per fallback: {e}")
+        return pd.DataFrame()
