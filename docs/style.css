@@ -22,6 +22,14 @@ body {
   min-height: 100vh;
 }
 
+/* Flash animation on auto-refresh */
+@keyframes flash-update {
+  0% { box-shadow: 0 0 0 0 rgba(88, 166, 255, 0.4); }
+  50% { box-shadow: 0 0 0 4px rgba(88, 166, 255, 0.2); }
+  100% { box-shadow: 0 0 0 0 rgba(88, 166, 255, 0); }
+}
+.prediction-card.flash { animation: flash-update 1.5s ease-out; }
+
 .container {
   max-width: 900px;
   margin: 0 auto;
@@ -255,6 +263,21 @@ canvas { width: 100% !important; height: 100% !important; }
 .stat-row .stat-label { color: var(--text-muted); }
 .stat-row .stat-value { font-weight: 600; }
 
+.regime-desc {
+  font-size: 12px;
+  color: var(--text-muted);
+  padding: 2px 0 6px;
+  line-height: 1.4;
+  border-bottom: 1px solid rgba(48, 54, 61, 0.5);
+}
+
+.card-hint {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 8px;
+  opacity: 0.7;
+}
+
 /* Expandable details */
 .expand-toggle {
   display: flex;
@@ -295,7 +318,13 @@ canvas { width: 100% !important; height: 100% !important; }
   padding-top: 8px;
 }
 
-
+.tech-explainer {
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.6;
+  padding: 10px 0 4px;
+}
+.tech-explainer strong { color: var(--text); }
 
 /* Sources bar */
 .sources-bar {
