@@ -143,20 +143,12 @@ function renderPrediction(latest, history) {
         <div class="probability-value">
           <div class="pct" style="color:${color}">${pct}%</div>
           <div class="label">probabilitat</div>
-          <div class="conf ${confColor}">${latest.confidence}</div>
-          ${trend.arrow ? `<div class="prob-trend ${trend.cls}">${trend.arrow} ${trend.label}</div>` : ''}
         </div>
       </div>
 
-      <div class="outcome-buttons">
-        <div class="outcome-btn yes ${latest.will_rain ? 'active' : ''}">
-          <span class="btn-label">🌧️ Sí, plourà</span>
-          <span class="btn-pct">${pct}%</span>
-        </div>
-        <div class="outcome-btn no ${!latest.will_rain ? 'active' : ''}">
-          <span class="btn-label">☀️ No plourà</span>
-          <span class="btn-pct">${noPct}%</span>
-        </div>
+      <div class="verdict" style="color:${color}">
+        ${latest.will_rain ? '🌧️ Sí, plourà' : '☀️ No plourà'}
+        <span class="verdict-conf ${confColor}">${latest.confidence}${trend.arrow ? ' · ' + trend.arrow + ' ' + trend.label : ''}</span>
       </div>
 
       ${_mlCorrectionSummary(latest)}
@@ -164,16 +156,15 @@ function renderPrediction(latest, history) {
       <div class="gate-indicator ${gateOpen ? 'open' : 'closed'}">
         <span class="gate-dot"></span>
         ${gateOpen
-          ? `<span class="gate-text">🌧️ Senyals de pluja detectats</span>
-             <span class="gate-chips">${signals.map(s => '<span class="gate-chip">' + s + '</span>').join('')}</span>
-             <a href="#sources-card" class="gate-scroll-hint">veure detall ↓</a>`
-          : '☀️ Cap senyal de pluja — radar, llamps i previsions oficials en calma'
+          ? `${signals.map(s => '<span class="gate-chip">' + s + '</span>').join('')}
+             <a href="#sources-card" class="gate-scroll-hint">detall ↓</a>`
+          : 'Sense senyals de pluja'
         }
       </div>
 
       <div class="prediction-meta">
-        Encerts per dia: <strong style="color:var(--accent-green)">${dayAccuracy}%</strong> (${daysCorrect}/${daysTotal} dies)
-        · Per predicció: <strong>${accuracy}%</strong> (${correct}/${verified.length})
+        Encerts: <strong style="color:var(--accent-green)">${dayAccuracy}%</strong> per dia (${daysCorrect}/${daysTotal})
+        · <strong>${accuracy}%</strong> per predicció (${correct}/${verified.length})
       </div>
     </div>
 

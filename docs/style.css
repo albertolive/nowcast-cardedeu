@@ -133,76 +133,29 @@ header .subtitle {
   font-weight: 600;
 }
 
-/* Yes/No buttons like Polymarket */
-.outcome-buttons {
-  display: flex;
-  gap: 12px;
-  justify-content: center;
-  margin-bottom: 20px;
-}
-
-.outcome-btn {
-  flex: 1;
-  max-width: 180px;
-  padding: 14px 24px;
-  border-radius: 12px;
-  border: 2px solid transparent;
-  font-size: 18px;
+/* Verdict line */
+.verdict {
+  font-size: 22px;
   font-weight: 700;
-  cursor: default;
-  transition: all 0.3s;
+  margin-bottom: 6px;
 }
 
-.outcome-btn.yes {
-  background: rgba(139, 148, 158, 0.06);
-  color: var(--text-muted);
-  border-color: rgba(139, 148, 158, 0.15);
-  opacity: 0.5;
+.verdict-conf {
+  display: block;
+  font-size: 12px;
+  font-weight: 500;
+  margin-top: 2px;
 }
-
-.outcome-btn.yes.active {
-  background: rgba(88, 166, 255, 0.2);
-  color: var(--rain-yes);
-  border-color: var(--rain-yes);
-  opacity: 1;
-}
-
-.outcome-btn.no {
-  background: rgba(139, 148, 158, 0.06);
-  color: var(--text-muted);
-  border-color: rgba(139, 148, 158, 0.15);
-  opacity: 0.5;
-}
-
-.outcome-btn.no.active {
-  background: rgba(63, 185, 80, 0.15);
-  color: var(--accent-green);
-  border-color: var(--accent-green);
-  opacity: 1;
-}
-
-.outcome-btn .btn-label { display: block; font-size: 14px; margin-bottom: 2px; }
-.outcome-btn .btn-pct { display: block; font-size: 22px; }
-.outcome-btn .btn-sub { display: block; font-size: 11px; opacity: 0.6; margin-top: 2px; }
 
 .prediction-meta {
   color: var(--text-muted);
   font-size: 12px;
-  margin-top: 16px;
+  margin-top: 14px;
 }
 
 .conf-low { color: var(--accent-green); }
 .conf-medium { color: var(--accent-yellow); }
 .conf-high { color: var(--accent-red); }
-
-.prob-trend {
-  font-size: 12px;
-  margin-top: 4px;
-  font-weight: 600;
-}
-.prob-trend.trend-up { color: var(--accent-red); }
-.prob-trend.trend-down { color: var(--accent-green); }
-.prob-trend.trend-stable { color: var(--text-muted); }
 
 /* Chart */
 .chart-card {
@@ -388,72 +341,63 @@ canvas { width: 100% !important; height: 100% !important; }
 /* ML correction summary */
 .ml-correction {
   font-size: 13px;
-  line-height: 1.5;
-  color: var(--text);
-  background: rgba(88, 166, 255, 0.08);
-  border: 1px solid rgba(88, 166, 255, 0.2);
-  border-radius: 10px;
-  padding: 10px 14px;
-  margin-top: 14px;
+  line-height: 1.55;
+  color: var(--text-muted);
+  background: linear-gradient(135deg, rgba(88, 166, 255, 0.06), rgba(88, 166, 255, 0.02));
+  border-left: 3px solid var(--accent-blue);
+  border-radius: 0 10px 10px 0;
+  padding: 12px 16px;
+  margin: 16px auto 8px;
   text-align: left;
-  max-width: 420px;
+  max-width: 440px;
 }
+.ml-correction strong { color: var(--text); }
 
 /* Rain gate */
 .gate-indicator {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 6px 14px;
+  padding: 5px 12px;
   border-radius: 20px;
-  font-size: 13px;
-  font-weight: 600;
-  margin-top: 12px;
+  font-size: 11px;
+  font-weight: 500;
+  margin-top: 10px;
 }
 
 .gate-indicator.open {
-  background: rgba(88, 166, 255, 0.15);
+  background: rgba(88, 166, 255, 0.08);
   color: var(--accent-blue);
   flex-wrap: wrap;
   justify-content: center;
-  padding: 10px 16px;
-  gap: 6px 8px;
+  padding: 6px 12px;
+  gap: 4px 6px;
 }
-.gate-indicator.closed { background: rgba(139, 148, 158, 0.1); color: var(--text-muted); }
+.gate-indicator.closed { background: rgba(139, 148, 158, 0.06); color: var(--text-muted); }
 
-.gate-text { font-weight: 700; }
-
-.gate-chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-  justify-content: center;
-}
+.gate-text { font-weight: 600; }
 
 .gate-chip {
-  background: rgba(88, 166, 255, 0.2);
-  border: 1px solid rgba(88, 166, 255, 0.3);
-  border-radius: 12px;
-  padding: 2px 8px;
-  font-size: 11px;
+  background: rgba(88, 166, 255, 0.12);
+  border-radius: 10px;
+  padding: 1px 7px;
+  font-size: 10px;
   font-weight: 500;
   white-space: nowrap;
 }
 
 .gate-scroll-hint {
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 400;
   color: var(--accent-blue);
-  opacity: 0.7;
+  opacity: 0.6;
   text-decoration: none;
-  width: 100%;
-  text-align: center;
 }
 .gate-scroll-hint:hover { opacity: 1; text-decoration: underline; }
 
 .gate-dot {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
 }
 
@@ -784,8 +728,7 @@ footer a:hover { text-decoration: underline; }
   .probability-ring { width: 170px; height: 170px; }
   .probability-value .pct { font-size: 46px; }
 
-  .outcome-btn { padding: 12px 18px; }
-  .outcome-btn .btn-pct { font-size: 20px; }
+  .verdict { font-size: 20px; }
 
   .grid { gap: 12px; }
   .info-card { padding: 16px; }
@@ -818,12 +761,11 @@ footer a:hover { text-decoration: underline; }
   .probability-value .pct { font-size: 40px; }
   .probability-value .label { font-size: 10px; }
 
-  .outcome-buttons { gap: 8px; }
-  .outcome-btn { padding: 10px 14px; border-radius: 10px; }
-  .outcome-btn .btn-label { font-size: 13px; }
-  .outcome-btn .btn-pct { font-size: 18px; }
+  .verdict { font-size: 17px; }
+  .verdict-conf { font-size: 11px; }
 
-  .gate-indicator { font-size: 11px; padding: 5px 10px; }
+  .gate-indicator { font-size: 10px; padding: 4px 10px; }
+  .ml-correction { font-size: 12px; padding: 10px 12px; }
 
   .prediction-meta { font-size: 11px; }
 
@@ -878,10 +820,9 @@ footer a:hover { text-decoration: underline; }
   .probability-ring { width: 130px; height: 130px; }
   .probability-value .pct { font-size: 34px; }
 
-  .outcome-buttons { flex-direction: column; align-items: center; }
-  .outcome-btn { max-width: 100%; width: 100%; }
+  .verdict { font-size: 16px; }
 
-  .gate-indicator { font-size: 10px; text-align: center; line-height: 1.4; }
+  .gate-indicator { font-size: 9px; text-align: center; line-height: 1.4; }
 
   .cal-grid { gap: 3px; }
   .cal-day { border-radius: 4px; }
