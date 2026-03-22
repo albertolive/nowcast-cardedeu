@@ -148,7 +148,7 @@ function renderPrediction(latest, history) {
 
       <div class="verdict" style="color:${color}">
         ${latest.will_rain ? '🌧️ Sí, plourà' : '☀️ No plourà'}
-        <span class="verdict-conf ${confColor}">${latest.confidence}${trend.arrow ? ' · ' + trend.arrow + ' ' + trend.label : ''}</span>
+        <span class="verdict-conf ${confColor}">Confiança ${latest.confidence.toLowerCase()}${trend.arrow ? ` · prob. ${trend.label} ${trend.arrow}` : ''}</span>
       </div>
 
       ${_mlCorrectionSummary(latest)}
