@@ -12,7 +12,7 @@ import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 import config
 from src.data.meteocardedeu import fetch_series, fetch_latest
-from src.data.open_meteo import fetch_forecast, fetch_pressure_levels, fetch_sst_forecast
+from src.data.open_meteo import fetch_forecast, fetch_pressure_levels, fetch_pressure_levels_hourly, fetch_sst_forecast
 from src.data.rainviewer import fetch_radar_at_cardedeu
 from src.data.meteocat import fetch_sentinel_latest, compute_sentinel_features
 from src.data.meteocat_xdde import compute_lightning_features
@@ -47,6 +47,10 @@ def predict_now() -> dict:
 
     logger.info("Obtenint dades a 850hPa (flux sinòptic)...")
     pressure_data = fetch_pressure_levels()
+
+    # Obtenir dades horàries de nivells de pressió (amb 12h passades per diff/tendències)
+    logger.info("Obtenint nivells de pressió horaris (passat+futur)...")
+    pressure_hourly_df = fetch_pressure_levels_hourly(hours_ahead=48, past_hours=12)
 
     logger.info("Obtenint SST Mediterrani (Marine API)...")
     sst_data = fetch_sst_forecast()
@@ -112,10 +116,26 @@ def predict_now() -> dict:
                 f"precip={sentinel_data.get('sentinel_precip')}")
 
     logger.info("Construint features...")
-    # Afegir dades de nivells de pressió al forecast_df ABANS de build_features
+    # Afegir dades horàries de nivells de pressió al forecast_df ABANS de build_features
     # perquè _add_wind_regime_features pugui usar wind_850_dir (sinòptic)
-    # en lloc del vent de superfície (10m), que és distorsionat per orografia
-    if pressure_data and not forecast_df.empty:
+    # i les features de tendència (diff) tinguin valors variables (no constants)
+    if not pressure_hourly_df.empty and not forecast_df.empty:
+        forecast_df = forecast_df.copy()
+        forecast_df["datetime"] = pd.to_datetime(forecast_df["datetime"])
+        pressure_hourly_df = pressure_hourly_df.copy()
+        pressure_hourly_df["datetime"] = pd.to_datetime(pressure_hourly_df["datetime"])
+        # Merge: afegir columnes PL que no existeixin ja al forecast
+        pl_cols = [c for c in pressure_hourly_df.columns if c != "datetime" and c not in forecast_df.columns]
+        if pl_cols:
+            forecast_df = pd.merge_asof(
+                forecast_df.sort_values("datetime"),
+                pressure_hourly_df[["datetime"] + pl_cols].sort_values("datetime"),
+                on="datetime",
+                direction="nearest",
+                tolerance=pd.Timedelta("1h"),
+            )
+    elif pressure_data and not forecast_df.empty:
+        # Fallback: injecció escalar si el fetch horari falla
         forecast_df = forecast_df.copy()
         for k, v in pressure_data.items():
             if k not in forecast_df.columns:
@@ -155,6 +175,17 @@ def predict_now() -> dict:
     for k, v in sentinel_features.items():
         if k in FEATURE_COLUMNS:
             latest[k] = v
+
+    # Fallback precipitació: si MeteoCardedeu no tenia dades, usar KX XEMA com a proxy
+    # KX (La Roca - ETAP Cardedeu, 1.5km) és un pluviòmetre professional SMC
+    if station_df.empty and sentinel_data.get("local_rain_xema") is not None:
+        kx_rain = sentinel_data.get("local_rain_xema", 0) or 0
+        kx_rain_3h = sentinel_data.get("local_rain_xema_3h", 0) or 0
+        if "rained_last_3h" in FEATURE_COLUMNS:
+            latest["rained_last_3h"] = int(kx_rain_3h >= config.RAIN_THRESHOLD_MM)
+        if "rain_accum_3h" in FEATURE_COLUMNS:
+            latest["rain_accum_3h"] = kx_rain_3h
+        logger.info(f"Fallback KX: rain_3h={kx_rain_3h:.1f}mm, rained={kx_rain_3h >= config.RAIN_THRESHOLD_MM}")
 
     # Afegir features d'ensemble (acord entre models)
     for k, v in ensemble_data.items():
@@ -325,6 +356,7 @@ def predict_now() -> dict:
             "sst_med": sst_data.get("sst_med"),
         },
         "rain_gate_open": rain_signals,
+        "station_available": not station_df.empty,
         "features_used": len(feature_names),
         "threshold": threshold,
         "calibrated": calibrator is not None,
@@ -343,6 +375,18 @@ def predict_now() -> dict:
         f"Predicció: {result['probability_pct']}% probabilitat de pluja "
         f"(confiança: {result['confidence']}, alerta: {result['will_rain']})"
     )
+
+    # Monitorització: comptar features nul·les per detectar regressions
+    fv = result["feature_vector"]
+    null_count = sum(1 for v in fv.values() if v is None)
+    populated_count = len(fv) - null_count
+    # Rain-gated + soil(archive-only) + radar-bearing ≈ 20-25 nulls normals
+    if null_count > 40:
+        logger.warning(
+            f"⚠️ Features nul·les: {null_count}/{len(fv)} — possibles problemes amb dades"
+        )
+    else:
+        logger.info(f"Features: {populated_count}/{len(fv)} populades, {null_count} nul·les")
 
     return result
 

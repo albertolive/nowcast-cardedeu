@@ -1,6 +1,7 @@
 """
 Verificador de prediccions — compara prediccions passades amb la realitat.
 60 minuts després de cada predicció, comprova si realment va ploure.
+Usa MeteoCardedeu.net com a font primària i XEMA KX (La Roca - ETAP Cardedeu) com a fallback.
 """
 import logging
 from datetime import datetime, timedelta
@@ -9,6 +10,7 @@ import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 import config
 from src.data.meteocardedeu import fetch_series
+from src.data.meteocat import fetch_kx_precipitation_series
 from src.feedback.logger import load_predictions_log, save_predictions_log
 
 logger = logging.getLogger(__name__)
@@ -28,17 +30,27 @@ def verify_pending_predictions() -> dict:
 
     now = datetime.now()
     # Obtenim les últimes 3h de dades de l'estació (suficient per verificar)
+    # Font primària: MeteoCardedeu.net (minut a minut)
+    # Fallback: XEMA KX La Roca - ETAP Cardedeu (cada 30min, professional SMC)
+    verification_source = "meteocardedeu"
     try:
         station_df = fetch_series(hours=3)
     except Exception as e:
-        logger.error(f"Error obtenint dades de l'estació per verificar: {e}")
-        return {"verified_count": 0, "correct_count": 0, "wrong_count": 0, "skipped": 0}
+        logger.warning(f"MeteoCardedeu no disponible per verificar: {e}")
+        station_df = None
 
-    if station_df.empty or "PREC" not in station_df.columns:
-        logger.warning("Dades de l'estació buides o sense PREC.")
-        return {"verified_count": 0, "correct_count": 0, "wrong_count": 0, "skipped": 0}
+    if station_df is None or station_df.empty or "PREC" not in station_df.columns:
+        logger.info("MeteoCardedeu sense dades — provant fallback XEMA KX (La Roca)...")
+        station_df = fetch_kx_precipitation_series(hours=3)
+        verification_source = "xema_kx"
+        if station_df.empty or "PREC" not in station_df.columns:
+            logger.warning("Ni MeteoCardedeu ni XEMA KX disponibles per verificar.")
+            return {"verified_count": 0, "correct_count": 0, "wrong_count": 0, "skipped": 0}
+        logger.info(f"Usant XEMA KX (La Roca) com a font de verificació ({len(station_df)} lectures)")
 
-    station_df["datetime"] = station_df["datetime"].dt.tz_localize(None)
+    # Assegurar que datetime no té timezone (KX ja arriba sense, MC.net pot tenir-ne)
+    if station_df["datetime"].dt.tz is not None:
+        station_df["datetime"] = station_df["datetime"].dt.tz_localize(None)
 
     verified_count = 0
     correct_count = 0
@@ -82,6 +94,7 @@ def verify_pending_predictions() -> dict:
         entry["actual_rain_mm"] = round(rain_mm, 2)
         entry["correct"] = is_correct
         entry["verified_at"] = now.isoformat()
+        entry["verification_source"] = verification_source
 
         verified_count += 1
         if is_correct:
