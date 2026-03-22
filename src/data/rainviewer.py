@@ -33,10 +33,11 @@ def _get_radar_frames() -> dict:
 def _extract_pixel_intensity(png_bytes: bytes, px: int, py: int) -> int:
     """
     Llegeix la intensitat del radar d'un píxel concret d'un tile PNG.
-    RainViewer codifica com a escala de grisos: R=G=B (0-255) amb alpha>0
-    indicant presència d'eco. 10 nivells discrets de R=0 (pluja lleugera)
-    fins a R=255 (pluja molt intensa). R=0 amb alpha>0 és eco vàlid.
-    Retorna 0 (sense pluja) o 1-255 (intensitat creixent).
+    RainViewer escala de grisos: R=G=B (0-255), alpha>0 = cobertura radar.
+    alpha=0: fora de cobertura radar.
+    alpha>0, R=0: radar cobreix la zona però NO detecta precipitació.
+    alpha>0, R>0: precipitació detectada (R més alt = més intensa).
+    Retorna 0 (sense precipitació) o el valor R (1-255).
     """
     try:
         from PIL import Image
@@ -44,42 +45,24 @@ def _extract_pixel_intensity(png_bytes: bytes, px: int, py: int) -> int:
         r, g, b, a = img.getpixel((px, py))
         if a == 0:
             return 0
-        # alpha>0 = eco present. R=0 és el nivell més baix (plugim lleugera)
-        # Retornem mínim 1 per distingir "eco R=0" de "sense eco"
-        return max(r, 1)
+        return r  # R=0 = no precipitació, R>0 = precipitació
     except ImportError:
         return -1
 
 
 def _radar_intensity_to_dbz(intensity: int) -> float:
     """
-    Converteix la intensitat del píxel (0-255) a dBZ aproximat.
-    RainViewer utilitza 10 nivells discrets d'escala de grisos (R=G=B):
-      R=0 (~5dBZ), 38 (~10), 75 (~15), 110 (~20), 146 (~25),
-      177 (~30), 203 (~35), 222 (~40), 242 (~45), 255 (~50+)
-    Per valors intermedis, interpolació lineal.
+    Converteix la intensitat del píxel (R=0-255) a dBZ.
+    Fórmula estàndard RainViewer: dBZ = R / 2 - 32
+    (derivada de l'esquema B&W: R_bw = dBZ+32, tiles 256px escalen ×2).
+    Les tiles 256px quantitzen a 10 nivells: R=0,38,75,110,146,177,203,222,242,255.
+    R=255→95.5dBZ és físicament impossible; es limita a 65 dBZ (màxim
+    raonable per precipitació, valors superiors són soroll de muntanya/artefactes).
     """
     if intensity <= 0:
         return 0.0
-    # Taula de referència: (R_value, dBZ)
-    # Basada en la paleta de RainViewer (10 nivells, ~5 dBZ per salt)
-    _TABLE = [
-        (0, 5.0), (38, 10.0), (75, 15.0), (110, 20.0), (146, 25.0),
-        (177, 30.0), (203, 35.0), (222, 40.0), (242, 45.0), (255, 50.0),
-    ]
-    # Cas fora de rang
-    if intensity <= _TABLE[0][0]:
-        return _TABLE[0][1]
-    if intensity >= _TABLE[-1][0]:
-        return _TABLE[-1][1]
-    # Interpolació lineal entre nivells
-    for i in range(len(_TABLE) - 1):
-        r0, d0 = _TABLE[i]
-        r1, d1 = _TABLE[i + 1]
-        if r0 <= intensity <= r1:
-            frac = (intensity - r0) / (r1 - r0) if r1 != r0 else 0
-            return d0 + frac * (d1 - d0)
-    return _TABLE[-1][1]
+    dbz = intensity / 2.0 - 32.0
+    return min(dbz, 65.0)
 
 
 def _dbz_to_rain_rate(dbz: float) -> float:
@@ -147,16 +130,17 @@ def _scan_radar_spatial(png_bytes: bytes, cx: int, cy: int,
     # Màscara circular
     in_radius = dist_km <= radius_km
 
-    # Extreure intensitat: escala de grisos R=G=B (0-255), alpha>0 = eco present
-    # R=0 amb alpha>0 és pluja lleugera (nivell més baix), NO "sense eco"
+    # Extreure intensitat: escala de grisos R=G=B (0-255)
+    # alpha=0: fora de cobertura radar
+    # alpha>0, R=0: cobertura radar sense precipitació
+    # alpha>0, R>0: precipitació detectada
     region = arr[y_lo:y_hi, x_lo:x_hi]
     r_channel = region[:, :, 0].astype(float)
     alpha = region[:, :, 3]
-    # Intensitat = R, però amb mínim 1 on alpha>0 (eco present)
-    intensity = np.where(alpha > 0, np.maximum(r_channel, 1.0), 0.0)
+    intensity = r_channel
 
-    # Ecos: alpha > 0 indica presència d'eco radar
-    has_echo = (alpha > 0) & in_radius
+    # Ecos: alpha > 0 (cobertura radar) AND R > 0 (precipitació detectada)
+    has_echo = (alpha > 0) & (r_channel > 0) & in_radius
 
     # Excloure clutter (ecos permanents detectats en tots els frames)
     if clutter_mask is not None:
@@ -260,8 +244,9 @@ def _scan_radar_spatial(png_bytes: bytes, cx: int, cy: int,
 def _build_clutter_mask(tile_bytes_list: list) -> Optional[np.ndarray]:
     """
     Construeix una màscara booleana d'ecos permanents (clutter de terra).
-    Un píxel es considera clutter si mostra eco (alpha>0, R>10)
-    en TOTS els frames vàlids. La pluja real es mou entre frames (~1h).
+    Un píxel es considera clutter si mostra eco (alpha>0, R>0)
+    en TOTS els frames vàlids. Tanmateix, si el clutter cobreix >5% del tile,
+    és pluja persistent (frontal), no clutter real → retorna None.
     Necessita mínim 3 frames vàlids per ser fiable.
     """
     from PIL import Image
@@ -275,7 +260,7 @@ def _build_clutter_mask(tile_bytes_list: list) -> Optional[np.ndarray]:
         try:
             img = Image.open(io.BytesIO(tile_bytes)).convert("RGBA")
             arr = np.array(img)
-            has_echo = (arr[:, :, 3] > 0) & (arr[:, :, 0] > 10)
+            has_echo = (arr[:, :, 3] > 0) & (arr[:, :, 0] > 0)
             if echo_count is None:
                 echo_count = has_echo.astype(int)
             else:
@@ -287,7 +272,17 @@ def _build_clutter_mask(tile_bytes_list: list) -> Optional[np.ndarray]:
     if valid_count < 3 or echo_count is None:
         return None
 
-    return echo_count >= valid_count
+    clutter = echo_count >= valid_count
+    # Pluja frontal persistent apareix a tots els frames → sembla clutter
+    # Però clutter real (edificis, muntanyes) rarament supera ~200 px a zoom 8
+    # Si la cobertura és >0.5% del tile, és pluja persistent, no clutter
+    clutter_frac = clutter.sum() / clutter.size
+    if clutter_frac > 0.005:
+        logger.debug(f"  Clutter mask desactivada: {clutter_frac:.1%} del tile "
+                     f"({int(clutter.sum())} px) — pluja persistent, no clutter")
+        return None
+
+    return clutter
 
 
 def _empty_spatial_result(radius_km: float) -> dict:
