@@ -1113,6 +1113,11 @@ def build_features_from_realtime(station_df: pd.DataFrame, forecast_df: pd.DataF
             "sunshine_duration", "wind_speed_100m", "wind_direction_100m", "snowfall",
             "total_column_integrated_water_vapour", "boundary_layer_height",
             "terrestrial_radiation", "soil_moisture_28_to_100cm",
+            # Nivells de pressió (injectats per predict.py si disponibles)
+            "wind_850_dir", "wind_850_speed", "temp_850", "rh_850",
+            "wind_925_dir", "wind_925_speed", "temp_925", "rh_925",
+            "rh_700", "temp_700", "temp_500",
+            "wind_300_speed", "wind_300_dir", "gph_300",
         ]
         available_extra = [c for c in extra_cols if c in forecast_df.columns]
 
