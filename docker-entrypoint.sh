@@ -64,5 +64,11 @@ while true; do
         echo "💤 Fora d'horari (${HOUR}h). Esperant..."
     fi
     
-    sleep 600
+    # Sleep until next 10-minute mark (e.g. :00, :10, :20, :30, :40, :50)
+    now=$(date +%s)
+    next=$(( (now / 600 + 1) * 600 ))
+    sleep_secs=$(( next - $(date +%s) ))
+    [ "$sleep_secs" -le 0 ] && sleep_secs=60
+    echo "⏱️  Next run in ${sleep_secs}s (at $(TZ=Europe/Madrid date -d @$next +%H:%M 2>/dev/null || date -r $next +%H:%M))"
+    sleep "$sleep_secs"
 done
