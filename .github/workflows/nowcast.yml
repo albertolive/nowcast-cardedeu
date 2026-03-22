@@ -2,14 +2,14 @@ name: "🌧️ Nowcast Cardedeu"
 
 on:
   schedule:
-    # Predicció cada 10 min → gestionada per cron-job.org via workflow_dispatch
-    # (GitHub Actions cron no garanteix intervals curts)
+    # Predicció cada 10 min → Claw.cloud container (Docker)
+    # El job 'predict' es manté per invocar manualment via workflow_dispatch
     # Resum diari a les 7:00 Barcelona (6:00 UTC en horari d'estiu)
     - cron: "0 6 * * *"
     # Informe d'accuracy setmanal (dilluns 8:00 Barcelona = 7:00 UTC estiu)
     - cron: "0 7 * * 1"
-    # Re-entrenar diàriament (3:00 Barcelona = 2:00 UTC estiu)
-    - cron: "0 2 * * *"
+    # Re-entrenar setmanalment (diumenge 3:00 Barcelona = 2:00 UTC estiu)
+    - cron: "0 2 * * 0"
   workflow_dispatch:
     inputs:
       action:
@@ -88,14 +88,6 @@ jobs:
           git add docs/latest_prediction.json docs/predictions_log.jsonl 2>/dev/null || true
           git diff --cached --quiet || git commit -m "📊 Prediction $(date -u +%Y-%m-%dT%H:%M)"
           git push || (git pull --rebase origin main && git push)
-
-      - name: Upload prediction artifact
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: prediction-${{ github.run_number }}
-          path: data/latest_prediction.json
-          retention-days: 30
 
       - name: Notificar fallada per Telegram
         if: failure()
@@ -196,7 +188,7 @@ jobs:
   retrain:
     runs-on: ubuntu-latest
     if: >-
-      github.event.schedule == '0 2 * * *' ||
+      github.event.schedule == '0 2 * * 0' ||
       (github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'retrain')
     timeout-minutes: 30
 
