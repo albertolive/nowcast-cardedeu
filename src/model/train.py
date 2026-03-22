@@ -79,26 +79,30 @@ def train_model(
 
     logger.info(f"Dataset: {len(y)} mostres, {n_positive} pluja ({100*n_positive/len(y):.1f}%)")
 
-    # Paràmetres XGBoost optimitzats per nowcasting (199 features)
-    # Tuned via 5-fold CV grid search (2026-03-20):
-    #   - Removed scale_pos_weight: calibration + threshold search handles class imbalance
-    #     better than upweighting minority class (+0.0108 F1 OOF)
-    #   - colsample 0.7→0.6, reg_alpha 0.1→0.2, reg_lambda 1.0→1.5: stronger regularization
-    #     helps generalize with 55% NaN pressure level features (+0.0020 F1 OOF)
+    # Paràmetres XGBoost optimitzats per nowcasting (208 features)
+    # Tuned via 2-round grid search (2026-03-22):
+    #   - colsample 0.6→0.5: forces feature diversity — reduces NWP dominance from
+    #     82% to 74%, letting XGBoost learn from tail features (NWP error patterns)
+    #   - max_depth 6→7: captures more complex NWP×surface condition interactions
+    #   - n_estimators 800→1200, lr 0.02→0.012: more trees compensate for lower lr + diversity
+    #   - subsample 0.8→0.75, gamma 0.1→0.15, reg_alpha 0.2→0.3, reg_lambda 1.5→2.0:
+    #     stronger regularization matches deeper trees to prevent overfitting
+    #   - min_child_weight 5→6: higher to compensate for depth=7
+    #   Result: Cal F1 0.7033→0.7061 (+0.0028), top-3 gain 82%→74%
     model = xgb.XGBClassifier(
-        n_estimators=800,
-        max_depth=6,
-        learning_rate=0.02,
-        subsample=0.8,
-        colsample_bytree=0.6,
-        min_child_weight=5,
-        gamma=0.1,
-        reg_alpha=0.2,
-        reg_lambda=1.5,
+        n_estimators=1200,
+        max_depth=7,
+        learning_rate=0.012,
+        subsample=0.75,
+        colsample_bytree=0.5,
+        min_child_weight=6,
+        gamma=0.15,
+        reg_alpha=0.3,
+        reg_lambda=2.0,
         objective="binary:logistic",
-        eval_metric="aucpr",
+        eval_metric="logloss",
         random_state=42,
-        early_stopping_rounds=75,
+        early_stopping_rounds=96,
         enable_categorical=False,
     )
 
@@ -133,15 +137,17 @@ def train_model(
         logger.info(f"  Fold {fold+1}: AUC={auc:.4f}, F1={best_f1:.4f}")
 
     # ── Calibratge isotònic sobre les prediccions out-of-fold ──
+    # Full OOF: isotonic regression is monotonically constrained, can't overfit.
+    # More data points = finer step function = better calibration in production.
     oof_mask = ~np.isnan(oof_proba)
     oof_y = y.values[oof_mask]
     oof_p = oof_proba[oof_mask]
 
     calibrator = IsotonicRegression(y_min=0, y_max=1, out_of_bounds="clip")
     calibrator.fit(oof_p, oof_y)
-    logger.info(f"Calibratge isotònic ajustat amb {oof_mask.sum()} prediccions OOF")
+    logger.info(f"Calibratge isotònic ajustat amb {len(oof_p)} prediccions OOF")
 
-    # Trobar llindar òptim (F1) sobre les probabilitats calibrades OOF
+    # Trobar llindar òptim (F1) sobre les prediccions calibrades
     oof_calibrated = calibrator.predict(oof_p)
     precisions, recalls, thresholds = precision_recall_curve(oof_y, oof_calibrated)
     f1s = np.where(

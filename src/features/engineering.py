@@ -231,6 +231,15 @@ def _add_pressure_level_features(df: pd.DataFrame) -> pd.DataFrame:
     import math
 
     df = df.copy()
+
+    # Indicador de disponibilitat de dades de nivells de pressió
+    # Pre-2021: NaN → 0; Post-2021: disponible → 1
+    # Permet al model distingir quan els règims venen de 850hPa (fiable) vs 10m (soroll)
+    if "wind_850_dir" in df.columns:
+        df["has_pressure_levels"] = df["wind_850_dir"].notna().astype(int)
+    else:
+        df["has_pressure_levels"] = 0
+
     for col in ["wind_925_speed", "wind_925_dir", "temp_925", "rh_925",
                 "wind_850_speed", "wind_850_dir", "temp_850", "temp_500",
                 "rh_850", "rh_700", "temp_700",
@@ -640,7 +649,7 @@ def _add_wind_gust_features(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def _add_rain_context(df: pd.DataFrame, precip_col: str = "precipitation") -> pd.DataFrame:
-    """Context de pluja recent (últimes hores)."""
+    """Context de pluja recent (últimes hores) i diària."""
     df = df.copy()
     if precip_col in df.columns:
         # Pluja acumulada en les últimes 3 i 6 hores
@@ -648,6 +657,14 @@ def _add_rain_context(df: pd.DataFrame, precip_col: str = "precipitation") -> pd
         df["rain_accum_6h"] = df[precip_col].rolling(6, min_periods=1).sum()
         # Ha plogut recentment?
         df["rained_last_3h"] = (df["rain_accum_3h"] > 0.2).astype(int)
+        # Pluja acumulada en les últimes 24 hores — persistència sinòptica
+        df["rain_accum_24h"] = df[precip_col].rolling(24, min_periods=1).sum()
+
+    # Pressió mínima en les últimes 24h — detecta borrasques actives
+    if "pressure_msl" in df.columns:
+        pressure = pd.to_numeric(df["pressure_msl"], errors="coerce")
+        df["pressure_min_24h"] = pressure.rolling(24, min_periods=1).min()
+
     return df
 
 
@@ -697,6 +714,12 @@ def _add_model_features(df: pd.DataFrame) -> pd.DataFrame:
         cape = pd.to_numeric(df["cape"], errors="coerce")
         df["cape_change_3h"] = cape.diff(3)
 
+        # CAPE × hora del dia: convecció solar requereix CAPE + escalfament diürn
+        # CAPE matinal (pre-10h) rarament produeix tempestes; CAPE vespertí (12-18h) sí
+        hour = pd.to_datetime(df.get("datetime", pd.NaT)).dt.hour
+        diurnal_weight = ((hour >= 10) & (hour <= 19)).astype(float)
+        df["cape_diurnal_weighted"] = cape * diurnal_weight
+
     # ── FP-killer features ──
     # Deep analysis shows 9,478 FP vs 8,940 TP. FP signature:
     # NWP says "maybe rain" but humidity is dropping and air is drier.
@@ -731,6 +754,40 @@ def _add_model_features(df: pd.DataFrame) -> pd.DataFrame:
     if mpp_col and "dew_point_depression" in df.columns:
         dpd = pd.to_numeric(df["dew_point_depression"], errors="coerce")
         df["nwp_rain_dry_air"] = df[mpp_col] * dpd
+
+    # ── NWP temporal consistency — captures WHEN the NWP is wrong ──
+    # The NWP changes its mind constantly. A persistent rain prediction
+    # that materializes is real; one that keeps misfiring is a stuck FP.
+    # These features are the best way to beat the NWP using only NWP data.
+
+    # 1. Persistence: how many of last 6h had NWP rain? (0–6)
+    #    High = synoptic rain event (frontal, Llevantada) — high reliability
+    #    Low (1) = isolated signal — often FP (convective false alarm)
+    if "model_predicts_precip" in df.columns:
+        df["nwp_rain_persistence_6h"] = df["model_predicts_precip"].rolling(6, min_periods=1).sum()
+
+    # 2. NWP rain amount trend: is the NWP ramping UP or backing OFF?
+    #    Increasing = front approaching → likely real
+    #    Decreasing = drying event, NWP residual → FP
+    if "nwp_rain_amount" in df.columns:
+        df["nwp_rain_trend_3h"] = df["nwp_rain_amount"].diff(3)
+
+    # 3. Weather code transition: captures the NWP "deciding" it will rain
+    #    A sudden jump from dry→rain code is less reliable than a gradual buildup
+    if "weather_code" in df.columns:
+        wc = pd.to_numeric(df["weather_code"], errors="coerce")
+        df["weather_code_change_3h"] = wc.diff(3)
+
+    # 4. Cloud-humidity convergence: both increasing together = rain developing
+    #    independently from what NWP says. Divergence = clearing.
+    if "cloud_change_3h" in df.columns and "humidity_change_3h" in df.columns:
+        cloud_ch = pd.to_numeric(df["cloud_change_3h"], errors="coerce")
+        humid_ch = pd.to_numeric(df["humidity_change_3h"], errors="coerce")
+        df["cloud_humidity_convergence"] = cloud_ch * humid_ch
+
+    # 5. Precipitation trend: rain intensifying vs weakening
+    if "precipitation" in df.columns:
+        df["precip_trend_3h"] = pd.to_numeric(df["precipitation"], errors="coerce").diff(3)
 
     # ── Tier 1: New ERA5 features (100% coverage 2015+) ──
 
@@ -1082,6 +1139,7 @@ FEATURE_COLUMNS = [
     "tramuntana_strength", "tramuntana_moisture",
     "wind_dir_change_3h",
     # Nivells de pressió (925/850/700/500/300 hPa) — perfil vertical complet
+    "has_pressure_levels",  # Indicador disponibilitat dades nivells de pressió
     "temp_925", "rh_925", "wind_925_speed", "wind_925_dir",
     "wind_850_speed", "wind_850_dir",
     "temp_850", "temp_500", "rh_850",
@@ -1110,6 +1168,8 @@ FEATURE_COLUMNS = [
     # cold_500_moderate, cold_500_strong: zero importance (extreme thresholds fire too rarely)
     # Pluja recent
     "precipitation", "rain_accum_3h", "rain_accum_6h", "rained_last_3h",
+    "rain_accum_24h",          # Pluja acumulada 24h — persistència sinòptica
+    "pressure_min_24h",        # Pressió mínima 24h — borrasca activa
     # Model / satèl·lit
     "cloud_cover", "cloud_change_1h", "cloud_change_3h", "is_overcast",
     # cape, cape_high, cape_very_high: zero importance
@@ -1125,6 +1185,12 @@ FEATURE_COLUMNS = [
     "nwp_rain_confirmed",   # NWP rain + already raining → high confidence TP
     "afternoon_fp_risk",    # afternoon + NWP rain + no low clouds → convective FP
     "nwp_rain_dry_air",     # NWP rain + large dew point gap → virga/evaporation
+    # NWP temporal consistency — captures when the NWP is wrong
+    "nwp_rain_persistence_6h", # Quantes de les últimes 6h el NWP ha predit pluja (0-6)
+    "nwp_rain_trend_3h",       # Tendència quantitat NWP: pujant=front, baixant=residu FP
+    "weather_code_change_3h",  # Transició WMO: salt sobtat = menys fiable
+    "cloud_humidity_convergence", # Núvols + humitat pujant junts = pluja real
+    "precip_trend_3h",         # Precipitació intensificant-se o debilitant-se
     # Tier 1 — ERA5 new vars (100% coverage 2015+)
     "showers",              # Pluja convectiva (xàfecs) separada de l'estratiforme
     "nwp_showers_fraction", # Fracció convectiva del total NWP rain
@@ -1153,6 +1219,7 @@ FEATURE_COLUMNS = [
     "moisture_flux_change_3h", # Canvi flux d'humitat — front que s'apropa/passa
     # CAPE change rate (rapid destabilization)
     "cape_change_3h",
+    "cape_diurnal_weighted",   # CAPE × hora diürna — convecció solar
     # Tier 4 — ERA5 surface expansion (100% coverage 2015+)
     "tcwv",                     # Total Column Water Vapour (kg/m²) — precipitable water
     "tcwv_change_3h",           # Càrrega/advecció d'humitat (front que arriba)
