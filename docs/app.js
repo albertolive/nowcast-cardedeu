@@ -377,17 +377,15 @@ function renderWhyPrediction(d) {
   // NWP consensus
   const modelsRain = e.models_rain || 0;
   const totalModels = e.total_models || 4;
-  const spread = e.precip_spread_mm;
-  const spreadText = spread != null ? (spread < 1 ? 'molt d\'acord' : spread < 5 ? 'bastant d\'acord' : 'poc d\'acord') : '';
   let modelsText, modelsColor;
   if (modelsRain === 0) {
     modelsText = `0/${totalModels} preveuen pluja`;
     modelsColor = 'var(--accent-green)';
   } else if (modelsRain <= totalModels / 2) {
-    modelsText = `${modelsRain}/${totalModels} preveuen pluja${spreadText ? ' (' + spreadText + ')' : ''}`;
+    modelsText = `${modelsRain}/${totalModels} preveuen pluja`;
     modelsColor = 'var(--accent-yellow)';
   } else {
-    modelsText = `${modelsRain}/${totalModels} preveuen pluja${spreadText ? ' (' + spreadText + ')' : ''}`;
+    modelsText = `${modelsRain}/${totalModels} preveuen pluja`;
     modelsColor = 'var(--accent-red)';
   }
 
