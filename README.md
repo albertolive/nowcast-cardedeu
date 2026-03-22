@@ -30,7 +30,7 @@ Utilitza dades reals de l'estació [MeteoCardedeu.net](https://meteocardedeu.net
          │                     │         │                      │
          ▼                     ▼         ▼                      ▼
     ┌──────────────────────────────────────────────────────────────────────┐
-    │                Feature Engineering (210 features)                    │
+    │                Feature Engineering (213 features)                    │
     │  Tendències · Ensemble · 5 nivells pressió · CAPE/CIN · SST · Compostos físics · Radar · Sentinella · Llamps │
     └──────────────────────────────┬───────────────────────────────────────┘
                                   │
@@ -147,7 +147,7 @@ nowcast-cardedeu/
 │   │   ├── meteocat_xdde.py  # API Meteocat XDDE (descàrregues elèctriques)
 │   │   └── meteocat_prediccio.py # API Meteocat Predicció (forecast municipal)
 │   ├── features/
-│   │   ├── engineering.py    # Feature engineering (210 features, 166 historical)
+    │   ├── engineering.py    # Feature engineering (213 features, 169 historical)
 │   │   └── regime.py         # Detecció de canvis de règim atmosfèric (Llevantada, Garbí, pressió)
 │   ├── model/
 │   │   ├── train.py          # Pipeline d'entrenament (XGBoost + TimeSeriesSplit)
@@ -178,7 +178,7 @@ nowcast-cardedeu/
 
 ## Features del model
 
-El model defineix **210 features** per predicció en temps real. El model s'entrena amb les **210 features completes** (166 amb dades històriques, 44 com a NaN per radar/llamps/AEMET). El **feedback loop** acumula gradualment les 44 features en temps real (radar, llamps, sentinella) a cada predicció verificada, permetent que el model aprengui d'observacions independents amb cada re-entrenament.
+El model defineix **213 features** per predicció en temps real. El model s'entrena amb les **213 features completes** (169 amb dades històriques, 44 com a NaN per radar/llamps/AEMET). El **feedback loop** acumula gradualment les 44 features en temps real (radar, llamps, sentinella) a cada predicció verificada, permetent que el model aprengui d'observacions independents amb cada re-entrenament.
 
 **Ensemble backfill**: Des de gener 2022, dades de 4 models NWP (ECMWF, GFS, ICON, AROME) descarregades via `scripts/backfill_ensemble.py`.
 **XEMA sentinel backfill**: Dades de Granollers (YM) + ETAP Cardedeu (KX) via `scripts/backfill_xema.py` (incremental, 15 dies/execució per respectar el límit API).
@@ -191,7 +191,7 @@ El model defineix **210 features** per predicció en temps real. El model s'entr
 | Pressió | Valor + tendència 1h/3h/6h + acceleració | Indicador principal d'inestabilitat |
 | Humitat | Valor + punt rosada + depressió + tendència + VPD + vpd_change_3h | Saturació = pluja imminent. VPD=0 → aire saturat |
 | Vent | Components U/V + canvis + marinada | Marinada del mar = aire sec |
-| Règims eòlics | Tramuntana, Llevantada, Migjorn, Garbí, Ponent (850hPa) + garbi_strength | Llevantada (E/SE) = pluja #1 a Cardedeu |
+| Règims eòlics | Tramuntana, Llevantada, Migjorn, Garbí, Ponent (850hPa) + interaccions força/humitat | Llevantada (E/SE) = pluja #1 a Cardedeu |
 | Nivells pressió | T/RH/Vent a 925hPa, Vent/T/RH a 850hPa, T/RH a 700hPa, T a 500hPa, Vent a 300hPa | Perfil vertical complet a 5 nivells |
 | 🆕 Índexs inestabilitat | VT, TT, LI, li_unstable, li_very_unstable | Skew-T: detecció de convecció severa |
 | 🆕 Cisalla de vent | wind_shear_speed, wind_shear_dir | Tempestes organitzades (supercèl·lules) |
@@ -252,11 +252,11 @@ El model defineix **210 features** per predicció en temps real. El model s'entr
 | [GitHub Models](https://github.com/marketplace/models) | IA narrativa (gpt-4o-mini) per resums diaris | 1 crida/dia | No (GITHUB_TOKEN) |
 
 ### Radar RainViewer
-El sistema descarrega tiles de radar (zoom 8, tile 134/94) i fa dues coses:
+El sistema descarrega tiles de radar (zoom 8, tile 129/95) i fa dues coses:
 
 1. **Detecció puntual**: Extreu la intensitat al píxel exacte de Cardedeu (dBZ, mm/h).
 2. **Escaneig espacial (30 km)**: Analitza tots els píxels en un radi de 30 km, detectant ecos de pluja, la seva distància, direcció (punt cardinal), i cobertura. Amb el vent a 850 hPa, prioriza el sector de sobrevent (d'on esperem la pluja).
-3. **Tracking de tempesta**: Compara el centroide dels ecos entre 6 frames (~1h) per estimar la velocitat de les cel·les de pluja, si s'acosten i l'ETA a Cardedeu.
+3. **Tracking de tempesta**: Compara el centroide dels ecos entre 6 frames (~1h) per estimar la velocitat de les cel·les de pluja (descomposada en N-S i E-W), si s'acosten i l'ETA a Cardedeu.
 
 Converteix intensitat PNG → dBZ → mm/h (Marshall-Palmer). Cada frame ≈ 10 minuts.
 
@@ -299,14 +299,14 @@ Cardedeu se situa al peu de la Serralada Prelitoral, a la confluència d'aire me
 
 | Règim | Direcció | Efecte a Cardedeu | Feature |
 |-------|----------|-------------------|---------|
-| 🌊 **Llevantada** | E/SE (60°-150°) | Humitat mediterrània contra les muntanyes → pluja #1 (14.1%) | `is_llevantada`, `llevantada_strength`, `llevantada_moisture` |
-| 🌀 **Garbí/Xaloc** | SW (190°-250°) | Aire càlid inestable → tempestes convectives (10.9%) | `is_garbi`, `garbi_strength` |
-| ☀️ **Migjorn** | S (150°-190°) | Aire africà càlid, segon en pluja (14.8%) | `is_migjorn` |
-| 🏔️ **Ponent/Mestral** | W/NW (260°-340°) | Aire sec continental (Foehn) → supressor de pluja (5.7%) | `is_ponent` |
-| ❄️ **Tramuntana** | N (340°-30°) | Vent polar fred del Montseny → supressor de pluja (5.8%) | `is_tramuntana`, `tramuntana_strength`, `tramuntana_moisture` |
+| 🌊 **Llevantada** | E/SE (60°-150°) | Humitat mediterrània contra les muntanyes → pluja #1 (14.1%) | `llevantada_strength`, `llevantada_moisture` |
+| 🌀 **Garbí/Xaloc** | SW (190°-250°) | Aire càlid inestable → tempestes convectives (10.9%) | `garbi_strength`, `garbi_moisture` |
+| ☀️ **Migjorn** | S (150°-190°) | Aire africà càlid, segon en pluja (14.8%) | `migjorn_strength`, `migjorn_moisture` |
+| 🏔️ **Ponent/Mestral** | W/NW (250°-340°) | Aire sec continental (Foehn) → supressor de pluja (5.7%) | `ponent_strength` |
+| ❄️ **Tramuntana** | N/NE (340°-60°) | Vent polar fred del Montseny → supressor de pluja (5.8%) | `tramuntana_strength`, `tramuntana_moisture` |
 | 🔄 **Backing wind** | Gir antihorari | Aproximació de front càlid o baixa → pluja imminent | `wind_dir_change_3h` (negatiu) |
 
-La **Llevantada** és el patró més important: quan el vent bufa de l'est amb humitat alta, la pluja a Cardedeu és quasi segura. El model captura aquesta interacció amb `llevantada_moisture` = is_llevantada × humitat relativa.
+La **Llevantada** és el patró més important: quan el vent bufa de l'est amb humitat alta, la pluja a Cardedeu és quasi segura. El model captura aquesta interacció amb `llevantada_moisture` = is_llevantada × humitat relativa. Tots els 5 règims tenen interaccions força×velocitat i humitat (excepte Ponent, aire sec continental). La Tramuntana inclou el Gregal (NE, 30°-60°) que a 850hPa és variant polar.
 
 ### Índexs d'inestabilitat (Skew-T)
 
