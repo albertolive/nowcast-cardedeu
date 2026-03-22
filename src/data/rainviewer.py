@@ -33,11 +33,10 @@ def _get_radar_frames() -> dict:
 def _extract_pixel_intensity(png_bytes: bytes, px: int, py: int) -> int:
     """
     Llegeix la intensitat del radar d'un píxel concret d'un tile PNG.
-    RainViewer color scheme 2: la intensitat s'extreu del canal amb valor no nul.
-    Normalment és el canal alfa (RGBA = 0,0,0,intensitat) o el canal R
-    (RGBA = intensitat,G,B,alpha). Prenem max(R, A) per cobrir ambdues
-    codificacions.
-    Retorna 0 (sense pluja) a 255 (pluja molt intensa).
+    RainViewer codifica com a escala de grisos: R=G=B (0-255) amb alpha>0
+    indicant presència d'eco. 10 nivells discrets de R=0 (pluja lleugera)
+    fins a R=255 (pluja molt intensa). R=0 amb alpha>0 és eco vàlid.
+    Retorna 0 (sense pluja) o 1-255 (intensitat creixent).
     """
     try:
         from PIL import Image
@@ -45,8 +44,9 @@ def _extract_pixel_intensity(png_bytes: bytes, px: int, py: int) -> int:
         r, g, b, a = img.getpixel((px, py))
         if a == 0:
             return 0
-        # Color scheme 2: intensitat pot estar al canal R o al canal A
-        return max(r, a)
+        # alpha>0 = eco present. R=0 és el nivell més baix (plugim lleugera)
+        # Retornem mínim 1 per distingir "eco R=0" de "sense eco"
+        return max(r, 1)
     except ImportError:
         return -1
 
@@ -54,11 +54,32 @@ def _extract_pixel_intensity(png_bytes: bytes, px: int, py: int) -> int:
 def _radar_intensity_to_dbz(intensity: int) -> float:
     """
     Converteix la intensitat del píxel (0-255) a dBZ aproximat.
-    Color scheme 2 de RainViewer: mapping lineal 0→-32dBZ, 255→+95dBZ
+    RainViewer utilitza 10 nivells discrets d'escala de grisos (R=G=B):
+      R=0 (~5dBZ), 38 (~10), 75 (~15), 110 (~20), 146 (~25),
+      177 (~30), 203 (~35), 222 (~40), 242 (~45), 255 (~50+)
+    Per valors intermedis, interpolació lineal.
     """
     if intensity <= 0:
         return 0.0
-    return -32.0 + (intensity / 255.0) * 127.0
+    # Taula de referència: (R_value, dBZ)
+    # Basada en la paleta de RainViewer (10 nivells, ~5 dBZ per salt)
+    _TABLE = [
+        (0, 5.0), (38, 10.0), (75, 15.0), (110, 20.0), (146, 25.0),
+        (177, 30.0), (203, 35.0), (222, 40.0), (242, 45.0), (255, 50.0),
+    ]
+    # Cas fora de rang
+    if intensity <= _TABLE[0][0]:
+        return _TABLE[0][1]
+    if intensity >= _TABLE[-1][0]:
+        return _TABLE[-1][1]
+    # Interpolació lineal entre nivells
+    for i in range(len(_TABLE) - 1):
+        r0, d0 = _TABLE[i]
+        r1, d1 = _TABLE[i + 1]
+        if r0 <= intensity <= r1:
+            frac = (intensity - r0) / (r1 - r0) if r1 != r0 else 0
+            return d0 + frac * (d1 - d0)
+    return _TABLE[-1][1]
 
 
 def _dbz_to_rain_rate(dbz: float) -> float:
@@ -126,15 +147,16 @@ def _scan_radar_spatial(png_bytes: bytes, cx: int, cy: int,
     # Màscara circular
     in_radius = dist_km <= radius_km
 
-    # Extreure intensitat: max(R, A) per cobrir ambdues codificacions de RainViewer
-    # Color scheme 2 pot codificar en canal R (r,g,b,a) o canal A (0,0,0,intensitat)
+    # Extreure intensitat: escala de grisos R=G=B (0-255), alpha>0 = eco present
+    # R=0 amb alpha>0 és pluja lleugera (nivell més baix), NO "sense eco"
     region = arr[y_lo:y_hi, x_lo:x_hi]
     r_channel = region[:, :, 0].astype(float)
-    alpha = region[:, :, 3].astype(float)
-    intensity = np.maximum(r_channel, alpha)
+    alpha = region[:, :, 3]
+    # Intensitat = R, però amb mínim 1 on alpha>0 (eco present)
+    intensity = np.where(alpha > 0, np.maximum(r_channel, 1.0), 0.0)
 
-    # Ecos: alpha > 0 indica cobertura radar, intensity > 10 filtra soroll
-    has_echo = (alpha > 0) & (intensity > 10) & in_radius
+    # Ecos: alpha > 0 indica presència d'eco radar
+    has_echo = (alpha > 0) & in_radius
 
     # Excloure clutter (ecos permanents detectats en tots els frames)
     if clutter_mask is not None:
@@ -444,7 +466,7 @@ def fetch_radar_at_cardedeu(wind_from_dir: Optional[float] = None) -> dict:
     current_intensity = intensities[-1] if intensities else 0
     current_dbz = _radar_intensity_to_dbz(current_intensity)
     current_rain_rate = _dbz_to_rain_rate(current_dbz)
-    frames_with_echo = sum(1 for i in intensities if i > 10)
+    frames_with_echo = sum(1 for i in intensities if i > 0)
 
     approaching = False
     if len(intensities) >= 3:
@@ -471,7 +493,7 @@ def fetch_radar_at_cardedeu(wind_from_dir: Optional[float] = None) -> dict:
         "radar_intensity": current_intensity,
         "radar_dbz": round(current_dbz, 1),
         "radar_rain_rate": round(current_rain_rate, 2),
-        "radar_has_echo": current_intensity > 10,
+        "radar_has_echo": current_intensity > 0,
         "radar_frames_with_echo": frames_with_echo,
         "radar_approaching": approaching or spatial_approaching,
         "radar_max_intensity_1h": max(intensities) if intensities else 0,
