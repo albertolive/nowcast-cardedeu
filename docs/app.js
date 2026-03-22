@@ -159,6 +159,8 @@ function renderPrediction(latest, history) {
         </div>
       </div>
 
+      ${_mlCorrectionSummary(latest)}
+
       <div class="gate-indicator ${gateOpen ? 'open' : 'closed'}">
         <span class="gate-dot"></span>
         ${gateOpen
@@ -205,8 +207,8 @@ function renderPrediction(latest, history) {
 
       <!-- Why this prediction -->
       <div class="info-card" id="sources-card">
-        <h3>🧠 Què diuen les fonts?</h3>
-        <p class="card-intro">El model compara aquestes fonts amb 12 anys d'històric de Cardedeu per donar el ${latest.probability_pct}% de dalt.</p>
+        <h3>🔎 Què diuen les fonts?</h3>
+        <p class="card-intro">Aquestes són les entrades que el nostre model analitza — no la predicció final.</p>
         ${renderWhyPrediction(latest)}
       </div>
     </div>
@@ -323,6 +325,45 @@ function renderSources(d) {
   `).join('');
 }
 
+function _mlCorrectionSummary(d) {
+  const pct = d.probability_pct;
+  const models = d.ensemble?.models_rain || 0;
+  const total = d.ensemble?.total_models || 4;
+  const aemet = d.aemet?.prob_precip;
+  const radar = d.radar?.approaching || d.radar?.has_echo;
+
+  // Estimate what raw NWP consensus suggests
+  let nwpPct = null;
+  if (aemet != null && total > 0) {
+    nwpPct = Math.round((aemet + (models / total) * 100) / 2);
+  } else if (aemet != null) {
+    nwpPct = aemet;
+  } else if (total > 0) {
+    nwpPct = Math.round((models / total) * 100);
+  }
+
+  if (nwpPct == null) return '';
+  const diff = pct - nwpPct;
+  const absDiff = Math.abs(diff);
+  if (absDiff < 10) return ''; // no significant correction
+
+  let text, icon;
+  if (diff < -20) {
+    icon = '🛡️';
+    text = `Els models globals marquen ~${nwpPct}% però el nostre sistema, entrenat amb 12 anys de dades locals, rebaixa a <strong>${pct}%</strong>. Configuracions com aquesta sovint no porten pluja real a Cardedeu.`;
+  } else if (diff < 0) {
+    icon = '📉';
+    text = `Models globals: ~${nwpPct}%. El sistema local corregeix a <strong>${pct}%</strong> — l'experiència a Cardedeu indica menys risc del que suggereixen.`;
+  } else if (diff > 20) {
+    icon = '⚠️';
+    text = `Models globals: només ~${nwpPct}%. Però les condicions locals recorden patrons que sí porten pluja aquí — el sistema puja a <strong>${pct}%</strong>.`;
+  } else {
+    icon = '📈';
+    text = `Models globals: ~${nwpPct}%. El sistema local veu senyals addicionals i ajusta a <strong>${pct}%</strong>.`;
+  }
+  return `<div class="ml-correction">${icon} ${text}</div>`;
+}
+
 function _renderBiasInsight(d) {
   const b = d.bias || {};
   if (b.temp == null && b.humidity == null) return '';
@@ -335,24 +376,6 @@ function _renderBiasInsight(d) {
   }
   if (parts.length === 0) return '';
   return `<p class="tech-explainer" style="margin-top:6px;font-style:italic">Ara mateix: ${parts.join(' i ')} — el sistema corregeix aquesta diferència.</p>`;
-}
-
-function _renderDisagreement(d) {
-  const pct = d.probability_pct;
-  const aemet = d.aemet?.prob_precip;
-  const models = d.ensemble?.models_rain || 0;
-  const total = d.ensemble?.total_models || 4;
-  const radar = d.radar?.approaching || d.radar?.has_echo;
-
-  // Model says low but sources say high
-  if (pct < 30 && aemet >= 50 && models >= 3) {
-    return `<p class="disagreement">Malgrat que AEMET i els models preveuen pluja, el sistema ha après que a Cardedeu aquesta configuració sovint no es materialitza en pluja real.</p>`;
-  }
-  // Model says high but sources say low
-  if (pct >= 50 && models <= 1 && !radar) {
-    return `<p class="disagreement">Els models globals no ho veuen, però les condicions locals (pressió, humitat, vent) recorden patrons que històricament porten pluja a Cardedeu.</p>`;
-  }
-  return '';
 }
 
 function renderWhyPrediction(d) {
@@ -413,7 +436,6 @@ function renderWhyPrediction(d) {
     <div class="stat-row"><span class="stat-label">Prob. pluja (AEMET)</span><span class="stat-value" style="color:${aemetColor}">${aemetText}</span></div>
     <div class="stat-row"><span class="stat-label">Prob. tronada (AEMET)</span><span class="stat-value" style="color:${stormColor}">${stormText}</span></div>
     <p class="card-hint">Les prob. AEMET són calibrades per meteoròlegs cada 6h</p>
-    ${_renderDisagreement(d)}
 
     <button class="expand-toggle" onclick="this.classList.toggle('open');document.getElementById('${detailId}').classList.toggle('open')">
       <span class="chevron">▶</span> Com s'ha calculat
