@@ -567,11 +567,11 @@ function renderAtmosphere(d) {
   const p = d.pressure_levels || {};
   const w = d.wind_regime || {};
   const regimes = {
-    llevantada: { icon: '🌊', name: 'Llevantada', desc: 'Humitat del mar contra les muntanyes — pluja #1 a Cardedeu (15% de probabilitat)' },
-    tramuntana: { icon: '❄️', name: 'Tramuntana', desc: 'Vent fred del nord — supressor de pluja (5%)' },
-    migjorn: { icon: '🌡️', name: 'Migjorn', desc: 'Aire càlid africà — segon en pluja (15%)' },
-    garbi: { icon: '🌀', name: 'Garbí', desc: 'Aire inestable del sud-oest — tempestes (11%)' },
-    ponent: { icon: '🏔️', name: 'Ponent', desc: 'Aire sec continental — supressor de pluja (6%)' },
+    llevantada: { icon: '🌊', name: 'Llevantada', desc: 'Humitat del mar contra les muntanyes — pluja #1 a Cardedeu (15% de probabilitat)', range: '60°-150° (E/SE)' },
+    tramuntana: { icon: '❄️', name: 'Tramuntana', desc: 'Vent fred del nord/nord-est — supressor de pluja (5%)', range: '340°-60° (N/NE)' },
+    migjorn: { icon: '🌡️', name: 'Migjorn', desc: 'Aire càlid africà — segon en pluja (15%)', range: '150°-190° (S)' },
+    garbi: { icon: '🌀', name: 'Garbí', desc: 'Aire inestable del sud-oest — tempestes (11%)', range: '190°-250° (SW)' },
+    ponent: { icon: '🏔️', name: 'Ponent', desc: 'Aire sec continental — supressor de pluja (6%)', range: '250°-340° (W/NW)' },
   };
   const activeRegime = w.is_llevantada ? regimes.llevantada :
                        w.is_tramuntana ? regimes.tramuntana :
