@@ -338,11 +338,19 @@ function renderRadar(d) {
   if (movementText) approachText += ` (${movementText})`;
   if (r.storm_eta_min) approachText += ` ~${r.storm_eta_min} min`;
 
+  // Direction text: use quadrant compass if available, else AEMET summary
+  let directionText = '<span style="color:var(--text-muted)">Sense pluja al radar</span>';
+  if (hasQuadrants) {
+    directionText = compassParts;
+  } else if (aemetHasEcho && aemetDist != null) {
+    directionText = `<span style="color:var(--accent-blue)">Pluja a ${aemetDist} km (AEMET)</span>`;
+  }
+
   return `
     <div class="stat-row"><span class="stat-label">Pluja més propera</span><span class="stat-value">${nearestText}</span></div>
     <div class="stat-row"><span class="stat-label">Zona amb pluja</span><span class="stat-value">${covText}</span></div>
     <div class="stat-row"><span class="stat-label">S'acosta?</span><span class="stat-value">${approachText}</span></div>
-    <div class="stat-row"><span class="stat-label">Direcció</span><span class="stat-value">${hasQuadrants ? compassParts : '<span style="color:var(--text-muted)">Sense pluja al radar</span>'}</span></div>
+    <div class="stat-row"><span class="stat-label">Direcció</span><span class="stat-value">${directionText}</span></div>
     <div class="stat-row"><span class="stat-label">Intensitat</span><span class="stat-value">${intensityText}</span></div>
     <div class="stat-row"><span class="stat-label">Llamps (30 km)</span><span class="stat-value">${lightningText}</span></div>
     ${sourceNote}
@@ -431,25 +439,33 @@ function renderWhyPrediction(d) {
   // Build source votes
   const votes = [];
 
-  // Radar
-  const radarRain = r.approaching || r.has_echo || (r.dbz > 5);
-  votes.push({
-    name: 'Radar (RainViewer)',
-    rain: radarRain,
-    detail: radarRain
-      ? (r.approaching ? `Pluja a ${r.nearest_echo_km || '?'} km, acostant-se` : `Pluja detectada a ${r.nearest_echo_km || '?'} km`)
-      : 'Sense pluja en 30 km'
-  });
-
-  // AEMET Radar
+  // Radar — merge both sources into a single "best radar" vote
+  const rvRain = r.approaching || r.has_echo || (r.dbz > 5);
   const aemetRadarRain = fv.aemet_radar_has_echo > 0;
-  if (fv.aemet_radar_has_echo != null) {
-    votes.push({
-      name: 'Radar (AEMET)',
-      rain: aemetRadarRain,
-      detail: aemetRadarRain ? `Pluja detectada` : 'Sense pluja'
-    });
+  const anyRadarRain = rvRain || aemetRadarRain;
+  let radarDetail;
+  if (rvRain && aemetRadarRain) {
+    radarDetail = r.approaching
+      ? `Pluja a ${r.nearest_echo_km || '?'} km, acostant-se (confirmat per 2 radars)`
+      : `Pluja detectada per 2 radars independents`;
+  } else if (rvRain) {
+    radarDetail = r.approaching
+      ? `Pluja a ${r.nearest_echo_km || '?'} km, acostant-se`
+      : `Pluja detectada a ${r.nearest_echo_km || '?'} km`;
+  } else if (aemetRadarRain) {
+    const aDbz = fv.aemet_radar_max_dbz_20km || 0;
+    const aKm = fv.aemet_radar_nearest_echo_km;
+    const aCov = fv.aemet_radar_coverage_20km;
+    const intLabel = aDbz >= 40 ? 'forta' : aDbz >= 25 ? 'moderada' : 'feble';
+    radarDetail = `Pluja ${intLabel} a ${aKm != null ? aKm + ' km' : '?'}${aCov != null ? ', ' + Math.round(aCov * 100) + '% cobertura' : ''} (AEMET)`;
+  } else {
+    radarDetail = 'Sense pluja en 30 km';
   }
+  votes.push({
+    name: 'Radar',
+    rain: anyRadarRain,
+    detail: radarDetail
+  });
 
   // NWP models
   const modelsRain = e.models_rain || 0;
