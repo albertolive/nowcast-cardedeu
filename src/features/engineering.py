@@ -928,7 +928,8 @@ def _add_radar_features(df: pd.DataFrame) -> pd.DataFrame:
     # Espacials
     for col in ["radar_nearest_echo_km", "radar_max_dbz_20km", "radar_coverage_20km",
                 "radar_upwind_nearest_echo_km", "radar_upwind_max_dbz",
-                "radar_storm_velocity_kmh"]:
+                "radar_storm_velocity_kmh", "radar_storm_velocity_ns",
+                "radar_storm_velocity_ew"]:
         if col in df.columns:
             df[col] = pd.to_numeric(df[col], errors="coerce")
     if "radar_storm_approaching" in df.columns:
@@ -1256,7 +1257,8 @@ FEATURE_COLUMNS = [
     # Radar espacial (30km scan + tracking)
     "radar_nearest_echo_km", "radar_max_dbz_20km", "radar_coverage_20km",
     "radar_upwind_nearest_echo_km", "radar_upwind_max_dbz",
-    "radar_storm_velocity_kmh", "radar_storm_approaching",
+    "radar_storm_velocity_kmh", "radar_storm_velocity_ns", "radar_storm_velocity_ew",
+    "radar_storm_approaching",
     # Radar quadrant features (N/E/S/W directional awareness)
     "radar_quadrant_max_dbz_N", "radar_quadrant_max_dbz_E",
     "radar_quadrant_max_dbz_S", "radar_quadrant_max_dbz_W",

@@ -314,10 +314,19 @@ def _estimate_storm_tracking(spatial_scans: list, pixel_size_km: float,
     total_time_min = n_intervals * frame_interval_min
 
     # Velocitat del centroide
-    move_dx = last_dx - first_dx   # píxels
-    move_dy = last_dy - first_dy
+    move_dx = last_dx - first_dx   # píxels (positiu = cap a l'est)
+    move_dy = last_dy - first_dy   # píxels (positiu = cap al sud, ja que Y creix avall)
     move_km = np.sqrt(move_dx**2 + move_dy**2) * pixel_size_km
     velocity_kmh = (move_km / total_time_min * 60) if total_time_min > 0 else 0.0
+
+    # Descomposició N-S / E-W (km/h)
+    # Convenció: NS positiu = cap al sud, EW positiu = cap a l'est
+    if total_time_min > 0:
+        velocity_ew = (move_dx * pixel_size_km / total_time_min) * 60  # + = est
+        velocity_ns = (move_dy * pixel_size_km / total_time_min) * 60  # + = sud
+    else:
+        velocity_ew = 0.0
+        velocity_ns = 0.0
 
     # Distància del centroide al centre (Cardedeu) en cada instant
     dist_first = np.sqrt(first_dx**2 + first_dy**2) * pixel_size_km
@@ -338,6 +347,8 @@ def _estimate_storm_tracking(spatial_scans: list, pixel_size_km: float,
 
     return {
         "storm_velocity_kmh": round(velocity_kmh, 1),
+        "storm_velocity_ns": round(velocity_ns, 1),   # + = cap al sud
+        "storm_velocity_ew": round(velocity_ew, 1),   # + = cap a l'est
         "storm_approaching": approaching,
         "storm_eta_min": eta_min,
     }
@@ -468,6 +479,8 @@ def fetch_radar_at_cardedeu(wind_from_dir: Optional[float] = None) -> dict:
         "radar_upwind_max_dbz": latest_spatial.get("upwind_max_dbz", 0.0),
         # Tracking
         "radar_storm_velocity_kmh": storm_tracking["storm_velocity_kmh"],
+        "radar_storm_velocity_ns": storm_tracking["storm_velocity_ns"],
+        "radar_storm_velocity_ew": storm_tracking["storm_velocity_ew"],
         "radar_storm_approaching": spatial_approaching,
         "radar_storm_eta_min": storm_tracking["storm_eta_min"],
         # Quadrant features (N/E/S/W)
@@ -517,6 +530,8 @@ def _empty_radar_result() -> dict:
         "radar_upwind_max_dbz": 0.0,
         # Tracking
         "radar_storm_velocity_kmh": 0.0,
+        "radar_storm_velocity_ns": 0.0,
+        "radar_storm_velocity_ew": 0.0,
         "radar_storm_approaching": False,
         "radar_storm_eta_min": None,
         # Quadrant features
