@@ -509,10 +509,10 @@ function renderWhyPrediction(d) {
     verdictText = `Poques fonts (${rainVotes}/${totalVotes}) veuen pluja, però <strong>el nostre model diu que sí</strong> (${pct}%). Detecta patrons locals que els models globals no capturen.`;
   } else if (mlRain) {
     // Both agree: rain
-    verdictText = `Fonts i model d'acord: <strong>és probable que plogui</strong> (${pct}%).`;
+    verdictText = `Tant les fonts externes com el nostre model coincideixen: <strong>és probable que plogui</strong> (${pct}%).`;
   } else {
     // Both agree: no rain
-    verdictText = `Fonts i model d'acord: <strong>no és probable que plogui</strong> (${pct}%).`;
+    verdictText = `Tant les fonts externes com el nostre model coincideixen: <strong>no és probable que plogui</strong> (${pct}%).`;
   }
 
   const detailId = 'why-detail-' + Date.now();
