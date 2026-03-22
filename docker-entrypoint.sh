@@ -1,6 +1,34 @@
 #!/bin/bash
 set -e
 
+# ── Telegram failure notification helper ──
+notify_failure() {
+    local job_name="$1"
+    if [ -n "$TELEGRAM_BOT_TOKEN" ] && [ -n "$TELEGRAM_CHAT_ID" ]; then
+        curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+            -d chat_id="${TELEGRAM_CHAT_ID}" \
+            -d parse_mode=HTML \
+            -d text="🔴 <b>Nowcast FALLADA</b>: <code>${job_name}</code> ha fallat al contenidor." \
+            > /dev/null 2>&1 || true
+    fi
+}
+
+# ── Dedup marker: prevent re-running a job if already succeeded today ──
+MARKER_DIR="/tmp/job_markers"
+mkdir -p "$MARKER_DIR"
+
+job_done_today() {
+    local marker="$MARKER_DIR/$1_$(TZ=Europe/Madrid date +%Y-%m-%d)"
+    [ -f "$marker" ]
+}
+
+mark_job_done() {
+    local marker="$MARKER_DIR/$1_$(TZ=Europe/Madrid date +%Y-%m-%d)"
+    touch "$marker"
+    # Clean old markers (keep last 3 days)
+    find "$MARKER_DIR" -name "$1_*" -mtime +3 -delete 2>/dev/null || true
+}
+
 # ── Clone repo for pushing state back ──
 REPO_DIR="/tmp/repo"
 if [ -n "$GIT_TOKEN" ] && [ -n "$GIT_REPO" ]; then
@@ -17,16 +45,62 @@ if [ -n "$GIT_TOKEN" ] && [ -n "$GIT_REPO" ]; then
 fi
 
 echo "🌦️  Nowcast Cardedeu — Container started ($(date))"
-echo "   Running predict_now.py every 10 minutes (6:00–23:00 Barcelona)"
+echo "   Predict every 10 min (6-23h) | Daily summary 7:00 | Accuracy report Mon 8:00"
 
 while true; do
     HOUR=$(TZ=Europe/Madrid date +%H)
-    
+    MINUTE=$(TZ=Europe/Madrid date +%M)
+    DOW=$(TZ=Europe/Madrid date +%u)  # 1=Monday ... 7=Sunday
+
     if [ "$HOUR" -ge 6 ] && [ "$HOUR" -lt 23 ]; then
         echo ""
         echo "━━━ $(date) ━━━"
-        python scripts/predict_now.py || echo "⚠️  predict_now.py failed (exit $?)"
-        
+
+        # Auto-update code from GitHub (hot-reload without container restart)
+        if [ -d "$REPO_DIR" ]; then
+            (
+                cd "$REPO_DIR"
+                git fetch origin main 2>/dev/null && git reset --hard origin/main 2>/dev/null
+            ) && {
+                cp -rf "$REPO_DIR/src/" /app/src/
+                cp -rf "$REPO_DIR/scripts/" /app/scripts/
+                cp -f  "$REPO_DIR/config.py" /app/config.py
+                cp -rf "$REPO_DIR/models/" /app/models/
+                cp -rf "$REPO_DIR/docs/" /app/docs/
+                echo "🔄 Code updated from GitHub"
+            } || echo "⚠️  Code update failed (continuing with current version)"
+        fi
+
+        # ── Daily summary (7:00–7:09 Barcelona, once per day) ──
+        if [ "$HOUR" -eq 7 ] && [ "${MINUTE#0}" -lt 10 ] && ! job_done_today "daily_summary"; then
+            echo "📋 Running daily_summary.py..."
+            if python scripts/daily_summary.py; then
+                mark_job_done "daily_summary"
+                echo "✅ daily_summary completed"
+            else
+                echo "⚠️  daily_summary.py failed (exit $?)"
+                notify_failure "daily_summary"
+            fi
+        fi
+
+        # ── Accuracy report (Monday 8:00–8:09 Barcelona, once per day) ──
+        if [ "$DOW" -eq 1 ] && [ "$HOUR" -eq 8 ] && [ "${MINUTE#0}" -lt 10 ] && ! job_done_today "accuracy_report"; then
+            echo "📊 Running accuracy_report.py..."
+            if python scripts/accuracy_report.py; then
+                mark_job_done "accuracy_report"
+                echo "✅ accuracy_report completed"
+            else
+                echo "⚠️  accuracy_report.py failed (exit $?)"
+                notify_failure "accuracy_report"
+            fi
+        fi
+
+        # ── Prediction (every 10 min) ──
+        python scripts/predict_now.py || {
+            echo "⚠️  predict_now.py failed (exit $?)"
+            notify_failure "predict_now"
+        }
+
         # Push state files back to GitHub (with retry for concurrent pushes)
         if [ -n "$GIT_TOKEN" ] && [ -n "$GIT_REPO" ] && [ -d "$REPO_DIR" ]; then
             push_ok=false
