@@ -80,6 +80,21 @@ function _gateSignals(d) {
   return signals;
 }
 
+function _probTrend(history) {
+  const now = Date.now();
+  const recent = history
+    .filter(h => now - new Date(h.timestamp).getTime() < 60 * 60 * 1000)
+    .map(h => h.probability_pct);
+  if (recent.length < 3) return { arrow: '', label: '', cls: '' };
+  const first = recent.slice(0, Math.ceil(recent.length / 2));
+  const last = recent.slice(Math.floor(recent.length / 2));
+  const avg = arr => arr.reduce((a, b) => a + b, 0) / arr.length;
+  const diff = avg(last) - avg(first);
+  if (diff > 5) return { arrow: '↑', label: 'pujant', cls: 'trend-up' };
+  if (diff < -5) return { arrow: '↓', label: 'baixant', cls: 'trend-down' };
+  return { arrow: '→', label: 'estable', cls: 'trend-stable' };
+}
+
 function renderPrediction(latest, history) {
   const pct = latest.probability_pct;
   const noPct = (100 - pct).toFixed(1);
@@ -89,6 +104,7 @@ function renderPrediction(latest, history) {
   const confColor = pct >= 60 ? 'conf-high' : pct >= 35 ? 'conf-medium' : 'conf-low';
   const gateOpen = latest.rain_gate_open;
   const signals = gateOpen ? _gateSignals(latest) : [];
+  const trend = _probTrend(history);
 
   // Verified history stats (prediction-level)
   const verified = history.filter(h => h.verified);
@@ -128,6 +144,7 @@ function renderPrediction(latest, history) {
           <div class="pct" style="color:${color}">${pct}%</div>
           <div class="label">probabilitat</div>
           <div class="conf ${confColor}">${latest.confidence}</div>
+          ${trend.arrow ? `<div class="prob-trend ${trend.cls}">${trend.arrow} ${trend.label}</div>` : ''}
         </div>
       </div>
 
@@ -214,6 +231,16 @@ function renderPrediction(latest, history) {
   drawChart(history, latest);
 }
 
+function _cloudLayers(fv) {
+  const lo = fv.cloud_cover_low, mi = fv.cloud_cover_mid, hi = fv.cloud_cover_high;
+  if (lo == null && mi == null && hi == null) return '';
+  const parts = [];
+  if (lo != null) parts.push(`baix ${Math.round(lo)}%`);
+  if (mi != null) parts.push(`mig ${Math.round(mi)}%`);
+  if (hi != null) parts.push(`alt ${Math.round(hi)}%`);
+  return ` <span style="font-size:11px;color:var(--text-muted)">(${parts.join(', ')})</span>`;
+}
+
 function renderConditions(d) {
   const c = d.conditions || {};
   const fv = d.feature_vector || {};
@@ -232,7 +259,7 @@ function renderConditions(d) {
     <div class="stat-row"><span class="stat-label">Punt de rosada</span><span class="stat-value">${dewPoint}</span></div>
     <div class="stat-row"><span class="stat-label">Pressió</span><span class="stat-value" style="${pressColor}">${c.pressure || '—'} hPa${pressTrend}</span></div>
     <div class="stat-row"><span class="stat-label">Vent</span><span class="stat-value">${c.wind_speed || '—'} km/h ${c.wind_dir || ''}${gusts != null ? ' (ràfegues ' + Math.round(gusts) + ')' : ''}</span></div>
-    <div class="stat-row"><span class="stat-label">Cel cobert</span><span class="stat-value">${cloud != null ? Math.round(cloud) + '%' : '—'}</span></div>
+    <div class="stat-row"><span class="stat-label">Cel cobert</span><span class="stat-value">${cloud != null ? Math.round(cloud) + '%' : '—'}${_cloudLayers(fv)}</span></div>
     <div class="stat-row"><span class="stat-label">Radiació solar</span><span class="stat-value">${solar != null ? Math.round(solar) + ' W/m² ' + solarDesc : '—'}</span></div>
     <div class="stat-row"><span class="stat-label">Pluja avui</span><span class="stat-value">${c.rain_today || '0.0'} mm</span></div>
   `;
@@ -260,8 +287,22 @@ function renderRadar(d) {
     <div class="stat-row"><span class="stat-label">Direcció</span><span class="stat-value">${hasQuadrants ? compassParts : '<span style="color:var(--text-muted)">Sense pluja al radar</span>'}</span></div>
     <div class="stat-row"><span class="stat-label">Intensitat</span><span class="stat-value">${r.dbz != null && r.dbz > 0 ? (r.dbz >= 40 ? '🟥 Forta' : r.dbz >= 25 ? '🟨 Moderada' : '🟩 Feble') : 'Res detectat'}</span></div>
     <div class="stat-row"><span class="stat-label">Llamps (30 km)</span><span class="stat-value">${lightningText}</span></div>
-    <p class="card-hint">Escaneig cada 10 min en un radi de 30 km al voltant de Cardedeu</p>
+    ${_renderAemetRadar(fv)}
+    <p class="card-hint">RainViewer (global) + AEMET (nacional) — dos radars independents cada 10 min</p>
   `;
+}
+
+function _renderAemetRadar(fv) {
+  const hasEcho = fv.aemet_radar_has_echo;
+  const maxDbz = fv.aemet_radar_max_dbz_20km;
+  const coverage = fv.aemet_radar_coverage_20km;
+  const nearest = fv.aemet_radar_nearest_echo_km;
+  if (hasEcho == null) return '';
+  if (!hasEcho) return `<div class="stat-row"><span class="stat-label">Radar AEMET</span><span class="stat-value">Sense ecos</span></div>`;
+  let intensity = maxDbz >= 40 ? '🟥 Fort' : maxDbz >= 25 ? '🟨 Moderat' : '🟩 Feble';
+  let detail = nearest != null && nearest < 30 ? `a ${nearest} km` : '';
+  if (coverage != null && coverage > 0) detail += (detail ? ', ' : '') + (coverage * 100).toFixed(0) + '% cobertura';
+  return `<div class="stat-row"><span class="stat-label">Radar AEMET</span><span class="stat-value" style="color:var(--accent-blue)">${intensity}${detail ? ' (' + detail + ')' : ''}</span></div>`;
 }
 
 function renderSources(d) {
@@ -280,6 +321,20 @@ function renderSources(d) {
       ${s.name}
     </span>
   `).join('');
+}
+
+function _renderBiasInsight(d) {
+  const b = d.bias || {};
+  if (b.temp == null && b.humidity == null) return '';
+  const parts = [];
+  if (b.temp != null && Math.abs(b.temp) >= 0.5) {
+    parts.push(`${Math.abs(b.temp).toFixed(1)}°C més ${b.temp < 0 ? 'fred' : 'calent'} del previst`);
+  }
+  if (b.humidity != null && Math.abs(b.humidity) >= 3) {
+    parts.push(`${Math.abs(b.humidity).toFixed(0)}% ${b.humidity > 0 ? 'més humit' : 'més sec'} del previst`);
+  }
+  if (parts.length === 0) return '';
+  return `<p class="tech-explainer" style="margin-top:6px;font-style:italic">Ara mateix: ${parts.join(' i ')} — el sistema corregeix aquesta diferència.</p>`;
 }
 
 function _renderDisagreement(d) {
@@ -356,6 +411,7 @@ function renderWhyPrediction(d) {
   return `
     <div class="stat-row"><span class="stat-label">Radar</span><span class="stat-value" style="color:${radarColor}">${radarText}</span></div>
     <div class="stat-row"><span class="stat-label">Models globals</span><span class="stat-value" style="color:${modelsColor}">${modelsText}</span></div>
+    ${(() => { const fv = d.feature_vector || {}; const mn = fv.ensemble_min_precip, mx = fv.ensemble_max_precip; return mn != null && mx != null && modelsRain > 0 ? `<div class="stat-row"><span class="stat-label">Previsió pluja</span><span class="stat-value">${mn.toFixed(1)} – ${mx.toFixed(1)} mm</span></div>` : ''; })()}
     <div class="stat-row"><span class="stat-label">Prob. pluja (AEMET)</span><span class="stat-value" style="color:${aemetColor}">${aemetText}</span></div>
     <div class="stat-row"><span class="stat-label">Prob. tronada (AEMET)</span><span class="stat-value" style="color:${stormColor}">${stormText}</span></div>
     <p class="card-hint">Les prob. AEMET són calibrades per meteoròlegs cada 6h</p>
@@ -368,6 +424,7 @@ function renderWhyPrediction(d) {
       <p class="tech-explainer">
         El sistema combina ${d.features_used || '210'} variables meteorològiques — estació local, radar, llamps, 4 models globals i 12 anys d'històric de Cardedeu — per corregir els errors dels models globals al nostre microclima. Es re-entrena cada dia amb les prediccions verificades.
       </p>
+      ${_renderBiasInsight(d)}
     </div>
   `;
 }
