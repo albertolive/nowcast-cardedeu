@@ -33,7 +33,10 @@ def _get_radar_frames() -> dict:
 def _extract_pixel_intensity(png_bytes: bytes, px: int, py: int) -> int:
     """
     Llegeix la intensitat del radar d'un píxel concret d'un tile PNG.
-    RainViewer codifica la intensitat en el canal R del PNG (color scheme 2).
+    RainViewer color scheme 2: la intensitat s'extreu del canal amb valor no nul.
+    Normalment és el canal alfa (RGBA = 0,0,0,intensitat) o el canal R
+    (RGBA = intensitat,G,B,alpha). Prenem max(R, A) per cobrir ambdues
+    codificacions.
     Retorna 0 (sense pluja) a 255 (pluja molt intensa).
     """
     try:
@@ -42,7 +45,8 @@ def _extract_pixel_intensity(png_bytes: bytes, px: int, py: int) -> int:
         r, g, b, a = img.getpixel((px, py))
         if a == 0:
             return 0
-        return r
+        # Color scheme 2: intensitat pot estar al canal R o al canal A
+        return max(r, a)
     except ImportError:
         return -1
 
@@ -122,10 +126,12 @@ def _scan_radar_spatial(png_bytes: bytes, cx: int, cy: int,
     # Màscara circular
     in_radius = dist_km <= radius_km
 
-    # Extreure intensitat (canal R) on alfa > 0
+    # Extreure intensitat: max(R, A) per cobrir ambdues codificacions de RainViewer
+    # Color scheme 2 pot codificar en canal R (r,g,b,a) o canal A (0,0,0,intensitat)
     region = arr[y_lo:y_hi, x_lo:x_hi]
-    intensity = region[:, :, 0].astype(float)
-    alpha = region[:, :, 3]
+    r_channel = region[:, :, 0].astype(float)
+    alpha = region[:, :, 3].astype(float)
+    intensity = np.maximum(r_channel, alpha)
 
     # Ecos: alpha > 0 indica cobertura radar, intensity > 10 filtra soroll
     has_echo = (alpha > 0) & (intensity > 10) & in_radius
@@ -303,6 +309,8 @@ def _estimate_storm_tracking(spatial_scans: list, pixel_size_km: float,
     if len(valid) < 2:
         return {
             "storm_velocity_kmh": 0.0,
+            "storm_velocity_ns": 0.0,
+            "storm_velocity_ew": 0.0,
             "storm_approaching": False,
             "storm_eta_min": None,
         }
