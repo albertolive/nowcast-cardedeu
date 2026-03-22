@@ -112,6 +112,14 @@ def predict_now() -> dict:
                 f"precip={sentinel_data.get('sentinel_precip')}")
 
     logger.info("Construint features...")
+    # Afegir dades de nivells de pressió al forecast_df ABANS de build_features
+    # perquè _add_wind_regime_features pugui usar wind_850_dir (sinòptic)
+    # en lloc del vent de superfície (10m), que és distorsionat per orografia
+    if pressure_data and not forecast_df.empty:
+        forecast_df = forecast_df.copy()
+        for k, v in pressure_data.items():
+            if k not in forecast_df.columns:
+                forecast_df[k] = v
     features_df = build_features_from_realtime(station_df, forecast_df)
 
     if features_df.empty:
