@@ -30,7 +30,7 @@ Utilitza dades reals de l'estació [MeteoCardedeu.net](https://meteocardedeu.net
          │                     │         │                      │
          ▼                     ▼         ▼                      ▼
     ┌──────────────────────────────────────────────────────────────────────┐
-    │                Feature Engineering (208 features)                    │
+    │                Feature Engineering (210 features)                    │
     │  Tendències · Ensemble · 5 nivells pressió · CAPE/CIN · SST · Compostos físics · Radar · Sentinella · Llamps │
     └──────────────────────────────┬───────────────────────────────────────┘
                                   │
@@ -147,7 +147,7 @@ nowcast-cardedeu/
 │   │   ├── meteocat_xdde.py  # API Meteocat XDDE (descàrregues elèctriques)
 │   │   └── meteocat_prediccio.py # API Meteocat Predicció (forecast municipal)
 │   ├── features/
-│   │   ├── engineering.py    # Feature engineering (208 features, 164 historical)
+│   │   ├── engineering.py    # Feature engineering (210 features, 166 historical)
 │   │   └── regime.py         # Detecció de canvis de règim atmosfèric (Llevantada, Garbí, pressió)
 │   ├── model/
 │   │   ├── train.py          # Pipeline d'entrenament (XGBoost + TimeSeriesSplit)
@@ -178,7 +178,7 @@ nowcast-cardedeu/
 
 ## Features del model
 
-El model defineix **208 features** per predicció en temps real. El model s'entrena amb les **208 features completes** (164 amb dades històriques, 44 com a NaN per radar/llamps/AEMET). El **feedback loop** acumula gradualment les 44 features en temps real (radar, llamps, sentinella) a cada predicció verificada, permetent que el model aprengui d'observacions independents amb cada re-entrenament.
+El model defineix **210 features** per predicció en temps real. El model s'entrena amb les **210 features completes** (166 amb dades històriques, 44 com a NaN per radar/llamps/AEMET). El **feedback loop** acumula gradualment les 44 features en temps real (radar, llamps, sentinella) a cada predicció verificada, permetent que el model aprengui d'observacions independents amb cada re-entrenament.
 
 **Ensemble backfill**: Des de gener 2022, dades de 4 models NWP (ECMWF, GFS, ICON, AROME) descarregades via `scripts/backfill_ensemble.py`.
 **XEMA sentinel backfill**: Dades de Granollers (YM) + ETAP Cardedeu (KX) via `scripts/backfill_xema.py` (incremental, 15 dies/execució per respectar el límit API).
@@ -230,7 +230,8 @@ El model defineix **208 features** per predicció en temps real. El model s'entr
 | 🆕 Tier 3 Derivats | rain_ending_signal, cloud_thickness_proxy, radiation_rain_conflict, moisture_flux_change_3h | Senyal fi de pluja, gruix de núvols, conflicte radiació-pluja, canvi de flux d'humitat. Derivats 100% (excepte moisture_flux 44%) |
 | 🆕 Tier 4 Columna atmosfèrica | tcwv, tcwv_change_3h, tcwv_change_6h, boundary_layer_height, blh_change_3h, tcwv_blh_ratio, terrestrial_radiation, soil_moisture_28_to_100cm, soil_saturation_ratio, tcwv_monthly_anomaly | Aigua precipitable (TCWV), fondària capa límit (BLH), radiació terrestre (detecció núvols nocturna), humitat sòl profund, anomalia TCWV mensual. ERA5 100% |
 | 🆕 Tier 5 Blind-spot fixes | hours_since_sunrise, rh_700_change_3h, rh_700_change_6h, temp_850_change_3h, k_index, bulk_richardson | Timing convectiu (hores des de sortida sol), tendència assecat 700hPa (virga), advecció 850hPa, K-index (fondària capa humida), BRN (mode tempesta). PL 44% / ERA5 100% |
-| 🆕 Tier 6 Detecció errors NWP | has_pressure_levels, rain_accum_24h, pressure_min_24h, cape_diurnal_weighted, nwp_rain_persistence_6h, nwp_rain_trend_3h, weather_code_change_3h, cloud_humidity_convergence, precip_trend_3h | Indicador era dades (pre/post-2021), pluja 24h, pressió min 24h, CAPE×hora solar, persistència NWP (6h), tendència NWP, transició WMO, convergència núvols-humitat, tendència precip. Millora històrica més gran: Cal F1 +0.0028. 100% cobertura |
+| 🆕 Tier 6 Detecció errors NWP | has_pressure_levels, rain_accum_24h, pressure_min_24h, cape_diurnal_weighted, nwp_rain_persistence_6h, nwp_rain_trend_3h, weather_code_change_3h, cloud_humidity_convergence, precip_trend_3h | Indicador era dades (pre/post-2021), pluja 24h, pressió min 24h, CAPE×hora solar, persistència NWP (6h), tendència NWP, transició WMO, convergència núvols-humitat, tendència precip. 100% cobertura |
+| 🆕 Tier 7 Descomposició NWP | nwp_precip_severity, cape | Severitat contínua WMO (0-5: res→plugim→pluja→xàfecs→neu→tempesta). Va trencar la dominància de model_predicts_precip (54%→30%). CAPE continu (44.5% cobertura). Cal F1 +0.0009 |
 
 ## Fonts de dades
 
@@ -353,36 +354,37 @@ El model AROME de Meteo-France és el 4t model de l'ensemble, amb resolució de 
 
 | Mètrica | Valor |
 |---------|-------|
-| AUC-ROC (CV) | 0.9626 ± 0.005 |
-| F1-Score (CV) | 0.7027 ± 0.033 |
-| F1-Score OOF (calibrat) | 0.7027 |
-| AUC-ROC (final) | 0.9680 |
-| Llindar òptim (calibrat) | 0.3526 |
+| AUC-ROC (CV) | 0.9632 ± 0.005 |
+| F1-Score (CV) | 0.7040 ± 0.031 |
+| F1-Score OOF (calibrat) | 0.7070 |
+| AUC-ROC (final) | 0.9678 |
+| Llindar òptim (calibrat) | 0.4000 |
 | Mostres d'entrenament | 98,208 |
-| Features (training) | 199 (155 històriques, 44 real-time) |
-| Features (total) | 199 |
+| Features (training) | 210 (166 històriques, 44 real-time) |
+| Features (total) | 210 |
 | Classe positiva (pluja) | ~9.3% |
 | Cross-validation | TimeSeriesSplit (5 folds) |
 | Calibratge | Isotonic Regression (OOF) |
 
-> El model **no utilitza** `scale_pos_weight` — el calibratge isotònic + cerca de llindar òptim gestiona millor el desequilibri de classes que la ponderació directa (+0.0037 F1 OOF). Utilitza `eval_metric="aucpr"` i **calibratge isotònic** sobre prediccions out-of-fold per obtenir probabilitats fiables.
+> El model **no utilitza** `scale_pos_weight` — el calibratge isotònic + cerca de llindar òptim gestiona millor el desequilibri de classes que la ponderació directa. Utilitza `eval_metric="logloss"` i **calibratge isotònic** sobre prediccions out-of-fold per obtenir probabilitats fiables.
 
 ### Hiperparàmetres XGBoost
 
 | Paràmetre | Valor | Nota |
 |-----------|-------|------|
-| n_estimators | 800 | Més arbres per compensar lr baixa |
-| max_depth | 6 | Complexitat intermèdia |
-| learning_rate | 0.02 | Baixa per evitar sobreajust amb 199 features |
-| subsample | 0.8 | Bagging row-level |
-| colsample_bytree | 0.6 | Regularització: menys features per arbre |
-| min_child_weight | 5 | Regularització split mínim |
-| gamma | 0.1 | Penalització complexitat |
-| reg_alpha | 0.2 | L1 regularització (reforçada) |
-| reg_lambda | 1.5 | L2 regularització (reforçada) |
-| early_stopping_rounds | 75 | Proporcional a lr baixa |
+| n_estimators | 1200 | Més arbres per compensar lr baixa |
+| max_depth | 7 | Captura interaccions NWP×superfície complexes |
+| learning_rate | 0.012 | Baixa per evitar sobreajust amb 210 features |
+| subsample | 0.75 | Bagging row-level |
+| colsample_bytree | 0.7 | 70% features per arbre |
+| colsample_bynode | 0.7 | 70% features per split (diversitat dual) |
+| min_child_weight | 6 | Regularització split mínim |
+| gamma | 0.15 | Penalització complexitat |
+| reg_alpha | 0.3 | L1 regularització (reforçada) |
+| reg_lambda | 2.0 | L2 regularització (reforçada) |
+| early_stopping_rounds | 96 | Proporcional a lr baixa |
 
-> **Lliçó d'afinament:** Amb 199 features (55% NaN en PL pre-2021), regularització més forta (colsample 0.7→0.6, reg_alpha 0.1→0.2, reg_lambda 1.0→1.5) millora la generalització. Eliminar `scale_pos_weight` és el canvi més impactant (+0.0108 F1 OOF) ja que el calibratge isotònic + cerca de llindar gestionen l'imbalance millor que la ponderació directa.
+> **Lliçó d'afinament:** Amb 210 features, la clau és diversitat dual: `colsample_bytree=0.7 × colsample_bynode=0.7` força cada arbre a veure 70% de features i cada split a veure 70% de les de l'arbre. Això va trencar la dominància de `model_predicts_precip` (54%→30%) i va fer que `nwp_precip_severity` (severitat contínua WMO 0-5) entrés com a #2 feature amb 21% de gain. Cal F1 progressió: 0.7033→0.7061→0.7070 (3 rondes d'afinament).
 
 ## Feedback loop (auto-aprenentatge)
 
