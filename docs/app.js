@@ -277,24 +277,20 @@ function renderRadar(d) {
     <div class="stat-row"><span class="stat-label">Zona amb pluja</span><span class="stat-value">${r.coverage_20km != null ? r.coverage_20km + '% (radi 20 km)' : '—'}</span></div>
     <div class="stat-row"><span class="stat-label">S'acosta?</span><span class="stat-value">${r.approaching ? '⚠️ Sí' : 'No'}${r.storm_eta_min ? ' (~' + r.storm_eta_min + ' min)' : ''}</span></div>
     <div class="stat-row"><span class="stat-label">Direcció</span><span class="stat-value">${hasQuadrants ? compassParts : '<span style="color:var(--text-muted)">Sense pluja al radar</span>'}</span></div>
-    <div class="stat-row"><span class="stat-label">Intensitat</span><span class="stat-value">${r.dbz != null && r.dbz > 0 ? (r.dbz >= 40 ? '🟥 Forta' : r.dbz >= 25 ? '🟨 Moderada' : '🟩 Feble') : 'Res detectat'}</span></div>
+    <div class="stat-row"><span class="stat-label">Intensitat</span><span class="stat-value">${r.dbz != null && r.dbz > 0 ? (r.dbz >= 40 ? 'Forta' : r.dbz >= 25 ? 'Moderada' : 'Feble') + ' (' + Math.round(r.dbz) + ' dBZ)' : 'Res detectat'}</span></div>
     <div class="stat-row"><span class="stat-label">Llamps (30 km)</span><span class="stat-value">${lightningText}</span></div>
     ${_renderAemetRadar(fv)}
-    <p class="card-hint">RainViewer (global) + AEMET (nacional) — dos radars independents cada 10 min</p>
+    <p class="card-hint">RainViewer (global) + AEMET (nacional) cada 10 min</p>
   `;
 }
 
 function _renderAemetRadar(fv) {
   const hasEcho = fv.aemet_radar_has_echo;
-  const maxDbz = fv.aemet_radar_max_dbz_20km;
-  const coverage = fv.aemet_radar_coverage_20km;
-  const nearest = fv.aemet_radar_nearest_echo_km;
   if (hasEcho == null) return '';
-  if (!hasEcho) return `<div class="stat-row"><span class="stat-label">Radar AEMET</span><span class="stat-value">Sense ecos</span></div>`;
-  let intensity = maxDbz >= 40 ? '🟥 Fort' : maxDbz >= 25 ? '🟨 Moderat' : '🟩 Feble';
-  let detail = nearest != null && nearest < 30 ? `a ${nearest} km` : '';
-  if (coverage != null && coverage > 0) detail += (detail ? ', ' : '') + (coverage * 100).toFixed(0) + '% cobertura';
-  return `<div class="stat-row"><span class="stat-label">Radar AEMET</span><span class="stat-value" style="color:var(--accent-blue)">${intensity}${detail ? ' (' + detail + ')' : ''}</span></div>`;
+  if (!hasEcho) return `<div class="stat-row"><span class="stat-label">Radar AEMET</span><span class="stat-value" style="color:var(--text-muted)">Confirma: sense pluja</span></div>`;
+  const maxDbz = fv.aemet_radar_max_dbz_20km;
+  const label = maxDbz >= 40 ? 'pluja forta' : maxDbz >= 25 ? 'pluja moderada' : 'pluja feble';
+  return `<div class="stat-row"><span class="stat-label">Radar AEMET</span><span class="stat-value" style="color:var(--accent-blue)">Confirma: ${label}</span></div>`;
 }
 
 function renderSources(d) {
