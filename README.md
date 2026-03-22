@@ -30,7 +30,7 @@ Utilitza dades reals de l'estació [MeteoCardedeu.net](https://meteocardedeu.net
          │                     │         │                      │
          ▼                     ▼         ▼                      ▼
     ┌──────────────────────────────────────────────────────────────────────┐
-    │                Feature Engineering (199 features)                    │
+    │                Feature Engineering (208 features)                    │
     │  Tendències · Ensemble · 5 nivells pressió · CAPE/CIN · SST · Compostos físics · Radar · Sentinella · Llamps │
     └──────────────────────────────┬───────────────────────────────────────┘
                                   │
@@ -147,7 +147,7 @@ nowcast-cardedeu/
 │   │   ├── meteocat_xdde.py  # API Meteocat XDDE (descàrregues elèctriques)
 │   │   └── meteocat_prediccio.py # API Meteocat Predicció (forecast municipal)
 │   ├── features/
-│   │   ├── engineering.py    # Feature engineering (199 features, 155 historical)
+│   │   ├── engineering.py    # Feature engineering (208 features, 164 historical)
 │   │   └── regime.py         # Detecció de canvis de règim atmosfèric (Llevantada, Garbí, pressió)
 │   ├── model/
 │   │   ├── train.py          # Pipeline d'entrenament (XGBoost + TimeSeriesSplit)
@@ -178,7 +178,7 @@ nowcast-cardedeu/
 
 ## Features del model
 
-El model defineix **199 features** per predicció en temps real. El model s'entrena amb les **199 features completes** (155 amb dades històriques, 44 com a NaN per radar/llamps/AEMET). El **feedback loop** acumula gradualment les 44 features en temps real (radar, llamps, sentinella) a cada predicció verificada, permetent que el model aprengui d'observacions independents amb cada re-entrenament.
+El model defineix **208 features** per predicció en temps real. El model s'entrena amb les **208 features completes** (164 amb dades històriques, 44 com a NaN per radar/llamps/AEMET). El **feedback loop** acumula gradualment les 44 features en temps real (radar, llamps, sentinella) a cada predicció verificada, permetent que el model aprengui d'observacions independents amb cada re-entrenament.
 
 **Ensemble backfill**: Des de gener 2022, dades de 4 models NWP (ECMWF, GFS, ICON, AROME) descarregades via `scripts/backfill_ensemble.py`.
 **XEMA sentinel backfill**: Dades de Granollers (YM) + ETAP Cardedeu (KX) via `scripts/backfill_xema.py` (incremental, 15 dies/execució per respectar el límit API).
@@ -230,6 +230,7 @@ El model defineix **199 features** per predicció en temps real. El model s'entr
 | 🆕 Tier 3 Derivats | rain_ending_signal, cloud_thickness_proxy, radiation_rain_conflict, moisture_flux_change_3h | Senyal fi de pluja, gruix de núvols, conflicte radiació-pluja, canvi de flux d'humitat. Derivats 100% (excepte moisture_flux 44%) |
 | 🆕 Tier 4 Columna atmosfèrica | tcwv, tcwv_change_3h, tcwv_change_6h, boundary_layer_height, blh_change_3h, tcwv_blh_ratio, terrestrial_radiation, soil_moisture_28_to_100cm, soil_saturation_ratio, tcwv_monthly_anomaly | Aigua precipitable (TCWV), fondària capa límit (BLH), radiació terrestre (detecció núvols nocturna), humitat sòl profund, anomalia TCWV mensual. ERA5 100% |
 | 🆕 Tier 5 Blind-spot fixes | hours_since_sunrise, rh_700_change_3h, rh_700_change_6h, temp_850_change_3h, k_index, bulk_richardson | Timing convectiu (hores des de sortida sol), tendència assecat 700hPa (virga), advecció 850hPa, K-index (fondària capa humida), BRN (mode tempesta). PL 44% / ERA5 100% |
+| 🆕 Tier 6 Detecció errors NWP | has_pressure_levels, rain_accum_24h, pressure_min_24h, cape_diurnal_weighted, nwp_rain_persistence_6h, nwp_rain_trend_3h, weather_code_change_3h, cloud_humidity_convergence, precip_trend_3h | Indicador era dades (pre/post-2021), pluja 24h, pressió min 24h, CAPE×hora solar, persistència NWP (6h), tendència NWP, transició WMO, convergència núvols-humitat, tendència precip. Millora històrica més gran: Cal F1 +0.0028. 100% cobertura |
 
 ## Fonts de dades
 

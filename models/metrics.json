@@ -1,39 +1,39 @@
 {
-  "cv_auc_mean": 0.9626015383085977,
-  "cv_auc_std": 0.005303653872128624,
-  "cv_f1_mean": 0.7027472578621625,
-  "cv_f1_std": 0.03290345705176811,
-  "final_auc": 0.9679876985454055,
+  "cv_auc_mean": 0.9630190824656223,
+  "cv_auc_std": 0.005331778177037317,
+  "cv_f1_mean": 0.7027140229335865,
+  "cv_f1_std": 0.033010881426415846,
+  "final_auc": 0.9683205198667282,
   "final_report": {
     "0": {
-      "precision": 0.969952063603414,
-      "recall": 0.9556502707061398,
-      "f1-score": 0.9627480561680399,
-      "support": 8681.0
+      "precision": 0.9683894785417628,
+      "recall": 0.9625042999656003,
+      "f1-score": 0.9654379205244695,
+      "support": 8721.0
     },
     "1": {
-      "precision": 0.7001557632398754,
-      "recall": 0.777681660899654,
-      "f1-score": 0.7368852459016394,
-      "support": 1156.0
+      "precision": 0.7238175675675675,
+      "recall": 0.757736516357206,
+      "f1-score": 0.7403887688984881,
+      "support": 1131.0
     },
-    "accuracy": 0.9347362000609942,
+    "accuracy": 0.9389971579374746,
     "macro avg": {
-      "precision": 0.8350539134216447,
-      "recall": 0.8666659658028969,
-      "f1-score": 0.8498166510348397,
-      "support": 9837.0
+      "precision": 0.8461035230546652,
+      "recall": 0.8601204081614031,
+      "f1-score": 0.8529133447114788,
+      "support": 9852.0
     },
     "weighted avg": {
-      "precision": 0.9382468157412355,
-      "recall": 0.9347362000609942,
-      "f1-score": 0.9362056744797245,
-      "support": 9837.0
+      "precision": 0.9403128614780382,
+      "recall": 0.9389971579374746,
+      "f1-score": 0.9396024972105246,
+      "support": 9852.0
     }
   },
-  "n_samples": 98370,
+  "n_samples": 98515,
   "n_positive": 9178,
-  "n_features": 199,
+  "n_features": 208,
   "feature_names": [
     "hour_sin",
     "hour_cos",
@@ -68,6 +68,7 @@
     "tramuntana_strength",
     "tramuntana_moisture",
     "wind_dir_change_3h",
+    "has_pressure_levels",
     "temp_925",
     "rh_925",
     "wind_925_speed",
@@ -103,6 +104,8 @@
     "rain_accum_3h",
     "rain_accum_6h",
     "rained_last_3h",
+    "rain_accum_24h",
+    "pressure_min_24h",
     "cloud_cover",
     "cloud_change_1h",
     "cloud_change_3h",
@@ -119,6 +122,11 @@
     "nwp_rain_confirmed",
     "afternoon_fp_risk",
     "nwp_rain_dry_air",
+    "nwp_rain_persistence_6h",
+    "nwp_rain_trend_3h",
+    "weather_code_change_3h",
+    "cloud_humidity_convergence",
+    "precip_trend_3h",
     "showers",
     "nwp_showers_fraction",
     "et0_fao_evapotranspiration",
@@ -143,6 +151,7 @@
     "radiation_rain_conflict",
     "moisture_flux_change_3h",
     "cape_change_3h",
+    "cape_diurnal_weighted",
     "tcwv",
     "tcwv_change_3h",
     "tcwv_change_6h",
@@ -236,7 +245,7 @@
     "freezing_level_height"
   ],
   "calibrated": true,
-  "optimal_threshold": 0.35260115606936415,
-  "calibration_oof_f1_uncalibrated": 0.6354683812159193,
-  "calibration_oof_f1_calibrated": 0.7027131533157183
+  "optimal_threshold": 0.37254901960784315,
+  "calibration_oof_f1_uncalibrated": 0.6373912336342197,
+  "calibration_oof_f1_calibrated": 0.7060673568339667
 }
