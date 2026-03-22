@@ -307,6 +307,115 @@ canvas { width: 100% !important; height: 100% !important; }
 }
 .tech-explainer strong { color: var(--text); }
 
+/* Source vote board */
+.source-votes {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.source-vote {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(48, 54, 61, 0.4);
+}
+
+.source-vote:last-child { border-bottom: none; }
+
+.vote-badge {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.vote-badge.rain { background: rgba(88, 166, 255, 0.12); }
+.vote-badge.no-rain { background: rgba(63, 185, 80, 0.1); }
+
+.vote-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.vote-name {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.vote-detail {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 1px;
+}
+
+.storm-note { opacity: 0.8; }
+
+/* Vote tally bar */
+.vote-tally {
+  margin: 12px 0 10px;
+}
+
+.tally-bar {
+  height: 6px;
+  background: rgba(63, 185, 80, 0.25);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.tally-rain {
+  height: 100%;
+  background: var(--accent-blue);
+  border-radius: 3px;
+  transition: width 0.5s ease;
+}
+
+.tally-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+/* ML verdict in sources card */
+.ml-verdict {
+  background: linear-gradient(135deg, rgba(88, 166, 255, 0.06), rgba(88, 166, 255, 0.02));
+  border-left: 3px solid var(--accent-blue);
+  border-radius: 0 8px 8px 0;
+  padding: 10px 12px;
+  margin: 4px 0 10px;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.ml-verdict-badge {
+  background: rgba(88, 166, 255, 0.15);
+  border-radius: 8px;
+  padding: 4px 10px;
+  font-size: 14px;
+  font-weight: 700;
+  white-space: nowrap;
+  color: var(--accent-blue);
+}
+
+.ml-verdict p {
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin: 0;
+  padding-top: 2px;
+}
+
+.ml-verdict p strong { color: var(--text); }
+
 /* Sources bar */
 .sources-bar {
   display: flex;
