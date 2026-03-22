@@ -166,9 +166,10 @@ def _add_wind_regime_features(df: pd.DataFrame,
     a la classificació. Si no, fallback a 10m (entrenament històric).
 
     Cobertura completa de la Rosa dels Vents:
-    - Tramuntana (N 340°-30°): vent polar fred, cel blau, supressor de pluja.
+    - Tramuntana (N/NE 340°-60°): vent polar fred, cel blau, supressor de pluja.
+      Inclou Gregal (NE 30°-60°) que a 850hPa és variant de Tramuntana.
     - Llevantada (E/SE 60°-150°): humitat mediterrània contra la Serralada.
-    - Migjorn (S 150°-190°): vent del sud, aire africà calent i sec.
+    - Migjorn (S 150°-190°): vent del sud, aire africà calent i humit.
     - Garbí (SW 190°-250°): "Anuncia borrasques amb fortes precipitacions."
     - Ponent/Mestral (W/NW 250°-340°): aire continental sec.
     """
@@ -192,23 +193,36 @@ def _add_wind_regime_features(df: pd.DataFrame,
         return df
 
     # Règims eòlics catalans a partir del vent sinòptic
-    df["is_tramuntana"] = _dir_in_range(synoptic_dir, 340, 30)
+    # Tramuntana estès a 60° per cobrir Gregal (NE) — a 850hPa és variant polar
+    df["is_tramuntana"] = _dir_in_range(synoptic_dir, 340, 60)
     df["is_llevantada"] = _dir_in_range(synoptic_dir, 60, 150)
     df["is_migjorn"] = _dir_in_range(synoptic_dir, 150, 190)
     df["is_garbi"] = _dir_in_range(synoptic_dir, 190, 250)
     df["is_ponent"] = _dir_in_range(synoptic_dir, 250, 340)
 
-    # Interaccions: Llevantada × velocitat/humitat
+    # Interaccions règim × velocitat/humitat per tots els règims
+    # (els flags binaris sols tenen importància zero — les interaccions porten el senyal)
     humidity = pd.to_numeric(df.get(hum_col, pd.Series(dtype=float)), errors="coerce").fillna(0)
+    hum_frac = humidity / 100.0
+
+    # Llevantada (18.5% rain rate — dominant rain pattern)
     df["llevantada_strength"] = df["is_llevantada"] * synoptic_speed
-    df["llevantada_moisture"] = df["is_llevantada"] * (humidity / 100.0)
+    df["llevantada_moisture"] = df["is_llevantada"] * hum_frac
 
-    # Garbí × velocitat: "Anuncia borrasques amb fortes precipitacions" (ref: alexmeteo)
+    # Garbí ("Anuncia borrasques amb fortes precipitacions" — ref: alexmeteo)
     df["garbi_strength"] = df["is_garbi"] * synoptic_speed
+    df["garbi_moisture"] = df["is_garbi"] * hum_frac
 
-    # Tramuntana × velocitat/humitat (4.8% rain rate — lowest, mostly dry Montseny air)
+    # Tramuntana (4.8% rain rate — mostly dry Montseny air)
     df["tramuntana_strength"] = df["is_tramuntana"] * synoptic_speed
-    df["tramuntana_moisture"] = df["is_tramuntana"] * (humidity / 100.0)
+    df["tramuntana_moisture"] = df["is_tramuntana"] * hum_frac
+
+    # Migjorn (aire africà — pot portar humitat sahariana)
+    df["migjorn_strength"] = df["is_migjorn"] * synoptic_speed
+    df["migjorn_moisture"] = df["is_migjorn"] * hum_frac
+
+    # Ponent (aire continental sec — vent de terra)
+    df["ponent_strength"] = df["is_ponent"] * synoptic_speed
 
     # Canvi de direcció sinòptica en 3h (backing/veering)
     df["wind_dir_change_3h"] = _angular_diff(synoptic_dir, 3)
@@ -1147,10 +1161,13 @@ FEATURE_COLUMNS = [
     "is_sea_breeze",
     # Règims eòlics catalans (Rosa dels Vents completa)
     # Classificació basada en 850hPa (sinòptic) amb fallback a 10m (superfície)
-    # is_tramuntana, is_llevantada: binary flags (kept for derived interaction features)
-    "is_migjorn", "is_garbi", "is_ponent",
-    "llevantada_strength", "llevantada_moisture", "garbi_strength",
+    # Binary flags (is_*) s'usen internament per derivar interaccions, NO al model
+    # (importància zero demostrada). Només les interaccions règim×magnitud entren.
+    "llevantada_strength", "llevantada_moisture",
+    "garbi_strength", "garbi_moisture",
     "tramuntana_strength", "tramuntana_moisture",
+    "migjorn_strength", "migjorn_moisture",
+    "ponent_strength",
     "wind_dir_change_3h",
     # Nivells de pressió (925/850/700/500/300 hPa) — perfil vertical complet
     "has_pressure_levels",  # Indicador disponibilitat dades nivells de pressió
