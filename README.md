@@ -30,7 +30,7 @@ Utilitza dades reals de l'estació [MeteoCardedeu.net](https://meteocardedeu.net
          │                     │         │                      │
          ▼                     ▼         ▼                      ▼
     ┌──────────────────────────────────────────────────────────────────────┐
-    │                Feature Engineering (213 features)                    │
+    │                Feature Engineering (209 features)                    │
     │  Tendències · Ensemble · 5 nivells pressió · CAPE/CIN · SST · Compostos físics · Radar · Sentinella · Llamps │
     └──────────────────────────────┬───────────────────────────────────────┘
                                   │
@@ -147,7 +147,7 @@ nowcast-cardedeu/
 │   │   ├── meteocat_xdde.py  # API Meteocat XDDE (descàrregues elèctriques)
 │   │   └── meteocat_prediccio.py # API Meteocat Predicció (forecast municipal)
 │   ├── features/
-    │   ├── engineering.py    # Feature engineering (213 features, 169 historical)
+│   │   ├── engineering.py    # Feature engineering (209 features, 163 historical)
 │   │   └── regime.py         # Detecció de canvis de règim atmosfèric (Llevantada, Garbí, pressió)
 │   ├── model/
 │   │   ├── train.py          # Pipeline d'entrenament (XGBoost + TimeSeriesSplit)
@@ -178,7 +178,7 @@ nowcast-cardedeu/
 
 ## Features del model
 
-El model defineix **213 features** per predicció en temps real. El model s'entrena amb les **213 features completes** (169 amb dades històriques, 44 com a NaN per radar/llamps/AEMET). El **feedback loop** acumula gradualment les 44 features en temps real (radar, llamps, sentinella) a cada predicció verificada, permetent que el model aprengui d'observacions independents amb cada re-entrenament.
+El model defineix **209 features** per predicció en temps real. El model s'entrena amb les **209 features completes** (163 amb dades històriques, 46 com a NaN per radar/llamps/AEMET). El **feedback loop** acumula gradualment les 46 features en temps real (radar, llamps, sentinella) a cada predicció verificada, permetent que el model aprengui d'observacions independents amb cada re-entrenament.
 
 **Ensemble backfill**: Des de gener 2022, dades de 4 models NWP (ECMWF, GFS, ICON, AROME) descarregades via `scripts/backfill_ensemble.py`.
 **XEMA sentinel backfill**: Dades de Granollers (YM) + ETAP Cardedeu (KX) via `scripts/backfill_xema.py` (incremental, 15 dies/execució per respectar el límit API).

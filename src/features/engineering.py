@@ -211,18 +211,10 @@ def _add_wind_regime_features(df: pd.DataFrame,
 
     # Garbí ("Anuncia borrasques amb fortes precipitacions" — ref: alexmeteo)
     df["garbi_strength"] = df["is_garbi"] * synoptic_speed
-    df["garbi_moisture"] = df["is_garbi"] * hum_frac
 
     # Tramuntana (4.8% rain rate — mostly dry Montseny air)
     df["tramuntana_strength"] = df["is_tramuntana"] * synoptic_speed
     df["tramuntana_moisture"] = df["is_tramuntana"] * hum_frac
-
-    # Migjorn (aire africà — pot portar humitat sahariana)
-    df["migjorn_strength"] = df["is_migjorn"] * synoptic_speed
-    df["migjorn_moisture"] = df["is_migjorn"] * hum_frac
-
-    # Ponent (aire continental sec — vent de terra)
-    df["ponent_strength"] = df["is_ponent"] * synoptic_speed
 
     # Canvi de direcció sinòptica en 3h (backing/veering)
     df["wind_dir_change_3h"] = _angular_diff(synoptic_dir, 3)
@@ -1169,10 +1161,8 @@ FEATURE_COLUMNS = [
     # Binary flags (is_*) s'usen internament per derivar interaccions, NO al model
     # (importància zero demostrada). Només les interaccions règim×magnitud entren.
     "llevantada_strength", "llevantada_moisture",
-    "garbi_strength", "garbi_moisture",
+    "garbi_strength",
     "tramuntana_strength", "tramuntana_moisture",
-    "migjorn_strength", "migjorn_moisture",
-    "ponent_strength",
     "wind_dir_change_3h",
     # Nivells de pressió (925/850/700/500/300 hPa) — perfil vertical complet
     "has_pressure_levels",  # Indicador disponibilitat dades nivells de pressió
