@@ -319,10 +319,29 @@ function renderRadar(d) {
     sourceNote = `<div class="stat-row"><span class="stat-label">Radar AEMET</span><span class="stat-value" style="color:var(--text-muted)">No confirma</span></div>`;
   }
 
+  // Storm movement direction text
+  const vns = fv.radar_storm_velocity_ns;
+  const vew = fv.radar_storm_velocity_ew;
+  const vel = r.storm_velocity_kmh || fv.radar_storm_velocity_kmh || 0;
+  let movementText = '';
+  if (vel > 2 && vns != null && vew != null) {
+    const dirs = [];
+    if (Math.abs(vns) > 1) dirs.push(vns > 0 ? 'S' : 'N');
+    if (Math.abs(vew) > 1) dirs.push(vew > 0 ? 'E' : 'W');
+    if (dirs.length > 0) movementText = `→ ${dirs.join('')} a ${Math.round(vel)} km/h`;
+    else movementText = `${Math.round(vel)} km/h`;
+  }
+
+  // Approaching text
+  const approachingFlag = r.approaching || fv.radar_storm_approaching;
+  let approachText = approachingFlag ? '⚠️ Sí' : 'No';
+  if (movementText) approachText += ` (${movementText})`;
+  if (r.storm_eta_min) approachText += ` ~${r.storm_eta_min} min`;
+
   return `
     <div class="stat-row"><span class="stat-label">Pluja més propera</span><span class="stat-value">${nearestText}</span></div>
     <div class="stat-row"><span class="stat-label">Zona amb pluja</span><span class="stat-value">${covText}</span></div>
-    <div class="stat-row"><span class="stat-label">S'acosta?</span><span class="stat-value">${r.approaching ? '⚠️ Sí' : 'No'}${r.storm_eta_min ? ' (~' + r.storm_eta_min + ' min)' : ''}</span></div>
+    <div class="stat-row"><span class="stat-label">S'acosta?</span><span class="stat-value">${approachText}</span></div>
     <div class="stat-row"><span class="stat-label">Direcció</span><span class="stat-value">${hasQuadrants ? compassParts : '<span style="color:var(--text-muted)">Sense pluja al radar</span>'}</span></div>
     <div class="stat-row"><span class="stat-label">Intensitat</span><span class="stat-value">${intensityText}</span></div>
     <div class="stat-row"><span class="stat-label">Llamps (30 km)</span><span class="stat-value">${lightningText}</span></div>
