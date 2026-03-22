@@ -481,13 +481,20 @@ function renderWhyPrediction(d) {
 
   // ML verdict
   const mlRain = d.will_rain;
-  const verdictText = rainVotes >= totalVotes / 2
-    ? (mlRain
-      ? `${rainVotes} de ${totalVotes} fonts diuen pluja — el sistema hi està d'acord (${pct}%).`
-      : `${rainVotes} de ${totalVotes} fonts diuen pluja — però el sistema, amb 12 anys de dades locals, diu que <strong>no</strong> (${pct}%).`)
-    : (mlRain
-      ? `Només ${rainVotes} de ${totalVotes} fonts veuen pluja — però el sistema detecta patrons locals que sí (${pct}%).`
-      : `${noRainVotes} de ${totalVotes} fonts descarten pluja — el sistema confirma: ${pct}%.`);
+  let verdictText;
+  if (rainVotes >= totalVotes / 2 && !mlRain) {
+    // Most sources say rain, ML says no — the big correction story
+    verdictText = `La majoria de fonts (${rainVotes}/${totalVotes}) diuen pluja, però <strong>el nostre model diu que no</strong> (${pct}%). Ha après que a Cardedeu aquesta combinació sovint no acaba en pluja.`;
+  } else if (rainVotes < totalVotes / 2 && mlRain) {
+    // Most sources say no rain, ML says yes — ML sees what they don't
+    verdictText = `Poques fonts (${rainVotes}/${totalVotes}) veuen pluja, però <strong>el nostre model diu que sí</strong> (${pct}%). Detecta patrons locals que els models globals no capturen.`;
+  } else if (mlRain) {
+    // Both agree: rain
+    verdictText = `Fonts i model d'acord: <strong>plou o plourà</strong>. El nostre model ho situa al ${pct}%.`;
+  } else {
+    // Both agree: no rain
+    verdictText = `Fonts i model d'acord: <strong>no plourà</strong>. El nostre model ho situa al ${pct}%.`;
+  }
 
   const detailId = 'why-detail-' + Date.now();
   return `
