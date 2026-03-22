@@ -7,6 +7,13 @@ if [ -n "$GIT_TOKEN" ] && [ -n "$GIT_REPO" ]; then
     git config --global user.name "nowcast-bot"
     git config --global user.email "nowcast-bot@users.noreply.github.com"
     git clone --depth=1 "https://x-access-token:${GIT_TOKEN}@github.com/${GIT_REPO}.git" "$REPO_DIR"
+
+    # Sync latest repo data INTO /app so we don't lose predictions on image rebuild
+    echo "📥 Syncing repo data into container..."
+    cp -f "$REPO_DIR/data/predictions_log.jsonl" /app/data/predictions_log.jsonl 2>/dev/null || true
+    cp -f "$REPO_DIR/data/latest_prediction.json" /app/data/latest_prediction.json 2>/dev/null || true
+    cp -f "$REPO_DIR/data/notification_state.json" /app/data/notification_state.json 2>/dev/null || true
+    cp -f "$REPO_DIR/data/aemet_cache.json" /app/data/aemet_cache.json 2>/dev/null || true
 fi
 
 echo "🌦️  Nowcast Cardedeu — Container started ($(date))"
