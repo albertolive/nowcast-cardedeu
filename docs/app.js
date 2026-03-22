@@ -63,6 +63,23 @@ function compassLabel(deg) {
   return dirs[Math.round(deg / 22.5) % 16];
 }
 
+function _gateSignals(d) {
+  const signals = [];
+  const r = d.radar || {};
+  const e = d.ensemble || {};
+  const a = d.aemet || {};
+  const fv = d.feature_vector || {};
+  if (r.has_echo || (r.nearest_echo_km != null && r.nearest_echo_km < 30)) {
+    signals.push('📡 Radar' + (r.nearest_echo_km != null && r.nearest_echo_km < 30 ? ' (' + r.nearest_echo_km + ' km)' : ''));
+  }
+  if ((fv.lightning_count_30km || 0) > 0) signals.push('⚡ Llamps');
+  const agreement = e.rain_agreement ?? (e.models_rain != null && e.total_models ? e.models_rain / e.total_models : 0);
+  if (agreement >= 0.2) signals.push('🌐 ' + (e.models_rain || 0) + '/' + (e.total_models || 4) + ' models');
+  if ((a.prob_storm || 0) >= 10) signals.push('⛈️ Tronada ' + a.prob_storm + '%');
+  if ((fv.cape || 0) >= 800) signals.push('🔥 CAPE alt');
+  return signals;
+}
+
 function renderPrediction(latest, history) {
   const pct = latest.probability_pct;
   const noPct = (100 - pct).toFixed(1);
@@ -71,6 +88,7 @@ function renderPrediction(latest, history) {
   const offset = circumference * (1 - pct / 100);
   const confColor = pct >= 60 ? 'conf-high' : pct >= 35 ? 'conf-medium' : 'conf-low';
   const gateOpen = latest.rain_gate_open;
+  const signals = gateOpen ? _gateSignals(latest) : [];
 
   // Verified history stats (prediction-level)
   const verified = history.filter(h => h.verified);
@@ -126,7 +144,12 @@ function renderPrediction(latest, history) {
 
       <div class="gate-indicator ${gateOpen ? 'open' : 'closed'}">
         <span class="gate-dot"></span>
-        ${gateOpen ? '🌧️ Senyals de pluja detectats — radar, llamps o previsions oficials actius' : '☀️ Cap senyal de pluja — radar, llamps i previsions oficials en calma'}
+        ${gateOpen
+          ? `<span class="gate-text">🌧️ Senyals de pluja detectats</span>
+             <span class="gate-chips">${signals.map(s => '<span class="gate-chip">' + s + '</span>').join('')}</span>
+             <a href="#sources-card" class="gate-scroll-hint">veure detall ↓</a>`
+          : '☀️ Cap senyal de pluja — radar, llamps i previsions oficials en calma'
+        }
       </div>
 
       <div class="prediction-meta">
@@ -164,7 +187,7 @@ function renderPrediction(latest, history) {
       </div>
 
       <!-- Why this prediction -->
-      <div class="info-card">
+      <div class="info-card" id="sources-card">
         <h3>🧠 Què diuen les fonts?</h3>
         <p class="card-intro">El model compara aquestes fonts amb 12 anys d'històric de Cardedeu per donar el ${latest.probability_pct}% de dalt.</p>
         ${renderWhyPrediction(latest)}
