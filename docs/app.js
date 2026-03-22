@@ -165,7 +165,8 @@ function renderPrediction(latest, history) {
 
       <!-- Why this prediction -->
       <div class="info-card">
-        <h3>🧠 Per què aquesta predicció?</h3>
+        <h3>🧠 Què diuen les fonts?</h3>
+        <p class="card-intro">El model compara aquestes fonts amb 12 anys d'històric de Cardedeu per donar el ${latest.probability_pct}% de dalt.</p>
         ${renderWhyPrediction(latest)}
       </div>
     </div>
@@ -200,12 +201,15 @@ function renderConditions(d) {
   const dewPoint = fv.dew_point != null ? fv.dew_point.toFixed(1) + '°C' : '—';
   const solar = c.solar_radiation;
   const solarDesc = solar != null ? (solar > 600 ? '☀️ Intens' : solar > 300 ? '🌤️ Moderat' : solar > 50 ? '🌥️ Baix' : '🌑 Nul') : '';
+  const cloud = fv.cloud_cover;
+  const gusts = fv.wind_gusts_10m;
   return `
     <div class="stat-row"><span class="stat-label">Temperatura</span><span class="stat-value">${c.temperature || '—'}°C</span></div>
     <div class="stat-row"><span class="stat-label">Humitat</span><span class="stat-value">${c.humidity || '—'}%</span></div>
     <div class="stat-row"><span class="stat-label">Punt de rosada</span><span class="stat-value">${dewPoint}</span></div>
     <div class="stat-row"><span class="stat-label">Pressió</span><span class="stat-value" style="${pressColor}">${c.pressure || '—'} hPa${pressTrend}</span></div>
-    <div class="stat-row"><span class="stat-label">Vent</span><span class="stat-value">${c.wind_speed || '—'} km/h ${c.wind_dir || ''}</span></div>
+    <div class="stat-row"><span class="stat-label">Vent</span><span class="stat-value">${c.wind_speed || '—'} km/h ${c.wind_dir || ''}${gusts != null ? ' (ràfegues ' + Math.round(gusts) + ')' : ''}</span></div>
+    <div class="stat-row"><span class="stat-label">Cel cobert</span><span class="stat-value">${cloud != null ? Math.round(cloud) + '%' : '—'}</span></div>
     <div class="stat-row"><span class="stat-label">Radiació solar</span><span class="stat-value">${solar != null ? Math.round(solar) + ' W/m² ' + solarDesc : '—'}</span></div>
     <div class="stat-row"><span class="stat-label">Pluja avui</span><span class="stat-value">${c.rain_today || '0.0'} mm</span></div>
   `;
@@ -213,7 +217,10 @@ function renderConditions(d) {
 
 function renderRadar(d) {
   const r = d.radar || {};
+  const fv = d.feature_vector || {};
   const q = r.quadrants || {};
+  const lightning = fv.lightning_count_30km;
+  const lightningText = lightning != null ? (lightning > 0 ? `⚡ ${Math.round(lightning)} detectats` : 'Cap activitat') : '—';
   // Build mini compass showing which quadrants have echoes
   const quadLabels = ['N','E','S','W'];
   const compassParts = quadLabels.map(dir => {
@@ -229,6 +236,7 @@ function renderRadar(d) {
     <div class="stat-row"><span class="stat-label">S'acosta?</span><span class="stat-value">${r.approaching ? '⚠️ Sí' : 'No'}${r.storm_eta_min ? ' (~' + r.storm_eta_min + ' min)' : ''}</span></div>
     <div class="stat-row"><span class="stat-label">Direcció</span><span class="stat-value">${hasQuadrants ? compassParts : '<span style="color:var(--text-muted)">Sense pluja al radar</span>'}</span></div>
     <div class="stat-row"><span class="stat-label">Intensitat</span><span class="stat-value">${r.dbz != null && r.dbz > 0 ? (r.dbz >= 40 ? '🟥 Forta' : r.dbz >= 25 ? '🟨 Moderada' : '🟩 Feble') : 'Res detectat'}</span></div>
+    <div class="stat-row"><span class="stat-label">Llamps (30 km)</span><span class="stat-value">${lightningText}</span></div>
     <p class="card-hint">Escaneig cada 10 min en un radi de 30 km al voltant de Cardedeu</p>
   `;
 }
@@ -249,6 +257,24 @@ function renderSources(d) {
       ${s.name}
     </span>
   `).join('');
+}
+
+function _renderDisagreement(d) {
+  const pct = d.probability_pct;
+  const aemet = d.aemet?.prob_precip;
+  const models = d.ensemble?.models_rain || 0;
+  const total = d.ensemble?.total_models || 4;
+  const radar = d.radar?.approaching || d.radar?.has_echo;
+
+  // Model says low but sources say high
+  if (pct < 30 && aemet >= 50 && models >= 3) {
+    return `<p class="disagreement">Malgrat que AEMET i els models preveuen pluja, el sistema ha après que a Cardedeu aquesta configuració sovint no es materialitza en pluja real.</p>`;
+  }
+  // Model says high but sources say low
+  if (pct >= 50 && models <= 1 && !radar) {
+    return `<p class="disagreement">Els models globals no ho veuen, però les condicions locals (pressió, humitat, vent) recorden patrons que històricament porten pluja a Cardedeu.</p>`;
+  }
+  return '';
 }
 
 function renderWhyPrediction(d) {
@@ -273,15 +299,17 @@ function renderWhyPrediction(d) {
   // NWP consensus
   const modelsRain = e.models_rain || 0;
   const totalModels = e.total_models || 4;
+  const spread = e.precip_spread_mm;
+  const spreadText = spread != null ? (spread < 1 ? 'molt d\'acord' : spread < 5 ? 'bastant d\'acord' : 'poc d\'acord') : '';
   let modelsText, modelsColor;
   if (modelsRain === 0) {
     modelsText = `0/${totalModels} preveuen pluja`;
     modelsColor = 'var(--accent-green)';
   } else if (modelsRain <= totalModels / 2) {
-    modelsText = `${modelsRain}/${totalModels} preveuen pluja`;
+    modelsText = `${modelsRain}/${totalModels} preveuen pluja${spreadText ? ' (' + spreadText + ')' : ''}`;
     modelsColor = 'var(--accent-yellow)';
   } else {
-    modelsText = `${modelsRain}/${totalModels} preveuen pluja`;
+    modelsText = `${modelsRain}/${totalModels} preveuen pluja${spreadText ? ' (' + spreadText + ')' : ''}`;
     modelsColor = 'var(--accent-red)';
   }
 
@@ -305,19 +333,17 @@ function renderWhyPrediction(d) {
   return `
     <div class="stat-row"><span class="stat-label">Radar</span><span class="stat-value" style="color:${radarColor}">${radarText}</span></div>
     <div class="stat-row"><span class="stat-label">Models globals</span><span class="stat-value" style="color:${modelsColor}">${modelsText}</span></div>
-    <div class="stat-row"><span class="stat-label">Previsió AEMET</span><span class="stat-value" style="color:${aemetColor}">${aemetText}</span></div>
-    <div class="stat-row"><span class="stat-label">Prob. tempesta</span><span class="stat-value" style="color:${stormColor}">${stormText}</span></div>
+    <div class="stat-row"><span class="stat-label">Prob. pluja (AEMET)</span><span class="stat-value" style="color:${aemetColor}">${aemetText}</span></div>
+    <div class="stat-row"><span class="stat-label">Prob. tronada (AEMET)</span><span class="stat-value" style="color:${stormColor}">${stormText}</span></div>
+    <p class="card-hint">Les prob. AEMET són calibrades per meteoròlegs cada 6h</p>
+    ${_renderDisagreement(d)}
 
     <button class="expand-toggle" onclick="this.classList.toggle('open');document.getElementById('${detailId}').classList.toggle('open')">
       <span class="chevron">▶</span> Com s'ha calculat
     </button>
     <div id="${detailId}" class="expand-content">
       <p class="tech-explainer">
-        El sistema combina ${d.features_used || '210'} variables meteorològiques — estació local, radar, llamps, 4 models globals i 12 anys d'històric de Cardedeu — per corregir els errors dels models globals al nostre microclima.
-      </p>
-      <p class="tech-explainer" style="margin-top:8px">
-        ${d.raw_probability != null && d.threshold ? `El model genera un ${(d.raw_probability * 100).toFixed(1)}% inicial, que es calibra a <strong>${d.probability_pct}%</strong> (probabilitat real basada en l'històric). Com que ${d.probability_pct}% ${d.probability_pct >= d.threshold * 100 ? '≥' : '<'} ${(d.threshold * 100).toFixed(0)}% (llindar), el veredicte és: <strong>${d.will_rain ? '🌧️ plourà' : '☀️ no plourà'}</strong>.` : `La probabilitat calibrada és <strong>${d.probability_pct}%</strong>.`}
-        El model es re-entrena cada dia amb les prediccions verificades.
+        El sistema combina ${d.features_used || '210'} variables meteorològiques — estació local, radar, llamps, 4 models globals i 12 anys d'històric de Cardedeu — per corregir els errors dels models globals al nostre microclima. Es re-entrena cada dia amb les prediccions verificades.
       </p>
     </div>
   `;
