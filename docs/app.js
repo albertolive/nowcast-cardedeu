@@ -1,6 +1,7 @@
 const REPO = 'albertolive/nowcast-cardedeu';
 const BRANCH = 'main';
 const RAW_BASE = `https://raw.githubusercontent.com/${REPO}/${BRANCH}/data`;
+const REFRESH_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
 
 async function fetchJSON(filename) {
   // Try local (GitHub Pages docs/) first, fall back to raw.githubusercontent.com
@@ -44,6 +45,24 @@ function getProbColor(pct) {
   return 'var(--accent-green)';
 }
 
+function relativeTime(isoStr) {
+  const diff = Date.now() - new Date(isoStr).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return 'ara mateix';
+  if (mins === 1) return 'fa 1 minut';
+  if (mins < 60) return `fa ${mins} minuts`;
+  const hours = Math.floor(mins / 60);
+  if (hours === 1) return 'fa 1 hora';
+  if (hours < 24) return `fa ${hours} hores`;
+  return `fa ${Math.floor(hours / 24)} dies`;
+}
+
+function compassLabel(deg) {
+  if (deg == null) return '—';
+  const dirs = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSO','SO','OSO','O','ONO','NO','NNO'];
+  return dirs[Math.round(deg / 22.5) % 16];
+}
+
 function renderPrediction(latest, history) {
   const pct = latest.probability_pct;
   const noPct = (100 - pct).toFixed(1);
@@ -77,7 +96,7 @@ function renderPrediction(latest, history) {
     <!-- Main prediction -->
     <div class="prediction-card">
       <div class="prediction-question">Plourà a Cardedeu en la propera hora?</div>
-      <div class="prediction-subtext">${fmtTime(latest.timestamp)}</div>
+      <div class="prediction-subtext">${fmtTime(latest.timestamp)} · <span id="freshness">${relativeTime(latest.timestamp)}</span></div>
 
       <div class="probability-ring">
         <svg viewBox="0 0 200 200" width="200" height="200">
@@ -173,11 +192,21 @@ function renderPrediction(latest, history) {
 
 function renderConditions(d) {
   const c = d.conditions || {};
+  const fv = d.feature_vector || {};
+  const pressChange = d.pressure_change_3h;
+  const pressArrow = pressChange != null ? (pressChange > 0.5 ? '↑' : pressChange < -0.5 ? '↓' : '→') : '';
+  const pressColor = pressChange != null && pressChange < -1.5 ? 'color:var(--accent-red)' : pressChange != null && pressChange > 1.5 ? 'color:var(--accent-blue)' : '';
+  const pressTrend = pressChange != null ? ` ${pressArrow}(${pressChange > 0 ? '+' : ''}${pressChange.toFixed(1)}/3h)` : '';
+  const dewPoint = fv.dew_point != null ? fv.dew_point.toFixed(1) + '°C' : '—';
+  const solar = c.solar_radiation;
+  const solarDesc = solar != null ? (solar > 600 ? '☀️ Intens' : solar > 300 ? '🌤️ Moderat' : solar > 50 ? '🌥️ Baix' : '🌑 Nul') : '';
   return `
     <div class="stat-row"><span class="stat-label">Temperatura</span><span class="stat-value">${c.temperature || '—'}°C</span></div>
     <div class="stat-row"><span class="stat-label">Humitat</span><span class="stat-value">${c.humidity || '—'}%</span></div>
-    <div class="stat-row"><span class="stat-label">Pressió atmosfèrica</span><span class="stat-value">${c.pressure || '—'} hPa</span></div>
+    <div class="stat-row"><span class="stat-label">Punt de rosada</span><span class="stat-value">${dewPoint}</span></div>
+    <div class="stat-row"><span class="stat-label">Pressió</span><span class="stat-value" style="${pressColor}">${c.pressure || '—'} hPa${pressTrend}</span></div>
     <div class="stat-row"><span class="stat-label">Vent</span><span class="stat-value">${c.wind_speed || '—'} km/h ${c.wind_dir || ''}</span></div>
+    <div class="stat-row"><span class="stat-label">Radiació solar</span><span class="stat-value">${solar != null ? Math.round(solar) + ' W/m² ' + solarDesc : '—'}</span></div>
     <div class="stat-row"><span class="stat-label">Pluja avui</span><span class="stat-value">${c.rain_today || '0.0'} mm</span></div>
   `;
 }
@@ -200,17 +229,19 @@ function renderRadar(d) {
     <div class="stat-row"><span class="stat-label">S'acosta?</span><span class="stat-value">${r.approaching ? '⚠️ Sí' : 'No'}${r.storm_eta_min ? ' (~' + r.storm_eta_min + ' min)' : ''}</span></div>
     <div class="stat-row"><span class="stat-label">Direcció</span><span class="stat-value">${hasQuadrants ? compassParts : '<span style="color:var(--text-muted)">Sense pluja al radar</span>'}</span></div>
     <div class="stat-row"><span class="stat-label">Intensitat</span><span class="stat-value">${r.dbz != null && r.dbz > 0 ? (r.dbz >= 40 ? '🟥 Forta' : r.dbz >= 25 ? '🟨 Moderada' : '🟩 Feble') : 'Res detectat'}</span></div>
+    <p class="card-hint">Escaneig cada 10 min en un radi de 30 km al voltant de Cardedeu</p>
   `;
 }
 
 function renderSources(d) {
+  const fv = d.feature_vector || {};
   const sources = [
-    { name: 'Estació meteo local', active: d.conditions?.temperature != null },
-    { name: 'Radar de pluja', active: d.radar?.dbz != null },
-    { name: 'Detector de llamps', active: true },
-    { name: 'Meteocat', active: d.aemet || true },
+    { name: 'Estació local', active: d.conditions?.temperature != null },
+    { name: 'Radar RainViewer', active: d.radar?.dbz != null },
+    { name: 'Llamps XDDE', active: d.rain_gate_open },
+    { name: 'Meteocat XEMA', active: d.sentinel?.temp != null || d.sentinel?.humidity != null },
     { name: 'AEMET', active: d.aemet?.prob_precip != null },
-    { name: 'Models globals', active: d.ensemble?.total_models > 0 },
+    { name: 'Ensemble NWP', active: (d.ensemble?.total_models || 0) > 0 },
   ];
   return sources.map(s => `
     <span class="source-item">
@@ -254,18 +285,6 @@ function renderWhyPrediction(d) {
     modelsColor = 'var(--accent-red)';
   }
 
-  // Stability
-  let stabilityText = '—', stabilityColor = 'var(--text-muted)';
-  if (p.li_index != null) {
-    if (p.li_index < -3) { stabilityText = '⛈️ Inestable'; stabilityColor = 'var(--accent-red)'; }
-    else if (p.li_index < 0) { stabilityText = '⚠️ Lleugerament inestable'; stabilityColor = 'var(--accent-yellow)'; }
-    else { stabilityText = '☀️ Estable'; stabilityColor = 'var(--accent-green)'; }
-  } else if (p.tt_index != null) {
-    if (p.tt_index > 50) { stabilityText = '⛈️ Inestable'; stabilityColor = 'var(--accent-red)'; }
-    else if (p.tt_index > 44) { stabilityText = '⚠️ Lleugerament inestable'; stabilityColor = 'var(--accent-yellow)'; }
-    else { stabilityText = '☀️ Estable'; stabilityColor = 'var(--accent-green)'; }
-  }
-
   // AEMET
   const aemetProb = a.prob_precip ?? null;
   let aemetText = '—', aemetColor = 'var(--text-muted)';
@@ -274,46 +293,32 @@ function renderWhyPrediction(d) {
     aemetColor = aemetProb >= 50 ? 'var(--accent-red)' : aemetProb >= 20 ? 'var(--accent-yellow)' : 'var(--accent-green)';
   }
 
-  // Humidity at altitude
-  let humText = '—', humColor = 'var(--text-muted)';
-  if (p.rh_700 != null) {
-    if (p.rh_700 > 70) { humText = `${p.rh_700}% — Molt humit`; humColor = 'var(--accent-red)'; }
-    else if (p.rh_700 > 50) { humText = `${p.rh_700}% — Moderat`; humColor = 'var(--accent-yellow)'; }
-    else { humText = `${p.rh_700}% — Sec`; humColor = 'var(--accent-green)'; }
+  // AEMET storm
+  const stormProb = a.prob_storm ?? null;
+  let stormText = '—', stormColor = 'var(--text-muted)';
+  if (stormProb != null) {
+    stormText = stormProb + '%';
+    stormColor = stormProb >= 40 ? 'var(--accent-red)' : stormProb >= 15 ? 'var(--accent-yellow)' : 'var(--accent-green)';
   }
 
   const detailId = 'why-detail-' + Date.now();
   return `
     <div class="stat-row"><span class="stat-label">Radar</span><span class="stat-value" style="color:${radarColor}">${radarText}</span></div>
     <div class="stat-row"><span class="stat-label">Models globals</span><span class="stat-value" style="color:${modelsColor}">${modelsText}</span></div>
-    <div class="stat-row"><span class="stat-label">Estabilitat</span><span class="stat-value" style="color:${stabilityColor}">${stabilityText}</span></div>
     <div class="stat-row"><span class="stat-label">Previsió AEMET</span><span class="stat-value" style="color:${aemetColor}">${aemetText}</span></div>
-    <div class="stat-row"><span class="stat-label">Humitat en altura</span><span class="stat-value" style="color:${humColor}">${humText}</span></div>
+    <div class="stat-row"><span class="stat-label">Prob. tempesta</span><span class="stat-value" style="color:${stormColor}">${stormText}</span></div>
 
     <button class="expand-toggle" onclick="this.classList.toggle('open');document.getElementById('${detailId}').classList.toggle('open')">
-      <span class="chevron">▶</span> Detalls tècnics
+      <span class="chevron">▶</span> Com s'ha calculat
     </button>
     <div id="${detailId}" class="expand-content">
-      <div class="stat-row">
-        <span class="stat-label">Prob. sense calibrar</span>
-        <span class="stat-value">${d.raw_probability != null ? (d.raw_probability * 100).toFixed(1) + '%' : '—'}</span>
-      </div>
-      <div class="stat-row">
-        <span class="stat-label">Prob. calibrada</span>
-        <span class="stat-value">${d.probability_pct}%</span>
-      </div>
-      <div class="stat-row">
-        <span class="stat-label">Llindar sí/no</span>
-        <span class="stat-value">${d.threshold ? (d.threshold * 100).toFixed(1) + '%' : '—'}</span>
-      </div>
-      <div class="stat-row">
-        <span class="stat-label">Variables</span>
-        <span class="stat-value">${d.features_used || '—'}</span>
-      </div>
-      <div class="stat-row">
-        <span class="stat-label">Algoritme</span>
-        <span class="stat-value">XGBoost + cal. isotònica</span>
-      </div>
+      <p class="tech-explainer">
+        El sistema combina ${d.features_used || '210'} variables meteorològiques — estació local, radar, llamps, 4 models globals i 12 anys d'històric de Cardedeu — per corregir els errors dels models globals al nostre microclima.
+      </p>
+      <p class="tech-explainer" style="margin-top:8px">
+        ${d.raw_probability != null && d.threshold ? `El model genera un ${(d.raw_probability * 100).toFixed(1)}% inicial, que es calibra a <strong>${d.probability_pct}%</strong> (probabilitat real basada en l'històric). Com que ${d.probability_pct}% ${d.probability_pct >= d.threshold * 100 ? '≥' : '<'} ${(d.threshold * 100).toFixed(0)}% (llindar), el veredicte és: <strong>${d.will_rain ? '🌧️ plourà' : '☀️ no plourà'}</strong>.` : `La probabilitat calibrada és <strong>${d.probability_pct}%</strong>.`}
+        El model es re-entrena cada dia amb les prediccions verificades.
+      </p>
     </div>
   `;
 }
@@ -321,11 +326,20 @@ function renderWhyPrediction(d) {
 function renderAtmosphere(d) {
   const p = d.pressure_levels || {};
   const w = d.wind_regime || {};
-  const regime = w.is_llevantada ? '🌊 Llevantada' :
-                 w.is_tramuntana ? '💨 Tramuntana' :
-                 w.is_migjorn ? '🌡️ Migjorn' :
-                 w.is_garbi ? '🌬️ Garbí' :
-                 w.is_ponent ? '🔥 Ponent' : '🧭 Neutre';
+  const regimes = {
+    llevantada: { icon: '🌊', name: 'Llevantada', desc: 'Humitat del mar contra les muntanyes — pluja #1 a Cardedeu (15% de probabilitat)' },
+    tramuntana: { icon: '❄️', name: 'Tramuntana', desc: 'Vent fred del nord — supressor de pluja (5%)' },
+    migjorn: { icon: '🌡️', name: 'Migjorn', desc: 'Aire càlid africà — segon en pluja (15%)' },
+    garbi: { icon: '🌀', name: 'Garbí', desc: 'Aire inestable del sud-oest — tempestes (11%)' },
+    ponent: { icon: '🏔️', name: 'Ponent', desc: 'Aire sec continental — supressor de pluja (6%)' },
+  };
+  const activeRegime = w.is_llevantada ? regimes.llevantada :
+                       w.is_tramuntana ? regimes.tramuntana :
+                       w.is_migjorn ? regimes.migjorn :
+                       w.is_garbi ? regimes.garbi :
+                       w.is_ponent ? regimes.ponent : null;
+  const regime = activeRegime ? `${activeRegime.icon} ${activeRegime.name}` : '🧭 Neutre';
+  const regimeDesc = activeRegime ? activeRegime.desc : 'Sense règim dominant';
 
   // Human-readable stability assessment from indices
   let stabilityText = '—';
@@ -361,12 +375,31 @@ function renderAtmosphere(d) {
     else jetText = 'Feble (' + Math.round(p.wind_300_speed_kmh) + ' km/h)';
   }
 
+  // 850hPa wind details
+  const wind850Dir = p.wind_850_dir ?? (p.wind_850_speed_kmh != null ? w.wind_dir : null);
+  const wind850Speed = p.wind_850_speed_kmh;
+  const wind850Text = wind850Speed != null ? `${compassLabel(wind850Dir)} · ${Math.round(wind850Speed)} km/h` : '—';
+
+  // SST
+  const sst = d.sst?.sst_med;
+  let sstText = '—';
+  if (sst != null) {
+    sstText = sst.toFixed(1) + '°C';
+    if (sst >= 25) sstText += ' 🔥 Molt càlid';
+    else if (sst >= 20) sstText += ' 🌊 Càlid';
+    else if (sst >= 15) sstText += ' 🌡️ Temperat';
+    else sstText += ' ❄️ Fred';
+  }
+
   const detailId = 'atmo-detail-' + Date.now();
   return `
     <div class="stat-row"><span class="stat-label">Tipus de vent</span><span class="stat-value">${regime}</span></div>
+    <div class="regime-desc">${regimeDesc}</div>
+    <div class="stat-row"><span class="stat-label">Vent sinòptic (850hPa)</span><span class="stat-value">${wind850Text}</span></div>
     <div class="stat-row"><span class="stat-label">Risc de tempesta</span><span class="stat-value" style="color:${stabilityColor}">${stabilityText}</span></div>
     <div class="stat-row"><span class="stat-label">Humitat en altura</span><span class="stat-value">${humidityText}</span></div>
     <div class="stat-row"><span class="stat-label">Vent a gran altitud</span><span class="stat-value">${jetText}</span></div>
+    <div class="stat-row"><span class="stat-label">Mar Mediterrani</span><span class="stat-value">${sstText}</span></div>
 
     <button class="expand-toggle" onclick="this.classList.toggle('open');document.getElementById('${detailId}').classList.toggle('open')">
       <span class="chevron">▶</span> Detalls per capes de l'atmosfera
@@ -916,13 +949,26 @@ function drawChart(history, latest) {
 }
 
 /* ---- Init ---- */
+let _latestTimestamp = null;
+
+async function loadAndRender() {
+  const [latest, history] = await Promise.all([
+    fetchJSON('latest_prediction.json'),
+    fetchJSONL('predictions_log.jsonl')
+  ]);
+  const isUpdate = _latestTimestamp && _latestTimestamp !== latest.timestamp;
+  _latestTimestamp = latest.timestamp;
+  renderPrediction(latest, history);
+  if (isUpdate) {
+    const card = document.querySelector('.prediction-card');
+    if (card) { card.classList.add('flash'); setTimeout(() => card.classList.remove('flash'), 1500); }
+  }
+  return { latest, history };
+}
+
 async function init() {
   try {
-    const [latest, history] = await Promise.all([
-      fetchJSON('latest_prediction.json'),
-      fetchJSONL('predictions_log.jsonl')
-    ]);
-    renderPrediction(latest, history);
+    const { latest, history } = await loadAndRender();
 
     // Resize chart on window resize
     let resizeTimer;
@@ -930,6 +976,27 @@ async function init() {
       clearTimeout(resizeTimer);
       resizeTimer = setTimeout(() => drawChart(history, latest), 200);
     });
+
+    // Auto-refresh every 5 minutes
+    setInterval(async () => {
+      try {
+        const data = await loadAndRender();
+        // Update resize handler
+        window.removeEventListener('resize', null);
+        window.addEventListener('resize', () => {
+          clearTimeout(resizeTimer);
+          resizeTimer = setTimeout(() => drawChart(data.history, data.latest), 200);
+        });
+      } catch (e) {
+        console.warn('Auto-refresh failed:', e);
+      }
+    }, REFRESH_INTERVAL_MS);
+
+    // Update "fa X minuts" every 30 seconds
+    setInterval(() => {
+      const el = document.getElementById('freshness');
+      if (el && _latestTimestamp) el.textContent = relativeTime(_latestTimestamp);
+    }, 30000);
   } catch (err) {
     document.getElementById('app').innerHTML = `
       <div class="prediction-card" style="color:var(--accent-red)">
