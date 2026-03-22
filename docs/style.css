@@ -195,6 +195,15 @@ header .subtitle {
 .conf-medium { color: var(--accent-yellow); }
 .conf-high { color: var(--accent-red); }
 
+.prob-trend {
+  font-size: 12px;
+  margin-top: 4px;
+  font-weight: 600;
+}
+.prob-trend.trend-up { color: var(--accent-red); }
+.prob-trend.trend-down { color: var(--accent-green); }
+.prob-trend.trend-stable { color: var(--text-muted); }
+
 /* Chart */
 .chart-card {
   background: var(--surface);
