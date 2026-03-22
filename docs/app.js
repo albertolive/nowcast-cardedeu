@@ -380,8 +380,8 @@ function renderWhyPrediction(d) {
     name: 'Radar (RainViewer)',
     rain: radarRain,
     detail: radarRain
-      ? (r.approaching ? `Pluja a ${r.nearest_echo_km || '?'} km, acostant-se` : `Ecos a ${r.nearest_echo_km || '?'} km`)
-      : 'Sense ecos en 30 km'
+      ? (r.approaching ? `Pluja a ${r.nearest_echo_km || '?'} km, acostant-se` : `Pluja detectada a ${r.nearest_echo_km || '?'} km`)
+      : 'Sense pluja en 30 km'
   });
 
   // AEMET Radar
@@ -390,7 +390,7 @@ function renderWhyPrediction(d) {
     votes.push({
       name: 'Radar (AEMET)',
       rain: aemetRadarRain,
-      detail: aemetRadarRain ? `Ecos detectats` : 'Sense ecos'
+      detail: aemetRadarRain ? `Pluja detectada` : 'Sense pluja'
     });
   }
 
