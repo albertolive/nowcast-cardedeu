@@ -537,7 +537,7 @@ function renderWhyPrediction(d) {
       ${voteRows}
       ${stormNote}
     </div>
-    <div class="vote-tally">
+    <div class="vote-summary">
       <div class="tally-bar">
         <div class="tally-rain" style="width:${(rainVotes / totalVotes * 100).toFixed(0)}%"></div>
       </div>
@@ -545,10 +545,9 @@ function renderWhyPrediction(d) {
         <span>🌧️ ${rainVotes}</span>
         <span>☀️ ${noRainVotes}</span>
       </div>
-    </div>
-    <div class="ml-verdict">
-      <span class="ml-verdict-badge">🧠 ${pct}%</span>
-      <p>${verdictText}</p>
+      <div class="ml-verdict">
+        <span class="ml-verdict-badge">🧠 ${pct}%</span>${verdictText}
+      </div>
     </div>
 
     <button class="expand-toggle" onclick="this.classList.toggle('open');document.getElementById('${detailId}').classList.toggle('open')">
