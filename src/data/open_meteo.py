@@ -275,10 +275,16 @@ def fetch_historical_pressure_levels(
 
         # Renomenar columnes API → noms interns
         df = df.rename(columns=_PRESSURE_RENAME)
-        # Keep renamed pressure columns + passthrough columns (cape, convective_inhibition)
-        _PASSTHROUGH_COLS = ["cape", "convective_inhibition", "visibility", "freezing_level_height", "lifted_index"]
-        keep_cols = [c for c in _PRESSURE_RENAME.values() if c in df.columns]
-        keep_cols += [c for c in _PASSTHROUGH_COLS if c in df.columns]
+        # Keep renamed pressure columns + passthrough columns (deduplicat)
+        _PASSTHROUGH_COLS = ["cape", "convective_inhibition"]
+        selected_cols = [c for c in _PRESSURE_RENAME.values() if c in df.columns]
+        selected_cols += [c for c in _PASSTHROUGH_COLS if c in df.columns]
+        seen = set()
+        keep_cols = []
+        for col in selected_cols:
+            if col not in seen:
+                seen.add(col)
+                keep_cols.append(col)
         df = df[["datetime"] + keep_cols]
 
         all_dfs.append(df)
@@ -289,6 +295,11 @@ def fetch_historical_pressure_levels(
 
     result = pd.concat(all_dfs, ignore_index=True)
     result = result.sort_values("datetime").reset_index(drop=True)
+    # Guardrail: duplicats aquí trenquen parquet write
+    dupes = result.columns[result.columns.duplicated()].tolist()
+    if dupes:
+        logger.warning(f"Columnes duplicades detectades i eliminades: {dupes}")
+        result = result.loc[:, ~result.columns.duplicated()]
     logger.info(f"Pressure levels: {len(result)} registres ({result['datetime'].min()} → {result['datetime'].max()})")
     return result
 

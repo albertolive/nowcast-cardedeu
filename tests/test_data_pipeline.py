@@ -33,6 +33,17 @@ class TestOpenMeteoContract:
         if dupes:
             pytest.fail(f"Duplicate vars in PRESSURE_LEVEL_VARS: {set(dupes)}")
 
+    def test_pressure_column_selection_no_duplicates(self):
+        """Regression: _PRESSURE_RENAME values + _PASSTHROUGH_COLS must not overlap."""
+        from src.data.open_meteo import _PRESSURE_RENAME
+        renamed_values = list(_PRESSURE_RENAME.values())
+        dupes = [c for c in renamed_values if renamed_values.count(c) > 1]
+        if dupes:
+            pytest.fail(
+                f"Duplicate values in _PRESSURE_RENAME: {set(dupes)}. "
+                f"Each rename target must be unique to avoid duplicate columns in parquet."
+            )
+
 
 @pytest.mark.network
 class TestGracefulDegradation:
