@@ -267,6 +267,14 @@ def predict_now() -> dict:
         probability = raw_probability
     will_rain = probability >= threshold
 
+    # Categoria de pluja per a visualització (honesta, separada del llindar F1)
+    if probability >= config.DISPLAY_THRESHOLD_RAIN:
+        rain_category = "probable"  # Alta confiança: pluja probable
+    elif probability >= config.DISPLAY_THRESHOLD_UNCERTAIN:
+        rain_category = "incert"   # Incert: mostra probabilitat, no es verifica
+    else:
+        rain_category = "sec"      # Sec: no es preveu pluja
+
     # Nivell de confiança
     if probability >= 0.85:
         confidence = "Molt Alta"
@@ -284,6 +292,7 @@ def predict_now() -> dict:
         "probability": round(probability, 4),
         "probability_pct": round(probability * 100, 1),
         "will_rain": will_rain,
+        "rain_category": rain_category,
         "confidence": confidence,
         "timestamp": datetime.now().isoformat(),
         "conditions": {

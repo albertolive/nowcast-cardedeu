@@ -89,6 +89,12 @@ OPEN_METEO_FORECAST_MODELS = [
 RAIN_THRESHOLD_MM = 0.2          # mm en 60 min per considerar "pluja"
 PREDICTION_HORIZON_MIN = 60      # Predicció a 60 minuts vista
 
+# ── Visualització: llindars per a la categoria de pluja mostrada ──
+# Separat del llindar intern F1-optimal (0.36) que alimenta el feedback loop.
+# L'usuari veu categories honestes: sec / incert / probable.
+DISPLAY_THRESHOLD_RAIN = 0.65    # >= 65%: "Pluja probable" (alta confiança)
+DISPLAY_THRESHOLD_UNCERTAIN = 0.30  # 30-65%: zona incerta (mostra %), <30%: sec
+
 # ── Notificacions: histèresi per evitar flip-flop ──
 ALERT_PROBABILITY_THRESHOLD = 0.65  # Compat: usat pel model per marcar will_rain
 ALERT_THRESHOLD_UP = 0.65           # clear → rain_alert (probabilitat puja)

@@ -818,6 +818,7 @@ footer a:hover { text-decoration: underline; }
 .pred-result.correct { color: var(--accent-green); }
 .pred-result.wrong { color: var(--accent-red); }
 .pred-result.pending { color: var(--accent-yellow); }
+.pred-result.uncertain { color: var(--accent-yellow); opacity: 0.85; }
 
 .pred-rain-mm {
   color: var(--text-muted);

@@ -86,27 +86,51 @@ def verify_pending_predictions() -> dict:
         actual_rain = rain_mm >= config.RAIN_THRESHOLD_MM
 
         # Comparar predicció vs realitat
+        # Verificació justa: la zona incerta (30-65%) no es puntua com encert/error
         predicted_rain = entry["will_rain"]
-        is_correct = predicted_rain == actual_rain
+        rain_category = entry.get("rain_category", "incert")
+        is_uncertain = rain_category == "incert"
+
+        if is_uncertain:
+            # Zona incerta: registrem el resultat però no comptem com a encert/error
+            is_correct = None  # ni encert ni error
+        else:
+            # Sec (<30%) o probable (>65%): verificació binària justa
+            display_predicted_rain = rain_category == "probable"
+            is_correct = display_predicted_rain == actual_rain
+
+        # Brier score component: (probabilitat - resultat real)²
+        brier_component = (entry["probability"] - (1.0 if actual_rain else 0.0)) ** 2
 
         entry["verified"] = True
         entry["actual_rain"] = actual_rain
         entry["actual_rain_mm"] = round(rain_mm, 2)
         entry["correct"] = is_correct
+        entry["uncertain"] = is_uncertain
+        entry["brier_component"] = round(brier_component, 6)
         entry["verified_at"] = now.isoformat()
         entry["verification_source"] = verification_source
 
         verified_count += 1
-        if is_correct:
+        if is_correct is True:
             correct_count += 1
-        else:
+        elif is_correct is False:
             wrong_count += 1
+        # is_correct is None (uncertain): don't count either way
 
         # Log detallat per a cada verificació
-        symbol = "✅" if is_correct else "❌"
+        if is_uncertain:
+            symbol = "🔸"
+            label = "INCERT"
+        elif is_correct:
+            symbol = "✅"
+            label = "PLUJA" if entry.get("rain_category") == "probable" else "SEC"
+        else:
+            symbol = "❌"
+            label = "PLUJA" if entry.get("rain_category") == "probable" else "SEC"
         logger.info(
             f"  {symbol} {pred_time.strftime('%H:%M')} → "
-            f"Predit: {'PLUJA' if predicted_rain else 'SEC'} ({entry['probability_pct']}%) | "
+            f"Predit: {label} ({entry['probability_pct']}%) | "
             f"Real: {'PLUJA' if actual_rain else 'SEC'} ({rain_mm:.1f}mm)"
         )
 
