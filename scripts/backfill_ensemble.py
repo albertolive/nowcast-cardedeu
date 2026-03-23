@@ -43,10 +43,8 @@ logger = logging.getLogger(__name__)
 SESSION = create_session()
 
 CACHE_PATH = os.path.join(config.DATA_RAW_DIR, "ensemble_historical.parquet")
-HISTORICAL_FORECAST_URL = "https://historical-forecast-api.open-meteo.com/v1/forecast"
+HISTORICAL_FORECAST_URL = config.OPEN_METEO_HISTORICAL_FORECAST_URL
 
-ENSEMBLE_MODELS = ["ecmwf_ifs025", "gfs_global", "icon_global", "meteofrance_arome_france0025"]
-RAIN_THRESHOLD = 0.1  # mm in 6h for a model to "predict rain"
 CHUNK_DAYS = 90
 API_DELAY = 1.0  # seconds between calls
 
@@ -60,7 +58,7 @@ def fetch_ensemble_chunk(start_date: date, end_date: date) -> pd.DataFrame:
         "end_date": end_date.isoformat(),
         "hourly": "precipitation,temperature_2m",
         "timezone": "Europe/Madrid",
-        "models": ",".join(ENSEMBLE_MODELS),
+        "models": ",".join(config.ENSEMBLE_MODELS),
     }
 
     r = SESSION.get(HISTORICAL_FORECAST_URL, params=params, timeout=60)
@@ -88,7 +86,7 @@ def compute_ensemble_features(df: pd.DataFrame) -> pd.DataFrame:
     # Get precipitation columns for each model
     precip_cols = {}
     temp_cols = {}
-    for model in ENSEMBLE_MODELS:
+    for model in config.ENSEMBLE_MODELS:
         pc = f"precipitation_{model}"
         tc = f"temperature_2m_{model}"
         if pc in df.columns:
@@ -133,7 +131,7 @@ def compute_ensemble_features(df: pd.DataFrame) -> pd.DataFrame:
             })
             continue
 
-        rain_models = sum(1 for p in model_precip_6h if p >= RAIN_THRESHOLD)
+        rain_models = sum(1 for p in model_precip_6h if p >= config.ENSEMBLE_RAIN_THRESHOLD_MM)
 
         rows.append({
             "datetime": datetimes[i],

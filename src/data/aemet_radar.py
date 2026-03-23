@@ -19,7 +19,6 @@ from datetime import datetime, timezone
 from typing import Optional
 
 import numpy as np
-import requests
 
 import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
@@ -31,8 +30,6 @@ from src.data.aemet_cache import get_cached, set_cached, RADAR_TTL
 logger = logging.getLogger(__name__)
 
 SESSION = create_session({"api_key": config.AEMET_API_KEY})
-
-AEMET_BASE = "https://opendata.aemet.es/opendata/api"
 
 
 # ── Paràmetres del radar de Barcelona ──
@@ -70,7 +67,7 @@ def _aemet_fetch_url(endpoint: str) -> Optional[str]:
     if not config.AEMET_API_KEY:
         return None
 
-    r = SESSION.get(f"{AEMET_BASE}{endpoint}", timeout=15)
+    r = SESSION.get(f"{config.AEMET_BASE_URL}{endpoint}", timeout=15)
     r.raise_for_status()
     meta = r.json()
 

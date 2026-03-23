@@ -8,7 +8,6 @@ import logging
 from datetime import datetime
 
 import numpy as np
-import requests
 
 import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
@@ -18,9 +17,6 @@ from src.data._http import create_session
 logger = logging.getLogger(__name__)
 
 SESSION = create_session()
-
-ENSEMBLE_URL = "https://api.open-meteo.com/v1/forecast"
-ENSEMBLE_MODELS = ["ecmwf_ifs025", "gfs_global", "icon_global", "meteofrance_arome_france0025"]
 
 
 def fetch_ensemble_agreement() -> dict:
@@ -41,7 +37,7 @@ def fetch_ensemble_agreement() -> dict:
         model_precip_6h = []
         model_temps = []
 
-        for model in ENSEMBLE_MODELS:
+        for model in config.ENSEMBLE_MODELS:
             params = {
                 "latitude": config.LATITUDE,
                 "longitude": config.LONGITUDE,
@@ -50,7 +46,7 @@ def fetch_ensemble_agreement() -> dict:
                 "forecast_hours": 6,
                 "models": model,
             }
-            r = SESSION.get(ENSEMBLE_URL, params=params, timeout=15)
+            r = SESSION.get(config.OPEN_METEO_FORECAST_URL, params=params, timeout=15)
             r.raise_for_status()
             data = r.json()
 
@@ -67,7 +63,7 @@ def fetch_ensemble_agreement() -> dict:
                 model_temps.append(temp_vals[0])
 
         n_models = len(model_precip_6h)
-        rain_models = sum(1 for p in model_precip_6h if p >= 0.1)
+        rain_models = sum(1 for p in model_precip_6h if p >= config.ENSEMBLE_RAIN_THRESHOLD_MM)
 
         result = {
             "ensemble_rain_agreement": rain_models / n_models if n_models > 0 else 0.0,

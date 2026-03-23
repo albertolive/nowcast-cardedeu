@@ -40,7 +40,7 @@ def predict_now() -> dict:
     station_df = fetch_series(hours=24)
 
     logger.info("Obtenint previsió d'Open-Meteo...")
-    forecast_df = fetch_forecast(hours_ahead=48)
+    forecast_df = fetch_forecast(hours_ahead=48, past_hours=12)
 
     logger.info("Obtenint acord entre models (Ensemble)...")
     ensemble_data = fetch_ensemble_agreement()
