@@ -271,7 +271,7 @@ function renderPrediction(latest, history) {
           <div class="pred-legend-section">
             <span class="pred-legend-heading">Resultat</span>
             <span>✅ <strong>Encert</strong> — Predicció segura correcta</span>
-            <span>🔸 <strong>Encert/Error</strong> — Predicció incerta (no compta a l'accuracy)</span>
+            <span>🔸 <strong>Encert/Error</strong> — Predicció incerta (no compta al percentatge d'encerts)</span>
             <span>❌ <strong>Error</strong> — Predicció segura incorrecta</span>
             <span>⏳ <strong>Pendent</strong> — Encara no verificada</span>
           </div>

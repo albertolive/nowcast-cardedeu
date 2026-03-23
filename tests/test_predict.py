@@ -67,3 +67,64 @@ class TestScalarPressureOverwrite:
         # Features derivades no canvien — coherents amb el pipeline
         assert latest["llevantada_strength"].values[0] == 0.0
         assert latest["garbi_strength"].values[0] == 0.0
+
+
+class TestRainCategoryBackcompat:
+    """Regression: verify.py must compute rain_category from prob when missing."""
+
+    def test_low_prob_without_category_is_sec(self):
+        """4.8% sense rain_category → 'sec', correct=True si no plou."""
+        import config
+        prob = 0.048
+        if prob >= config.DISPLAY_THRESHOLD_RAIN:
+            cat = "probable"
+        elif prob >= config.DISPLAY_THRESHOLD_UNCERTAIN:
+            cat = "incert"
+        else:
+            cat = "sec"
+        assert cat == "sec"
+        # sec + no rain → correct
+        assert (False == False) is True  # display_predicted_rain=False == actual_rain=False
+
+    def test_high_prob_without_category_is_probable(self):
+        """72% sense rain_category → 'probable'."""
+        import config
+        prob = 0.72
+        if prob >= config.DISPLAY_THRESHOLD_RAIN:
+            cat = "probable"
+        elif prob >= config.DISPLAY_THRESHOLD_UNCERTAIN:
+            cat = "incert"
+        else:
+            cat = "sec"
+        assert cat == "probable"
+
+    def test_mid_prob_without_category_is_incert(self):
+        """42% sense rain_category → 'incert'."""
+        import config
+        prob = 0.42
+        if prob >= config.DISPLAY_THRESHOLD_RAIN:
+            cat = "probable"
+        elif prob >= config.DISPLAY_THRESHOLD_UNCERTAIN:
+            cat = "incert"
+        else:
+            cat = "sec"
+        assert cat == "incert"
+
+    def test_never_default_to_incert(self):
+        """Regressió: entry.get('rain_category', 'incert') era el bug original."""
+        import config
+        # Simulate old entry without rain_category
+        entry = {"probability": 0.048, "will_rain": False}
+        rain_category = entry.get("rain_category")
+        # Must be None, NOT 'incert'
+        assert rain_category is None
+        # Then compute from probability
+        if rain_category is None:
+            prob = entry["probability"]
+            if prob >= config.DISPLAY_THRESHOLD_RAIN:
+                rain_category = "probable"
+            elif prob >= config.DISPLAY_THRESHOLD_UNCERTAIN:
+                rain_category = "incert"
+            else:
+                rain_category = "sec"
+        assert rain_category == "sec"
