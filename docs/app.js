@@ -257,6 +257,24 @@ function renderPrediction(latest, history) {
       <p class="history-subtitle">
         Comprovem cada predicció amb la pluja que realment va caure. Clica un dia per veure el detall.
       </p>
+      <div class="pred-legend">
+        <div class="pred-legend-title">Com llegir les prediccions:</div>
+        <div class="pred-legend-grid">
+          <div class="pred-legend-section">
+            <span class="pred-legend-heading">Vam dir</span>
+            <span>☀️ <strong>No plourà</strong> — Probabilitat &lt; 30%</span>
+            <span>🌤️ <strong>Incert</strong> — Entre 30% i 65%</span>
+            <span>🌧️ <strong>Pluja probable</strong> — Probabilitat ≥ 65%</span>
+          </div>
+          <div class="pred-legend-section">
+            <span class="pred-legend-heading">Resultat</span>
+            <span>✅ <strong>Encert</strong> — Predicció segura correcta</span>
+            <span>🔸 <strong>Encert/Error</strong> — Predicció incerta (no compta a l'accuracy)</span>
+            <span>❌ <strong>Error</strong> — Predicció segura incorrecta</span>
+            <span>⏳ <strong>Pendent</strong> — Encara no verificada</span>
+          </div>
+        </div>
+      </div>
       <div id="calendar-root"></div>
     </div>
   `;
