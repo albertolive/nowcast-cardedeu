@@ -3,6 +3,8 @@ const BRANCH = 'main';
 const RAW_BASE = `https://raw.githubusercontent.com/${REPO}/${BRANCH}/data`;
 const REFRESH_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
 
+import { deriveRadarViewModel } from './radar_logic.js';
+
 async function fetchJSON(filename) {
   // Try local (GitHub Pages docs/) first, fall back to raw.githubusercontent.com
   for (const base of ['.', RAW_BASE]) {
@@ -65,12 +67,12 @@ function compassLabel(deg) {
 
 function _gateSignals(d) {
   const signals = [];
-  const r = d.radar || {};
   const e = d.ensemble || {};
   const a = d.aemet || {};
   const fv = d.feature_vector || {};
-  if (r.has_echo || (r.nearest_echo_km != null && r.nearest_echo_km < 30)) {
-    signals.push('📡 Radar' + (r.nearest_echo_km != null && r.nearest_echo_km < 30 ? ' (' + r.nearest_echo_km + ' km)' : ''));
+  const radarView = deriveRadarViewModel(d);
+  if (radarView.gateSignalText) {
+    signals.push(radarView.gateSignalText);
   }
   if ((fv.lightning_count_30km || 0) > 0) signals.push('⚡ Llamps');
   const agreement = e.rain_agreement ?? (e.models_rain != null && e.total_models ? e.models_rain / e.total_models : 0);
@@ -260,62 +262,18 @@ function renderConditions(d) {
 function renderRadar(d) {
   const r = d.radar || {};
   const fv = d.feature_vector || {};
-  const q = r.quadrants || {};
   const lightning = fv.lightning_count_30km;
   const lightningText = lightning != null ? (lightning > 0 ? `⚡ ${Math.round(lightning)} detectats` : 'Cap activitat') : '—';
 
-  // RainViewer data
-  const rvHasEcho = r.has_echo || (r.nearest_echo_km != null && r.nearest_echo_km < 30 && (r.max_dbz_20km || 0) >= 10);
-  // AEMET radar data
-  const aemetHasEcho = fv.aemet_radar_has_echo > 0;
-  const aemetDbz = fv.aemet_radar_max_dbz_20km || 0;
-  const aemetDist = fv.aemet_radar_nearest_echo_km;
-  const aemetCov = fv.aemet_radar_coverage_20km;
-
-  // Use best available: prefer RainViewer (has quadrants/tracking), fall back to AEMET
-  const bestHasEcho = rvHasEcho || aemetHasEcho;
-  const bestDbz = rvHasEcho ? (r.max_dbz_20km || r.dbz || 0) : aemetDbz;
-  const bestDist = rvHasEcho ? r.nearest_echo_km : aemetDist;
-  const bestCov = rvHasEcho ? (r.coverage_20km != null ? Math.round(r.coverage_20km * 100) : null) : (aemetCov != null ? Math.round(aemetCov * 100) : null);
-  const bestSource = rvHasEcho ? 'RainViewer' : (aemetHasEcho ? 'AEMET' : null);
-
-  // Build mini compass showing which quadrants have echoes (RainViewer only)
-  const quadLabels = ['N','E','S','W'];
-  const compassParts = quadLabels.map(dir => {
-    const dbz = q[`max_dbz_${dir}`] || 0;
-    if (dbz > 5) return `<span style="color:var(--accent-blue);font-weight:700">${dir}</span>`;
-    return `<span style="color:var(--text-muted);opacity:0.3">${dir}</span>`;
-  }).join(' · ');
-  const hasQuadrants = quadLabels.some(dir => (q[`max_dbz_${dir}`] || 0) > 5);
-
-  // Nearest echo text
-  let nearestText = 'No detectada';
-  if (bestHasEcho && bestDist != null && bestDist < 30) {
-    nearestText = bestDist + ' km ' + (rvHasEcho ? (r.nearest_echo_compass || '') : '');
-  } else if (bestHasEcho && bestDist != null && bestDist >= 30) {
-    nearestText = '>' + bestDist + ' km';
-  } else if (aemetHasEcho && aemetDist != null) {
-    nearestText = aemetDist + ' km';
-  }
-
-  // Coverage text
-  const covText = bestCov != null ? bestCov + '% (radi 20 km)' : '—';
-
-  // Intensity text
-  let intensityText = 'Res detectat';
-  if (bestDbz > 0) {
-    const label = bestDbz >= 40 ? 'Forta' : bestDbz >= 25 ? 'Moderada' : 'Feble';
-    intensityText = label + ' (' + Math.round(bestDbz) + ' dBZ)';
-  }
+  const view = deriveRadarViewModel(d);
 
   // Source agreement/disagreement note
   let sourceNote = '';
-  if (!rvHasEcho && aemetHasEcho) {
-    const aLabel = aemetDbz >= 40 ? '🟥 Fort' : aemetDbz >= 25 ? '🟧 Moderat' : '🟦 Feble';
-    sourceNote = `<div class="stat-row"><span class="stat-label">Font</span><span class="stat-value" style="color:var(--accent-blue)">Radar AEMET (a ${aemetDist != null ? aemetDist + ' km' : '?'}, ${aemetCov != null ? Math.round(aemetCov * 100) + '%' : '?'} cob.)</span></div>`;
-  } else if (rvHasEcho && aemetHasEcho) {
+  if (!view.rvHasEcho && view.aemetHasEcho) {
+    sourceNote = `<div class="stat-row"><span class="stat-label">Font</span><span class="stat-value" style="color:var(--accent-blue)">Radar AEMET (a ${view.aemetDist != null ? view.aemetDist + ' km' : '?'}, ${view.aemetCovPct != null ? view.aemetCovPct + '%' : '?'} cob.)</span></div>`;
+  } else if (view.rvHasEcho && view.aemetHasEcho) {
     sourceNote = `<div class="stat-row"><span class="stat-label">Radar AEMET</span><span class="stat-value" style="color:var(--accent-blue)">Confirma pluja</span></div>`;
-  } else if (rvHasEcho && !aemetHasEcho && fv.aemet_radar_has_echo != null) {
+  } else if (view.rvHasEcho && !view.aemetHasEcho && fv.aemet_radar_has_echo != null) {
     sourceNote = `<div class="stat-row"><span class="stat-label">Radar AEMET</span><span class="stat-value" style="color:var(--text-muted)">No confirma</span></div>`;
   }
 
@@ -339,19 +297,12 @@ function renderRadar(d) {
   if (r.storm_eta_min) approachText += ` ~${r.storm_eta_min} min`;
 
   // Direction text: use quadrant compass if available, else AEMET summary
-  let directionText = '<span style="color:var(--text-muted)">Sense pluja al radar</span>';
-  if (hasQuadrants) {
-    directionText = compassParts;
-  } else if (aemetHasEcho && aemetDist != null) {
-    directionText = `<span style="color:var(--accent-blue)">Pluja a ${aemetDist} km (AEMET)</span>`;
-  }
-
   return `
-    <div class="stat-row"><span class="stat-label">Pluja més propera</span><span class="stat-value">${nearestText}</span></div>
-    <div class="stat-row"><span class="stat-label">Zona amb pluja</span><span class="stat-value">${covText}</span></div>
+    <div class="stat-row"><span class="stat-label">Pluja més propera</span><span class="stat-value">${view.nearestText}</span></div>
+    <div class="stat-row"><span class="stat-label">Zona amb pluja</span><span class="stat-value">${view.coverageText}</span></div>
     <div class="stat-row"><span class="stat-label">S'acosta?</span><span class="stat-value">${approachText}</span></div>
-    <div class="stat-row"><span class="stat-label">Direcció</span><span class="stat-value">${directionText}</span></div>
-    <div class="stat-row"><span class="stat-label">Intensitat</span><span class="stat-value">${intensityText}</span></div>
+    <div class="stat-row"><span class="stat-label">Direcció</span><span class="stat-value">${view.directionText}</span></div>
+    <div class="stat-row"><span class="stat-label">Intensitat</span><span class="stat-value">${view.intensityText}</span></div>
     <div class="stat-row"><span class="stat-label">Llamps (30 km)</span><span class="stat-value">${lightningText}</span></div>
     ${sourceNote}
     <p class="card-hint">RainViewer (global) + AEMET (nacional) — dos radars independents cada 10 min</p>
@@ -381,7 +332,8 @@ function _mlCorrectionSummary(d) {
   const models = d.ensemble?.models_rain || 0;
   const total = d.ensemble?.total_models || 4;
   const aemet = d.aemet?.prob_precip;
-  const radar = d.radar?.approaching || d.radar?.has_echo;
+  const radarView = deriveRadarViewModel(d);
+  const radar = radarView.bestHasEcho;
 
   // Estimate what raw NWP consensus suggests
   let nwpPct = null;
@@ -439,32 +391,12 @@ function renderWhyPrediction(d) {
   // Build source votes
   const votes = [];
 
-  // Radar — merge both sources into a single "best radar" vote
-  const rvRain = r.approaching || r.has_echo || (r.dbz > 5);
-  const aemetRadarRain = fv.aemet_radar_has_echo > 0;
-  const anyRadarRain = rvRain || aemetRadarRain;
-  let radarDetail;
-  if (rvRain && aemetRadarRain) {
-    radarDetail = r.approaching
-      ? `Pluja a ${r.nearest_echo_km || '?'} km, acostant-se (confirmat per 2 radars)`
-      : `Pluja detectada per 2 radars independents`;
-  } else if (rvRain) {
-    radarDetail = r.approaching
-      ? `Pluja a ${r.nearest_echo_km || '?'} km, acostant-se`
-      : `Pluja detectada a ${r.nearest_echo_km || '?'} km`;
-  } else if (aemetRadarRain) {
-    const aDbz = fv.aemet_radar_max_dbz_20km || 0;
-    const aKm = fv.aemet_radar_nearest_echo_km;
-    const aCov = fv.aemet_radar_coverage_20km;
-    const intLabel = aDbz >= 40 ? 'forta' : aDbz >= 25 ? 'moderada' : 'feble';
-    radarDetail = `Pluja ${intLabel} a ${aKm != null ? aKm + ' km' : '?'}${aCov != null ? ', ' + Math.round(aCov * 100) + '% cobertura' : ''} (AEMET)`;
-  } else {
-    radarDetail = 'Sense pluja en 30 km';
-  }
+  // Radar — uses shared view model (same logic as radar card)
+  const radarView = deriveRadarViewModel(d);
   votes.push({
     name: 'Radar',
-    rain: anyRadarRain,
-    detail: radarDetail
+    rain: radarView.radarVoteRain,
+    detail: radarView.radarVoteDetail
   });
 
   // NWP models
