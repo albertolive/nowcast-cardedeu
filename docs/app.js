@@ -215,9 +215,11 @@ function renderPrediction(latest, history) {
     <!-- Probability chart -->
     <div class="chart-card">
       <h2>📈 Com ha canviat la probabilitat (últimes 24h)</h2>
-      <p class="chart-hint">Toca o passa el ratolí per veure els valors</p>
-      <div class="chart-container">
-        <canvas id="probChart"></canvas>
+      <div class="chart-card-body">
+        <p class="chart-hint">Toca o passa el ratolí per veure els valors</p>
+        <div class="chart-container">
+          <canvas id="probChart"></canvas>
+        </div>
       </div>
     </div>
 
@@ -225,25 +227,25 @@ function renderPrediction(latest, history) {
       <!-- Conditions -->
       <div class="info-card">
         <h3>🌡️ Condicions actuals</h3>
-        ${renderConditions(latest)}
+        <div class="info-card-body">${renderConditions(latest)}</div>
       </div>
 
       <!-- Radar -->
       <div class="info-card">
         <h3>📡 Radar</h3>
-        ${renderRadar(latest)}
+        <div class="info-card-body">${renderRadar(latest)}</div>
       </div>
 
       <!-- Atmospheric -->
       <div class="info-card">
         <h3>🌀 Atmosfera</h3>
-        ${renderAtmosphere(latest)}
+        <div class="info-card-body">${renderAtmosphere(latest)}</div>
       </div>
 
       <!-- Why this prediction -->
       <div class="info-card" id="sources-card">
-        <h3>�️ Què diuen les fonts?</h3>
-        ${renderWhyPrediction(latest)}
+        <h3>💎 Què diuen les fonts?</h3>
+        <div class="info-card-body">${renderWhyPrediction(latest)}</div>
       </div>
     </div>
 
@@ -259,25 +261,27 @@ function renderPrediction(latest, history) {
       <p class="history-subtitle">
         Comprovem cada predicció amb la pluja que realment va caure. Clica un dia per veure el detall.
       </p>
-      <details class="pred-legend">
-        <summary class="pred-legend-title">Com llegir les prediccions</summary>
-        <div class="pred-legend-grid">
-          <div class="pred-legend-section">
-            <span class="pred-legend-heading">Vam dir</span>
-            <span>☀️ <strong>No plourà</strong> — Probabilitat &lt; 30%</span>
-            <span>🌤️ <strong>Incert</strong> — Entre 30% i 65%</span>
-            <span>🌧️ <strong>Pluja probable</strong> — Probabilitat ≥ 65%</span>
+      <div class="history-card-body">
+        <details class="pred-legend">
+          <summary class="pred-legend-title">Com llegir les prediccions</summary>
+          <div class="pred-legend-grid">
+            <div class="pred-legend-section">
+              <span class="pred-legend-heading">Vam dir</span>
+              <span>☀️ <strong>No plourà</strong> — Probabilitat &lt; 30%</span>
+              <span>🌤️ <strong>Incert</strong> — Entre 30% i 65%</span>
+              <span>🌧️ <strong>Pluja probable</strong> — Probabilitat ≥ 65%</span>
+            </div>
+            <div class="pred-legend-section">
+              <span class="pred-legend-heading">Resultat</span>
+              <span>✅ <strong>Encert</strong> — Predicció segura correcta</span>
+              <span>🔸 <strong>Encert/Error</strong> — Predicció incerta (no compta al percentatge d'encerts)</span>
+              <span>❌ <strong>Error</strong> — Predicció segura incorrecta</span>
+              <span>⏳ <strong>Pendent</strong> — Encara no verificada</span>
+            </div>
           </div>
-          <div class="pred-legend-section">
-            <span class="pred-legend-heading">Resultat</span>
-            <span>✅ <strong>Encert</strong> — Predicció segura correcta</span>
-            <span>🔸 <strong>Encert/Error</strong> — Predicció incerta (no compta al percentatge d'encerts)</span>
-            <span>❌ <strong>Error</strong> — Predicció segura incorrecta</span>
-            <span>⏳ <strong>Pendent</strong> — Encara no verificada</span>
-          </div>
-        </div>
-      </details>
-      <div id="calendar-root"></div>
+        </details>
+        <div id="calendar-root"></div>
+      </div>
     </div>
   `;
 

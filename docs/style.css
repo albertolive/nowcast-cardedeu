@@ -64,6 +64,11 @@ header .subtitle {
   padding: 32px;
   margin-bottom: 24px;
   text-align: center;
+  transition: border-color 0.2s;
+}
+
+.prediction-card:hover {
+  border-color: rgba(88, 166, 255, 0.2);
 }
 
 .prediction-question {
@@ -162,14 +167,27 @@ header .subtitle {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 16px;
-  padding: 24px;
+  padding: 0;
   margin-bottom: 24px;
+  overflow: hidden;
+  transition: border-color 0.2s;
+}
+
+.chart-card:hover {
+  border-color: rgba(88, 166, 255, 0.2);
 }
 
 .chart-card h2 {
-  font-size: 16px;
-  font-weight: 600;
-  margin-bottom: 16px;
+  font-size: 14px;
+  font-weight: 700;
+  margin: 0;
+  padding: 14px 20px;
+  background: var(--surface2);
+  border-bottom: 1px solid var(--border);
+}
+
+.chart-card-body {
+  padding: 20px;
 }
 
 .chart-container {
@@ -199,46 +217,66 @@ canvas { width: 100% !important; height: 100% !important; }
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 12px;
-  padding: 20px;
+  padding: 0;
+  overflow: hidden;
+  transition: border-color 0.2s;
+}
+
+.info-card:hover {
+  border-color: rgba(88, 166, 255, 0.2);
 }
 
 .info-card h3 {
-  font-size: 13px;
-  font-weight: 600;
+  font-size: 12px;
+  font-weight: 700;
   color: var(--text-muted);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-bottom: 14px;
+  letter-spacing: 0.8px;
+  margin: 0;
+  padding: 12px 16px;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
+  background: var(--surface2);
+  border-bottom: 1px solid var(--border);
+}
+
+.info-card-body {
+  padding: 14px 16px 16px;
 }
 
 .stat-row {
   display: flex;
   justify-content: space-between;
-  padding: 6px 0;
-  border-bottom: 1px solid rgba(48, 54, 61, 0.5);
-  font-size: 14px;
+  align-items: baseline;
+  padding: 7px 0;
+  border-bottom: 1px solid rgba(48, 54, 61, 0.35);
+  font-size: 13px;
 }
 
 .stat-row:last-child { border-bottom: none; }
-.stat-row .stat-label { color: var(--text-muted); }
-.stat-row .stat-value { font-weight: 600; }
+.stat-row .stat-label { color: var(--text-muted); font-size: 13px; }
+.stat-row .stat-value { font-weight: 600; text-align: right; max-width: 60%; }
 
 .regime-desc {
-  font-size: 12px;
+  font-size: 11px;
   color: var(--text-muted);
-  padding: 2px 0 6px;
+  padding: 4px 8px;
+  margin: 2px 0 6px;
   line-height: 1.4;
-  border-bottom: 1px solid rgba(48, 54, 61, 0.5);
+  background: rgba(48, 54, 61, 0.25);
+  border-radius: 6px;
+  border-bottom: none;
 }
 
 .card-hint {
   font-size: 11px;
   color: var(--text-muted);
-  margin-top: 8px;
-  opacity: 0.7;
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(48, 54, 61, 0.25);
+  opacity: 0.6;
+  line-height: 1.4;
 }
 
 .card-intro {
@@ -251,11 +289,11 @@ canvas { width: 100% !important; height: 100% !important; }
 .disagreement {
   font-size: 12px;
   color: var(--accent-yellow);
-  background: rgba(210, 153, 34, 0.08);
-  border-left: 3px solid var(--accent-yellow);
+  background: rgba(210, 153, 34, 0.06);
+  border: 1px solid rgba(210, 153, 34, 0.15);
   padding: 8px 10px;
   margin-top: 10px;
-  border-radius: 0 6px 6px 0;
+  border-radius: 6px;
   line-height: 1.5;
 }
 
@@ -265,6 +303,7 @@ canvas { width: 100% !important; height: 100% !important; }
   align-items: center;
   gap: 6px;
   padding: 8px 0 2px;
+  margin-top: 4px;
   font-size: 12px;
   color: var(--accent-blue);
   cursor: pointer;
@@ -272,6 +311,8 @@ canvas { width: 100% !important; height: 100% !important; }
   background: none;
   font-family: inherit;
   width: 100%;
+  border-top: 1px solid rgba(48, 54, 61, 0.25);
+  padding-top: 10px;
 }
 
 .expand-toggle:hover { opacity: 0.8; }
@@ -318,25 +359,25 @@ canvas { width: 100% !important; height: 100% !important; }
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 8px 0;
-  border-bottom: 1px solid rgba(48, 54, 61, 0.4);
+  padding: 7px 0;
+  border-bottom: 1px solid rgba(48, 54, 61, 0.35);
 }
 
 .source-vote:last-child { border-bottom: none; }
 
 .vote-badge {
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 16px;
+  font-size: 14px;
   flex-shrink: 0;
 }
 
-.vote-badge.rain { background: rgba(88, 166, 255, 0.12); }
-.vote-badge.no-rain { background: rgba(63, 185, 80, 0.1); }
+.vote-badge.rain { background: rgba(88, 166, 255, 0.1); }
+.vote-badge.no-rain { background: rgba(63, 185, 80, 0.08); }
 
 .vote-info {
   display: flex;
@@ -359,20 +400,20 @@ canvas { width: 100% !important; height: 100% !important; }
 
 /* Vote tally bar */
 .vote-tally {
-  margin: 12px 0 10px;
+  margin: 10px 0 8px;
 }
 
 .tally-bar {
-  height: 6px;
-  background: rgba(63, 185, 80, 0.25);
-  border-radius: 3px;
+  height: 4px;
+  background: rgba(63, 185, 80, 0.2);
+  border-radius: 2px;
   overflow: hidden;
 }
 
 .tally-rain {
   height: 100%;
   background: var(--accent-blue);
-  border-radius: 3px;
+  border-radius: 2px;
   transition: width 0.5s ease;
 }
 
@@ -386,19 +427,19 @@ canvas { width: 100% !important; height: 100% !important; }
 
 /* ML verdict in sources card */
 .ml-verdict {
-  background: linear-gradient(135deg, rgba(88, 166, 255, 0.06), rgba(88, 166, 255, 0.02));
-  border-left: 3px solid var(--accent-blue);
-  border-radius: 0 8px 8px 0;
+  background: rgba(88, 166, 255, 0.04);
+  border: 1px solid rgba(88, 166, 255, 0.12);
+  border-radius: 8px;
   padding: 10px 12px;
-  margin: 4px 0 10px;
+  margin: 6px 0 10px;
   display: flex;
   align-items: flex-start;
   gap: 10px;
 }
 
 .ml-verdict-badge {
-  background: rgba(88, 166, 255, 0.15);
-  border-radius: 8px;
+  background: rgba(88, 166, 255, 0.12);
+  border-radius: 7px;
   padding: 4px 10px;
   font-size: 14px;
   font-weight: 700;
@@ -430,6 +471,11 @@ canvas { width: 100% !important; height: 100% !important; }
   margin-bottom: 24px;
   font-size: 12px;
   color: var(--text-muted);
+  transition: border-color 0.2s;
+}
+
+.sources-bar:hover {
+  border-color: rgba(88, 166, 255, 0.2);
 }
 
 .sources-bar .source-item {
@@ -452,9 +498,9 @@ canvas { width: 100% !important; height: 100% !important; }
   font-size: 13px;
   line-height: 1.55;
   color: var(--text-muted);
-  background: linear-gradient(135deg, rgba(88, 166, 255, 0.06), rgba(88, 166, 255, 0.02));
-  border-left: 3px solid var(--accent-blue);
-  border-radius: 0 10px 10px 0;
+  background: rgba(88, 166, 255, 0.04);
+  border: 1px solid rgba(88, 166, 255, 0.12);
+  border-radius: 10px;
   padding: 12px 16px;
   margin: 16px auto 8px;
   text-align: left;
@@ -555,20 +601,35 @@ footer a:hover { text-decoration: underline; }
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 16px;
-  padding: 24px;
+  padding: 0;
   margin-bottom: 24px;
+  overflow: hidden;
+  transition: border-color 0.2s;
+}
+
+.history-card:hover {
+  border-color: rgba(88, 166, 255, 0.2);
 }
 
 .history-card h2 {
-  font-size: 16px;
-  font-weight: 600;
-  margin-bottom: 4px;
+  font-size: 14px;
+  font-weight: 700;
+  margin: 0;
+  padding: 14px 20px 6px;
+  background: var(--surface2);
 }
 
 .history-subtitle {
   color: var(--text-muted);
-  font-size: 13px;
-  margin-bottom: 20px;
+  font-size: 12px;
+  margin: 0;
+  padding: 0 20px 14px;
+  background: var(--surface2);
+  border-bottom: 1px solid var(--border);
+}
+
+.history-card-body {
+  padding: 20px;
 }
 
 /* Month nav */
@@ -897,12 +958,16 @@ footer a:hover { text-decoration: underline; }
   .verdict { font-size: 20px; }
 
   .grid { gap: 12px; }
-  .info-card { padding: 16px; }
+  .info-card h3 { padding: 10px 14px; }
+  .info-card-body { padding: 12px 14px 14px; }
 
-  .chart-card { padding: 20px 16px; }
+  .chart-card h2 { padding: 12px 16px; }
+  .chart-card-body { padding: 16px; }
   .chart-container { height: 180px; }
 
-  .history-card { padding: 20px 16px; }
+  .history-card h2 { padding: 12px 16px 4px; }
+  .history-subtitle { padding: 0 16px 12px; }
+  .history-card-body { padding: 16px; }
 
   .pred-row { padding: 8px 12px; gap: 10px; }
   .pred-header { padding: 8px 12px; }
@@ -935,20 +1000,23 @@ footer a:hover { text-decoration: underline; }
 
   .prediction-meta { font-size: 11px; }
 
-  .chart-card { padding: 16px 12px; border-radius: 12px; margin-bottom: 16px; }
-  .chart-card h2 { font-size: 14px; }
+  .chart-card { margin-bottom: 16px; }
+  .chart-card h2 { font-size: 13px; padding: 10px 12px; }
+  .chart-card-body { padding: 12px; }
   .chart-container { height: 160px; }
 
   .grid { grid-template-columns: 1fr; gap: 12px; margin-bottom: 12px; }
-  .info-card { padding: 14px; border-radius: 10px; }
-  .info-card h3 { font-size: 12px; margin-bottom: 10px; }
+  .info-card { border-radius: 10px; }
+  .info-card h3 { font-size: 11px; padding: 10px 12px; }
+  .info-card-body { padding: 10px 12px 14px; }
   .stat-row { font-size: 13px; padding: 5px 0; }
 
   .sources-bar { padding: 10px 12px; gap: 10px; font-size: 11px; border-radius: 8px; margin-bottom: 16px; }
 
-  .history-card { padding: 16px 12px; border-radius: 12px; margin-bottom: 16px; }
-  .history-card h2 { font-size: 14px; }
-  .history-subtitle { font-size: 12px; margin-bottom: 14px; }
+  .history-card { border-radius: 12px; margin-bottom: 16px; }
+  .history-card h2 { font-size: 13px; padding: 10px 12px 3px; }
+  .history-subtitle { font-size: 11px; padding: 0 12px 10px; }
+  .history-card-body { padding: 12px; }
 
   .cal-nav-btn { padding: 5px 10px; font-size: 12px; }
   .cal-month-label { font-size: 14px; }
