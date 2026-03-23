@@ -259,8 +259,8 @@ function renderPrediction(latest, history) {
       <p class="history-subtitle">
         Comprovem cada predicció amb la pluja que realment va caure. Clica un dia per veure el detall.
       </p>
-      <div class="pred-legend">
-        <div class="pred-legend-title">Com llegir les prediccions:</div>
+      <details class="pred-legend">
+        <summary class="pred-legend-title">Com llegir les prediccions</summary>
         <div class="pred-legend-grid">
           <div class="pred-legend-section">
             <span class="pred-legend-heading">Vam dir</span>
@@ -276,7 +276,7 @@ function renderPrediction(latest, history) {
             <span>⏳ <strong>Pendent</strong> — Encara no verificada</span>
           </div>
         </div>
-      </div>
+      </details>
       <div id="calendar-root"></div>
     </div>
   `;
