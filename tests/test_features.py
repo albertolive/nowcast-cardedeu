@@ -18,9 +18,22 @@ import config
 # ── Helpers to create synthetic data ──
 
 def _make_forecast_df(hours: int = 24) -> pd.DataFrame:
-    """Creates a realistic forecast DataFrame with varying values."""
+    """Creates a realistic forecast DataFrame with varying values (future-only)."""
     now = datetime.now().replace(minute=0, second=0, microsecond=0)
     times = [now + timedelta(hours=i) for i in range(hours)]
+    return _build_forecast_rows(times)
+
+
+def _make_forecast_df_with_past(past_hours: int = 12, future_hours: int = 12) -> pd.DataFrame:
+    """Creates a forecast DataFrame covering past+future hours (simulates past_hours param)."""
+    now = datetime.now().replace(minute=0, second=0, microsecond=0)
+    times = [now + timedelta(hours=i) for i in range(-past_hours, future_hours)]
+    return _build_forecast_rows(times)
+
+
+def _build_forecast_rows(times) -> pd.DataFrame:
+    """Builds forecast rows from a list of datetime objects."""
+    hours = len(times)
     df = pd.DataFrame({
         "datetime": times,
         "temperature_2m": np.linspace(15, 25, hours),
@@ -151,6 +164,68 @@ class TestBuildFeaturesFromRealtime:
 
         assert not result.empty, "Should produce features"
         assert "datetime" in result.columns
+
+    def test_diff_features_with_past_forecast(self):
+        """REGRESSION: diff(3) features must NOT be NaN when forecast includes past hours.
+        Bug: fetch_forecast was future-only, so merge_asof left past station rows
+        with NaN for forecast columns → .diff(3) on last row = NaN.
+        Fix: fetch_forecast now includes past_hours=12."""
+        from src.features.engineering import build_features_from_realtime, FEATURE_COLUMNS
+
+        station_df = _make_station_df(hours=24)
+        # Simulate forecast with past_hours=12: covers -12h to +12h
+        forecast_df = _make_forecast_df_with_past(past_hours=12, future_hours=12)
+        # Add pressure levels covering past+future
+        pl_df = _make_pressure_hourly_df(hours=36, start_offset=-12)
+        forecast_df["datetime"] = pd.to_datetime(forecast_df["datetime"])
+        pl_df["datetime"] = pd.to_datetime(pl_df["datetime"])
+        pl_cols = [c for c in pl_df.columns if c != "datetime" and c not in forecast_df.columns]
+        if pl_cols:
+            forecast_df = pd.merge_asof(
+                forecast_df.sort_values("datetime"),
+                pl_df[["datetime"] + pl_cols].sort_values("datetime"),
+                on="datetime", direction="nearest",
+                tolerance=pd.Timedelta("1h"),
+            )
+
+        result = build_features_from_realtime(station_df, forecast_df)
+        assert not result.empty
+
+        latest = result.iloc[-1]
+        # These diff(3) features MUST be non-NaN with past forecast data
+        must_be_populated = [
+            "vpd_change_3h", "cloud_change_3h", "weather_code_change_3h",
+            "nwp_rain_trend_3h", "tcwv_change_3h", "blh_change_3h",
+            "rh_700_change_3h", "temp_850_change_3h", "gph_850_change_3h",
+            "cape_change_3h",
+        ]
+        missing = [f for f in must_be_populated if f in latest.index and pd.isna(latest[f])]
+        assert len(missing) == 0, (
+            f"diff(3) features still NaN with past forecast data: {missing}. "
+            f"This means forecast past hours are not reaching the station merge."
+        )
+
+    def test_diff_features_nan_without_past_forecast(self):
+        """Confirms the bug: future-only forecast → diff(3) features are NaN."""
+        from src.features.engineering import build_features_from_realtime
+
+        station_df = _make_station_df(hours=24)
+        # Future-only forecast (the old buggy behavior)
+        forecast_df = _make_forecast_df(hours=12)
+
+        result = build_features_from_realtime(station_df, forecast_df)
+        if result.empty:
+            pytest.skip("Could not build features")
+
+        latest = result.iloc[-1]
+        # With future-only forecast, these SHOULD be NaN (the bug we're documenting)
+        forecast_diff_features = ["vpd_change_3h", "cloud_change_3h"]
+        nan_count = sum(1 for f in forecast_diff_features
+                        if f in latest.index and pd.isna(latest[f]))
+        assert nan_count > 0, (
+            "Expected diff(3) features to be NaN with future-only forecast — "
+            "test setup may be wrong (forecast overlapping with station hours?)"
+        )
 
     def test_empty_station_does_not_crash(self):
         """When MeteoCardedeu is down, must NOT crash — use forecast only."""

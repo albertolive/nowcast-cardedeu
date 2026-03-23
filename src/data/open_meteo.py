@@ -8,7 +8,6 @@ from datetime import date, timedelta
 from typing import Optional
 
 import pandas as pd
-import requests
 
 import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
@@ -79,10 +78,11 @@ def fetch_historical_hourly(
     return result
 
 
-def fetch_forecast(hours_ahead: int = 48) -> pd.DataFrame:
+def fetch_forecast(hours_ahead: int = 48, past_hours: int = 0) -> pd.DataFrame:
     """
     Obté la previsió actual d'Open-Meteo per a les properes `hours_ahead` hores.
     Utilitza el model "best_match" que tria el millor model disponible automàticament.
+    Si `past_hours` > 0, inclou dades passades (necessari perquè .diff(3/6) funcioni).
     """
     try:
         params = {
@@ -93,6 +93,8 @@ def fetch_forecast(hours_ahead: int = 48) -> pd.DataFrame:
             "forecast_hours": hours_ahead,
             "models": ",".join(config.OPEN_METEO_FORECAST_MODELS),
         }
+        if past_hours > 0:
+            params["past_hours"] = past_hours
 
         r = SESSION.get(config.OPEN_METEO_FORECAST_URL, params=params, timeout=30)
         r.raise_for_status()
@@ -530,7 +532,7 @@ def fetch_sst_forecast() -> dict:
 
 # ── SST històric — NOAA OISST v2.1 (ERDDAP) ──
 
-NOAA_ERDDAP_OISST_CSV = "https://coastwatch.pfeg.noaa.gov/erddap/griddap/ncdcOisst21Agg.csv"
+NOAA_ERDDAP_OISST_CSV = config.NOAA_ERDDAP_SST_URL
 
 
 def fetch_historical_sst(
@@ -568,7 +570,7 @@ def fetch_historical_sst(
         r = None
         for attempt in range(3):
             try:
-                r = requests.get(NOAA_ERDDAP_OISST_CSV + constraint, timeout=120)
+                r = SESSION.get(NOAA_ERDDAP_OISST_CSV + constraint, timeout=120)
                 if r.status_code == 200:
                     break
                 if r.status_code == 429:

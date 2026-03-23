@@ -31,6 +31,13 @@ OPEN_METEO_MARINE_URL = "https://marine-api.open-meteo.com/v1/marine"
 SEA_LATITUDE = 41.4
 SEA_LONGITUDE = 2.5
 
+# Models d'ensemble per acord NWP
+ENSEMBLE_MODELS = ["ecmwf_ifs025", "gfs_global", "icon_global", "meteofrance_arome_france0025"]
+ENSEMBLE_RAIN_THRESHOLD_MM = 0.1  # mm en 6h per considerar que un model prediu pluja
+
+# URL NOAA OISST v2.1 per SST històric
+NOAA_ERDDAP_SST_URL = "https://coastwatch.pfeg.noaa.gov/erddap/griddap/ncdcOisst21Agg.csv"
+
 # Variables horàries que demanem a Open-Meteo (forecast i històric)
 OPEN_METEO_HOURLY_VARS = [
     "temperature_2m",
@@ -114,6 +121,7 @@ XEMA_VAR_PRECIP = 35
 
 # ── AEMET OpenData API ──
 AEMET_API_KEY = os.environ.get("AEMET_API_KEY", "")
+AEMET_BASE_URL = "https://opendata.aemet.es/opendata/api"
 AEMET_MUNICIPALITY_CODE = "08052"  # Cardedeu
 
 # ── AEMET Radar regional Barcelona ──
