@@ -223,7 +223,7 @@ def fetch_aemet_radar() -> dict:
                 px_r, px_g, px_b, px_a = region[iy, ix]
                 dbz = _pixel_to_dbz(int(px_r), int(px_g), int(px_b), int(px_a))
                 dbz_map[iy, ix] = dbz
-                if dbz > 5:
+                if dbz >= config.RADAR_MIN_DBZ:
                     echo_mask[iy, ix] = True
 
         has_echo_area = echo_mask & in_radius
@@ -250,7 +250,7 @@ def fetch_aemet_radar() -> dict:
 
             result.update({
                 "aemet_radar_dbz": round(dbz_cardedeu, 1),
-                "aemet_radar_has_echo": dbz_cardedeu > 5,
+                "aemet_radar_has_echo": dbz_cardedeu >= config.RADAR_MIN_DBZ,
                 "aemet_radar_nearest_echo_km": round(nearest_km, 1),
                 "aemet_radar_nearest_echo_compass": _bearing_to_compass(nearest_bearing),
                 "aemet_radar_max_dbz_20km": round(max_dbz_20km, 1),
@@ -261,7 +261,7 @@ def fetch_aemet_radar() -> dict:
         else:
             result.update({
                 "aemet_radar_dbz": round(dbz_cardedeu, 1),
-                "aemet_radar_has_echo": dbz_cardedeu > 5,
+                "aemet_radar_has_echo": dbz_cardedeu >= config.RADAR_MIN_DBZ,
                 "aemet_radar_echoes_found": False,
                 "aemet_radar_available": True,
             })

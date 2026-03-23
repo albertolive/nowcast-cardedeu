@@ -265,7 +265,7 @@ function renderRadar(d) {
   const lightningText = lightning != null ? (lightning > 0 ? `⚡ ${Math.round(lightning)} detectats` : 'Cap activitat') : '—';
 
   // RainViewer data
-  const rvHasEcho = r.has_echo || (r.nearest_echo_km != null && r.nearest_echo_km < 30) || (r.dbz > 0);
+  const rvHasEcho = r.has_echo || (r.nearest_echo_km != null && r.nearest_echo_km < 30 && (r.max_dbz_20km || 0) >= 10);
   // AEMET radar data
   const aemetHasEcho = fv.aemet_radar_has_echo > 0;
   const aemetDbz = fv.aemet_radar_max_dbz_20km || 0;
@@ -274,9 +274,9 @@ function renderRadar(d) {
 
   // Use best available: prefer RainViewer (has quadrants/tracking), fall back to AEMET
   const bestHasEcho = rvHasEcho || aemetHasEcho;
-  const bestDbz = rvHasEcho ? (r.dbz || 0) : aemetDbz;
+  const bestDbz = rvHasEcho ? (r.max_dbz_20km || r.dbz || 0) : aemetDbz;
   const bestDist = rvHasEcho ? r.nearest_echo_km : aemetDist;
-  const bestCov = rvHasEcho ? r.coverage_20km : (aemetCov != null ? Math.round(aemetCov * 100) : null);
+  const bestCov = rvHasEcho ? (r.coverage_20km != null ? Math.round(r.coverage_20km * 100) : null) : (aemetCov != null ? Math.round(aemetCov * 100) : null);
   const bestSource = rvHasEcho ? 'RainViewer' : (aemetHasEcho ? 'AEMET' : null);
 
   // Build mini compass showing which quadrants have echoes (RainViewer only)
