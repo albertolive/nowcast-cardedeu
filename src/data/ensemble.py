@@ -118,9 +118,9 @@ def compute_forecast_bias(station_temp: float, station_hum: float,
 
             result = {
                 "forecast_temp_bias": (float(forecast_temp) - station_temp
-                                       if forecast_temp is not None and station_temp else np.nan),
+                                       if forecast_temp is not None and station_temp is not None else np.nan),
                 "forecast_humidity_bias": (float(forecast_hum) - station_hum
-                                           if forecast_hum is not None and station_hum else np.nan),
+                                           if forecast_hum is not None and station_hum is not None else np.nan),
             }
         else:
             result = {
