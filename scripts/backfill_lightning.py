@@ -15,7 +15,6 @@ Característiques:
 """
 import json
 import logging
-import math
 import os
 import sys
 import time
@@ -27,6 +26,8 @@ import requests
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 import config
+from src.data._http import create_session
+from src.data._geo import _haversine_km, _bearing_deg
 
 logging.basicConfig(
     level=logging.INFO,
@@ -34,36 +35,15 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-SESSION = requests.Session()
+SESSION = create_session()
 CACHE_PATH = os.path.join(config.DATA_PROCESSED_DIR, "lightning_cache.parquet")
 DATASET_PATH = os.path.join(config.DATA_PROCESSED_DIR, "training_dataset.parquet")
 HOURS_BACK = 3.0
-RADIUS_KM = 30.0
 API_DELAY = 0.3  # Seconds between API calls
 
 
 def _headers() -> dict:
     return {"X-Api-Key": config.METEOCAT_API_KEY}
-
-
-def _haversine_km(lat1, lon1, lat2, lon2):
-    R = 6371.0
-    dlat = math.radians(lat2 - lat1)
-    dlon = math.radians(lon2 - lon1)
-    a = (math.sin(dlat / 2) ** 2 +
-         math.cos(math.radians(lat1)) * math.cos(math.radians(lat2)) *
-         math.sin(dlon / 2) ** 2)
-    return R * 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
-
-
-def _bearing_deg(lat1, lon1, lat2, lon2):
-    dlon = math.radians(lon2 - lon1)
-    lat1r = math.radians(lat1)
-    lat2r = math.radians(lat2)
-    x = math.sin(dlon) * math.cos(lat2r)
-    y = (math.cos(lat1r) * math.sin(lat2r) -
-         math.sin(lat1r) * math.cos(lat2r) * math.cos(dlon))
-    return (math.degrees(math.atan2(x, y)) + 360) % 360
 
 
 class QuotaExhaustedError(Exception):
@@ -116,7 +96,7 @@ def parse_strikes(raw_strikes: list[dict]) -> list[dict]:
         except (ValueError, AttributeError):
             continue
         dist = _haversine_km(cardedeu_lat, cardedeu_lon, lat, lon)
-        if dist > RADIUS_KM:
+        if dist > config.RADAR_SCAN_RADIUS_KM:
             continue
         parsed.append({
             "timestamp": st.timestamp(),
@@ -146,7 +126,7 @@ def compute_features_for_hour(
         return {
             "lightning_count_30km": 0,
             "lightning_count_15km": 0,
-            "lightning_nearest_km": RADIUS_KM,
+            "lightning_nearest_km": config.RADAR_SCAN_RADIUS_KM,
             "lightning_cloud_ground": 0,
             "lightning_max_current_ka": 0.0,
             "lightning_approaching": 0,

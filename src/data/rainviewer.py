@@ -17,6 +17,7 @@ import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 import config
 from src.data._http import create_session
+from src.data._geo import _bearing_to_compass
 
 logger = logging.getLogger(__name__)
 
@@ -74,14 +75,6 @@ def _dbz_to_rain_rate(dbz: float) -> float:
         return 0.0
     z_linear = 10 ** (dbz / 10.0)
     return (z_linear / 200.0) ** (1.0 / 1.6)
-
-
-def _bearing_to_compass(bearing: float) -> str:
-    """Converteix graus (0-360) a punt cardinal (N, NE, E, SE, etc.)."""
-    directions = ["N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE",
-                   "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"]
-    idx = round(bearing / 22.5) % 16
-    return directions[idx]
 
 
 def _scan_radar_spatial(png_bytes: bytes, cx: int, cy: int,

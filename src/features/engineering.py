@@ -59,19 +59,19 @@ def _add_solar_timing_features(df: pd.DataFrame) -> pd.DataFrame:
 
     # Solar declination
     decl = np.radians(23.44) * np.sin(2 * np.pi * (doy - 81) / 365)
-    lat_rad = np.radians(41.633)
+    lat_rad = np.radians(config.LATITUDE)
 
     # Half day length in hours
     cos_ha = (-np.tan(lat_rad) * np.tan(decl)).clip(-1, 1)
     half_day = np.degrees(np.arccos(cos_ha)) / 15
 
     # Solar noon in Europe/Madrid local time
-    # Longitude 2.364°E → solar noon at UTC 11:84h (12 - 2.364/15)
+    # Longitude config.LONGITUDE°E → solar noon UTC offset
     # CET (UTC+1) ≈ 12:51 local, CEST (UTC+2) ≈ 13:51 local
     # Approximate DST: months 4-9 = CEST (+2), rest = CET (+1)
     month = dt.dt.month
     tz_offset = np.where((month >= 4) & (month <= 9), 2.0, 1.0)
-    solar_noon_local = (12.0 - 2.364 / 15) + tz_offset
+    solar_noon_local = (12.0 - config.LONGITUDE / 15) + tz_offset
 
     sunrise = solar_noon_local - half_day
     df["hours_since_sunrise"] = (hour_frac - sunrise).clip(lower=0)

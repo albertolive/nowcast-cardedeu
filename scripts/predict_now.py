@@ -12,38 +12,6 @@ import sys
 
 import numpy as np
 
-
-import math
-
-
-def _sanitize_nans(obj):
-    """Recursively replace NaN/Infinity with None for valid JSON."""
-    if isinstance(obj, float) and (math.isnan(obj) or math.isinf(obj)):
-        return None
-    if isinstance(obj, dict):
-        return {k: _sanitize_nans(v) for k, v in obj.items()}
-    if isinstance(obj, (list, tuple)):
-        return [_sanitize_nans(v) for v in obj]
-    return obj
-
-
-class _NumpyEncoder(json.JSONEncoder):
-    """Handle numpy types when serialising prediction results.
-
-    Converts NaN/Infinity to None (JSON null) to produce valid JSON.
-    """
-    def default(self, o):
-        if isinstance(o, (np.bool_, np.integer)):
-            return int(o)
-        if isinstance(o, np.floating):
-            v = float(o)
-            return None if math.isnan(v) or math.isinf(v) else v
-        if isinstance(o, np.ndarray):
-            return o.tolist()
-        if isinstance(o, float) and (math.isnan(o) or math.isinf(o)):
-            return None
-        return super().default(o)
-
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 import config
 from src.model.predict import predict_now
@@ -52,7 +20,7 @@ from src.notify.state import (
     load_state, save_state, should_notify, should_notify_regime, update_state,
 )
 from src.features.regime import detect_regime_change
-from src.feedback.logger import log_prediction
+from src.feedback.logger import log_prediction, _NumpyEncoder, _sanitize_nans
 from src.feedback.verify import verify_pending_predictions
 
 logging.basicConfig(
