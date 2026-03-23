@@ -97,6 +97,39 @@ function _probTrend(history) {
   return { arrow: '→', label: 'estable', cls: 'trend-stable' };
 }
 
+/** Honest verdict text based on rain_category or probability thresholds */
+function _verdictText(d) {
+  const cat = d.rain_category;
+  const pct = d.probability_pct;
+  if (cat === 'probable' || pct >= 65) return '🌧️ Pluja probable';
+  if (cat === 'sec' || pct < 30) return '☀️ No plourà';
+  // Uncertain zone: show the probability honestly
+  return `🌤️ ${pct}% probabilitat de pluja`;
+}
+
+/** Display label for history rows: sec/incert/probable */
+function _predictionLabel(d) {
+  const cat = d.rain_category;
+  const pct = d.probability_pct;
+  if (cat === 'probable' || pct >= 65) return '🌧️ Pluja probable';
+  if (cat === 'sec' || pct < 30) return '☀️ No plourà';
+  return `🌤️ ${pct}%`;
+}
+
+/** Fair verification result: uncertain zone is not scored */
+function _verificationResult(d) {
+  if (!d.verified) return { text: '⏳ Pendent', cls: 'pending' };
+  const cat = d.rain_category;
+  const pct = d.probability_pct;
+  const isUncertain = cat === 'incert' || (pct >= 30 && pct < 65 && cat == null);
+  if (isUncertain) {
+    const rain = d.actual_rain ? 'va ploure' : 'no va ploure';
+    return { text: `🔸 ${rain}`, cls: 'uncertain' };
+  }
+  if (d.correct) return { text: '✅ Encert', cls: 'correct' };
+  return { text: '❌ Error', cls: 'wrong' };
+}
+
 function renderPrediction(latest, history) {
   const pct = latest.probability_pct;
   const noPct = (100 - pct).toFixed(1);
@@ -108,15 +141,18 @@ function renderPrediction(latest, history) {
   const signals = gateOpen ? _gateSignals(latest) : [];
   const trend = _probTrend(history);
 
-  // Verified history stats (prediction-level)
-  const verified = history.filter(h => h.verified);
-  const correct = verified.filter(h => h.correct).length;
-  const accuracy = verified.length > 0 ? ((correct / verified.length) * 100).toFixed(0) : '—';
+  // Verified history stats — fair scoring: exclude uncertain zone (30-65%)
+  const scorable = history.filter(h => {
+    if (!h.verified) return false;
+    const vr = _verificationResult(h);
+    return vr.cls !== 'uncertain';
+  });
+  const correct = scorable.filter(h => h.correct).length;
+  const accuracy = scorable.length > 0 ? ((correct / scorable.length) * 100).toFixed(0) : '—';
 
-  // Day-level accuracy: a day is "correct" if majority of verified predictions were right
+  // Day-level accuracy: only count scorable predictions
   const dayBuckets = {};
-  for (const h of history) {
-    if (!h.verified) continue;
+  for (const h of scorable) {
     const day = h.timestamp.slice(0, 10);
     if (!dayBuckets[day]) dayBuckets[day] = { correct: 0, total: 0 };
     dayBuckets[day].total++;
@@ -149,7 +185,7 @@ function renderPrediction(latest, history) {
       </div>
 
       <div class="verdict" style="color:${color}">
-        ${latest.will_rain ? '🌧️ Sí, plourà' : '☀️ No plourà'}
+        ${_verdictText(latest)}
         <span class="verdict-conf ${confColor}">Confiança ${latest.confidence.toLowerCase()}${trend.arrow ? ` · prob. ${trend.label} ${trend.arrow}` : ''}</span>
       </div>
 
@@ -166,7 +202,7 @@ function renderPrediction(latest, history) {
 
       <div class="prediction-meta">
         Encerts: <strong style="color:var(--accent-green)">${dayAccuracy}%</strong> per dia (${daysCorrect}/${daysTotal})
-        · <strong>${accuracy}%</strong> per predicció (${correct}/${verified.length})
+        · <strong>${accuracy}%</strong> per predicció (${correct}/${scorable.length})
       </div>
     </div>
 
@@ -446,10 +482,14 @@ function renderWhyPrediction(d) {
     ? `<div class="source-vote storm-note"><span class="vote-badge rain">⚡</span><div class="vote-info"><span class="vote-name">Risc de tronada</span><span class="vote-detail">${a.prob_storm}% segons AEMET</span></div></div>`
     : '';
 
-  // ML verdict
-  const mlRain = d.will_rain;
+  // ML verdict — use rain_category for honest display
+  const mlCat = d.rain_category;
+  const mlRain = mlCat === 'probable' || (mlCat == null && pct >= 65);
+  const mlUncertain = mlCat === 'incert' || (mlCat == null && pct >= 30 && pct < 65);
   let verdictText;
-  if (rainVotes >= totalVotes / 2 && !mlRain) {
+  if (mlUncertain) {
+    verdictText = `Les fonts externes ${rainVotes >= totalVotes / 2 ? 'tendeixen a veure pluja' : 'no preveuen pluja'}, i <strong>el nostre model dóna un ${pct}% de probabilitat</strong> — zona d'incertesa. Caldrà seguir-ho.`;
+  } else if (rainVotes >= totalVotes / 2 && !mlRain) {
     // Most sources say rain, ML says no — the big correction story
     verdictText = `La majoria de fonts (${rainVotes}/${totalVotes}) diuen pluja, però <strong>el nostre model diu que no</strong> (${pct}%). Ha après que a Cardedeu aquesta combinació sovint no acaba en pluja.`;
   } else if (rainVotes < totalVotes / 2 && mlRain) {
@@ -614,15 +654,20 @@ function initCalendar(history) {
     const preds = dayMap[dayKey];
     if (!preds) return null;
     const verified = preds.filter(p => p.verified);
-    const correct = verified.filter(p => p.correct).length;
+    // Fair scoring: only count sec/probable predictions, not uncertain zone
+    const scorable = verified.filter(p => {
+      const vr = _verificationResult(p);
+      return vr.cls !== 'uncertain';
+    });
+    const correct = scorable.filter(p => p.correct).length;
     const anyRain = preds.some(p => p.actual_rain === true);
     const allPending = verified.length === 0;
     const hasPending = preds.some(p => !p.verified);
     const rainMm = preds.reduce((max, p) => Math.max(max, p.actual_rain_mm || 0), 0);
-    const acc = verified.length > 0 ? (correct / verified.length) : null;
+    const acc = scorable.length > 0 ? (correct / scorable.length) : null;
     const todayStr = new Date().toISOString().slice(0, 10);
     const isOngoing = dayKey >= todayStr;
-    return { preds, verified, correct, anyRain, allPending, hasPending, isOngoing, rainMm, acc, count: preds.length };
+    return { preds, verified, scorable, correct, anyRain, allPending, hasPending, isOngoing, rainMm, acc, count: preds.length };
   }
 
   function render() {
@@ -636,17 +681,17 @@ function initCalendar(history) {
 
     const monthLabel = firstDay.toLocaleDateString('ca-ES', { month: 'long', year: 'numeric' });
 
-    // Month stats
+    // Month stats — fair scoring: only count sec/probable predictions
     let mVerified = 0, mCorrect = 0, mPreds = 0, mRainDays = 0, mDaysCorrect = 0, mDaysWithData = 0;
     for (let d = 1; d <= daysInMonth; d++) {
       const key = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
       const s = getDaySummary(key);
       if (s) {
         mPreds += s.count;
-        mVerified += s.verified.length;
+        mVerified += s.scorable.length;
         mCorrect += s.correct;
         if (s.anyRain) mRainDays++;
-        if (s.verified.length > 0) {
+        if (s.scorable.length > 0) {
           mDaysWithData++;
           if (s.acc >= 0.5) mDaysCorrect++;
         }
@@ -794,10 +839,10 @@ function initCalendar(history) {
     }
 
     let accCls = '', accText = '';
-    if (s.verified.length > 0) {
-      const pct = ((s.correct / s.verified.length) * 100).toFixed(0);
+    if (s.scorable.length > 0) {
+      const pct = ((s.correct / s.scorable.length) * 100).toFixed(0);
       accCls = pct >= 90 ? 'perfect' : pct >= 60 ? 'good' : 'bad';
-      accText = `${s.correct}/${s.verified.length} encerts`;
+      accText = `${s.correct}/${s.scorable.length} encerts`;
     }
 
     const predRows = s.preds.map(p => {
@@ -805,18 +850,8 @@ function initCalendar(history) {
       const time = t.toLocaleString('ca-ES', { hour: '2-digit', minute: '2-digit' });
       const pct = p.probability_pct;
       const color = getProbColor(pct);
-      const said = p.will_rain ? '🌧️ Plourà' : '☀️ No plourà';
-      let resultText, resultCls;
-      if (!p.verified) {
-        resultText = '⏳ Pendent';
-        resultCls = 'pending';
-      } else if (p.correct) {
-        resultText = '✅ Encert';
-        resultCls = 'correct';
-      } else {
-        resultText = '❌ Error';
-        resultCls = 'wrong';
-      }
+      const said = _predictionLabel(p);
+      const vr = _verificationResult(p);
       const rainInfo = p.actual_rain_mm != null ? `${p.actual_rain_mm.toFixed(1)} mm` : '—';
       return `
         <div class="pred-row">
@@ -824,7 +859,7 @@ function initCalendar(history) {
           <div class="pred-prob-bar"><div class="pred-prob-fill" style="width:${pct}%;background:${color}"></div></div>
           <span class="pred-pct" style="color:${color}">${pct}%</span>
           <span class="pred-said">${said}</span>
-          <span class="pred-result ${resultCls}">${resultText}</span>
+          <span class="pred-result ${vr.cls}">${vr.text}</span>
           <span class="pred-rain-mm">${rainInfo}</span>
         </div>`;
     }).join('');
@@ -925,13 +960,23 @@ function drawChart(history, latest) {
       ctx.fillText(pct + '%', pad.left - 6, yy + 4);
     }
 
-    // Threshold line
-    const threshY = yScale(latest.threshold ? latest.threshold * 100 : 40);
-    ctx.strokeStyle = 'rgba(248,81,73,0.3)';
+    // Uncertain zone (30%-65%) — shaded band
+    const zoneTop = yScale(65);
+    const zoneBot = yScale(30);
+    ctx.fillStyle = 'rgba(210,153,34,0.08)';
+    ctx.fillRect(pad.left, zoneTop, cW, zoneBot - zoneTop);
+
+    // Zone boundary lines
+    ctx.strokeStyle = 'rgba(210,153,34,0.25)';
     ctx.setLineDash([4, 4]);
+    ctx.lineWidth = 1;
     ctx.beginPath();
-    ctx.moveTo(pad.left, threshY);
-    ctx.lineTo(W - pad.right, threshY);
+    ctx.moveTo(pad.left, zoneTop);
+    ctx.lineTo(W - pad.right, zoneTop);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(pad.left, zoneBot);
+    ctx.lineTo(W - pad.right, zoneBot);
     ctx.stroke();
     ctx.setLineDash([]);
 

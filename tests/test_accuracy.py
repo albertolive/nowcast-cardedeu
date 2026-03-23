@@ -88,7 +88,7 @@ class TestFormatAccuracyReport:
     """Format del missatge Telegram amb N/A quan les mètriques són None."""
 
     def test_recall_none_shows_na(self):
-        """Recall=None → mostra 'N/A (no ha plogut)'."""
+        """Recall=None → mostra 'N/A'."""
         metrics = {
             "verified": 371, "pending": 8,
             "accuracy": 96.0, "precision": 0.0, "recall": None, "f1": None,
@@ -96,11 +96,10 @@ class TestFormatAccuracyReport:
             "by_confidence": {}, "daily": {},
         }
         report = format_accuracy_report(metrics)
-        assert "N/A" in report
-        assert "no ha plogut" in report
+        assert "Recall: N/A" in report
 
     def test_precision_none_shows_na(self):
-        """Precision=None → mostra 'N/A (cap alerta emesa)'."""
+        """Precision=None → mostra 'N/A'."""
         metrics = {
             "verified": 100, "pending": 0,
             "accuracy": 100.0, "precision": None, "recall": None, "f1": None,
@@ -108,7 +107,7 @@ class TestFormatAccuracyReport:
             "by_confidence": {}, "daily": {},
         }
         report = format_accuracy_report(metrics)
-        assert "cap alerta emesa" in report
+        assert "Precision: N/A" in report
 
     def test_normal_metrics_show_values(self):
         """Precision/recall amb valor → mostra percentatge, sense N/A."""
