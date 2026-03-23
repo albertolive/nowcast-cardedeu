@@ -406,12 +406,12 @@ def predict_hourly_forecast(hours_ahead: int = 48) -> list[dict]:
 
     logger.info(f"Generant forecast ML per a les properes {hours_ahead}h...")
 
-    forecast_df = _fetch_forecast(hours_ahead=hours_ahead)
+    forecast_df = _fetch_forecast(hours_ahead=hours_ahead, past_hours=12)
     if forecast_df.empty:
         logger.warning("No forecast data available")
         return []
 
-    pressure_df = fetch_pressure_levels_hourly(hours_ahead=hours_ahead)
+    pressure_df = fetch_pressure_levels_hourly(hours_ahead=hours_ahead, past_hours=12)
 
     # SMC municipal forecast (72h, Cardedeu-specific)
     smc_df = pd.DataFrame()
@@ -444,8 +444,8 @@ def predict_hourly_forecast(hours_ahead: int = 48) -> list[dict]:
         probs = raw_probs
 
     results = []
-    for i, row in features_df.iterrows():
-        prob = float(probs[i] if i < len(probs) else 0)
+    for idx, (_, row) in enumerate(features_df.iterrows()):
+        prob = float(probs[idx]) if idx < len(probs) else 0.0
         results.append({
             "datetime": row["datetime"],
             "probability": round(prob, 4),
