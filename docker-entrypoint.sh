@@ -45,97 +45,93 @@ if [ -n "$GIT_TOKEN" ] && [ -n "$GIT_REPO" ]; then
 fi
 
 echo "🌦️  Nowcast Cardedeu — Container started ($(date))"
-echo "   Predict every 10 min (6-23h) | Daily summary 7:00 | Accuracy report Mon 8:00"
+echo "   Predict every 10 min (24/7) | Daily summary 7:00 | Accuracy report Mon 8:00"
 
 while true; do
     HOUR=$(TZ=Europe/Madrid date +%H)
     MINUTE=$(TZ=Europe/Madrid date +%M)
     DOW=$(TZ=Europe/Madrid date +%u)  # 1=Monday ... 7=Sunday
 
-    if [ "$HOUR" -ge 6 ] && [ "$HOUR" -lt 23 ]; then
-        echo ""
-        echo "━━━ $(date) ━━━"
+    echo ""
+    echo "━━━ $(date) ━━━"
 
-        # Auto-update code from GitHub (hot-reload without container restart)
-        if [ -d "$REPO_DIR" ]; then
+    # Auto-update code from GitHub (hot-reload without container restart)
+    if [ -d "$REPO_DIR" ]; then
+        (
+            cd "$REPO_DIR"
+            git fetch origin main 2>/dev/null && git reset --hard origin/main 2>/dev/null
+        ) && {
+            cp -rf "$REPO_DIR/src/" /app/src/
+            cp -rf "$REPO_DIR/scripts/" /app/scripts/
+            cp -f  "$REPO_DIR/config.py" /app/config.py
+            cp -rf "$REPO_DIR/models/" /app/models/
+            cp -rf "$REPO_DIR/docs/" /app/docs/
+            echo "🔄 Code updated from GitHub"
+        } || echo "⚠️  Code update failed (continuing with current version)"
+    fi
+
+    # ── Daily summary (7:00–7:09 Barcelona, once per day) ──
+    if [ "$HOUR" -eq 7 ] && [ "${MINUTE#0}" -lt 10 ] && ! job_done_today "daily_summary"; then
+        echo "📋 Running daily_summary.py..."
+        if python scripts/daily_summary.py; then
+            mark_job_done "daily_summary"
+            echo "✅ daily_summary completed"
+        else
+            echo "⚠️  daily_summary.py failed (exit $?)"
+            notify_failure "daily_summary"
+        fi
+    fi
+
+    # ── Accuracy report (Monday 8:00–8:09 Barcelona, once per day) ──
+    if [ "$DOW" -eq 1 ] && [ "$HOUR" -eq 8 ] && [ "${MINUTE#0}" -lt 10 ] && ! job_done_today "accuracy_report"; then
+        echo "📊 Running accuracy_report.py..."
+        if python scripts/accuracy_report.py; then
+            mark_job_done "accuracy_report"
+            echo "✅ accuracy_report completed"
+        else
+            echo "⚠️  accuracy_report.py failed (exit $?)"
+            notify_failure "accuracy_report"
+        fi
+    fi
+
+    # ── Prediction (every 10 min, 24/7) ──
+    python scripts/predict_now.py || {
+        echo "⚠️  predict_now.py failed (exit $?)"
+        notify_failure "predict_now"
+    }
+
+    # Push state files back to GitHub (with retry for concurrent pushes)
+    if [ -n "$GIT_TOKEN" ] && [ -n "$GIT_REPO" ] && [ -d "$REPO_DIR" ]; then
+        push_ok=false
+        for attempt in 1 2 3; do
             (
                 cd "$REPO_DIR"
-                git fetch origin main 2>/dev/null && git reset --hard origin/main 2>/dev/null
-            ) && {
-                cp -rf "$REPO_DIR/src/" /app/src/
-                cp -rf "$REPO_DIR/scripts/" /app/scripts/
-                cp -f  "$REPO_DIR/config.py" /app/config.py
-                cp -rf "$REPO_DIR/models/" /app/models/
-                cp -rf "$REPO_DIR/docs/" /app/docs/
-                echo "🔄 Code updated from GitHub"
-            } || echo "⚠️  Code update failed (continuing with current version)"
-        fi
 
-        # ── Daily summary (7:00–7:09 Barcelona, once per day) ──
-        if [ "$HOUR" -eq 7 ] && [ "${MINUTE#0}" -lt 10 ] && ! job_done_today "daily_summary"; then
-            echo "📋 Running daily_summary.py..."
-            if python scripts/daily_summary.py; then
-                mark_job_done "daily_summary"
-                echo "✅ daily_summary completed"
-            else
-                echo "⚠️  daily_summary.py failed (exit $?)"
-                notify_failure "daily_summary"
-            fi
-        fi
+                # Reset any failed rebase state, then pull fresh
+                git rebase --abort 2>/dev/null || true
+                git fetch origin main
+                git reset --hard origin/main
 
-        # ── Accuracy report (Monday 8:00–8:09 Barcelona, once per day) ──
-        if [ "$DOW" -eq 1 ] && [ "$HOUR" -eq 8 ] && [ "${MINUTE#0}" -lt 10 ] && ! job_done_today "accuracy_report"; then
-            echo "📊 Running accuracy_report.py..."
-            if python scripts/accuracy_report.py; then
-                mark_job_done "accuracy_report"
-                echo "✅ accuracy_report completed"
-            else
-                echo "⚠️  accuracy_report.py failed (exit $?)"
-                notify_failure "accuracy_report"
-            fi
-        fi
+                # Copy updated data files from app into repo clone
+                cp -f /app/data/latest_prediction.json data/latest_prediction.json
+                cp -f /app/data/predictions_log.jsonl data/predictions_log.jsonl
+                cp -f /app/data/notification_state.json data/notification_state.json
+                cp -f /app/data/aemet_cache.json data/aemet_cache.json 2>/dev/null || true
 
-        # ── Prediction (every 10 min) ──
-        python scripts/predict_now.py || {
-            echo "⚠️  predict_now.py failed (exit $?)"
-            notify_failure "predict_now"
-        }
+                # Copy to docs/ for dashboard
+                cp -f /app/data/latest_prediction.json docs/latest_prediction.json
+                cp -f /app/data/predictions_log.jsonl docs/predictions_log.jsonl
 
-        # Push state files back to GitHub (with retry for concurrent pushes)
-        if [ -n "$GIT_TOKEN" ] && [ -n "$GIT_REPO" ] && [ -d "$REPO_DIR" ]; then
-            push_ok=false
-            for attempt in 1 2 3; do
-                (
-                    cd "$REPO_DIR"
-
-                    # Reset any failed rebase state, then pull fresh
-                    git rebase --abort 2>/dev/null || true
-                    git fetch origin main
-                    git reset --hard origin/main
-
-                    # Copy updated data files from app into repo clone
-                    cp -f /app/data/latest_prediction.json data/latest_prediction.json
-                    cp -f /app/data/predictions_log.jsonl data/predictions_log.jsonl
-                    cp -f /app/data/notification_state.json data/notification_state.json
-                    cp -f /app/data/aemet_cache.json data/aemet_cache.json 2>/dev/null || true
-
-                    # Copy to docs/ for dashboard
-                    cp -f /app/data/latest_prediction.json docs/latest_prediction.json
-                    cp -f /app/data/predictions_log.jsonl docs/predictions_log.jsonl
-
-                    git add data/predictions_log.jsonl data/notification_state.json \
-                            data/latest_prediction.json data/aemet_cache.json \
-                            docs/latest_prediction.json docs/predictions_log.jsonl 2>/dev/null || true
-                    git diff --cached --quiet || git commit -m "📊 Prediction $(date -u +%Y-%m-%dT%H:%M)"
-                    git push origin main
-                ) && push_ok=true && break
-                echo "⚠️  git push attempt $attempt failed, retrying in 5s..."
-                sleep 5
-            done
-            [ "$push_ok" = true ] || echo "⚠️  git sync failed after 3 attempts"
-        fi
-    else
-        echo "💤 Fora d'horari (${HOUR}h). Esperant..."
+                git add data/predictions_log.jsonl data/notification_state.json \
+                        data/latest_prediction.json data/aemet_cache.json \
+                        docs/latest_prediction.json docs/predictions_log.jsonl 2>/dev/null || true
+                git diff --cached --quiet || git commit -m "📊 Prediction $(date -u +%Y-%m-%dT%H:%M)"
+                git push origin main
+            ) && push_ok=true && break
+            echo "⚠️  git push attempt $attempt failed, retrying in 5s..."
+            sleep 5
+        done
+        [ "$push_ok" = true ] || echo "⚠️  git sync failed after 3 attempts"
     fi
     
     # Sleep until next 10-minute mark (e.g. :00, :10, :20, :30, :40, :50)
