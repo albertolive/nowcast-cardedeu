@@ -91,6 +91,9 @@ def _pixel_to_dbz(r: int, g: int, b: int, a: int) -> float:
         return 0.0
     if r > 200 and g > 200 and b > 200:  # blanc/gris clar (sense eco)
         return 0.0
+    # Gris mitjà = terra (127,127,127 és el color de fons terrestre)
+    if abs(r - g) < 10 and abs(g - b) < 10 and 100 < r < 180:
+        return 0.0
 
     # Buscar el color més similar als llindars AEMET
     for r_min, r_max, g_min, g_max, b_min, b_max, dbz in AEMET_COLOR_THRESHOLDS:
@@ -98,6 +101,65 @@ def _pixel_to_dbz(r: int, g: int, b: int, a: int) -> float:
             return dbz
 
     return 0.0
+
+
+def _remove_map_artifacts(echo_mask: np.ndarray) -> np.ndarray:
+    """
+    Elimina artefactes del mapa base (fronteres, costes, etiquetes, llegenda)
+    de la màscara d'ecos radar. Dos passos:
+
+    1. Obertura morfològica (erosió+dilatació): elimina línies fines (1-2 px)
+       com fronteres i costes. La imatge d'AEMET usa groc (255,255,0) tant
+       per fronteres com per ecos de 40 dBZ — no es poden separar per color.
+    2. Filtre de mida mínima de clúster: elimina grups petits de píxels
+       (interseccions de fronteres gruixudes, fragments de llegenda) que
+       sobreviuen l'obertura. Ecos reals de pluja formen àrees àmplies.
+    """
+    h, w = echo_mask.shape
+    if h < 3 or w < 3:
+        return echo_mask
+
+    # Pas 1: Obertura morfològica amb element estructurant de creu 3x3
+    eroded = np.zeros_like(echo_mask)
+    eroded[1:-1, 1:-1] = (
+        echo_mask[1:-1, 1:-1]
+        & echo_mask[:-2, 1:-1]    # dalt
+        & echo_mask[2:, 1:-1]     # baix
+        & echo_mask[1:-1, :-2]    # esquerra
+        & echo_mask[1:-1, 2:]     # dreta
+    )
+    dilated = eroded.copy()
+    dilated[1:, :] |= eroded[:-1, :]
+    dilated[:-1, :] |= eroded[1:, :]
+    dilated[:, 1:] |= eroded[:, :-1]
+    dilated[:, :-1] |= eroded[:, 1:]
+
+    # Pas 2: Eliminar clústers petits (< AEMET_RADAR_MIN_ECHO_CLUSTER_PX)
+    min_size = config.AEMET_RADAR_MIN_ECHO_CLUSTER_PX
+    result = dilated.copy()
+    visited = np.zeros_like(dilated)
+    for sy in range(h):
+        for sx in range(w):
+            if not dilated[sy, sx] or visited[sy, sx]:
+                continue
+            # Flood fill per trobar el component connectat
+            component = []
+            stack = [(sy, sx)]
+            while stack:
+                cy, cx = stack.pop()
+                if visited[cy, cx]:
+                    continue
+                visited[cy, cx] = True
+                component.append((cy, cx))
+                for dy, dx in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
+                    ny, nx = cy + dy, cx + dx
+                    if 0 <= ny < h and 0 <= nx < w:
+                        if dilated[ny, nx] and not visited[ny, nx]:
+                            stack.append((ny, nx))
+            if len(component) < min_size:
+                for cy, cx in component:
+                    result[cy, cx] = False
+    return result
 
 
 def _find_cardedeu_pixel(img_array: np.ndarray, img_bounds: dict) -> Optional[tuple]:
@@ -223,6 +285,10 @@ def fetch_aemet_radar() -> dict:
                 dbz_map[iy, ix] = dbz
                 if dbz >= config.RADAR_MIN_DBZ:
                     echo_mask[iy, ix] = True
+
+        # Eliminar artefactes del mapa base (fronteres, costes en groc)
+        # que comparteixen color amb ecos radar (255,255,0 = 40 dBZ)
+        echo_mask = _remove_map_artifacts(echo_mask)
 
         has_echo_area = echo_mask & in_radius
 

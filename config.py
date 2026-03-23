@@ -156,6 +156,7 @@ RAIN_GATE_LIGHTNING_NEARBY_KM = 30  # Obrir rain gate si llamps dins d'aquest ra
 RADAR_SCAN_RADIUS_KM = 30       # km al voltant de Cardedeu per escanejar ecos
 RADAR_PIXEL_SIZE_KM = 0.457     # km per píxel (zoom 8, lat ~41.6°)
 RADAR_MIN_DBZ = 10              # dBZ mínim per considerar un eco com a pluja real (filtra soroll/AP)
+AEMET_RADAR_MIN_ECHO_CLUSTER_PX = 10  # Píxels mínims per considerar un eco real (filtra fronteres/costes del mapa)
 
 # ── Detecció de canvi de règim eòlic ──
 REGIME_COOLDOWN_MIN = 120        # Minuts mínims entre alertes de canvi de règim
