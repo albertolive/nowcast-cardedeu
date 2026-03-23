@@ -217,15 +217,17 @@ def generate_accuracy_narrative(metrics_week: dict, metrics_all: dict) -> str | 
         return None
 
     cm = metrics_week.get("confusion", {})
+    no_rain = (cm.get("tp", 0) + cm.get("fn", 0)) == 0
 
     context = f"""Mètriques setmanals del model de predicció de pluja a Cardedeu:
 - Prediccions verificades: {metrics_week.get('verified', 0)}
 - Accuracy: {metrics_week.get('accuracy', '?')}%
-- Precision: {metrics_week.get('precision', '?')}% (de les alertes, quantes van ser pluja real)
-- Recall: {metrics_week.get('recall', '?')}% (de les pluges reals, quantes vam detectar)
-- F1: {metrics_week.get('f1', '?')}%
+- Precision: {metrics_week.get('precision', 'N/A')}% (de les alertes, quantes van ser pluja real)
+- Recall: {metrics_week.get('recall', 'N/A')}% (de les pluges reals, quantes vam detectar)
+- F1: {metrics_week.get('f1', 'N/A')}%
 - True Positives: {cm.get('tp', 0)}, False Positives: {cm.get('fp', 0)}
 - True Negatives: {cm.get('tn', 0)}, False Negatives: {cm.get('fn', 0)}
+- Ha plogut aquesta setmana? {'NO — TP+FN=0, no hi ha hagut pluja real. Recall no es pot avaluar.' if no_rain else 'SÍ — hi ha hagut episodis de pluja.'}
 Total acumulat: {metrics_all.get('verified', '?')} prediccions, {metrics_all.get('accuracy', '?')}% accuracy"""
 
     by_conf = metrics_week.get("by_confidence", {})
@@ -240,9 +242,11 @@ Total acumulat: {metrics_all.get('verified', '?')} prediccions, {metrics_all.get
             "content": (
                 "Ets un analista del model de predicció de pluja de Cardedeu. "
                 "Escriu 2-3 frases curtes en català interpretant les mètriques setmanals. "
-                "Destaca: on ha fallat el model (falsos positius = alertes innecessàries, "
-                "falsos negatius = pluja no detectada), tendència general, i si el recall "
-                "o precision són problemàtics. Sigues concís i directe. "
+                "IMPORTANT: si TP+FN=0 vol dir que NO ha plogut — no diguis que el model "
+                "ha fallat en detectar pluja, sinó que no hi ha hagut pluja per avaluar el recall. "
+                "En aquest cas, centra't en els falsos positius (alertes innecessàries) i en "
+                "les condicions meteorològiques que els van provocar. "
+                "Destaca: on ha fallat el model, tendència general. Sigues concís i directe. "
                 "No repeteixis tots els números, interpreta'ls. "
                 "No facis servir emojis ni formatatge HTML."
             ),

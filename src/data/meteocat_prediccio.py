@@ -6,7 +6,7 @@ específica per a Catalunya.
 Documentació: https://apidocs.meteocat.gencat.cat/documentacio/prediccio/
 """
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Optional
 
 import numpy as np
@@ -96,11 +96,17 @@ def fetch_municipal_hourly_forecast() -> dict:
         result["smc_temp_forecast"] = current.get("temp")
         result["smc_weather_symbol"] = current.get("symbol")
 
-        # Màxima probabilitat a 6h
-        relevant = [hf for hf in hourly_forecasts
-                     if hf.get("date") == today
-                     and hf.get("hour", -1) >= current_hour
-                     and hf.get("hour", -1) <= current_hour + 6]
+        # Màxima probabilitat a 6h (inclou demà si estem prop de mitjanit)
+        target_end = now + timedelta(hours=6)
+        relevant = []
+        for hf in hourly_forecasts:
+            hf_date = hf.get("date")
+            hf_hour = hf.get("hour", -1)
+            if hf_date is None or hf_hour < 0:
+                continue
+            hf_dt = datetime.combine(hf_date, datetime.min.time()).replace(hour=hf_hour)
+            if now <= hf_dt <= target_end:
+                relevant.append(hf)
         if relevant:
             result["smc_prob_precip_6h"] = max(
                 hf.get("prob_precip", 0) for hf in relevant

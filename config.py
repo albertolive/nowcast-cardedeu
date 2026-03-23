@@ -3,6 +3,7 @@ Configuració central del projecte Nowcast Cardedeu.
 Totes les constants i paràmetres en un sol lloc.
 """
 import os
+from datetime import datetime as _dt
 
 # ── Coordenades de l'estació MeteoCardedeu Poble Sec ──
 LATITUDE = 41.63282
@@ -11,7 +12,7 @@ ALTITUDE = 190  # metres
 
 # ── URLs de l'API de meteocardedeu.net ──
 BASE_URL = "https://meteocardedeu.net"
-YEAR = "2026"
+YEAR = str(_dt.now().year)
 SLUG = "cardedeu_poble_sec"
 
 LATEST_URL = f"{BASE_URL}/{YEAR}/data/{SLUG}/latest.json"
@@ -197,4 +198,4 @@ CALIBRATOR_PATH = os.path.join(MODELS_DIR, "calibrator.pkl")
 SCALER_PATH = os.path.join(MODELS_DIR, "scaler.pkl")
 
 # ── Històric: anys a descarregar ──
-HISTORY_YEARS = list(range(2015, 2027))  # 2015-2026 (12 anys)
+HISTORY_YEARS = list(range(2015, _dt.now().year + 1))

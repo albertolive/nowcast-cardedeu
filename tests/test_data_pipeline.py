@@ -223,3 +223,149 @@ class TestFeatureEngineeringPipeline:
                 vals = result[col].dropna()
                 assert vals.min() >= -1.0001, f"{col} below -1"
                 assert vals.max() <= 1.0001, f"{col} above 1"
+
+
+class TestConfigNotHardcoded:
+    """Regression: config constants must auto-update, not be hardcoded."""
+
+    def test_year_is_current(self):
+        from datetime import datetime
+        assert config.YEAR == str(datetime.now().year), (
+            f"config.YEAR={config.YEAR} is hardcoded! Must be dynamic."
+        )
+
+    def test_history_years_includes_current(self):
+        from datetime import datetime
+        current = datetime.now().year
+        assert current in config.HISTORY_YEARS, (
+            f"config.HISTORY_YEARS ends at {max(config.HISTORY_YEARS)}, "
+            f"must include current year {current}"
+        )
+
+
+class TestForecastBiasEdgeCases:
+    """Regression: forecast bias must handle 0C and missing humidity correctly."""
+
+    def test_bias_at_zero_celsius(self):
+        """0C temp must produce a valid bias, not NaN."""
+        from src.data.ensemble import compute_forecast_bias
+        now = pd.Timestamp.now().floor("h")
+        fdf = pd.DataFrame({
+            "datetime": [now],
+            "temperature_2m": [5.0],
+            "relative_humidity_2m": [80.0],
+        })
+        result = compute_forecast_bias(station_temp=0.0, station_hum=50.0, forecast_df=fdf)
+        assert not np.isnan(result["forecast_temp_bias"]), (
+            "forecast_temp_bias is NaN when station_temp=0.0"
+        )
+        assert abs(result["forecast_temp_bias"] - 5.0) < 0.01
+
+    def test_bias_with_nan_humidity(self):
+        """NaN humidity (station offline) must produce NaN bias, not crash."""
+        from src.data.ensemble import compute_forecast_bias
+        now = pd.Timestamp.now().floor("h")
+        fdf = pd.DataFrame({
+            "datetime": [now],
+            "temperature_2m": [20.0],
+            "relative_humidity_2m": [60.0],
+        })
+        result = compute_forecast_bias(station_temp=20.0, station_hum=np.nan, forecast_df=fdf)
+        assert np.isnan(result["forecast_humidity_bias"]), (
+            "forecast_humidity_bias should be NaN when station_hum is NaN"
+        )
+
+    def test_bias_with_none_forecast(self):
+        """No forecast data must return NaN biases, not crash."""
+        from src.data.ensemble import compute_forecast_bias
+        result = compute_forecast_bias(station_temp=20.0, station_hum=60.0, forecast_df=None)
+        assert np.isnan(result["forecast_temp_bias"])
+        assert np.isnan(result["forecast_humidity_bias"])
+
+
+class TestSentinelHumidityEdgeCases:
+    """Regression: sentinel features must handle NaN station humidity."""
+
+    def test_sentinel_nan_station_humidity(self):
+        """NaN station_humidity must not produce wrong sentinel_humidity_diff."""
+        from src.data.meteocat import compute_sentinel_features
+        sentinel = {"sentinel_temp": 18.0, "sentinel_humidity": 70.0,
+                    "sentinel_precip": 0.0}
+        result = compute_sentinel_features(sentinel, station_temp=20.0,
+                                           station_humidity=float("nan"))
+        assert result["sentinel_humidity_diff"] is None, (
+            "With NaN station humidity, sentinel_humidity_diff should be None"
+        )
+
+    def test_sentinel_zero_humidity_is_valid(self):
+        """0 percent humidity must still compute the diff."""
+        from src.data.meteocat import compute_sentinel_features
+        sentinel = {"sentinel_temp": 18.0, "sentinel_humidity": 5.0,
+                    "sentinel_precip": 0.0}
+        result = compute_sentinel_features(sentinel, station_temp=20.0,
+                                           station_humidity=0.0)
+        assert result["sentinel_humidity_diff"] == 5.0
+
+
+class TestAemetCrossMidnight:
+    """Regression: AEMET 6h window must work after 18:00."""
+
+    def test_late_night_covers_next_day(self):
+        """At 22:00, the 6h window (22-04) must include tomorrow 0006 period."""
+        current_hour = 22
+        today_periods = [("0006", 80), ("0612", 30), ("1218", 40), ("1824", 60)]
+        tomorrow_periods = [("0006", 90), ("0612", 20)]
+
+        max_prob = 0
+        for day_idx, periods in enumerate([today_periods, tomorrow_periods]):
+            offset = 24 * day_idx
+            for periodo, valor in periods:
+                h_start = int(periodo[:2]) + offset
+                h_end = int(periodo[2:]) + offset
+                if h_start <= current_hour + 6 and h_end > current_hour:
+                    max_prob = max(max_prob, valor)
+
+        assert max_prob == 90, (
+            f"At 22:00, expected tomorrow 0006 period (prob=90) but got {max_prob}. "
+            f"Cross-midnight bug."
+        )
+
+    def test_afternoon_no_false_positives(self):
+        """At 14:00, must not match tomorrow periods."""
+        current_hour = 14
+        today_periods = [("1218", 40), ("1824", 20)]
+        tomorrow_periods = [("0006", 90)]
+
+        max_prob = 0
+        for day_idx, periods in enumerate([today_periods, tomorrow_periods]):
+            offset = 24 * day_idx
+            for periodo, valor in periods:
+                h_start = int(periodo[:2]) + offset
+                h_end = int(periodo[2:]) + offset
+                if h_start <= current_hour + 6 and h_end > current_hour:
+                    max_prob = max(max_prob, valor)
+
+        assert max_prob == 40
+
+
+class TestRainGateAemetStorm:
+    """Regression: rain gate AEMET storm check must handle all edge cases."""
+
+    def test_nan_does_not_trigger_gate(self):
+        from src.model.predict import _aemet_storm_above_threshold
+        assert _aemet_storm_above_threshold({"aemet_prob_storm": np.nan}) is False
+
+    def test_none_does_not_trigger_gate(self):
+        from src.model.predict import _aemet_storm_above_threshold
+        assert _aemet_storm_above_threshold({"aemet_prob_storm": None}) is False
+        assert _aemet_storm_above_threshold({}) is False
+
+    def test_above_threshold_triggers(self):
+        from src.model.predict import _aemet_storm_above_threshold
+        assert _aemet_storm_above_threshold(
+            {"aemet_prob_storm": config.RAIN_GATE_AEMET_STORM + 1}
+        ) is True
+
+    def test_below_threshold_does_not_trigger(self):
+        from src.model.predict import _aemet_storm_above_threshold
+        assert _aemet_storm_above_threshold({"aemet_prob_storm": 0}) is False

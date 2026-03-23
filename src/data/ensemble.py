@@ -116,11 +116,14 @@ def compute_forecast_bias(station_temp: float, station_hum: float,
             forecast_temp = row.get("temperature_2m")
             forecast_hum = row.get("relative_humidity_2m")
 
+            def _valid(v):
+                return v is not None and not (isinstance(v, float) and np.isnan(v))
+
             result = {
                 "forecast_temp_bias": (float(forecast_temp) - station_temp
-                                       if forecast_temp is not None and station_temp is not None else np.nan),
+                                       if _valid(forecast_temp) and _valid(station_temp) else np.nan),
                 "forecast_humidity_bias": (float(forecast_hum) - station_hum
-                                           if forecast_hum is not None and station_hum is not None else np.nan),
+                                           if _valid(forecast_hum) and _valid(station_hum) else np.nan),
             }
         else:
             result = {

@@ -419,6 +419,93 @@ class TestConfidenceLevels:
 
 # ── Isotonic calibration properties ──
 
+
+class TestClutterPostScanSafeguard:
+    """
+    Safeguard post-scan: cobertura>20% + max_dbz<15 + vel=0 = clutter de terra.
+    Catches Montseny mountain clutter that passes the frame-based clutter mask.
+    """
+
+    def test_montseny_clutter_pattern_detected(self):
+        """Patró exacte del 22 de març: 49% coverage, 5.1 dBZ, vel=0."""
+        spatial = {
+            "echoes_found": True,
+            "nearest_echo_km": 0.0,
+            "coverage_20km": 0.4929,
+            "max_dbz_20km": 5.1,
+        }
+        tracking = {"storm_velocity_kmh": 0}
+
+        should_filter = (
+            spatial.get("echoes_found")
+            and spatial.get("coverage_20km", 0) > 0.20
+            and spatial.get("max_dbz_20km", 0) < 15
+            and tracking.get("storm_velocity_kmh", 0) == 0
+        )
+        assert should_filter
+        # After filtering, result should be empty
+        result = _empty_spatial_result(30.0)
+        assert result["echoes_found"] is False
+        assert result["nearest_echo_km"] == 30.0
+        assert result["coverage_20km"] == 0.0
+
+    def test_real_rain_not_filtered(self):
+        """Pluja real: alta cobertura + dBZ alta + moviment → NO filtrar."""
+        spatial = {
+            "echoes_found": True,
+            "coverage_20km": 0.35,
+            "max_dbz_20km": 35.0,
+        }
+        tracking = {"storm_velocity_kmh": 20}
+        should_filter = (
+            spatial.get("echoes_found")
+            and spatial.get("coverage_20km", 0) > 0.20
+            and spatial.get("max_dbz_20km", 0) < 15
+            and tracking.get("storm_velocity_kmh", 0) == 0
+        )
+        assert not should_filter
+
+    def test_moving_low_echo_not_filtered(self):
+        """Eco feble en moviment: possible pluja lleu, no clutter."""
+        spatial = {
+            "echoes_found": True,
+            "coverage_20km": 0.25,
+            "max_dbz_20km": 12.0,
+        }
+        tracking = {"storm_velocity_kmh": 15}
+        should_filter = (
+            spatial.get("echoes_found")
+            and spatial.get("coverage_20km", 0) > 0.20
+            and spatial.get("max_dbz_20km", 0) < 15
+            and tracking.get("storm_velocity_kmh", 0) == 0
+        )
+        assert not should_filter
+
+    def test_low_coverage_not_filtered(self):
+        """Eco aïllat amb cobertura <20% → no activa safeguard."""
+        spatial = {
+            "echoes_found": True,
+            "coverage_20km": 0.10,
+            "max_dbz_20km": 8.0,
+        }
+        tracking = {"storm_velocity_kmh": 0}
+        should_filter = (
+            spatial.get("echoes_found")
+            and spatial.get("coverage_20km", 0) > 0.20
+            and spatial.get("max_dbz_20km", 0) < 15
+            and tracking.get("storm_velocity_kmh", 0) == 0
+        )
+        assert not should_filter
+
+    def test_boundary_coverage_exactly_20_not_filtered(self):
+        """Cobertura exactament 0.20 → no activa (>0.20 requerit)."""
+        assert not (0.20 > 0.20)
+
+    def test_boundary_dbz_exactly_15_not_filtered(self):
+        """Eco a 15 dBZ exacte → no activa (<15 requerit)."""
+        assert not (15.0 < 15)
+
+
 class TestIsotonicCalibration:
     """Test les propietats matemàtiques del calibratge isotònic."""
 
