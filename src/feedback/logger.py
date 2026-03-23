@@ -35,6 +35,8 @@ class _NumpyEncoder(json.JSONEncoder):
             return None if math.isnan(v) or math.isinf(v) else v
         if isinstance(o, np.ndarray):
             return o.tolist()
+        if isinstance(o, float) and (math.isnan(o) or math.isinf(o)):
+            return None
         return super().default(o)
 
 

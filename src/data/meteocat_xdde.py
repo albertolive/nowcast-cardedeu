@@ -6,7 +6,6 @@ i pluja imminent.
 Documentació: https://apidocs.meteocat.gencat.cat/documentacio/dades-de-la-xdde/
 """
 import logging
-import math
 from datetime import datetime, date, timezone
 from typing import Optional
 
@@ -17,6 +16,7 @@ import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 import config
 from src.data._http import create_session
+from src.data._geo import _haversine_km, _bearing_deg, _bearing_to_compass
 
 logger = logging.getLogger(__name__)
 
@@ -29,36 +29,6 @@ def _headers() -> dict:
 
 def _is_configured() -> bool:
     return bool(config.METEOCAT_API_KEY)
-
-
-def _haversine_km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
-    """Distància entre dos punts en km (fórmula de Haversine)."""
-    R = 6371.0
-    dlat = math.radians(lat2 - lat1)
-    dlon = math.radians(lon2 - lon1)
-    a = (math.sin(dlat / 2) ** 2 +
-         math.cos(math.radians(lat1)) * math.cos(math.radians(lat2)) *
-         math.sin(dlon / 2) ** 2)
-    return R * 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
-
-
-def _bearing_deg(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
-    """Rumb (bearing) del punt 1 al punt 2 en graus (0=N, 90=E)."""
-    dlon = math.radians(lon2 - lon1)
-    lat1r = math.radians(lat1)
-    lat2r = math.radians(lat2)
-    x = math.sin(dlon) * math.cos(lat2r)
-    y = (math.cos(lat1r) * math.sin(lat2r) -
-         math.sin(lat1r) * math.cos(lat2r) * math.cos(dlon))
-    return (math.degrees(math.atan2(x, y)) + 360) % 360
-
-
-def _bearing_to_compass(bearing: float) -> str:
-    """Converteix graus (0-360) a punt cardinal."""
-    directions = ["N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE",
-                   "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"]
-    idx = round(bearing / 22.5) % 16
-    return directions[idx]
 
 
 def _fetch_lightning_hour(target_date: date, hour: int) -> list[dict]:
@@ -131,7 +101,7 @@ def fetch_lightning_data(
 
 
 def compute_lightning_features(
-    radius_km: float = 30.0,
+    radius_km: float = config.RADAR_SCAN_RADIUS_KM,
     hours_back: float = 3.0,
 ) -> dict:
     """
@@ -260,7 +230,7 @@ def compute_lightning_features(
     return result
 
 
-def _empty_lightning_result(radius_km: float = 30.0) -> dict:
+def _empty_lightning_result(radius_km: float = config.RADAR_SCAN_RADIUS_KM) -> dict:
     return {
         "lightning_count_30km": 0,
         "lightning_count_15km": 0,

@@ -25,6 +25,7 @@ import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 import config
 from src.data._http import create_session
+from src.data._geo import _bearing_to_compass
 from src.data.aemet_cache import get_cached, set_cached, RADAR_TTL
 
 logger = logging.getLogger(__name__)
@@ -277,13 +278,6 @@ def fetch_aemet_radar() -> dict:
     except Exception as e:
         logger.warning(f"Error processant radar AEMET: {e}")
         return result
-
-
-def _bearing_to_compass(bearing: float) -> str:
-    directions = ["N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE",
-                   "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"]
-    idx = round(bearing / 22.5) % 16
-    return directions[idx]
 
 
 def _empty_aemet_radar() -> dict:

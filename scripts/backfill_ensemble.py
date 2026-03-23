@@ -30,10 +30,9 @@ from datetime import date, timedelta
 
 import numpy as np
 import pandas as pd
-import requests
-
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 import config
+from src.data._http import create_session
 
 logging.basicConfig(
     level=logging.INFO,
@@ -41,8 +40,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-SESSION = requests.Session()
-SESSION.headers.update({"User-Agent": "NowcastCardedeu/1.0 (research)"})
+SESSION = create_session()
 
 CACHE_PATH = os.path.join(config.DATA_RAW_DIR, "ensemble_historical.parquet")
 HISTORICAL_FORECAST_URL = "https://historical-forecast-api.open-meteo.com/v1/forecast"
