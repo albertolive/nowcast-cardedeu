@@ -130,7 +130,9 @@ function _verificationResult(d) {
       ? { text: '🔸 Encert', cls: 'uncertain' }
       : { text: '🔸 Error', cls: 'uncertain' };
   }
-  if (d.correct) return { text: '✅ Encert', cls: 'correct' };
+  // Retrocompat: if correct is null (old data verified before rain_category), recompute
+  const correct = d.correct != null ? d.correct : (pct < 30 ? !d.actual_rain : d.actual_rain);
+  if (correct) return { text: '✅ Encert', cls: 'correct' };
   return { text: '❌ Error', cls: 'wrong' };
 }
 

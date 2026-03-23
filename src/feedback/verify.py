@@ -88,7 +88,17 @@ def verify_pending_predictions() -> dict:
         # Comparar predicció vs realitat
         # Verificació justa: la zona incerta (30-65%) no es puntua com encert/error
         predicted_rain = entry["will_rain"]
-        rain_category = entry.get("rain_category", "incert")
+        rain_category = entry.get("rain_category")
+        # Retrocompatibilitat: si no hi ha rain_category, calcular-la des de la probabilitat
+        if rain_category is None:
+            prob = entry["probability"]
+            if prob >= config.DISPLAY_THRESHOLD_RAIN:
+                rain_category = "probable"
+            elif prob >= config.DISPLAY_THRESHOLD_UNCERTAIN:
+                rain_category = "incert"
+            else:
+                rain_category = "sec"
+            entry["rain_category"] = rain_category
         is_uncertain = rain_category == "incert"
 
         if is_uncertain:
