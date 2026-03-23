@@ -1032,11 +1032,11 @@ function drawChart(history, latest) {
       lastLabelX = px;
     }
 
-    // Threshold label
-    ctx.fillStyle = 'rgba(248,81,73,0.5)';
+    // Zone labels
     ctx.font = '10px sans-serif';
     ctx.textAlign = 'left';
-    ctx.fillText('llindar', pad.left + 4, threshY - 4);
+    ctx.fillStyle = 'rgba(210,153,34,0.5)';
+    ctx.fillText('incert', pad.left + 4, yScale(48) + 3);
 
     // Hover crosshair + tooltip
     if (hoverIdx != null && hoverIdx >= 0 && hoverIdx < points.length) {
