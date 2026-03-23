@@ -46,9 +46,15 @@ def compute_accuracy(days: int = None) -> dict:
 
     total = tp + fp + tn + fn
     accuracy = (tp + tn) / total if total > 0 else 0
-    precision = tp / (tp + fp) if (tp + fp) > 0 else 0
-    recall = tp / (tp + fn) if (tp + fn) > 0 else 0
-    f1 = 2 * precision * recall / (precision + recall) if (precision + recall) > 0 else 0
+    # Precision/Recall: None quan el denominador és 0 (sense alertes o sense pluja real)
+    # Precision=None si no hi ha cap alerta (tp+fp=0)
+    # Recall=None si no ha plogut (tp+fn=0) — diferent de "model falla"
+    precision = tp / (tp + fp) if (tp + fp) > 0 else None
+    recall = tp / (tp + fn) if (tp + fn) > 0 else None
+    if precision is not None and recall is not None and (precision + recall) > 0:
+        f1 = 2 * precision * recall / (precision + recall)
+    else:
+        f1 = None
 
     # Accuracy per nivell de confiança
     by_confidence = {}
@@ -82,9 +88,9 @@ def compute_accuracy(days: int = None) -> dict:
         "verified": total,
         "pending": len(entries) - total,
         "accuracy": round(accuracy * 100, 1),
-        "precision": round(precision * 100, 1),
-        "recall": round(recall * 100, 1),
-        "f1": round(f1 * 100, 1),
+        "precision": round(precision * 100, 1) if precision is not None else None,
+        "recall": round(recall * 100, 1) if recall is not None else None,
+        "f1": round(f1 * 100, 1) if f1 is not None else None,
         "confusion": {"tp": tp, "fp": fp, "tn": tn, "fn": fn},
         "by_confidence": by_confidence,
         "daily": dict(sorted(daily.items(), reverse=True)[:7]),
@@ -108,9 +114,9 @@ def format_accuracy_report(metrics: dict) -> str:
         f"⏳ Pendents: {metrics.get('pending', 0)}",
         "",
         f"🎯 <b>Accuracy: {metrics['accuracy']}%</b>",
-        f"🔎 Precision: {metrics['precision']}% (de les alertes, quantes van ser pluja real)",
-        f"📡 Recall: {metrics['recall']}% (de les pluges reals, quantes vam predir)",
-        f"⚖️ F1: {metrics['f1']}%",
+        f"🔎 Precision: {metrics['precision']}%" if metrics['precision'] is not None else "🔎 Precision: N/A (cap alerta emesa)",
+        f"📡 Recall: {metrics['recall']}%" if metrics['recall'] is not None else "📡 Recall: N/A (no ha plogut — no es pot avaluar)",
+        f"⚖️ F1: {metrics['f1']}%" if metrics['f1'] is not None else "⚖️ F1: N/A",
         "",
         "📊 <b>Matriu de confusió:</b>",
         f"  ✅ True Positive (pluja predita correcta): {cm['tp']}",

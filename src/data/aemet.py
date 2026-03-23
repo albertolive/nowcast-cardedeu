@@ -84,7 +84,10 @@ def fetch_hourly_forecast() -> dict:
         precip_today = 0
 
         # Mirar avui i demà (per cobrir les properes 6h)
-        for dia in dias[:2]:
+        for day_idx, dia in enumerate(dias[:2]):
+            # Per a demà (day_idx=1), desplaçar les hores +24 per comparar amb current_hour
+            offset = 24 * day_idx
+
             # probPrecipitacion: llista de {periodo, valor}
             for pp in dia.get("probPrecipitacion", []):
                 periodo = pp.get("periodo", "")
@@ -92,8 +95,8 @@ def fetch_hourly_forecast() -> dict:
 
                 # Parsejar el període (format "0006", "0612", "1218", "1824" o "00-24")
                 if len(periodo) == 4:
-                    h_start = int(periodo[:2])
-                    h_end = int(periodo[2:])
+                    h_start = int(periodo[:2]) + offset
+                    h_end = int(periodo[2:]) + offset
                     # Es rellevant si cobreix les properes 6h?
                     if h_start <= current_hour + 6 and h_end > current_hour:
                         max_prob_precip = max(max_prob_precip, valor)
@@ -106,8 +109,8 @@ def fetch_hourly_forecast() -> dict:
                 valor = int(pt.get("value", 0) or 0)
 
                 if len(periodo) == 4:
-                    h_start = int(periodo[:2])
-                    h_end = int(periodo[2:])
+                    h_start = int(periodo[:2]) + offset
+                    h_end = int(periodo[2:]) + offset
                     if h_start <= current_hour + 6 and h_end > current_hour:
                         max_prob_storm = max(max_prob_storm, valor)
 

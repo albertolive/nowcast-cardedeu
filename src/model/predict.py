@@ -26,6 +26,17 @@ from src.model.train import load_model
 logger = logging.getLogger(__name__)
 
 
+def _aemet_storm_above_threshold(aemet_data: dict) -> bool:
+    """Check if AEMET storm probability exceeds the rain gate threshold."""
+    val = aemet_data.get("aemet_prob_storm")
+    if val is None:
+        return False
+    try:
+        return not np.isnan(val) and val >= config.RAIN_GATE_AEMET_STORM
+    except (TypeError, ValueError):
+        return False
+
+
 def predict_now() -> dict:
     """
     Executa una predicció en temps real.
@@ -88,8 +99,7 @@ def predict_now() -> dict:
         ensemble_data.get("ensemble_rain_agreement", 0) >= config.RAIN_GATE_ENSEMBLE_PROB
         or radar_data.get("radar_has_echo", False)
         or radar_data.get("radar_nearest_echo_km", 30) < config.RAIN_GATE_RADAR_NEARBY_KM
-        or (not np.isnan(aemet_data.get("aemet_prob_storm", 0) or 0)
-            and (aemet_data.get("aemet_prob_storm", 0) or 0) >= config.RAIN_GATE_AEMET_STORM)
+        or _aemet_storm_above_threshold(aemet_data)
         or aemet_radar_data.get("aemet_radar_has_echo", False)
     )
     # Also check CAPE from forecast
@@ -170,7 +180,7 @@ def predict_now() -> dict:
             "SUN": last_row.get("SUN"),
         }
     station_temp = float(current.get("TEMP", 0) or 0)
-    station_hum = int(current.get("HUM", 0) or 0)
+    station_hum = float(current.get("HUM") if current.get("HUM") is not None else np.nan)
     sentinel_features = compute_sentinel_features(sentinel_data, station_temp, station_hum)
     for k, v in sentinel_features.items():
         if k in FEATURE_COLUMNS:
@@ -219,9 +229,15 @@ def predict_now() -> dict:
             latest[k] = v
 
     # Afegir dades de nivells de pressió (850hPa, 500hPa)
+    # IMPORTANT: Només omplir NaN — no sobreescriure valors existents del pipeline
+    # de feature engineering. Si es sobreescriuen wind_850_dir/speed amb el valor
+    # escalar però els règims eòlics es van calcular amb vent de superfície (perquè
+    # wind_850_dir era NaN al DataFrame), es crea una inconsistència:
+    # wind_850_dir=248 (Garbí) però llevantada_strength=4.8 (superfície ESE).
     for k, v in pressure_data.items():
         if k in FEATURE_COLUMNS:
-            latest[k] = v
+            if k not in latest.columns or pd.isna(latest[k].values[0]):
+                latest[k] = v
 
     # Afegir SST Mediterrani
     for k, v in sst_data.items():

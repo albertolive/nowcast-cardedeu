@@ -193,3 +193,49 @@ class TestWindRegimeClassification:
         })
         result = _add_wind_regime_features(df)
         assert result["is_llevantada"].iloc[0] == 1
+
+
+class TestWindRegimeConsistency:
+    """
+    Verifica coherència entre wind_850_dir i els règims derivats.
+    Reprodueix el bug del 22/03: 850hPa Garbí (248°) + superfície ESE (112°)
+    → feature engineering ha d'usar 850hPa, no superfície.
+    """
+
+    def test_garbi_850_with_ese_surface(self):
+        """850hPa a 248° (Garbí) + superfície ESE (112°) → usa 850hPa."""
+        from src.features.engineering import _add_wind_regime_features
+        df = pd.DataFrame({
+            "wind_850_dir": [248.0],
+            "wind_850_speed": [8.4],
+            "wind_speed_10m": [4.8],
+            "wind_direction_10m": [112.0],
+            "relative_humidity_2m": [69.0],
+        })
+        result = _add_wind_regime_features(df)
+        assert result["garbi_strength"].values[0] == pytest.approx(8.4)
+        assert result["llevantada_strength"].values[0] == 0.0
+        assert result["is_garbi"].values[0] == 1
+        assert result["is_llevantada"].values[0] == 0
+
+    def test_partial_nan_850_no_surface_fallback(self):
+        """
+        wind_850_dir NaN al row actual però disponible en altres rows →
+        usa 850hPa (NaN) per row actual, NO cau a superfície.
+        Resultat: regimes = 0 per row actual (NaN no és cap direcció).
+        """
+        from src.features.engineering import _add_wind_regime_features
+        df = pd.DataFrame({
+            "wind_850_dir": [np.nan, 248.0],
+            "wind_850_speed": [np.nan, 8.4],
+            "wind_speed_10m": [4.8, 5.0],
+            "wind_direction_10m": [112.0, 200.0],
+            "relative_humidity_2m": [69.0, 50.0],
+        })
+        result = _add_wind_regime_features(df)
+        # Row 0: NaN → tots els règims = 0
+        assert result["llevantada_strength"].values[0] == 0.0
+        assert result["garbi_strength"].values[0] == 0.0
+        # Row 1: 248° → Garbí
+        assert result["garbi_strength"].values[1] == pytest.approx(8.4)
+        assert result["llevantada_strength"].values[1] == 0.0

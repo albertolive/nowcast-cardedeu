@@ -510,6 +510,20 @@ def fetch_radar_at_cardedeu(wind_from_dir: Optional[float] = None) -> dict:
     # Combinar approaching: puntual O espacial
     spatial_approaching = storm_tracking["storm_approaching"]
 
+    # ── Safeguard: detectar clutter post-scan ──
+    # Patró: cobertura alta (>20%) + dBZ baixa (<15) + velocitat zero = clutter de terra
+    # La pluja real amb 20%+ cobertura tindria dBZ molt més alt (>20 típicament)
+    if (latest_spatial.get("echoes_found")
+            and latest_spatial.get("coverage_20km", 0) > 0.20
+            and latest_spatial.get("max_dbz_20km", 0) < 15
+            and storm_tracking.get("storm_velocity_kmh", 0) == 0):
+        logger.warning(
+            f"  Clutter post-scan detectat: cobertura={latest_spatial['coverage_20km']:.1%} "
+            f"però max_dbz={latest_spatial['max_dbz_20km']} i vel=0 — resetejant a buit"
+        )
+        latest_spatial = _empty_spatial_result(config.RADAR_SCAN_RADIUS_KM)
+        spatial_approaching = False
+
     result = {
         # Puntuals (compatibilitat)
         "radar_intensity": current_intensity,

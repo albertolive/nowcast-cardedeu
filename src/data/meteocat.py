@@ -7,6 +7,7 @@ import logging
 from datetime import datetime, date, timedelta
 from typing import Optional
 
+import numpy as np
 import pandas as pd
 
 import sys, os
@@ -208,7 +209,7 @@ def compute_sentinel_features(sentinel_data: dict, station_temp: float, station_
             # Si Granollers és més freda que Cardedeu → possible front fred entrant
             features["sentinel_temp_diff"] = station_temp - s_temp
 
-        if s_hum is not None and station_humidity is not None:
+        if s_hum is not None and station_humidity is not None and not np.isnan(station_humidity):
             # Si Granollers té més humitat → aire humit s'acosta
             features["sentinel_humidity_diff"] = s_hum - station_humidity
 
