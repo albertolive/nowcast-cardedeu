@@ -398,9 +398,11 @@ canvas { width: 100% !important; height: 100% !important; }
 
 .storm-note { opacity: 0.8; }
 
-/* Vote tally bar */
-.vote-tally {
-  margin: 10px 0 8px;
+/* Vote tally + verdict — unified bottom section */
+.vote-summary {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(48, 54, 61, 0.35);
 }
 
 .tally-bar {
@@ -425,37 +427,29 @@ canvas { width: 100% !important; height: 100% !important; }
   margin-top: 4px;
 }
 
-/* ML verdict in sources card */
 .ml-verdict {
-  background: rgba(88, 166, 255, 0.04);
-  border: 1px solid rgba(88, 166, 255, 0.12);
-  border-radius: 8px;
-  padding: 10px 12px;
-  margin: 6px 0 10px;
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
+  font-size: 12.5px;
+  color: var(--text-muted);
+  line-height: 1.55;
+  margin-top: 10px;
 }
 
 .ml-verdict-badge {
-  background: rgba(88, 166, 255, 0.12);
-  border-radius: 7px;
-  padding: 4px 10px;
-  font-size: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  background: rgba(88, 166, 255, 0.1);
+  border-radius: 5px;
+  padding: 2px 7px;
+  font-size: 12px;
   font-weight: 700;
   white-space: nowrap;
   color: var(--accent-blue);
+  vertical-align: middle;
+  margin-right: 4px;
 }
 
-.ml-verdict p {
-  font-size: 12px;
-  color: var(--text-muted);
-  line-height: 1.5;
-  margin: 0;
-  padding-top: 2px;
-}
-
-.ml-verdict p strong { color: var(--text); }
+.ml-verdict strong { color: var(--text); }
 
 /* Sources bar */
 .sources-bar {
