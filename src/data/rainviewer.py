@@ -142,6 +142,11 @@ def _scan_radar_spatial(png_bytes: bytes, cx: int, cy: int,
     # Ecos: alpha > 0 (cobertura radar) AND R > 0 (precipitació detectada)
     has_echo = (alpha > 0) & (r_channel > 0) & in_radius
 
+    # Filtre dBZ mínim: descartar soroll, propagació anòmala i clutter transient
+    # R=255 (cap a 95.5 dBZ) gairebé sempre és artefacte de terra, no pluja real
+    dbz_grid = r_channel / 2.0 - 32.0
+    has_echo = has_echo & (dbz_grid >= config.RADAR_MIN_DBZ) & (r_channel < 255)
+
     # Excloure clutter (ecos permanents detectats en tots els frames)
     if clutter_mask is not None:
         clutter_region = clutter_mask[y_lo:y_hi, x_lo:x_hi]
@@ -244,14 +249,16 @@ def _scan_radar_spatial(png_bytes: bytes, cx: int, cy: int,
 def _build_clutter_mask(tile_bytes_list: list) -> Optional[np.ndarray]:
     """
     Construeix una màscara booleana d'ecos permanents (clutter de terra).
-    Un píxel es considera clutter si mostra eco (alpha>0, R>0)
-    en TOTS els frames vàlids. Tanmateix, si el clutter cobreix >5% del tile,
-    és pluja persistent (frontal), no clutter real → retorna None.
+    Un píxel es considera clutter si mostra eco en TOTS els frames vàlids
+    i la seva intensitat NO varia entre frames (variància zero = muntanya/edifici).
+    Pluja real fluctua entre frames (10 min cadascun); clutter de terra és estàtic.
     Necessita mínim 3 frames vàlids per ser fiable.
     """
     from PIL import Image
 
     echo_count = None
+    intensity_sum = None
+    intensity_sq_sum = None
     valid_count = 0
 
     for tile_bytes in tile_bytes_list:
@@ -261,10 +268,17 @@ def _build_clutter_mask(tile_bytes_list: list) -> Optional[np.ndarray]:
             img = Image.open(io.BytesIO(tile_bytes)).convert("RGBA")
             arr = np.array(img)
             has_echo = (arr[:, :, 3] > 0) & (arr[:, :, 0] > 0)
+            r_ch = arr[:, :, 0].astype(float)
+            dbz_arr = r_ch / 2.0 - 32.0
+            has_echo = has_echo & (dbz_arr >= config.RADAR_MIN_DBZ) & (r_ch < 255)
             if echo_count is None:
                 echo_count = has_echo.astype(int)
+                intensity_sum = np.where(has_echo, r_ch, 0.0)
+                intensity_sq_sum = np.where(has_echo, r_ch ** 2, 0.0)
             else:
                 echo_count += has_echo.astype(int)
+                intensity_sum += np.where(has_echo, r_ch, 0.0)
+                intensity_sq_sum += np.where(has_echo, r_ch ** 2, 0.0)
             valid_count += 1
         except Exception:
             continue
@@ -272,17 +286,38 @@ def _build_clutter_mask(tile_bytes_list: list) -> Optional[np.ndarray]:
     if valid_count < 3 or echo_count is None:
         return None
 
-    clutter = echo_count >= valid_count
-    # Pluja frontal persistent apareix a tots els frames → sembla clutter
-    # Però clutter real (edificis, muntanyes) rarament supera ~200 px a zoom 8
-    # Si la cobertura és >0.5% del tile, és pluja persistent, no clutter
-    clutter_frac = clutter.sum() / clutter.size
-    if clutter_frac > 0.005:
-        logger.debug(f"  Clutter mask desactivada: {clutter_frac:.1%} del tile "
-                     f"({int(clutter.sum())} px) — pluja persistent, no clutter")
+    persistent = echo_count >= valid_count
+
+    if not persistent.any():
         return None
 
-    return clutter
+    # Variància d'intensitat per píxels persistents:
+    # Clutter (muntanyes, edificis) → mateixa R cada frame → variància ≈ 0
+    # Pluja real → intensitat fluctua entre frames → variància > 0
+    safe_count = np.maximum(echo_count, 1)
+    mean_int = intensity_sum / safe_count
+    var_int = intensity_sq_sum / safe_count - mean_int ** 2
+    # Llindars de variància: <1.0 = estàtic (clutter), >=1.0 = variable (pluja)
+    static_persistent = persistent & (var_int < 1.0)
+    variable_persistent = persistent & (var_int >= 1.0)
+
+    # Ecos persistents estàtics = clutter definitiu (sempre filtrat)
+    # Ecos persistents variables = possible pluja frontal
+    # Només deshabilitar el filtre de variables si la cobertura és significativa
+    variable_frac = variable_persistent.sum() / persistent.size
+    if variable_frac > 0.005:
+        # Pluja frontal persistent (variable): no filtrar, però SÍ filtrar clutter estàtic
+        clutter = static_persistent
+    else:
+        clutter = persistent
+
+    clutter_count = int(clutter.sum())
+    if clutter_count > 0:
+        static_count = int(static_persistent.sum())
+        logger.debug(f"  Clutter mask: {clutter_count} px filtrats "
+                     f"({static_count} estàtics, {int(variable_persistent.sum())} variables)")
+
+    return clutter if clutter.any() else None
 
 
 def _empty_spatial_result(radius_km: float) -> dict:
@@ -488,7 +523,7 @@ def fetch_radar_at_cardedeu(wind_from_dir: Optional[float] = None) -> dict:
         "radar_intensity": current_intensity,
         "radar_dbz": round(current_dbz, 1),
         "radar_rain_rate": round(current_rain_rate, 2),
-        "radar_has_echo": current_intensity > 0,
+        "radar_has_echo": current_dbz >= config.RADAR_MIN_DBZ,
         "radar_frames_with_echo": frames_with_echo,
         "radar_approaching": approaching or spatial_approaching,
         "radar_max_intensity_1h": max(intensities) if intensities else 0,

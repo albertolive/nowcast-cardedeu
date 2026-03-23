@@ -348,15 +348,16 @@ class TestClutterMask:
         if result is not None:
             assert result.sum() == 0
 
-    def test_persistent_echo_detected_but_disabled_if_too_many(self):
-        """Eco persistent a >0.5% del tile → pluja frontal, no clutter → None."""
-        # Necessitem >0.5% de 256*256 = 65536 → >327 píxels
+    def test_persistent_static_echo_detected_as_clutter(self):
+        """Eco persistent estàtic (variància zero) → clutter, encara que sigui >0.5% del tile."""
+        # 400 píxels amb mateixa intensitat en tots els frames = clutter (muntanya)
         echoes = [(x, 128, 146, 255) for x in range(50, 250)]  # 200 px per frame
         echoes += [(x, 129, 146, 255) for x in range(50, 250)]  # +200 = 400 > 327
         tile = _make_tile(echoes=echoes)
         tiles = [tile, tile, tile]
         result = _build_clutter_mask(tiles)
-        assert result is None  # Desactivat per pluja persistent
+        assert result is not None  # Clutter estàtic detectat
+        assert result.sum() == 400  # Tots els ecos persistents estàtics marcats
 
     def test_none_frames_ignored(self):
         """Frames None s'ignoren."""
