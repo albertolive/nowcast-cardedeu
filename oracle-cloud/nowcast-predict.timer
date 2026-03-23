@@ -1,0 +1,13 @@
+[Unit]
+Description=Nowcast Cardedeu — Timer cada 10 minuts
+
+[Timer]
+# Executar cada 10 minuts, alineat a :00, :10, :20, :30, :40, :50
+OnCalendar=*:0/10
+# Executar immediatament si el timer s'ha perdut (reboot)
+Persistent=true
+# Petit jitter per no sobrecarregar APIs exactament al minut 0
+RandomizedDelaySec=30
+
+[Install]
+WantedBy=timers.target

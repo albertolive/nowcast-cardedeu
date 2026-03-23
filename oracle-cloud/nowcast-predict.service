@@ -1,0 +1,23 @@
+[Unit]
+Description=Nowcast Cardedeu — Predicció en temps real
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=__USER__
+WorkingDirectory=__REPO_DIR__
+ExecStart=__REPO_DIR__/oracle-cloud/run-predict.sh
+TimeoutStartSec=120
+# Reintentar amb backoff si falla la xarxa
+Restart=on-failure
+RestartSec=30
+
+# Seguretat: limitar privilegis
+NoNewPrivileges=true
+ProtectSystem=strict
+ReadWritePaths=__REPO_DIR__
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target
