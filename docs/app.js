@@ -113,18 +113,22 @@ function _predictionLabel(d) {
   const pct = d.probability_pct;
   if (cat === 'probable' || pct >= 65) return '🌧️ Pluja probable';
   if (cat === 'sec' || pct < 30) return '☀️ No plourà';
-  return `🌤️ ${pct}%`;
+  return '🌤️ Incert';
 }
 
-/** Fair verification result: uncertain zone is not scored */
+/** Fair verification: uncertain zone scored softly with 50% lean boundary */
 function _verificationResult(d) {
   if (!d.verified) return { text: '⏳ Pendent', cls: 'pending' };
   const cat = d.rain_category;
   const pct = d.probability_pct;
   const isUncertain = cat === 'incert' || (pct >= 30 && pct < 65 && cat == null);
   if (isUncertain) {
-    const rain = d.actual_rain ? 'va ploure' : 'no va ploure';
-    return { text: `🔸 ${rain}`, cls: 'uncertain' };
+    // 50% = natural "which side did you lean?" boundary
+    const leanedRain = pct >= 50;
+    const wasRight = leanedRain === Boolean(d.actual_rain);
+    return wasRight
+      ? { text: '🔸 Encert', cls: 'uncertain' }
+      : { text: '🔸 Error', cls: 'uncertain' };
   }
   if (d.correct) return { text: '✅ Encert', cls: 'correct' };
   return { text: '❌ Error', cls: 'wrong' };
