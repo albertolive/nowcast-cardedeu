@@ -4,6 +4,7 @@ const RAW_BASE = `https://raw.githubusercontent.com/${REPO}/${BRANCH}/data`;
 const REFRESH_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
 
 import { deriveRadarViewModel } from './radar_logic.js';
+import { selectDriverExplanations } from './driver_logic.js';
 
 async function fetchJSON(filename) {
   // Try local (GitHub Pages docs/) first, fall back to raw.githubusercontent.com
@@ -418,146 +419,12 @@ function renderDrivers(d) {
   const featureDrivers = drivers.filter(dr => dr.group !== 'Base (climatologia)');
   if (featureDrivers.length === 0) return '';
 
-  // ── Sort: biggest pushers toward rain first, then toward dry ──
-  const rainPushers = featureDrivers.filter(dr => dr.direction === 'pluja').sort((a, b) => b.contribution - a.contribution);
-  const dryPushers = featureDrivers.filter(dr => dr.direction === 'sec').sort((a, b) => a.contribution - b.contribution);
+  const lines = selectDriverExplanations(d);
+  if (lines.length === 0) return '';
 
-  // Human-readable explanations — sensory language a general user understands
-  // Rule: show % for humidity/clouds (universally understood), words for everything else.
-  // When data contradicts the model direction, return null to skip that group.
-  const fv = d.feature_vector || {};
-  const cloud = fv.cloud_cover;
-  const rh = fv.relative_humidity_2m;
-  const pressChange = fv.pressure_change_3h;
-  const solar = fv.shortwave_radiation;
-  const radarKm = fv.radar_nearest_echo_km;
-  const radarCov = fv.radar_coverage_20km;
-  const rainAccum = fv.rain_accum_3h;
-  const cape = fv.cape;
-  const li = fv.nwp_lifted_index;
-  const lightning = fv.lightning_count_30km;
-  const ensemble = d.ensemble || {};
-
-  function explainGroup(group, direction) {
-    const isRain = direction === 'pluja';
-    switch (group) {
-      case 'Models globals':
-        // Most important driver — be specific about actual conditions
-        if (isRain) return 'Les condicions meteorològiques afavoreixen pluja';
-        // At dry: describe what the weather IS, not just "no afavoreix"
-        if (solar != null && solar >= 200 && rh != null && rh < 60) return 'Fa sol i l\'aire és sec';
-        if (cloud != null && cloud < 30) return 'Cel clar, sense senyals de pluja';
-        if (rh != null && rh < 50) return 'Aire sec, temps estable';
-        return 'Temps estable, sense senyals de pluja';
-      case 'Consistència NWP':
-        return isRain ? 'La situació de pluja és persistent' : null; // "feble" is redundant at low probs
-      case 'Pluja confirmada':
-        if (isRain) return rainAccum > 0 ? `Ja plou (${rainAccum.toFixed(1)} mm en 3h)` : null;
-        return null; // "No plou" is always a tautology — skip
-      case 'Radar':
-        if (isRain) {
-          if (radarCov != null && radarCov > 0) return 'Detectem pluja a prop';
-          if (radarKm != null && radarKm < 25) return `Detectem pluja a ${Math.round(radarKm)} km`;
-          return null;
-        }
-        return null; // "No detectem pluja" is obvious at low probs — skip
-      case 'Humitat':
-        if (rh == null) return isRain ? 'L\'aire és humit' : 'L\'aire és sec';
-        return isRain ? `L'aire és humit (${Math.round(rh)}%)` : `L'aire és sec (${Math.round(rh)}%)`;
-      case 'Aigua precipitable':
-        return isRain ? 'Hi ha molta humitat a l\'atmosfera' : 'Poca humitat a l\'atmosfera';
-      case 'Inestabilitat':
-        if (isRain) {
-          if ((cape != null && cape >= 300) || (li != null && li < 0)) return 'L\'atmosfera és inestable';
-          return null;
-        }
-        return 'L\'atmosfera és estable';
-      case 'Pressió':
-        if (pressChange == null) return isRain ? 'La pressió baixa' : 'La pressió és estable';
-        if (isRain) return pressChange <= 0 ? 'La pressió baixa' : null;
-        return pressChange >= 0 ? 'La pressió puja o és estable' : null;
-      case 'Règim de vent':
-        return isRain ? 'El vent porta humitat del mar' : 'El vent no porta humitat';
-      case 'Vent':
-        return isRain ? 'El vent afavoreix pluja' : 'El vent no afavoreix pluja';
-      case 'Núvols':
-        if (cloud == null) return isRain ? 'Cel ennuvolat' : 'Cel obert';
-        if (isRain) return cloud >= 50 ? `Cel ennuvolat (${Math.round(cloud)}%)` : null;
-        return cloud < 50 ? `Cel obert (${Math.round(cloud)}% núvols)` : `Cel ennuvolat (${Math.round(cloud)}%), però no plourà`;
-      case 'Temperatura':
-        return isRain ? 'La temperatura afavoreix pluja' : null; // "no afavoreix" is vacuous
-      case 'Hora del dia':
-        return isRain ? 'Hora propensa a pluja' : null; // "habitualment seca" adds nothing
-      case 'Radiació solar':
-        if (solar == null) return isRain ? 'Poca llum solar' : 'Fa sol';
-        if (isRain) return solar < 200 ? 'Cel cobert, poca llum solar' : null;
-        return solar >= 200 ? 'Fa sol' : null;
-      case 'Sòl':
-        return isRain ? 'El terra està humit' : null; // "terra sec" is not interesting
-      case 'Capa límit':
-        return isRain ? 'L\'aire es barreja i pot generar xàfecs' : null; // "calmat" is vacuous
-      case 'Llamps':
-        if (isRain) {
-          if (lightning != null && lightning > 0) return `Detectem ${Math.round(lightning)} llamps a prop`;
-          return null;
-        }
-        return null; // "Sense llamps" is obvious — skip
-      case 'Sentinella':
-        return isRain ? 'Ja plou a localitats properes' : null; // "no plou" is obvious
-      case 'Previsió oficial':
-        return null;
-      case 'Acord entre models':
-        if (ensemble.models_rain != null) {
-          const n = ensemble.models_rain, t = ensemble.total_models || 4;
-          return isRain ? `${n} de ${t} fonts independents coincideixen` : null; // "0 de 4" is obvious
-        }
-        return isRain ? 'Diverses fonts independents coincideixen' : null;
-      case 'Correcció local':
-        return isRain ? 'L\'experiència local a Cardedeu ho confirma' : 'L\'experiència local a Cardedeu no hi dona suport';
-      default:
-        return null;
-    }
-  }
-
-  // Adaptive display: at extremes, focus on dominant direction only
-  const pct = d.probability_pct;
-  const isExtreme = pct < 10 || pct > 90;
-
-  const topRain = rainPushers.slice(0, isExtreme ? 6 : 4);
-  const topDry = dryPushers.slice(0, isExtreme ? 6 : 4);
-
-  let naturalLines = [];
-  if (isExtreme && pct < 10) {
-    // Very low prob: show only the conditions keeping it dry (3 max)
-    let count = 0;
-    for (const dr of topDry) {
-      if (count >= 3) break;
-      const text = explainGroup(dr.group, 'sec');
-      if (text) { naturalLines.push(`<li class="driver-reason dry">${dr.icon} ${text}</li>`); count++; }
-    }
-  } else if (isExtreme && pct > 90) {
-    // Very high prob: show only rain drivers (3 max)
-    let count = 0;
-    for (const dr of topRain) {
-      if (count >= 3) break;
-      const text = explainGroup(dr.group, 'pluja');
-      if (text) { naturalLines.push(`<li class="driver-reason rain">${dr.icon} ${text}</li>`); count++; }
-    }
-  } else {
-    // Middle zone: show tug-of-war (2 rain + 2 dry)
-    let rainCount = 0;
-    for (const dr of topRain) {
-      if (rainCount >= 2) break;
-      const text = explainGroup(dr.group, 'pluja');
-      if (text) { naturalLines.push(`<li class="driver-reason rain">${dr.icon} ${text}</li>`); rainCount++; }
-    }
-    let dryCount = 0;
-    for (const dr of topDry) {
-      if (dryCount >= 2) break;
-      const text = explainGroup(dr.group, 'sec');
-      if (text) { naturalLines.push(`<li class="driver-reason dry">${dr.icon} ${text}</li>`); dryCount++; }
-    }
-  }
+  const naturalLines = lines.map(l =>
+    `<li class="driver-reason ${l.direction === 'pluja' ? 'rain' : 'dry'}">${l.icon} ${l.text}</li>`
+  );
 
   return `
     <div class="drivers-section">
