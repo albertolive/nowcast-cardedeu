@@ -601,6 +601,7 @@ canvas { width: 100% !important; height: 100% !important; }
   text-transform: uppercase;
   letter-spacing: 0.5px;
   margin-bottom: 6px;
+  text-align: left;
 }
 
 .tech-open-section {
