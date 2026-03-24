@@ -213,6 +213,8 @@ function renderPrediction(latest, history) {
         Encerts: <strong style="color:var(--accent-green)">${dayAccuracy}%</strong> per dia (${daysCorrect}/${daysTotal})
         · <strong>${accuracy}%</strong> per predicció (${correct}/${scorable.length})${pending > 0 ? ` · <span style="color:var(--text-muted)">${pending} pendents de verificar</span>` : ''}
       </div>
+
+      ${renderTechExpandable(latest)}
     </div>
 
     <!-- Probability chart -->
@@ -245,11 +247,7 @@ function renderPrediction(latest, history) {
         <div class="info-card-body">${renderAtmosphere(latest)}</div>
       </div>
 
-      <!-- Verification card -->
-      <div class="info-card" id="sources-card">
-        <h3>✅ Verificació creuada</h3>
-        <div class="info-card-body">${renderWhyPrediction(latest)}</div>
-      </div>
+
     </div>
 
     <!-- Sources bar -->
@@ -483,17 +481,16 @@ function renderDriversTech(d) {
     </div>`;
 }
 
-function renderWhyPrediction(d) {
+function renderTechExpandable(d) {
   const r = d.radar || {};
   const e = d.ensemble || {};
   const a = d.aemet || {};
   const fv = d.feature_vector || {};
   const pct = d.probability_pct;
 
-  // Build source checks — these are data inputs our model analyzed, not independent votes
+  // Source checks — inputs our model analyzed, not independent validators
   const checks = [];
 
-  // Radar check
   const radarView = deriveRadarViewModel(d);
   checks.push({
     name: 'Radar (RainViewer)',
@@ -501,7 +498,6 @@ function renderWhyPrediction(d) {
     detail: radarView.radarVoteDetail
   });
 
-  // NWP ensemble check
   const modelsRain = e.models_rain || 0;
   const totalModels = e.total_models || 4;
   const mn = fv.ensemble_min_precip, mx = fv.ensemble_max_precip;
@@ -512,7 +508,6 @@ function renderWhyPrediction(d) {
     detail: modelsRain === 0 ? 'Cap preveu pluja' : `${modelsRain} de ${totalModels} preveuen pluja${rangeText}`
   });
 
-  // AEMET check
   const aemetProb = a.prob_precip;
   if (aemetProb != null) {
     checks.push({
@@ -522,13 +517,11 @@ function renderWhyPrediction(d) {
     });
   }
 
-  // Lightning check
   const lightning = fv.lightning_count_30km;
   if (lightning != null && lightning > 0) {
     checks.push({ name: 'Llamps', confirms: true, detail: `${Math.round(lightning)} detectats en 30 km` });
   }
 
-  // Storm prob note
   const stormNote = (a.prob_storm || 0) >= 10
     ? `<div class="source-vote storm-note"><span class="vote-badge rain">⚡</span><div class="vote-info"><span class="vote-name">Risc de tronada</span><span class="vote-detail">${a.prob_storm}%</span></div></div>`
     : '';
@@ -545,44 +538,35 @@ function renderWhyPrediction(d) {
     </div>
   `).join('');
 
-  // Conclusion — always from our perspective
+  // Disagreement insight — only when our model contradicts the external sources
   const mlCat = d.rain_category;
   const mlRain = mlCat === 'probable' || (mlCat == null && pct >= 65);
-  const mlUncertain = mlCat === 'incert' || (mlCat == null && pct >= 30 && pct < 65);
-  let conclusionText;
-  if (mlUncertain) {
-    conclusionText = `Situació incerta. Hem analitzat totes les fonts i <strong>la probabilitat és del ${pct}%</strong>. Caldrà seguir-ho.`;
-  } else if (confirming > checks.length / 2 && !mlRain) {
-    conclusionText = `Diverses fonts indiquen pluja, però <strong>hem après que a Cardedeu aquest patró sovint no acaba en pluja real</strong> (${pct}%). 12 anys de dades locals ens permeten filtrar falsos avisos.`;
+  let disagreementNote = '';
+  if (confirming > checks.length / 2 && !mlRain) {
+    disagreementNote = `<p class="tech-explainer" style="margin-top:8px;font-style:italic">Diverses fonts indiquen pluja, però l'historial de Cardedeu mostra que aquest patró sovint és fals avís.</p>`;
   } else if (confirming <= checks.length / 2 && mlRain) {
-    conclusionText = `La majoria de fonts no veuen pluja, però <strong>detectem senyals que històricament sí porten pluja aquí</strong> (${pct}%). Patrons que només es veuen amb dades locals.`;
-  } else if (mlRain) {
-    conclusionText = `Hem verificat amb ${checks.length} fonts independents: <strong>totes les dades apunten a pluja</strong> (${pct}%).`;
-  } else {
-    conclusionText = `Hem verificat amb ${checks.length} fonts independents: <strong>les dades no indiquen pluja</strong> (${pct}%).`;
+    disagreementNote = `<p class="tech-explainer" style="margin-top:8px;font-style:italic">Les fonts convencionals no veuen pluja, però detectem patrons que històricament sí porten pluja aquí.</p>`;
   }
 
-  const detailId = 'why-detail-' + Date.now();
+  const detailId = 'tech-detail-' + Date.now();
   return `
-    <div class="source-votes">
-      ${checkRows}
-      ${stormNote}
-    </div>
-    <div class="vote-summary">
-      <div class="ml-verdict">
-        ${conclusionText}
-      </div>
-    </div>
-
     <button class="expand-toggle" onclick="this.classList.toggle('open');document.getElementById('${detailId}').classList.toggle('open')">
-      <span class="chevron">▶</span> Com s'ha calculat
+      <span class="chevron">▶</span> Com ho sabem
     </button>
     <div id="${detailId}" class="expand-content">
       <p class="tech-explainer">
-        Integrem ${d.features_used || '209'} variables (estació local, radar, llamps, 4 models globals, nivells de pressió) en un model XGBoost entrenat amb 12 anys d'històric verificat a Cardedeu. Es re-entrena cada dia amb les prediccions comprovades.
+        Integrem ${d.features_used || '209'} variables (estació local, radar, llamps, 4 models globals, nivells de pressió) en un model entrenat amb 12 anys d'històric verificat a Cardedeu. Es re-entrena cada dia.
       </p>
       ${renderDriversTech(d)}
       ${_renderBiasInsight(d)}
+      <div class="sources-analyzed">
+        <div class="sources-analyzed-title">Fonts analitzades</div>
+        <div class="source-votes">
+          ${checkRows}
+          ${stormNote}
+        </div>
+        ${disagreementNote}
+      </div>
     </div>
   `;
 }

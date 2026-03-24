@@ -333,7 +333,7 @@ canvas { width: 100% !important; height: 100% !important; }
 }
 
 .expand-content.open {
-  max-height: 500px;
+  max-height: 800px;
 }
 
 .expand-content .stat-row:first-child {
@@ -587,6 +587,21 @@ canvas { width: 100% !important; height: 100% !important; }
 }
 
 .storm-note { opacity: 0.8; }
+
+.sources-analyzed {
+  margin-top: 14px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(48, 54, 61, 0.25);
+}
+
+.sources-analyzed-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+}
 
 /* Vote tally + verdict — unified bottom section */
 .vote-summary {
