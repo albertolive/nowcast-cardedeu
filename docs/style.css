@@ -588,18 +588,27 @@ canvas { width: 100% !important; height: 100% !important; }
 
 .storm-note { opacity: 0.8; }
 
-.sources-analyzed {
-  margin-bottom: 10px;
+.sources-inline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
 }
 
-.sources-analyzed-title {
-  font-size: 12px;
+.sources-inline-label {
+  font-size: 11px;
   font-weight: 600;
   color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-bottom: 6px;
-  text-align: left;
+}
+
+.source-chip {
+  font-size: 11px;
+  color: var(--text-muted);
+  background: rgba(48, 54, 61, 0.3);
+  padding: 2px 8px;
+  border-radius: 4px;
+  white-space: nowrap;
 }
 
 .tech-open-section {
