@@ -193,6 +193,7 @@ METEOCAT_CACHE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "d
 METEOCAT_CACHE_TTL_XDDE = 120     # minutes — current hour cache; past hours cached 24h automatically
 METEOCAT_CACHE_TTL_SMC = 90       # minutes — municipal forecast updates every 6h, 90min for fresher data
 METEOCAT_CACHE_TTL_XEMA = 30      # minutes — sentinel data (already gated by rain gate)
+METEOCAT_CACHE_TTL_XEMA_EMPTY = 60  # minutes — cache empty XEMA responses longer to save quota
 
 # ── Paths ──
 PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))

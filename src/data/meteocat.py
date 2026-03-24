@@ -41,10 +41,20 @@ def fetch_variable_all_stations(var_code: int, target_date: date) -> pd.DataFram
 
     from src.data.meteocat_cache import get_cached, set_cached
     cache_key = f"xema_{var_code}_{target_date}"
-    cached = get_cached(cache_key, config.METEOCAT_CACHE_TTL_XEMA)
+    # Two-tier TTL: empty responses cached longer (60min) to save quota,
+    # non-empty responses use normal TTL (30min) for fresher data
+    cached = get_cached(cache_key, config.METEOCAT_CACHE_TTL_XEMA_EMPTY)
     if cached is not None:
-        logger.debug(f"XEMA cache hit: var={var_code}, date={target_date}")
-        return pd.DataFrame(cached)
+        if not cached:
+            # Empty response cached — don't re-call API until EMPTY TTL expires
+            logger.debug(f"XEMA cache hit (empty): var={var_code}, date={target_date}")
+            return pd.DataFrame()
+        # Non-empty: check if still fresh at normal TTL
+        cached_fresh = get_cached(cache_key, config.METEOCAT_CACHE_TTL_XEMA)
+        if cached_fresh is not None:
+            logger.debug(f"XEMA cache hit: var={var_code}, date={target_date}")
+            return pd.DataFrame(cached_fresh)
+        # Stale at normal TTL but within empty TTL — re-fetch from API
 
     url = (
         f"{config.METEOCAT_BASE_URL}/xema/v1/variables/mesurades/"
@@ -75,6 +85,9 @@ def fetch_variable_all_stations(var_code: int, target_date: date) -> pd.DataFram
         # Filtrar lectures invàlides
         df = df[df["estat"] != "T"]  # T = valor no disponible
         set_cached(cache_key, rows)  # Cache the raw rows (JSON-serializable)
+    else:
+        # Cache empty responses to avoid re-calling API every 10 min
+        set_cached(cache_key, [])
 
     # Restore datetime type after cache serialization
     if not df.empty and "datetime" in df.columns:
@@ -103,6 +116,7 @@ def fetch_sentinel_latest() -> dict:
 def _fetch_sentinel_latest_inner() -> dict:
 
     today = date.today()
+    yesterday = today - timedelta(days=1)
     result = {}
 
     # Temperatura (32), Humitat (33), Precipitació (35)
@@ -116,15 +130,24 @@ def _fetch_sentinel_latest_inner() -> dict:
 
     for var_code, key in var_map.items():
         df = fetch_variable_all_stations(var_code, today)
+        # Fallback a ahir si avui no té dades (retard de publicació XEMA)
+        if df.empty or df[df["station_code"] == config.SENTINEL_STATION_CODE].empty:
+            logger.info(f"XEMA {key}: sense dades avui ({today}), provant ahir ({yesterday})")
+            df_yesterday = fetch_variable_all_stations(var_code, yesterday)
+            if not df_yesterday.empty:
+                df = df_yesterday
+
         if var_code == config.XEMA_VAR_PRECIP:
             last_precip_df = df  # Save for local rain gauge reuse
         if df.empty:
+            logger.warning(f"XEMA {key}: sense dades ni avui ni ahir")
             result[key] = None
             continue
 
         # Filtrar per l'estació sentinella
         sentinel = df[df["station_code"] == config.SENTINEL_STATION_CODE]
         if sentinel.empty:
+            logger.warning(f"XEMA {key}: estació {config.SENTINEL_STATION_CODE} no trobada")
             result[key] = None
             continue
 
@@ -136,6 +159,12 @@ def _fetch_sentinel_latest_inner() -> dict:
     # També obtenir precipitació del pluviòmetre local (ETAP Cardedeu KX)
     # Reuse the precipitation data already fetched above (saves 1 API call: 4→3)
     df_precip = last_precip_df if last_precip_df is not None else fetch_variable_all_stations(config.XEMA_VAR_PRECIP, today)
+    # Fallback a ahir per al pluviòmetre local
+    if df_precip.empty or (not df_precip.empty and df_precip[df_precip["station_code"] == config.LOCAL_RAIN_STATION_CODE].empty):
+        df_precip_yesterday = fetch_variable_all_stations(config.XEMA_VAR_PRECIP, yesterday)
+        if not df_precip_yesterday.empty:
+            df_precip = df_precip_yesterday
+
     if not df_precip.empty:
         local = df_precip[df_precip["station_code"] == config.LOCAL_RAIN_STATION_CODE]
         if not local.empty:
