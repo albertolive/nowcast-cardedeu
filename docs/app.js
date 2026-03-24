@@ -466,7 +466,7 @@ function renderDriversTech(d) {
   }).join('');
 
   const baseText = bias
-    ? `<div class="driver-base">🌟 Punt de partida: climatologia de Cardedeu (12 anys de dades verificades)</div>`
+    ? `<div class="driver-base">🌟 Punt de partida: climatologia local de Cardedeu</div>`
     : '';
 
   return `
@@ -552,7 +552,7 @@ function renderTechExpandable(d) {
   return `
     <div class="tech-open-section">
       <p class="tech-explainer">
-        Integrem ${d.features_used || '209'} variables en un model entrenat amb 12 anys d'històric verificat a Cardedeu. Es re-entrena cada dia.
+        Integrem ${d.features_used || '209'} variables en un model entrenat amb l'històric verificat de Cardedeu. Es re-entrena cada dia.
       </p>
       ${_renderBiasInsight(d)}
       <div class="sources-inline">
