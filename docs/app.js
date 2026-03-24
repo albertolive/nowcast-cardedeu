@@ -1226,6 +1226,33 @@ async function loadAndRender() {
 }
 
 // Tooltip toggle: tap to open/close, tap outside to dismiss
+// Uses position:fixed + JS positioning to avoid clipping by parent containers
+function _positionTooltip(infoEl) {
+  const tip = infoEl.querySelector('.driver-info-tip');
+  if (!tip) return;
+  // Temporarily show to measure
+  tip.style.visibility = 'hidden';
+  tip.style.display = 'block';
+  const iconRect = infoEl.getBoundingClientRect();
+  const tipRect = tip.getBoundingClientRect();
+  tip.style.visibility = '';
+
+  const margin = 12;
+  // Horizontal: center on icon, clamp to viewport
+  let left = iconRect.left + iconRect.width / 2 - tipRect.width / 2;
+  left = Math.max(margin, Math.min(left, window.innerWidth - tipRect.width - margin));
+  // Vertical: above icon
+  const top = iconRect.top - tipRect.height - 8;
+
+  tip.style.left = left + 'px';
+  tip.style.top = top + 'px';
+
+  // Position arrow to point at icon center
+  const arrow = tip.querySelector('::after') || null; // CSS pseudo, set via custom property
+  const arrowLeft = iconRect.left + iconRect.width / 2 - left - 5; // 5 = border width
+  tip.style.setProperty('--arrow-left', arrowLeft + 'px');
+}
+
 document.addEventListener('click', (e) => {
   const infoBtn = e.target.closest('.driver-info');
   document.querySelectorAll('.driver-info.active').forEach(el => {
@@ -1234,6 +1261,9 @@ document.addEventListener('click', (e) => {
   if (infoBtn) {
     e.preventDefault();
     infoBtn.classList.toggle('active');
+    if (infoBtn.classList.contains('active')) {
+      _positionTooltip(infoBtn);
+    }
   }
 });
 
