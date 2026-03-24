@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { explainGroup, selectDriverExplanations } from "./driver_logic.js";
+import { explainGroup, selectDriverExplanations, getConceptTags } from "./driver_logic.js";
 
 // ── Helpers ──────────────────────────────────────────────────────────
 
@@ -598,10 +598,11 @@ test("selectDriverExplanations — boundary: pct=91 IS extreme high", () => {
     drivers: [
       driver("Humitat", "pluja", 3, "💧"),
       driver("Vent", "pluja", 2, "💨"),
-      driver("Règim de vent", "pluja", 1, "🌬️"),
+      driver("Temperatura", "pluja", 1, "🌡️"),
     ],
   });
   const results = selectDriverExplanations(d);
+  assert.equal(results.length, 3);
   results.forEach(r => assert.equal(r.direction, "pluja"));
 });
 
@@ -644,31 +645,31 @@ test("selectDriverExplanations — extreme high skips null groups (Radar with no
       driver("Llamps", "pluja", 2, "⚡"),         // null (no lightning)
       driver("Humitat", "pluja", 1.5, "💧"),      // will produce text
       driver("Vent", "pluja", 1, "💨"),           // will produce text
-      driver("Règim de vent", "pluja", 0.5, "🌬️"), // will produce text
+      driver("Temperatura", "pluja", 0.5, "🌡️"), // will produce text
     ],
   });
   const results = selectDriverExplanations(d);
   assert.equal(results.length, 3);
-  // First two should be skipped (null), so we get Humitat, Vent, Règim de vent
+  // First two should be skipped (null), so we get Humitat, Vent, Temperatura
   assert.ok(results[0].text.includes("humit"));
   assert.ok(results[1].text.includes("vent"));
-  assert.ok(results[2].text.includes("humitat del mar"));
+  assert.ok(results[2].text.includes("temperatura"));
 });
 
 test("selectDriverExplanations — rain drivers sorted by contribution (highest first)", () => {
   const d = predData({
     pct: 95,
     drivers: [
-      driver("Vent", "pluja", 1, "💨"),
+      driver("Temperatura", "pluja", 1, "🌡️"),
       driver("Humitat", "pluja", 3, "💧"),
-      driver("Règim de vent", "pluja", 2, "🌬️"),
+      driver("Vent", "pluja", 2, "💨"),
     ],
   });
   const results = selectDriverExplanations(d);
-  // Humitat (3) > Règim de vent (2) > Vent (1)
+  // Humitat (3) > Vent (2) > Temperatura (1)
   assert.ok(results[0].text.includes("humit"));
-  assert.ok(results[1].text.includes("humitat del mar"));
-  assert.ok(results[2].text.includes("vent"));
+  assert.ok(results[1].text.includes("vent"));
+  assert.ok(results[2].text.includes("temperatura"));
 });
 
 test("selectDriverExplanations — dry drivers sorted by contribution (most negative first)", () => {
@@ -694,13 +695,14 @@ test("selectDriverExplanations — feature_vector values passed correctly to exp
       driver("Pluja confirmada", "pluja", 3, "🌧️"),
       driver("Radar", "pluja", 2, "📡"),
       driver("Models globals", "sec", -2, "🌤️"),
-      driver("Humitat", "sec", -1, "💧"),
+      driver("Pressió", "sec", -1, "📊"),
     ],
     fv: {
       rain_accum_3h: 1.5,
       radar_coverage_20km: 0.08,
       shortwave_radiation: 350,
       relative_humidity_2m: 45,
+      pressure_change_3h: 1.5,
     },
   });
   const results = selectDriverExplanations(d);
@@ -709,7 +711,7 @@ test("selectDriverExplanations — feature_vector values passed correctly to exp
   assert.ok(rain[0].text.includes("1.5 mm")); // Pluja confirmada uses rainAccum
   assert.ok(rain[1].text.includes("Detectem pluja a prop")); // Radar uses radarCov
   assert.ok(dry[0].text.includes("sol")); // Models globals: solar>=200, rh<60
-  assert.ok(dry[1].text.includes("sec (45%)")); // Humitat uses rh
+  assert.ok(dry[1].text.includes("pressió")); // Pressió uses pressChange
 });
 
 test("selectDriverExplanations — ensemble data passed correctly", () => {
@@ -805,4 +807,272 @@ test("selectDriverExplanations — cloud contradiction at rain direction", () =>
   // Núvols skipped, only Humitat available
   assert.equal(rain.length, 1);
   assert.ok(rain[0].text.includes("humit"));
+});
+
+// =====================================================================
+// getConceptTags — concept tagging tests
+// =====================================================================
+
+test("getConceptTags — Models globals sec: 'Fa sol i l'aire és sec' → sunshine + dry_air", () => {
+  const tags = getConceptTags("Models globals", "sec", "Fa sol i l'aire és sec");
+  assert.ok(tags.includes("sunshine"));
+  assert.ok(tags.includes("dry_air"));
+  assert.equal(tags.length, 2);
+});
+
+test("getConceptTags — Models globals sec: 'Cel clar...' → sunshine", () => {
+  const tags = getConceptTags("Models globals", "sec", "Cel clar, sense senyals de pluja");
+  assert.deepEqual(tags, ["sunshine"]);
+});
+
+test("getConceptTags — Models globals sec: 'Aire sec, temps estable' → dry_air + stable", () => {
+  const tags = getConceptTags("Models globals", "sec", "Aire sec, temps estable");
+  assert.ok(tags.includes("dry_air"));
+  assert.ok(tags.includes("stable"));
+  assert.equal(tags.length, 2);
+});
+
+test("getConceptTags — Models globals sec: 'Temps estable...' → stable", () => {
+  const tags = getConceptTags("Models globals", "sec", "Temps estable, sense senyals de pluja");
+  assert.deepEqual(tags, ["stable"]);
+});
+
+test("getConceptTags — Models globals pluja → no concepts (unique)", () => {
+  assert.deepEqual(getConceptTags("Models globals", "pluja", "Les condicions..."), []);
+});
+
+test("getConceptTags — Humitat sec → dry_air", () => {
+  assert.deepEqual(getConceptTags("Humitat", "sec", "any"), ["dry_air"]);
+});
+
+test("getConceptTags — Humitat pluja → humidity", () => {
+  assert.deepEqual(getConceptTags("Humitat", "pluja", "any"), ["humidity"]);
+});
+
+test("getConceptTags — Aigua precipitable sec → dry_air", () => {
+  assert.deepEqual(getConceptTags("Aigua precipitable", "sec", "any"), ["dry_air"]);
+});
+
+test("getConceptTags — Aigua precipitable pluja → humidity", () => {
+  assert.deepEqual(getConceptTags("Aigua precipitable", "pluja", "any"), ["humidity"]);
+});
+
+test("getConceptTags — Núvols sec → sunshine", () => {
+  assert.deepEqual(getConceptTags("Núvols", "sec", "any"), ["sunshine"]);
+});
+
+test("getConceptTags — Núvols pluja → cloudy", () => {
+  assert.deepEqual(getConceptTags("Núvols", "pluja", "any"), ["cloudy"]);
+});
+
+test("getConceptTags — Radiació solar sec → sunshine", () => {
+  assert.deepEqual(getConceptTags("Radiació solar", "sec", "any"), ["sunshine"]);
+});
+
+test("getConceptTags — Radiació solar pluja → cloudy", () => {
+  assert.deepEqual(getConceptTags("Radiació solar", "pluja", "any"), ["cloudy"]);
+});
+
+test("getConceptTags — Vent pluja → wind", () => {
+  assert.deepEqual(getConceptTags("Vent", "pluja", "any"), ["wind"]);
+});
+
+test("getConceptTags — Règim de vent pluja → wind", () => {
+  assert.deepEqual(getConceptTags("Règim de vent", "pluja", "any"), ["wind"]);
+});
+
+test("getConceptTags — Inestabilitat sec → stable", () => {
+  assert.deepEqual(getConceptTags("Inestabilitat", "sec", "any"), ["stable"]);
+});
+
+test("getConceptTags — Pluja confirmada pluja → raining_nearby", () => {
+  assert.deepEqual(getConceptTags("Pluja confirmada", "pluja", "any"), ["raining_nearby"]);
+});
+
+test("getConceptTags — Sentinella pluja → raining_nearby", () => {
+  assert.deepEqual(getConceptTags("Sentinella", "pluja", "any"), ["raining_nearby"]);
+});
+
+test("getConceptTags — untagged groups return empty array", () => {
+  assert.deepEqual(getConceptTags("Pressió", "pluja", "any"), []);
+  assert.deepEqual(getConceptTags("Pressió", "sec", "any"), []);
+  assert.deepEqual(getConceptTags("Temperatura", "pluja", "any"), []);
+  assert.deepEqual(getConceptTags("Llamps", "pluja", "any"), []);
+  assert.deepEqual(getConceptTags("Correcció local", "sec", "any"), []);
+  assert.deepEqual(getConceptTags("Acord entre models", "pluja", "any"), []);
+});
+
+// =====================================================================
+// Concept deduplication — integration tests
+// =====================================================================
+
+test("DEDUP: Models globals 'sec' + Humitat 'sec' → Humitat skipped (dry_air overlap)", () => {
+  // The exact user scenario: both lines say "l'aire és sec"
+  const d = predData({
+    pct: 5,
+    drivers: [
+      driver("Models globals", "sec", -3, "🌐"),
+      driver("Humitat", "sec", -2, "💧"),
+      driver("Pressió", "sec", -1, "📊"),
+    ],
+    fv: { shortwave_radiation: 300, relative_humidity_2m: 42 },
+  });
+  const results = selectDriverExplanations(d);
+  // Models globals: "Fa sol i l'aire és sec" → claims [sunshine, dry_air]
+  // Humitat: "L'aire és sec (42%)" → wants [dry_air] → SKIPPED
+  // Pressió: no concepts → allowed
+  assert.equal(results.length, 2);
+  assert.ok(results[0].text.includes("sol")); // Models globals
+  assert.ok(results[1].text.includes("pressió")); // Pressió (Humitat was deduped)
+});
+
+test("DEDUP: Humitat first + Models globals second → Models globals shows but sunshine not deduped", () => {
+  // Humitat appears first (higher contribution), claims dry_air
+  // Models globals appears second with "Cel clar" → claims sunshine, no overlap
+  const d = predData({
+    pct: 5,
+    drivers: [
+      driver("Humitat", "sec", -3, "💧"),
+      driver("Models globals", "sec", -2, "🌐"),
+      driver("Pressió", "sec", -1, "📊"),
+    ],
+    fv: { cloud_cover: 20 }, // Models globals → "Cel clar, sense senyals de pluja" (sunshine, not dry_air)
+  });
+  const results = selectDriverExplanations(d);
+  assert.equal(results.length, 3);
+  assert.ok(results[0].text.includes("sec")); // Humitat → dry_air
+  assert.ok(results[1].text.includes("Cel clar")); // Models globals → sunshine (no overlap)
+  assert.ok(results[2].text.includes("pressió")); // Pressió
+});
+
+test("DEDUP: Vent + Règim de vent on same side → second skipped (wind overlap)", () => {
+  const d = predData({
+    pct: 95,
+    drivers: [
+      driver("Humitat", "pluja", 3, "💧"),
+      driver("Vent", "pluja", 2, "💨"),
+      driver("Règim de vent", "pluja", 1, "🌬️"),
+      driver("Temperatura", "pluja", 0.5, "🌡️"),
+    ],
+  });
+  const results = selectDriverExplanations(d);
+  assert.equal(results.length, 3);
+  assert.ok(results[0].text.includes("humit"));
+  assert.ok(results[1].text.includes("vent")); // Vent (higher contrib)
+  assert.ok(results[2].text.includes("temperatura")); // Règim de vent was skipped
+});
+
+test("DEDUP: Núvols sec + Radiació solar sec → second skipped (sunshine overlap)", () => {
+  const d = predData({
+    pct: 5,
+    drivers: [
+      driver("Núvols", "sec", -3, "☁️"),
+      driver("Radiació solar", "sec", -2, "☀️"),
+      driver("Pressió", "sec", -1, "📊"),
+    ],
+    fv: { cloud_cover: 15, shortwave_radiation: 400 },
+  });
+  const results = selectDriverExplanations(d);
+  assert.equal(results.length, 2);
+  assert.ok(results[0].text.includes("Cel obert")); // Núvols → sunshine
+  // Radiació solar "Fa sol" → sunshine → SKIPPED
+  assert.ok(results[1].text.includes("pressió")); // Pressió
+});
+
+test("DEDUP: Humitat pluja + Aigua precipitable pluja → second skipped (humidity overlap)", () => {
+  const d = predData({
+    pct: 95,
+    drivers: [
+      driver("Humitat", "pluja", 3, "💧"),
+      driver("Aigua precipitable", "pluja", 2, "🌊"),
+      driver("Vent", "pluja", 1, "💨"),
+    ],
+  });
+  const results = selectDriverExplanations(d);
+  assert.equal(results.length, 2);
+  assert.ok(results[0].text.includes("humit")); // Humitat → humidity
+  // Aigua precipitable → humidity → SKIPPED
+  assert.ok(results[1].text.includes("vent")); // Vent
+});
+
+test("DEDUP: Núvols pluja + Radiació solar pluja → second skipped (cloudy overlap)", () => {
+  const d = predData({
+    pct: 50,
+    drivers: [
+      driver("Núvols", "pluja", 2, "☁️"),
+      driver("Radiació solar", "pluja", 1, "☀️"),
+      driver("Models globals", "sec", -2, "🌤️"),
+      driver("Pressió", "sec", -1, "📊"),
+    ],
+    fv: { cloud_cover: 80, shortwave_radiation: 50 },
+  });
+  const results = selectDriverExplanations(d);
+  const rain = results.filter(r => r.direction === "pluja");
+  assert.equal(rain.length, 1); // Radiació solar skipped (cloudy overlap)
+  assert.ok(rain[0].text.includes("ennuvolat")); // Núvols
+});
+
+test("DEDUP: Pluja confirmada + Sentinella → second skipped (raining_nearby overlap)", () => {
+  const d = predData({
+    pct: 95,
+    drivers: [
+      driver("Pluja confirmada", "pluja", 3, "🌧️"),
+      driver("Sentinella", "pluja", 2, "🏔️"),
+      driver("Humitat", "pluja", 1, "💧"),
+    ],
+    fv: { rain_accum_3h: 1.2 },
+  });
+  const results = selectDriverExplanations(d);
+  assert.equal(results.length, 2);
+  assert.ok(results[0].text.includes("Ja plou (1.2 mm")); // Pluja confirmada
+  // Sentinella "Ja plou a localitats properes" → SKIPPED
+  assert.ok(results[1].text.includes("humit")); // Humitat
+});
+
+test("DEDUP: Models globals 'estable' + Inestabilitat sec → Inestabilitat skipped (stable overlap)", () => {
+  const d = predData({
+    pct: 5,
+    drivers: [
+      driver("Models globals", "sec", -3, "🌐"),
+      driver("Inestabilitat", "sec", -2, "⚡"),
+      driver("Pressió", "sec", -1, "📊"),
+    ],
+    // All null → Models globals returns "Temps estable, sense senyals de pluja" → ['stable']
+  });
+  const results = selectDriverExplanations(d);
+  assert.equal(results.length, 2);
+  assert.ok(results[0].text.includes("estable")); // Models globals
+  // Inestabilitat "L'atmosfera és estable" → ['stable'] → SKIPPED
+  assert.ok(results[1].text.includes("pressió")); // Pressió
+});
+
+test("DEDUP: cross-direction concepts are shared (rain humidity blocks dry dry_air)", () => {
+  // In middle zone, rain is processed first. If Humitat pluja claims 'humidity',
+  // Aigua precipitable sec claims 'dry_air' — these are DIFFERENT concepts → no block
+  const d = predData({
+    pct: 50,
+    drivers: [
+      driver("Humitat", "pluja", 2, "💧"),
+      driver("Vent", "pluja", 1, "💨"),
+      driver("Aigua precipitable", "sec", -2, "🌊"),
+      driver("Pressió", "sec", -1, "📊"),
+    ],
+  });
+  const results = selectDriverExplanations(d);
+  // humidity ≠ dry_air → no cross-direction dedup
+  assert.equal(results.length, 4);
+});
+
+test("DEDUP: groups with no concepts never get deduped", () => {
+  const d = predData({
+    pct: 5,
+    drivers: [
+      driver("Pressió", "sec", -3, "📊"),
+      driver("Correcció local", "sec", -2, "📍"),
+      driver("Models globals", "sec", -1, "🌐"),
+    ],
+  });
+  const results = selectDriverExplanations(d);
+  // All have unique/empty concepts → all shown
+  assert.equal(results.length, 3);
 });
