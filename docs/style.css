@@ -334,6 +334,7 @@ canvas { width: 100% !important; height: 100% !important; }
 
 .expand-content.open {
   max-height: 800px;
+  overflow: visible;
 }
 
 .expand-content .stat-row:first-child {
@@ -483,8 +484,7 @@ canvas { width: 100% !important; height: 100% !important; }
   font-size: 12px;
   color: var(--text);
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  overflow: visible;
 }
 .driver-bar-container {
   flex: 1;
