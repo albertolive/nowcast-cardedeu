@@ -93,7 +93,52 @@ export function explainGroup(group, direction, ctx) {
 }
 
 /**
+ * Return semantic concept tags for an explanation to prevent redundant lines.
+ * Only groups that can overlap with others get tags; unique groups return [].
+ *
+ * Models globals dry is data-aware — concepts depend on which text variant was produced.
+ */
+const CONCEPT_MAP = {
+  'Humitat|pluja': ['humidity'], 'Humitat|sec': ['dry_air'],
+  'Aigua precipitable|pluja': ['humidity'], 'Aigua precipitable|sec': ['dry_air'],
+  'Núvols|pluja': ['cloudy'], 'Núvols|sec': ['sunshine'],
+  'Radiació solar|pluja': ['cloudy'], 'Radiació solar|sec': ['sunshine'],
+  'Règim de vent|pluja': ['wind'], 'Règim de vent|sec': ['wind'],
+  'Vent|pluja': ['wind'], 'Vent|sec': ['wind'],
+  'Inestabilitat|sec': ['stable'],
+  'Pluja confirmada|pluja': ['raining_nearby'],
+  'Sentinella|pluja': ['raining_nearby'],
+};
+
+export function getConceptTags(group, direction, text) {
+  if (group === 'Models globals' && direction === 'sec') {
+    const tags = [];
+    if (/sol|clar/i.test(text)) tags.push('sunshine');
+    if (/sec/i.test(text)) tags.push('dry_air');
+    if (/estable/i.test(text)) tags.push('stable');
+    return tags;
+  }
+  return CONCEPT_MAP[`${group}|${direction}`] || [];
+}
+
+/** Collect up to maxCount non-null, non-redundant explanations from candidates. */
+function _collectExplanations(candidates, direction, maxCount, ctx, usedConcepts) {
+  const results = [];
+  for (const dr of candidates) {
+    if (results.length >= maxCount) break;
+    const text = explainGroup(dr.group, direction, ctx);
+    if (!text) continue;
+    const concepts = getConceptTags(dr.group, direction, text);
+    if (concepts.some(c => usedConcepts.has(c))) continue;
+    concepts.forEach(c => usedConcepts.add(c));
+    results.push({ icon: dr.icon, text, direction });
+  }
+  return results;
+}
+
+/**
  * Select which driver explanations to show, based on probability and available data.
+ * Deduplicates semantically overlapping explanations (e.g. two lines both saying "sec").
  *
  * @param {object} d - Full prediction data (top_drivers, feature_vector, ensemble, probability_pct)
  * @returns {Array<{icon: string, text: string, direction: string}>}
@@ -129,36 +174,15 @@ export function selectDriverExplanations(d) {
   const topRain = rainPushers.slice(0, isExtreme ? 6 : 4);
   const topDry = dryPushers.slice(0, isExtreme ? 6 : 4);
 
-  const results = [];
+  const usedConcepts = new Set();
 
   if (isExtreme && pct < 10) {
-    let count = 0;
-    for (const dr of topDry) {
-      if (count >= 3) break;
-      const text = explainGroup(dr.group, 'sec', ctx);
-      if (text) { results.push({ icon: dr.icon, text, direction: 'sec' }); count++; }
-    }
+    return _collectExplanations(topDry, 'sec', 3, ctx, usedConcepts);
   } else if (isExtreme && pct > 90) {
-    let count = 0;
-    for (const dr of topRain) {
-      if (count >= 3) break;
-      const text = explainGroup(dr.group, 'pluja', ctx);
-      if (text) { results.push({ icon: dr.icon, text, direction: 'pluja' }); count++; }
-    }
+    return _collectExplanations(topRain, 'pluja', 3, ctx, usedConcepts);
   } else {
-    let rainCount = 0;
-    for (const dr of topRain) {
-      if (rainCount >= 2) break;
-      const text = explainGroup(dr.group, 'pluja', ctx);
-      if (text) { results.push({ icon: dr.icon, text, direction: 'pluja' }); rainCount++; }
-    }
-    let dryCount = 0;
-    for (const dr of topDry) {
-      if (dryCount >= 2) break;
-      const text = explainGroup(dr.group, 'sec', ctx);
-      if (text) { results.push({ icon: dr.icon, text, direction: 'sec' }); dryCount++; }
-    }
+    const results = _collectExplanations(topRain, 'pluja', 2, ctx, usedConcepts);
+    results.push(..._collectExplanations(topDry, 'sec', 2, ctx, usedConcepts));
+    return results;
   }
-
-  return results;
 }
