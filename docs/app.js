@@ -550,29 +550,34 @@ function renderDriversTech(d) {
   const maxAbs = Math.max(...featureDrivers.map(dr => Math.abs(dr.contribution)), 0.1);
 
   const techRows = featureDrivers.map(dr => {
-    const pct = Math.min(Math.abs(dr.contribution) / maxAbs * 100, 100);
+    const pct = Math.min(Math.abs(dr.contribution) / maxAbs * 50, 50);
     const isRain = dr.direction === 'pluja';
+    // Diverging bar: rain grows right from center, dry grows left from center
+    const barStyle = isRain
+      ? `left:50%;width:${pct.toFixed(1)}%`
+      : `right:50%;width:${pct.toFixed(1)}%`;
     const barCls = isRain ? 'driver-bar-rain' : 'driver-bar-dry';
-    const icon = isRain ? '🌧️' : '☀️';
-    const sign = isRain ? '+' : '';
     return `
       <div class="driver-row">
-        <span class="driver-icon">${icon}</span>
         <span class="driver-label">${dr.icon} ${dr.group}</span>
         <div class="driver-bar-container">
-          <div class="driver-bar ${barCls}" style="width:${pct.toFixed(0)}%"></div>
+          <div class="driver-bar-center"></div>
+          <div class="driver-bar ${barCls}" style="${barStyle}"></div>
         </div>
-        <span class="driver-value ${isRain ? 'rain' : 'dry'}">${sign}${dr.contribution.toFixed(2)}</span>
       </div>`;
   }).join('');
 
   const baseText = bias
-    ? `<div class="driver-base">📈 Base (climatologia Cardedeu, 12 anys): ${bias.contribution > 0 ? '+' : ''}${bias.contribution.toFixed(2)} log-odds</div>`
+    ? `<div class="driver-base">🌟 Punt de partida: climatologia de Cardedeu (12 anys de dades verificades)</div>`
     : '';
 
   return `
     <div class="drivers-tech-section">
-      <div class="drivers-tech-intro">Contribució de cada grup de variables al log-odds de la predicció (XGBoost pred_contribs). Positiu = empeny cap a pluja, negatiu = cap a sec.</div>
+      <div class="drivers-tech-intro">Pes de cada factor en la predicció actual</div>
+      <div class="drivers-tech-legend">
+        <span class="legend-dry">☀️ Temps sec</span>
+        <span class="legend-rain">🌧️ Pluja</span>
+      </div>
       ${techRows}
       ${baseText}
     </div>`;
