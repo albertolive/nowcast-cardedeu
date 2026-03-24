@@ -407,8 +407,9 @@ canvas { width: 100% !important; height: 100% !important; }
   display: none;
   position: absolute;
   bottom: calc(100% + 6px);
-  left: 50%;
-  transform: translateX(-50%);
+  right: -4px;
+  left: auto;
+  transform: none;
   width: max-content;
   max-width: 260px;
   padding: 8px 10px;
@@ -432,8 +433,9 @@ canvas { width: 100% !important; height: 100% !important; }
   content: '';
   position: absolute;
   top: 100%;
-  left: 50%;
-  transform: translateX(-50%);
+  right: 6px;
+  left: auto;
+  transform: none;
   border: 5px solid transparent;
   border-top-color: rgba(88, 166, 255, 0.2);
 }
@@ -545,17 +547,7 @@ canvas { width: 100% !important; height: 100% !important; }
 /* Prevent tooltips from extending past viewport on mobile */
 @media (max-width: 600px) {
   .driver-info-tip {
-    left: auto;
-    right: auto;
-    transform: none;
-    position: absolute;
-    width: max-content;
     max-width: min(200px, calc(100vw - 48px));
-  }
-  .driver-info-tip::after {
-    left: auto;
-    right: 8px;
-    transform: none;
   }
 }
 
