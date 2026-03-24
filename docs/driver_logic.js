@@ -90,10 +90,35 @@ export function explainGroup(group, direction, ctx) {
 }
 
 /**
+ * Brief tooltip explaining what each group measures, for general audience.
+ * Shown on tap/hover of the info icon next to each driver explanation.
+ */
+export const GROUP_TOOLTIP = {
+  'Models globals': 'Combinem 4 models meteorològics internacionals per veure si preveuen pluja a Cardedeu.',
+  'Consistència NWP': 'Mirem si els models globals porten hores dient que plourà, o si canvien d\'opinió.',
+  'Pluja confirmada': 'L\'estació meteorològica de Cardedeu mesura si ja està plovent.',
+  'Radar': 'Dos radars (RainViewer i AEMET) escanegen si hi ha pluja en un radi de 30 km.',
+  'Humitat': 'Mesurem quanta humitat hi ha a l\'aire. Més humitat = més probable que plogui.',
+  'Aigua precipitable': 'Quanta aigua total hi ha acumulada a tota la columna d\'atmosfera.',
+  'Inestabilitat': 'Si l\'atmosfera és inestable, l\'aire puja ràpid i pot generar tempestes.',
+  'Pressió': 'Una pressió que baixa sol indicar que s\'acosta un front de pluja.',
+  'Règim de vent': 'D\'on ve el vent a 1.500m d\'altura: del mar (humit) o de terra (sec).',
+  'Vent': 'La velocitat i direcció del vent afecten si porta o s\'endú la humitat.',
+  'Núvols': 'El percentatge de cel cobert per núvols, mesurat per satèl·lit.',
+  'Temperatura': 'La temperatura afecta l\'evaporació i la formació de núvols.',
+  'Hora del dia': 'Les tempestes d\'estiu solen ser de tarda; la pluja frontal pot ser a qualsevol hora.',
+  'Radiació solar': 'Quanta llum del sol arriba a terra. Poca radiació = cel cobert.',
+  'Terra': 'Si el terra ja està mullat, la pluja nova s\'escola més fàcilment i es detecta abans.',
+  'Capa límit': 'La capa d\'aire més propera al terra. Si es barreja molt, pot generar xàfecs.',
+  'Llamps': 'La xarxa de detecció de llamps (XDDE) mesura activitat elèctrica a prop.',
+  'Sentinella': 'Estacions meteorològiques properes (Meteocat XEMA) detecten si ja plou als voltants.',
+  'Acord entre models': 'Si diversos models globals coincideixen, la predicció és més fiable.',
+  'Correcció local': 'Ajustem la predicció amb 12 anys d\'historial real de pluja a Cardedeu.',
+};
+
+/**
  * Return semantic concept tags for an explanation to prevent redundant lines.
  * Only groups that can overlap with others get tags; unique groups return [].
- *
- * Models globals dry is data-aware — concepts depend on which text variant was produced.
  */
 const CONCEPT_MAP = {
   'Humitat|pluja': ['humidity'], 'Humitat|sec': ['dry_air'],
@@ -121,7 +146,7 @@ function _collectExplanations(candidates, direction, maxCount, ctx, usedConcepts
     const concepts = getConceptTags(dr.group, direction, text);
     if (concepts.some(c => usedConcepts.has(c))) continue;
     concepts.forEach(c => usedConcepts.add(c));
-    results.push({ icon: dr.icon, text, direction });
+    results.push({ icon: dr.icon, text, direction, group: dr.group });
   }
   return results;
 }
