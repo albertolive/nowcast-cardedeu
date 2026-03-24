@@ -528,9 +528,10 @@ canvas { width: 100% !important; height: 100% !important; }
 @media (max-width: 600px) {
   .driver-label { width: 110px; font-size: 11px; }
   .drivers-title { font-size: 12px; }
-  .drivers-section { padding: 10px 12px; }
+  .drivers-section { padding: 10px 12px; margin: 8px auto 4px; }
   .driver-reason { font-size: 12px; }
   .driver-correction { font-size: 11px; }
+  .driver-info-tip { max-width: 200px; font-size: 10px; }
 }
 @media (max-width: 380px) {
   .driver-label { width: 90px; font-size: 10px; }
@@ -608,7 +609,6 @@ canvas { width: 100% !important; height: 100% !important; }
   background: rgba(48, 54, 61, 0.3);
   padding: 2px 8px;
   border-radius: 4px;
-  white-space: nowrap;
 }
 
 .tech-open-section {
@@ -1202,10 +1202,10 @@ footer a:hover { text-decoration: underline; }
 
   .prediction-card { padding: 20px 14px; border-radius: 12px; margin-bottom: 16px; }
   .prediction-question { font-size: 18px; }
-  .prediction-subtext { font-size: 12px; margin-bottom: 16px; }
-  .probability-ring { width: 150px; height: 150px; }
-  .probability-value .pct { font-size: 40px; }
-  .probability-value .label { font-size: 10px; }
+  .prediction-subtext { font-size: 12px; margin-bottom: 12px; }
+  .probability-ring { width: 130px; height: 130px; margin-bottom: 16px; }
+  .probability-value .pct { font-size: 36px; }
+  .probability-value .label { font-size: 9px; }
 
   .verdict { font-size: 17px; }
   .verdict-conf { font-size: 11px; }
@@ -1213,7 +1213,18 @@ footer a:hover { text-decoration: underline; }
   .gate-indicator { font-size: 10px; padding: 4px 10px; }
   .ml-correction { font-size: 12px; padding: 10px 12px; }
 
-  .prediction-meta { font-size: 11px; }
+  .prediction-meta { font-size: 11px; margin-top: 10px; }
+
+  /* Tech section tighter on mobile */
+  .tech-open-section { padding: 10px 12px; margin-top: 12px; }
+  .tech-open-section .tech-explainer { font-size: 12px; line-height: 1.5; }
+  .sources-inline { gap: 4px; margin-top: 6px; }
+  .source-chip { font-size: 10px; padding: 2px 6px; line-height: 1.4; }
+  .sources-inline-label { font-size: 10px; }
+  .expand-toggle.mini { font-size: 10px; }
+  .drivers-tech-intro { font-size: 12px; }
+  .drivers-tech-legend { font-size: 10px; }
+  .driver-base { font-size: 10px; }
 
   .chart-card { margin-bottom: 16px; }
   .chart-card h2 { font-size: 13px; padding: 10px 12px; }
@@ -1285,4 +1296,11 @@ footer a:hover { text-decoration: underline; }
   .pred-rain-mm { display: none; }
 
   .sources-bar { flex-direction: column; gap: 6px; align-items: flex-start; }
+
+  /* Smaller ring on narrow phones */
+  .probability-ring { width: 110px; height: 110px; margin-bottom: 12px; }
+  .probability-value .pct { font-size: 30px; }
+
+  .tech-open-section { padding: 8px 10px; }
+  .source-chip { font-size: 9px; padding: 1px 5px; }
 }
