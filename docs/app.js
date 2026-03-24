@@ -155,6 +155,7 @@ function renderPrediction(latest, history) {
   });
   const correct = scorable.filter(h => h.correct).length;
   const accuracy = scorable.length > 0 ? ((correct / scorable.length) * 100).toFixed(0) : '—';
+  const pending = history.filter(h => !h.verified).length;
 
   // Day-level accuracy: only count scorable predictions
   const dayBuckets = {};
@@ -209,7 +210,7 @@ function renderPrediction(latest, history) {
 
       <div class="prediction-meta">
         Encerts: <strong style="color:var(--accent-green)">${dayAccuracy}%</strong> per dia (${daysCorrect}/${daysTotal})
-        · <strong>${accuracy}%</strong> per predicció (${correct}/${scorable.length})
+        · <strong>${accuracy}%</strong> per predicció (${correct}/${scorable.length})${pending > 0 ? ` · <span style="color:var(--text-muted)">${pending} pendents de verificar</span>` : ''}
       </div>
     </div>
 
