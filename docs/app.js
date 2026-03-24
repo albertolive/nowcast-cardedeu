@@ -202,8 +202,7 @@ function renderPrediction(latest, history) {
       <div class="gate-indicator ${gateOpen ? 'open' : 'closed'}">
         <span class="gate-dot"></span>
         ${gateOpen
-          ? `${signals.map(s => '<span class="gate-chip">' + s + '</span>').join('')}
-             <a href="#sources-card" class="gate-scroll-hint">detall ↓</a>`
+          ? `${signals.map(s => '<span class="gate-chip">' + s + '</span>').join('')}`
           : 'Sense senyals de pluja'
         }
       </div>
@@ -244,10 +243,18 @@ function renderPrediction(latest, history) {
         <div class="info-card-body">${renderAtmosphere(latest)}</div>
       </div>
 
-      <!-- Why this prediction -->
-      <div class="info-card" id="sources-card">
-        <h3>💎 Què diuen les fonts?</h3>
-        <div class="info-card-body">${renderWhyPrediction(latest)}</div>
+    </div>
+
+    <!-- Technical deep-dive (hidden by default) -->
+    <div class="tech-deep-dive">
+      <button class="expand-toggle" onclick="this.classList.toggle('open');document.getElementById('tech-deep-content').classList.toggle('open')">
+        <span class="chevron">▶</span> Per a usuaris tècnics
+      </button>
+      <div id="tech-deep-content" class="expand-content">
+        <div class="info-card" id="sources-card">
+          <h3>💎 Què diuen les fonts externes?</h3>
+          <div class="info-card-body">${renderWhyPrediction(latest)}</div>
+        </div>
       </div>
     </div>
 
@@ -394,43 +401,7 @@ function renderSources(d) {
 }
 
 function _mlCorrectionSummary(d) {
-  const pct = d.probability_pct;
-  const models = d.ensemble?.models_rain || 0;
-  const total = d.ensemble?.total_models || 4;
-  const aemet = d.aemet?.prob_precip;
-  const radarView = deriveRadarViewModel(d);
-  const radar = radarView.bestHasEcho;
-
-  // Estimate what raw NWP consensus suggests
-  let nwpPct = null;
-  if (aemet != null && total > 0) {
-    nwpPct = Math.round((aemet + (models / total) * 100) / 2);
-  } else if (aemet != null) {
-    nwpPct = aemet;
-  } else if (total > 0) {
-    nwpPct = Math.round((models / total) * 100);
-  }
-
-  if (nwpPct == null) return '';
-  const diff = pct - nwpPct;
-  const absDiff = Math.abs(diff);
-  if (absDiff < 10) return ''; // no significant correction
-
-  let text, icon;
-  if (diff < -20) {
-    icon = '🛡️';
-    text = `Els models globals marquen ~${nwpPct}% però el nostre sistema, entrenat amb 12 anys de dades locals, rebaixa a <strong>${pct}%</strong>. Configuracions com aquesta sovint no porten pluja real a Cardedeu.`;
-  } else if (diff < 0) {
-    icon = '📉';
-    text = `Models globals: ~${nwpPct}%. El sistema local corregeix a <strong>${pct}%</strong>, l'experiència a Cardedeu indica menys risc del que suggereixen.`;
-  } else if (diff > 20) {
-    icon = '⚠️';
-    text = `Models globals: només ~${nwpPct}%. Però les condicions locals recorden patrons que sí porten pluja aquí, el sistema puja a <strong>${pct}%</strong>.`;
-  } else {
-    icon = '📈';
-    text = `Models globals: ~${nwpPct}%. El sistema local veu senyals addicionals i ajusta a <strong>${pct}%</strong>.`;
-  }
-  return `<div class="ml-correction">${icon} ${text}</div>`;
+  return ''; // Correction detail moved to technical section at bottom
 }
 
 function _renderBiasInsight(d) {
@@ -478,19 +449,19 @@ function renderDrivers(d) {
     const isRain = direction === 'pluja';
     switch (group) {
       case 'Models globals':
-        return isRain ? 'Els models globals preveuen pluja' : 'Els models globals no preveuen pluja';
+        return isRain ? 'Les condicions meteorològiques afavoreixen pluja' : 'Les condicions meteorològiques no afavoreixen pluja';
       case 'Consistència NWP':
-        return isRain ? 'La previsió de pluja és persistent' : 'La previsió de pluja és feble';
+        return isRain ? 'La situació de pluja és persistent' : 'Els senyals de pluja són febles';
       case 'Pluja confirmada':
         if (isRain) return rainAccum > 0 ? `Ja plou (${rainAccum.toFixed(1)} mm en 3h)` : null;
         return 'No plou ara mateix';
       case 'Radar':
         if (isRain) {
-          if (radarCov != null && radarCov > 0) return 'El radar detecta pluja a prop';
-          if (radarKm != null && radarKm < 25) return `Pluja detectada a ${Math.round(radarKm)} km`;
+          if (radarCov != null && radarCov > 0) return 'Detectem pluja a prop';
+          if (radarKm != null && radarKm < 25) return `Detectem pluja a ${Math.round(radarKm)} km`;
           return null;
         }
-        return 'El radar no detecta pluja a prop';
+        return 'No detectem pluja a prop';
       case 'Humitat':
         if (rh == null) return isRain ? 'L\'aire és humit' : 'L\'aire és sec';
         return isRain ? `L'aire és humit (${Math.round(rh)}%)` : `L'aire és sec (${Math.round(rh)}%)`;
@@ -528,22 +499,22 @@ function renderDrivers(d) {
         return isRain ? 'L\'aire es barreja i pot generar xàfecs' : 'L\'aire és calmat';
       case 'Llamps':
         if (isRain) {
-          if (lightning != null && lightning > 0) return `${Math.round(lightning)} llamps detectats a prop`;
+          if (lightning != null && lightning > 0) return `Detectem ${Math.round(lightning)} llamps a prop`;
           return null;
         }
-        return 'Sense llamps';
+        return 'No detectem llamps';
       case 'Sentinella':
-        return isRain ? 'Ja plou a Granollers (a prop)' : 'No plou a Granollers';
+        return isRain ? 'Ja plou a localitats properes' : 'No plou a localitats properes';
       case 'Previsió oficial':
-        return isRain ? 'AEMET i Meteocat preveuen pluja' : 'AEMET i Meteocat no preveuen pluja';
+        return null; // skip — we don't show external source names
       case 'Acord entre models':
         if (ensemble.models_rain != null) {
           const n = ensemble.models_rain, t = ensemble.total_models || 4;
-          return isRain ? `${n} de ${t} models preveuen pluja` : `Només ${n} de ${t} models preveuen pluja`;
+          return isRain ? `${n} de ${t} fonts independents coincideixen` : `Només ${n} de ${t} fonts veuen pluja`;
         }
-        return isRain ? 'Diversos models coincideixen en pluja' : 'Els models no preveuen pluja';
+        return isRain ? 'Diverses fonts independents coincideixen' : 'Les fonts no coincideixen en pluja';
       case 'Correcció local':
-        return isRain ? 'Les dades locals apunten a pluja' : 'Les dades locals apunten a temps sec';
+        return isRain ? 'L\'experiència local a Cardedeu ho confirma' : 'L\'experiència local a Cardedeu no hi dona suport';
       default:
         return null;
     }
@@ -567,34 +538,12 @@ function renderDrivers(d) {
     if (text) { naturalLines.push(`<li class="driver-reason dry">${dr.icon} ${text}</li>`); dryCount++; }
   }
 
-  // Correction narrative — our model vs global models
-  const nwpDriver = featureDrivers.find(dr => dr.group === 'Models globals');
-  const nonNwpDrivers = featureDrivers.filter(dr => dr.group !== 'Models globals');
-  const localSignal = nonNwpDrivers.reduce((sum, dr) => sum + dr.contribution, 0);
-  const nwpSignal = nwpDriver ? nwpDriver.contribution : 0;
-
-  let correctionNote = '';
-  if (nwpDriver && nonNwpDrivers.length > 0) {
-    const nwpDir = nwpSignal > 0 ? 'pluja' : 'sec';
-    const localDir = localSignal > 0 ? 'pluja' : 'sec';
-    if (nwpDir !== localDir && Math.abs(localSignal) > 0.1) {
-      if (localDir === 'sec') {
-        correctionNote = `<div class="driver-correction">🛡️ Tot i que els models globals tendeixen a ${nwpDir}, <strong>les dades locals i l'experiència de 12 anys a Cardedeu corregeixen cap a temps sec</strong>. Configuracions com aquesta sovint no porten pluja real aquí.</div>`;
-      } else {
-        correctionNote = `<div class="driver-correction">⚠️ Tot i que els models globals tendeixen a ${nwpDir}, <strong>les dades locals detecten senyals que històricament sí porten pluja a Cardedeu</strong>.</div>`;
-      }
-    } else if (nwpDir === localDir) {
-      correctionNote = `<div class="driver-correction agree">✅ Les dades locals i els models globals <strong>coincideixen</strong>, la predicció és més fiable.</div>`;
-    }
-  }
-
   return `
     <div class="drivers-section">
       <div class="drivers-title">Per què ${d.probability_pct}%?</div>
       <ul class="drivers-natural">
         ${naturalLines.join('')}
       </ul>
-      ${correctionNote}
     </div>`;
 }
 
