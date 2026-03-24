@@ -18,10 +18,7 @@ export function explainGroup(group, direction, ctx) {
   switch (group) {
     case 'Models globals':
       if (isRain) return 'Les condicions meteorològiques afavoreixen pluja';
-      if (solar != null && solar >= 200 && rh != null && rh < 60) return 'Fa sol i l\'aire és sec';
-      if (cloud != null && cloud < 30) return 'Cel clar, sense senyals de pluja';
-      if (rh != null && rh < 50) return 'Aire sec, temps estable';
-      return 'Temps estable, sense senyals de pluja';
+      return 'Les condicions generals no afavoreixen pluja';
     case 'Consistència NWP':
       return isRain ? 'La situació de pluja és persistent' : null;
     case 'Pluja confirmada':
@@ -111,13 +108,6 @@ const CONCEPT_MAP = {
 };
 
 export function getConceptTags(group, direction, text) {
-  if (group === 'Models globals' && direction === 'sec') {
-    const tags = [];
-    if (/sol|clar/i.test(text)) tags.push('sunshine');
-    if (/sec/i.test(text)) tags.push('dry_air');
-    if (/estable/i.test(text)) tags.push('stable');
-    return tags;
-  }
   return CONCEPT_MAP[`${group}|${direction}`] || [];
 }
 
