@@ -7,6 +7,7 @@ from typing import Optional
 
 import numpy as np
 import pandas as pd
+import xgboost as xgb
 
 import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
@@ -24,6 +25,69 @@ from src.features.engineering import build_features_from_realtime, FEATURE_COLUM
 from src.model.train import load_model
 
 logger = logging.getLogger(__name__)
+
+
+def _contribs_to_drivers(contribs_row: np.ndarray, feature_names: list[str],
+                         max_groups: int = 5) -> list[dict]:
+    """
+    Converteix un vector de contribucions XGBoost a una llista de drivers agrupats.
+    contribs_row: array de n_features + 1 (última posició = bias).
+    """
+    feat_contribs = contribs_row[:-1]
+    bias = float(contribs_row[-1])
+
+    # Agrupar per concepte humà
+    group_sums = {}
+    for fname, contrib in zip(feature_names, feat_contribs):
+        contrib_val = float(contrib)
+        if abs(contrib_val) < 1e-6:
+            continue
+        group_info = config.FEATURE_GROUP_MAP.get(fname)
+        if group_info:
+            group_name, icon = group_info
+        else:
+            group_name, icon = "Altres", "🔬"
+        if group_name not in group_sums:
+            group_sums[group_name] = {"icon": icon, "total": 0.0}
+        group_sums[group_name]["total"] += contrib_val
+
+    # Ordenar per valor absolut descendent
+    sorted_groups = sorted(group_sums.items(), key=lambda x: abs(x[1]["total"]), reverse=True)
+
+    drivers = []
+    for group_name, info in sorted_groups[:max_groups]:
+        total = info["total"]
+        if abs(total) < 0.01:
+            continue
+        drivers.append({
+            "group": group_name,
+            "icon": info["icon"],
+            "contribution": round(total, 3),
+            "direction": "pluja" if total > 0 else "sec",
+        })
+
+    # Afegir la base (climatologia) com a context
+    drivers.append({
+        "group": "Base (climatologia)",
+        "icon": "📈",
+        "contribution": round(bias, 3),
+        "direction": "pluja" if bias > 0 else "sec",
+    })
+
+    return drivers
+
+
+def compute_prediction_drivers(model, X: pd.DataFrame, feature_names: list[str],
+                               max_groups: int = 5) -> list[dict]:
+    """
+    Calcula els factors que més influeixen en la predicció actual.
+    Usa pred_contribs de XGBoost (atribució exacta per arbre) i agrupa
+    per conceptes humans definits a config.FEATURE_GROUP_MAP.
+    """
+    booster = model.get_booster()
+    dmat = xgb.DMatrix(X, feature_names=feature_names)
+    contribs = booster.predict(dmat, pred_contribs=True)
+    return _contribs_to_drivers(contribs[0], feature_names, max_groups)
 
 
 def _aemet_storm_above_threshold(aemet_data: dict) -> bool:
@@ -267,6 +331,9 @@ def predict_now() -> dict:
         probability = raw_probability
     will_rain = probability >= threshold
 
+    # Calcular els factors que més influeixen en la predicció
+    top_drivers = compute_prediction_drivers(model, X, feature_names)
+
     # Categoria de pluja per a visualització (honesta, separada del llindar F1)
     if probability >= config.DISPLAY_THRESHOLD_RAIN:
         rain_category = "probable"  # Alta confiança: pluja probable
@@ -394,6 +461,7 @@ def predict_now() -> dict:
         },
         "pressure_change_3h": float(latest.get("pressure_change_3h", pd.Series([np.nan])).values[0])
             if pd.notna(latest.get("pressure_change_3h", pd.Series([np.nan])).values[0]) else None,
+        "top_drivers": top_drivers,
     }
 
     logger.info(
@@ -468,13 +536,21 @@ def predict_hourly_forecast(hours_ahead: int = 48) -> list[dict]:
     else:
         probs = raw_probs
 
+    # Calcular contribucions per a cada hora
+    booster = model.get_booster()
+    dmat = xgb.DMatrix(X, feature_names=feature_names)
+    all_contribs = booster.predict(dmat, pred_contribs=True)
+
     results = []
     for idx, (_, row) in enumerate(features_df.iterrows()):
         prob = float(probs[idx]) if idx < len(probs) else 0.0
+        # Drivers per aquesta hora
+        hour_drivers = _contribs_to_drivers(all_contribs[idx], feature_names)
         results.append({
             "datetime": row["datetime"],
             "probability": round(prob, 4),
             "will_rain": prob >= threshold,
+            "top_drivers": hour_drivers,
         })
 
     rain_hours = sum(1 for r in results if r["will_rain"])
