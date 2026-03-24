@@ -560,9 +560,11 @@ function renderTechExpandable(d) {
       </p>
       ${_renderBiasInsight(d)}
       <div class="sources-inline">
-        <span class="sources-inline-label">Fonts:</span>
-        ${checkChips.join('')}
-        ${stormChip}
+        <div class="sources-inline-label">Fonts:</div>
+        <div class="sources-chips">
+          ${checkChips.join('')}
+          ${stormChip}
+        </div>
       </div>
       ${disagreementNote}
       <button class="expand-toggle mini" onclick="this.classList.toggle('open');document.getElementById('${detailId}').classList.toggle('open')">
