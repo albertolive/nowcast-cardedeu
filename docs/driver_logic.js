@@ -62,7 +62,7 @@ export function explainGroup(group, direction, ctx) {
       if (solar == null) return isRain ? 'Poca llum solar' : 'Fa sol';
       if (isRain) return solar < 200 ? 'Cel cobert, poca llum solar' : null;
       return solar >= 200 ? 'Fa sol' : null;
-    case 'Sòl':
+    case 'Terra':
       return isRain ? 'El terra està humit' : null;
     case 'Capa límit':
       return isRain ? 'L\'aire es barreja i pot generar xàfecs' : null;

@@ -396,13 +396,13 @@ FEATURE_GROUP_MAP = {
     "sunshine_duration": ("Radiació solar", "☀️"),
     "sunshine_accum_3h": ("Radiació solar", "☀️"),
     "terrestrial_radiation": ("Radiació solar", "☀️"),
-    # Sòl
-    "soil_moisture_0_to_7cm": ("Sòl", "🌱"),
-    "soil_moisture_7_to_28cm": ("Sòl", "🌱"),
-    "soil_moisture_28_to_100cm": ("Sòl", "🌱"),
-    "soil_moisture_change_24h": ("Sòl", "🌱"),
-    "soil_saturation_ratio": ("Sòl", "🌱"),
-    "et0_fao_evapotranspiration": ("Sòl", "🌱"),
+    # Terra
+    "soil_moisture_0_to_7cm": ("Terra", "🌱"),
+    "soil_moisture_7_to_28cm": ("Terra", "🌱"),
+    "soil_moisture_28_to_100cm": ("Terra", "🌱"),
+    "soil_moisture_change_24h": ("Terra", "🌱"),
+    "soil_saturation_ratio": ("Terra", "🌱"),
+    "et0_fao_evapotranspiration": ("Terra", "🌱"),
     # Capa límit
     "boundary_layer_height": ("Capa límit", "🏔️"),
     "blh_change_3h": ("Capa límit", "🏔️"),

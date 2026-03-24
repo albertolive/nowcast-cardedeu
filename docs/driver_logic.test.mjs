@@ -335,14 +335,14 @@ test("Radiació solar — dry with null solar", () => {
   assert.equal(explainGroup("Radiació solar", "sec", ctx()), "Fa sol");
 });
 
-// ── Sòl ──
+// ── Terra ──
 
-test("Sòl — rain", () => {
-  assert.equal(explainGroup("Sòl", "pluja", ctx()), "El terra està humit");
+test("Terra — rain", () => {
+  assert.equal(explainGroup("Terra", "pluja", ctx()), "El terra està humit");
 });
 
-test("Sòl — dry → null", () => {
-  assert.equal(explainGroup("Sòl", "sec", ctx()), null);
+test("Terra — dry → null", () => {
+  assert.equal(explainGroup("Terra", "sec", ctx()), null);
 });
 
 // ── Capa límit ──
