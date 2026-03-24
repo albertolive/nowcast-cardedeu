@@ -7,9 +7,11 @@ Quotes separades per servei (mensuals, reset dia 1 a 00:00 UTC):
   - Referència: 2000 crides/mes
   - Quota (consum-actual): 300 crides/mes
 
+Persistence: single JSON file (data/meteocat_cache.json) committed to git,
+so cache survives across GitHub Actions runs. Same pattern as aemet_cache.py.
+
 Endpoint de consum: GET /quotes/v1/consum-actual
 """
-import hashlib
 import json
 import logging
 import os
@@ -22,6 +24,10 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 import config
 
 logger = logging.getLogger(__name__)
+
+CACHE_FILE = os.path.join(config.PROJECT_ROOT, "data", "meteocat_cache.json")
+# Max entries before pruning old ones (keep cache file manageable)
+_MAX_ENTRIES = 200
 
 
 def fetch_quota() -> dict:
@@ -60,39 +66,54 @@ def get_remaining(plan_name: str) -> int:
     return -1
 
 
-def _cache_path(key: str) -> str:
-    """Return path for a cache entry."""
-    os.makedirs(config.METEOCAT_CACHE_DIR, exist_ok=True)
-    safe_key = hashlib.md5(key.encode()).hexdigest()
-    return os.path.join(config.METEOCAT_CACHE_DIR, f"{safe_key}.json")
+def _load_cache() -> dict:
+    """Load entire cache from single JSON file."""
+    if not os.path.exists(CACHE_FILE):
+        return {}
+    try:
+        with open(CACHE_FILE) as f:
+            return json.load(f)
+    except (json.JSONDecodeError, OSError):
+        return {}
+
+
+def _save_cache(cache: dict) -> None:
+    """Write cache to disk. Prune old entries if over limit."""
+    if len(cache) > _MAX_ENTRIES:
+        # Keep most recent entries
+        sorted_keys = sorted(cache.keys(),
+                             key=lambda k: cache[k].get("timestamp", 0),
+                             reverse=True)
+        cache = {k: cache[k] for k in sorted_keys[:_MAX_ENTRIES]}
+    os.makedirs(os.path.dirname(CACHE_FILE), exist_ok=True)
+    try:
+        with open(CACHE_FILE, "w") as f:
+            json.dump(cache, f, indent=2, ensure_ascii=False)
+    except OSError as e:
+        logger.debug(f"Cache write failed: {e}")
 
 
 def get_cached(cache_key: str, ttl_minutes: int):
     """
     Return cached value if it exists and is within TTL, else None.
     """
-    path = _cache_path(cache_key)
-    if not os.path.exists(path):
+    cache = _load_cache()
+    entry = cache.get(cache_key)
+    if not entry:
         return None
     try:
-        with open(path) as f:
-            entry = json.load(f)
         age_minutes = (time.time() - entry["timestamp"]) / 60
         if age_minutes <= ttl_minutes:
             logger.debug(f"Cache hit: {cache_key} (age={age_minutes:.0f}m)")
             return entry["data"]
         logger.debug(f"Cache expired: {cache_key} (age={age_minutes:.0f}m > {ttl_minutes}m)")
-    except (json.JSONDecodeError, KeyError, OSError):
+    except (KeyError, TypeError):
         pass
     return None
 
 
 def set_cached(cache_key: str, data):
     """Store a value in the cache with current timestamp."""
-    path = _cache_path(cache_key)
-    try:
-        os.makedirs(config.METEOCAT_CACHE_DIR, exist_ok=True)
-        with open(path, "w") as f:
-            json.dump({"timestamp": time.time(), "data": data}, f)
-    except OSError as e:
-        logger.debug(f"Cache write failed: {e}")
+    cache = _load_cache()
+    cache[cache_key] = {"timestamp": time.time(), "data": data}
+    _save_cache(cache)

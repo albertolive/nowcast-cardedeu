@@ -481,6 +481,19 @@ def predict_now() -> dict:
     else:
         logger.info(f"Features: {populated_count}/{len(fv)} populades, {null_count} nul·les")
 
+    # Monitorització específica: fonts de dades gated quan el rain gate és obert
+    if rain_signals:
+        sentinel_nulls = [k for k in ("sentinel_temp_diff", "sentinel_humidity_diff",
+                                       "sentinel_precip", "local_rain_xema")
+                          if fv.get(k) is None]
+        if sentinel_nulls:
+            logger.warning(f"⚠️ Sentinel XEMA: {len(sentinel_nulls)}/4 features nul·les "
+                           f"amb rain gate obert: {sentinel_nulls}")
+        lightning_nulls = [k for k in ("lightning_count_30km", "lightning_count_15km")
+                           if fv.get(k) is None]
+        if lightning_nulls:
+            logger.warning(f"⚠️ Lightning XDDE: features nul·les amb rain gate obert")
+
     return result
 
 

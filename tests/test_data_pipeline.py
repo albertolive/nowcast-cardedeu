@@ -369,3 +369,101 @@ class TestRainGateAemetStorm:
     def test_below_threshold_does_not_trigger(self):
         from src.model.predict import _aemet_storm_above_threshold
         assert _aemet_storm_above_threshold({"aemet_prob_storm": 0}) is False
+
+
+class TestXemaSentinelFallback:
+    """Regression tests for XEMA sentinel yesterday-fallback and cache behaviour."""
+
+    def test_empty_sentinel_has_required_keys(self):
+        from src.data.meteocat import _empty_sentinel
+        result = _empty_sentinel()
+        assert "sentinel_temp" in result
+        assert "sentinel_humidity" in result
+        assert "sentinel_precip" in result
+
+    def test_compute_sentinel_features_with_none_data(self):
+        """When XEMA returns all None, features should gracefully degrade."""
+        from src.data.meteocat import compute_sentinel_features
+        result = compute_sentinel_features(
+            {"sentinel_temp": None, "sentinel_humidity": None, "sentinel_precip": None},
+            station_temp=15.0, station_humidity=60.0,
+        )
+        assert result["sentinel_temp_diff"] is None
+        assert result["sentinel_humidity_diff"] is None
+        assert result["sentinel_precip"] is None
+        assert result["sentinel_raining"] == 0
+
+    def test_compute_sentinel_features_with_real_data(self):
+        """When XEMA returns data, features should be computed."""
+        from src.data.meteocat import compute_sentinel_features
+        result = compute_sentinel_features(
+            {"sentinel_temp": 13.0, "sentinel_humidity": 72.0, "sentinel_precip": 0.2,
+             "local_rain_xema": 0.5, "local_rain_xema_3h": 1.2},
+            station_temp=15.0, station_humidity=60.0,
+        )
+        assert result["sentinel_temp_diff"] == pytest.approx(2.0)
+        assert result["sentinel_humidity_diff"] == pytest.approx(12.0)
+        assert result["sentinel_precip"] == pytest.approx(0.2)
+        assert result["sentinel_raining"] == 1
+        assert result["local_rain_xema"] == pytest.approx(0.5)
+        assert result["local_rain_xema_3h"] == pytest.approx(1.2)
+
+    def test_fetch_variable_caches_empty_responses(self, tmp_path, monkeypatch):
+        """Empty API responses should be cached to avoid burning quota."""
+        import time
+        from src.data import meteocat_cache
+        from src.data.meteocat import fetch_variable_all_stations
+        from datetime import date
+
+        # Redirect cache to tmp_path
+        cache_file = str(tmp_path / "meteocat_cache.json")
+        monkeypatch.setattr(meteocat_cache, "CACHE_FILE", cache_file)
+        # Fake API configured
+        monkeypatch.setattr(config, "METEOCAT_API_KEY", "test-key")
+
+        # Mock the HTTP call to return empty data
+        call_count = 0
+        class FakeResponse:
+            status_code = 200
+            def raise_for_status(self): pass
+            def json(self): return []
+
+        import src.data.meteocat as meteocat_mod
+        original_get = meteocat_mod.SESSION.get
+        def mock_get(*args, **kwargs):
+            nonlocal call_count
+            call_count += 1
+            return FakeResponse()
+        monkeypatch.setattr(meteocat_mod.SESSION, "get", mock_get)
+
+        test_date = date(2026, 3, 24)
+        # First call: API hit
+        df1 = fetch_variable_all_stations(32, test_date)
+        assert df1.empty
+        assert call_count == 1
+
+        # Second call: should use cache, NOT call API again
+        df2 = fetch_variable_all_stations(32, test_date)
+        assert df2.empty
+        assert call_count == 1, "Empty response should be cached — API called twice!"
+
+    def test_meteocat_cache_prune(self, tmp_path, monkeypatch):
+        """Cache should prune old entries when exceeding max."""
+        import time
+        from src.data import meteocat_cache
+
+        cache_file = str(tmp_path / "meteocat_cache.json")
+        monkeypatch.setattr(meteocat_cache, "CACHE_FILE", cache_file)
+        monkeypatch.setattr(meteocat_cache, "_MAX_ENTRIES", 5)
+
+        # Write 7 entries
+        for i in range(7):
+            meteocat_cache.set_cached(f"key_{i}", {"val": i})
+
+        # Read back — should only have 5 most recent
+        cache = meteocat_cache._load_cache()
+        assert len(cache) == 5
+        # Oldest keys (key_0, key_1) should be pruned
+        assert "key_0" not in cache
+        assert "key_1" not in cache
+        assert "key_6" in cache
