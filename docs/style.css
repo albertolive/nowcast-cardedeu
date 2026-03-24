@@ -481,6 +481,8 @@ canvas { width: 100% !important; height: 100% !important; }
   color: var(--text);
   white-space: nowrap;
   overflow: visible;
+  position: relative;
+  z-index: 1;
 }
 .driver-bar-container {
   flex: 1;
