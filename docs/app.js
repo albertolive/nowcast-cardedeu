@@ -455,9 +455,13 @@ function renderDriversTech(d) {
       ? `left:50%;width:${pct.toFixed(1)}%`
       : `right:50%;width:${pct.toFixed(1)}%`;
     const barCls = isRain ? 'driver-bar-rain' : 'driver-bar-dry';
+    const tip = GROUP_TOOLTIP[dr.group] || '';
+    const infoBtn = tip
+      ? ` <span class="driver-info" tabindex="0" role="button" aria-label="Més info"><span class="driver-info-icon">ⓘ</span><span class="driver-info-tip">${tip}</span></span>`
+      : '';
     return `
       <div class="driver-row">
-        <span class="driver-label">${dr.icon} ${dr.group}</span>
+        <span class="driver-label">${dr.icon} ${dr.group}${infoBtn}</span>
         <div class="driver-bar-container">
           <div class="driver-bar-center"></div>
           <div class="driver-bar ${barCls}" style="${barStyle}"></div>
