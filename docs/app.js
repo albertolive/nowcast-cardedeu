@@ -550,15 +550,7 @@ function renderTechExpandable(d) {
 
   const detailId = 'tech-detail-' + Date.now();
   return `
-    <button class="expand-toggle" onclick="this.classList.toggle('open');document.getElementById('${detailId}').classList.toggle('open')">
-      <span class="chevron">▶</span> Com ho sabem
-    </button>
-    <div id="${detailId}" class="expand-content">
-      <p class="tech-explainer">
-        Integrem ${d.features_used || '209'} variables (estació local, radar, llamps, 4 models globals, nivells de pressió) en un model entrenat amb 12 anys d'històric verificat a Cardedeu. Es re-entrena cada dia.
-      </p>
-      ${renderDriversTech(d)}
-      ${_renderBiasInsight(d)}
+    <div class="tech-open-section">
       <div class="sources-analyzed">
         <div class="sources-analyzed-title">Fonts analitzades</div>
         <div class="source-votes">
@@ -566,6 +558,16 @@ function renderTechExpandable(d) {
           ${stormNote}
         </div>
         ${disagreementNote}
+      </div>
+      <p class="tech-explainer" style="margin-top:10px">
+        Integrem ${d.features_used || '209'} variables en un model entrenat amb 12 anys d'històric verificat a Cardedeu. Es re-entrena cada dia.
+      </p>
+      ${_renderBiasInsight(d)}
+      <button class="expand-toggle mini" onclick="this.classList.toggle('open');document.getElementById('${detailId}').classList.toggle('open')">
+        <span class="chevron">▶</span> Detall tècnic
+      </button>
+      <div id="${detailId}" class="expand-content">
+        ${renderDriversTech(d)}
       </div>
     </div>
   `;

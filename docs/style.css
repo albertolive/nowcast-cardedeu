@@ -208,7 +208,7 @@ canvas { width: 100% !important; height: 100% !important; }
 /* Conditions grid */
 .grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 16px;
   margin-bottom: 16px;
 }
@@ -601,6 +601,12 @@ canvas { width: 100% !important; height: 100% !important; }
   text-transform: uppercase;
   letter-spacing: 0.5px;
   margin-bottom: 6px;
+}
+
+.tech-open-section {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(48, 54, 61, 0.25);
 }
 
 /* Vote tally + verdict — unified bottom section */
@@ -1156,7 +1162,7 @@ footer a:hover { text-decoration: underline; }
 
   .verdict { font-size: 20px; }
 
-  .grid { gap: 12px; }
+  .grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
   .info-card h3 { padding: 10px 14px; }
   .info-card-body { padding: 12px 14px 14px; }
 
