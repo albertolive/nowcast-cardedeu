@@ -591,9 +591,8 @@ canvas { width: 100% !important; height: 100% !important; }
 
 .sources-inline {
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 6px;
+  flex-direction: column;
+  gap: 4px;
   margin-top: 8px;
 }
 
@@ -609,6 +608,7 @@ canvas { width: 100% !important; height: 100% !important; }
   background: rgba(48, 54, 61, 0.3);
   padding: 2px 8px;
   border-radius: 4px;
+  align-self: flex-start;
 }
 
 .tech-open-section {
