@@ -1241,31 +1241,48 @@ function _positionTooltip(infoEl) {
   // Horizontal: center on icon, clamp to viewport
   let left = iconRect.left + iconRect.width / 2 - tipRect.width / 2;
   left = Math.max(margin, Math.min(left, window.innerWidth - tipRect.width - margin));
-  // Vertical: above icon
-  const top = iconRect.top - tipRect.height - 8;
+  // Vertical: above icon, or below if no room above
+  let top = iconRect.top - tipRect.height - 8;
+  if (top < margin) top = iconRect.bottom + 8;
 
   tip.style.left = left + 'px';
   tip.style.top = top + 'px';
 
   // Position arrow to point at icon center
-  const arrow = tip.querySelector('::after') || null; // CSS pseudo, set via custom property
-  const arrowLeft = iconRect.left + iconRect.width / 2 - left - 5; // 5 = border width
+  const arrowLeft = iconRect.left + iconRect.width / 2 - left - 5;
   tip.style.setProperty('--arrow-left', arrowLeft + 'px');
 }
 
-document.addEventListener('click', (e) => {
+function _clearTooltip(el) {
+  el.classList.remove('active');
+  const tip = el.querySelector('.driver-info-tip');
+  if (tip) {
+    tip.style.left = '';
+    tip.style.top = '';
+    tip.style.display = '';
+    tip.style.visibility = '';
+  }
+}
+
+function _handleTooltipClick(e) {
   const infoBtn = e.target.closest('.driver-info');
   document.querySelectorAll('.driver-info.active').forEach(el => {
-    if (el !== infoBtn) el.classList.remove('active');
+    if (el !== infoBtn) _clearTooltip(el);
   });
   if (infoBtn) {
     e.preventDefault();
-    infoBtn.classList.toggle('active');
+    e.stopPropagation();
     if (infoBtn.classList.contains('active')) {
+      _clearTooltip(infoBtn);
+    } else {
+      infoBtn.classList.add('active');
       _positionTooltip(infoBtn);
     }
   }
-});
+}
+
+document.addEventListener('click', _handleTooltipClick);
+document.addEventListener('touchend', _handleTooltipClick);
 
 async function init() {
   try {
