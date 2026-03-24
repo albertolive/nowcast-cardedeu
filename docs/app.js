@@ -243,18 +243,10 @@ function renderPrediction(latest, history) {
         <div class="info-card-body">${renderAtmosphere(latest)}</div>
       </div>
 
-    </div>
-
-    <!-- Technical deep-dive (hidden by default) -->
-    <div class="tech-deep-dive">
-      <button class="expand-toggle" onclick="this.classList.toggle('open');document.getElementById('tech-deep-content').classList.toggle('open')">
-        <span class="chevron">▶</span> Per a usuaris tècnics
-      </button>
-      <div id="tech-deep-content" class="expand-content">
-        <div class="info-card" id="sources-card">
-          <h3>💎 Què diuen les fonts externes?</h3>
-          <div class="info-card-body">${renderWhyPrediction(latest)}</div>
-        </div>
+      <!-- Why this prediction -->
+      <div class="info-card" id="sources-card">
+        <h3>💎 Què diuen les fonts externes?</h3>
+        <div class="info-card-body">${renderWhyPrediction(latest)}</div>
       </div>
     </div>
 
