@@ -197,6 +197,8 @@ function renderPrediction(latest, history) {
 
       ${_mlCorrectionSummary(latest)}
 
+      ${renderDrivers(latest)}
+
       <div class="gate-indicator ${gateOpen ? 'open' : 'closed'}">
         <span class="gate-dot"></span>
         ${gateOpen
@@ -267,16 +269,16 @@ function renderPrediction(latest, history) {
           <div class="pred-legend-grid">
             <div class="pred-legend-section">
               <span class="pred-legend-heading">Vam dir</span>
-              <span>☀️ <strong>No plourà</strong> — Probabilitat &lt; 30%</span>
-              <span>🌤️ <strong>Incert</strong> — Entre 30% i 65%</span>
-              <span>🌧️ <strong>Pluja probable</strong> — Probabilitat ≥ 65%</span>
+              <span>☀️ <strong>No plourà</strong>, probabilitat &lt; 30%</span>
+              <span>🌤️ <strong>Incert</strong>, entre 30% i 65%</span>
+              <span>🌧️ <strong>Pluja probable</strong>, probabilitat ≥ 65%</span>
             </div>
             <div class="pred-legend-section">
               <span class="pred-legend-heading">Resultat</span>
-              <span>✅ <strong>Encert</strong> — Predicció segura correcta</span>
-              <span>🔸 <strong>Encert/Error</strong> — Predicció incerta (no compta al percentatge d'encerts)</span>
-              <span>❌ <strong>Error</strong> — Predicció segura incorrecta</span>
-              <span>⏳ <strong>Pendent</strong> — Encara no verificada</span>
+              <span>✅ <strong>Encert</strong>, predicció segura correcta</span>
+              <span>🔸 <strong>Encert/Error</strong>, predicció incerta (no compta al percentatge d'encerts)</span>
+              <span>❌ <strong>Error</strong>, predicció segura incorrecta</span>
+              <span>⏳ <strong>Pendent</strong>, encara no verificada</span>
             </div>
           </div>
         </details>
@@ -369,7 +371,7 @@ function renderRadar(d) {
     <div class="stat-row"><span class="stat-label">Intensitat</span><span class="stat-value">${view.intensityText}</span></div>
     <div class="stat-row"><span class="stat-label">Llamps (30 km)</span><span class="stat-value">${lightningText}</span></div>
     ${sourceNote}
-    <p class="card-hint">RainViewer (global) + AEMET (nacional) — dos radars independents cada 10 min</p>
+    <p class="card-hint">RainViewer (global) + AEMET (nacional), dos radars independents cada 10 min</p>
   `;
 }
 
@@ -420,10 +422,10 @@ function _mlCorrectionSummary(d) {
     text = `Els models globals marquen ~${nwpPct}% però el nostre sistema, entrenat amb 12 anys de dades locals, rebaixa a <strong>${pct}%</strong>. Configuracions com aquesta sovint no porten pluja real a Cardedeu.`;
   } else if (diff < 0) {
     icon = '📉';
-    text = `Models globals: ~${nwpPct}%. El sistema local corregeix a <strong>${pct}%</strong> — l'experiència a Cardedeu indica menys risc del que suggereixen.`;
+    text = `Models globals: ~${nwpPct}%. El sistema local corregeix a <strong>${pct}%</strong>, l'experiència a Cardedeu indica menys risc del que suggereixen.`;
   } else if (diff > 20) {
     icon = '⚠️';
-    text = `Models globals: només ~${nwpPct}%. Però les condicions locals recorden patrons que sí porten pluja aquí — el sistema puja a <strong>${pct}%</strong>.`;
+    text = `Models globals: només ~${nwpPct}%. Però les condicions locals recorden patrons que sí porten pluja aquí, el sistema puja a <strong>${pct}%</strong>.`;
   } else {
     icon = '📈';
     text = `Models globals: ~${nwpPct}%. El sistema local veu senyals addicionals i ajusta a <strong>${pct}%</strong>.`;
@@ -442,7 +444,129 @@ function _renderBiasInsight(d) {
     parts.push(`${Math.abs(b.humidity).toFixed(0)}% ${b.humidity > 0 ? 'més humit' : 'més sec'} del previst`);
   }
   if (parts.length === 0) return '';
-  return `<p class="tech-explainer" style="margin-top:6px;font-style:italic">Ara mateix: ${parts.join(' i ')} — el sistema corregeix aquesta diferència.</p>`;
+  return `<p class="tech-explainer" style="margin-top:6px;font-style:italic">Ara mateix: ${parts.join(' i ')}, el sistema corregeix aquesta diferència.</p>`;
+}
+
+function renderDrivers(d) {
+  const drivers = d.top_drivers;
+  if (!drivers || drivers.length === 0) return '';
+
+  const featureDrivers = drivers.filter(dr => dr.group !== 'Base (climatologia)');
+  if (featureDrivers.length === 0) return '';
+
+  // ── Sort: biggest pushers toward rain first, then toward dry ──
+  const rainPushers = featureDrivers.filter(dr => dr.direction === 'pluja').sort((a, b) => b.contribution - a.contribution);
+  const dryPushers = featureDrivers.filter(dr => dr.direction === 'sec').sort((a, b) => a.contribution - b.contribution);
+
+  // Human-readable explanations per group
+  const explanations = {
+    'Models globals':     { rain: 'Els models meteorològics globals preveuen pluja', dry: 'Els models meteorològics globals no preveuen pluja' },
+    'Consistència NWP':   { rain: 'La previsió de pluja és persistent i consistent', dry: 'La previsió de pluja és feble o intermitent' },
+    'Pluja confirmada':   { rain: 'Ja s\'està registrant pluja a la zona', dry: 'No hi ha pluja recent registrada' },
+    'Radar':              { rain: 'El radar detecta precipitació propera', dry: 'El radar no detecta precipitació a prop' },
+    'Humitat':            { rain: 'L\'aire és molt humit, condicions favorables', dry: 'L\'aire és sec, dificulta la formació de pluja' },
+    'Aigua precipitable': { rain: 'Hi ha molta aigua a l\'atmosfera', dry: 'Poca aigua disponible a l\'atmosfera' },
+    'Inestabilitat':      { rain: 'L\'atmosfera és inestable, pot generar tempestes', dry: 'L\'atmosfera és estable, inhibeix la pluja' },
+    'Pressió':            { rain: 'La pressió atmosfèrica baixa, pot afavorir pluja', dry: 'La pressió és alta i estable, temps sec' },
+    'Règim de vent':      { rain: 'El vent porta humitat del mar cap a Cardedeu', dry: 'El vent no porta humitat cap aquí' },
+    'Vent':               { rain: 'El vent té característiques que afavoreixen pluja', dry: 'El patró de vent no afavoreix pluja' },
+    'Núvols':             { rain: 'El cel està molt ennuvolat', dry: 'El cel està poc ennuvolat' },
+    'Temperatura':        { rain: 'Les temperatures afavoreixen la precipitació', dry: 'Les temperatures no afavoreixen pluja' },
+    'Hora del dia':       { rain: 'És una hora amb més tendència a pluja', dry: 'És una hora habitualment seca' },
+    'Radiació solar':     { rain: 'La radiació solar és baixa, cel cobert', dry: 'Hi ha molta radiació solar, cel obert' },
+    'Sòl':                { rain: 'El sòl està saturat, amplifica la precipitació', dry: 'El sòl està sec' },
+    'Capa límit':         { rain: 'La barreja atmosfèrica afavoreix convecció', dry: 'La capa límit és estable' },
+    'Llamps':             { rain: 'Hi ha activitat elèctrica propera', dry: 'Sense activitat elèctrica' },
+    'Sentinella':         { rain: 'L\'estació de Granollers ja detecta pluja', dry: 'L\'estació de Granollers no detecta pluja' },
+    'Previsió oficial':   { rain: 'AEMET i SMC preveuen pluja a Cardedeu', dry: 'AEMET i SMC no preveuen pluja' },
+    'Acord entre models': { rain: 'Diversos models globals coincideixen en pluja', dry: 'Els models globals no s\'hi posen d\'acord o no preveuen pluja' },
+    'Correcció local':    { rain: 'Les condicions locals divergeixen del que preveien els models, a favor de pluja', dry: 'Les condicions locals divergeixen del que preveien els models, menys pluja del previst' },
+  };
+
+  // Top 2 rain and 2 dry reasons as bullet points
+  const topRain = rainPushers.slice(0, 2);
+  const topDry = dryPushers.slice(0, 2);
+
+  let naturalLines = [];
+  for (const dr of topRain) {
+    const exp = explanations[dr.group];
+    const text = exp ? `${dr.icon} ${exp.rain}` : `${dr.icon} ${dr.group} empeny cap a pluja`;
+    naturalLines.push(`<li class="driver-reason rain">${text}</li>`);
+  }
+  for (const dr of topDry) {
+    const exp = explanations[dr.group];
+    const text = exp ? `${dr.icon} ${exp.dry}` : `${dr.icon} ${dr.group} empeny cap a sec`;
+    naturalLines.push(`<li class="driver-reason dry">${text}</li>`);
+  }
+
+  // Correction narrative — our model vs global models
+  const nwpDriver = featureDrivers.find(dr => dr.group === 'Models globals');
+  const nonNwpDrivers = featureDrivers.filter(dr => dr.group !== 'Models globals');
+  const localSignal = nonNwpDrivers.reduce((sum, dr) => sum + dr.contribution, 0);
+  const nwpSignal = nwpDriver ? nwpDriver.contribution : 0;
+
+  let correctionNote = '';
+  if (nwpDriver && nonNwpDrivers.length > 0) {
+    const nwpDir = nwpSignal > 0 ? 'pluja' : 'sec';
+    const localDir = localSignal > 0 ? 'pluja' : 'sec';
+    if (nwpDir !== localDir && Math.abs(localSignal) > 0.1) {
+      if (localDir === 'sec') {
+        correctionNote = `<div class="driver-correction">🛡️ Tot i que els models globals tendeixen a ${nwpDir}, <strong>les dades locals i l'experiència de 12 anys a Cardedeu corregeixen cap a temps sec</strong>. Configuracions com aquesta sovint no porten pluja real aquí.</div>`;
+      } else {
+        correctionNote = `<div class="driver-correction">⚠️ Tot i que els models globals tendeixen a ${nwpDir}, <strong>les dades locals detecten senyals que històricament sí porten pluja a Cardedeu</strong>.</div>`;
+      }
+    } else if (nwpDir === localDir) {
+      correctionNote = `<div class="driver-correction agree">✅ Les dades locals i els models globals <strong>coincideixen</strong>, la predicció és més fiable.</div>`;
+    }
+  }
+
+  return `
+    <div class="drivers-section">
+      <div class="drivers-title">Per què ${d.probability_pct}%?</div>
+      <ul class="drivers-natural">
+        ${naturalLines.join('')}
+      </ul>
+      ${correctionNote}
+    </div>`;
+}
+
+function renderDriversTech(d) {
+  const drivers = d.top_drivers;
+  if (!drivers || drivers.length === 0) return '';
+
+  const featureDrivers = drivers.filter(dr => dr.group !== 'Base (climatologia)');
+  const bias = drivers.find(dr => dr.group === 'Base (climatologia)');
+  if (featureDrivers.length === 0) return '';
+
+  const maxAbs = Math.max(...featureDrivers.map(dr => Math.abs(dr.contribution)), 0.1);
+
+  const techRows = featureDrivers.map(dr => {
+    const pct = Math.min(Math.abs(dr.contribution) / maxAbs * 100, 100);
+    const isRain = dr.direction === 'pluja';
+    const barCls = isRain ? 'driver-bar-rain' : 'driver-bar-dry';
+    const icon = isRain ? '🌧️' : '☀️';
+    const sign = isRain ? '+' : '';
+    return `
+      <div class="driver-row">
+        <span class="driver-icon">${icon}</span>
+        <span class="driver-label">${dr.icon} ${dr.group}</span>
+        <div class="driver-bar-container">
+          <div class="driver-bar ${barCls}" style="width:${pct.toFixed(0)}%"></div>
+        </div>
+        <span class="driver-value ${isRain ? 'rain' : 'dry'}">${sign}${dr.contribution.toFixed(2)}</span>
+      </div>`;
+  }).join('');
+
+  const baseText = bias
+    ? `<div class="driver-base">📈 Base (climatologia Cardedeu, 12 anys): ${bias.contribution > 0 ? '+' : ''}${bias.contribution.toFixed(2)} log-odds</div>`
+    : '';
+
+  return `
+    <div class="drivers-tech-section">
+      <div class="drivers-tech-intro">Contribució de cada grup de variables al log-odds de la predicció (XGBoost pred_contribs). Positiu = empeny cap a pluja, negatiu = cap a sec.</div>
+      ${techRows}
+      ${baseText}
+    </div>`;
 }
 
 function renderWhyPrediction(d) {
@@ -516,7 +640,7 @@ function renderWhyPrediction(d) {
   const mlUncertain = mlCat === 'incert' || (mlCat == null && pct >= 30 && pct < 65);
   let verdictText;
   if (mlUncertain) {
-    verdictText = `Les fonts externes ${rainVotes >= totalVotes / 2 ? 'tendeixen a veure pluja' : 'no preveuen pluja'}, i <strong>el nostre model dóna un ${pct}% de probabilitat</strong> — zona d'incertesa. Caldrà seguir-ho.`;
+    verdictText = `Les fonts externes ${rainVotes >= totalVotes / 2 ? 'tendeixen a veure pluja' : 'no preveuen pluja'}, i <strong>el nostre model dóna un ${pct}% de probabilitat</strong>, zona d'incertesa. Caldrà seguir-ho.`;
   } else if (rainVotes >= totalVotes / 2 && !mlRain) {
     // Most sources say rain, ML says no — the big correction story
     verdictText = `La majoria de fonts (${rainVotes}/${totalVotes}) diuen pluja, però <strong>el nostre model diu que no</strong> (${pct}%). Ha après que a Cardedeu aquesta combinació sovint no acaba en pluja.`;
@@ -555,8 +679,9 @@ function renderWhyPrediction(d) {
     </button>
     <div id="${detailId}" class="expand-content">
       <p class="tech-explainer">
-        El sistema combina ${d.features_used || '210'} variables meteorològiques — estació local, radar, llamps, 4 models globals i 12 anys d'històric de Cardedeu — per corregir els errors dels models globals al nostre microclima. Es re-entrena cada dia amb les prediccions verificades.
+        El sistema combina ${d.features_used || '210'} variables meteorològiques: estació local, radar, llamps, 4 models globals i 12 anys d'històric de Cardedeu, per corregir els errors dels models globals al nostre microclima. Es re-entrena cada dia amb les prediccions verificades.
       </p>
+      ${renderDriversTech(d)}
       ${_renderBiasInsight(d)}
     </div>
   `;
@@ -566,11 +691,11 @@ function renderAtmosphere(d) {
   const p = d.pressure_levels || {};
   const w = d.wind_regime || {};
   const regimes = {
-    llevantada: { icon: '🌊', name: 'Llevantada', desc: 'Humitat del mar contra les muntanyes — pluja #1 a Cardedeu (15% de probabilitat)', range: '60°-150° (E/SE)' },
-    tramuntana: { icon: '❄️', name: 'Tramuntana', desc: 'Vent fred del nord/nord-est — supressor de pluja (5%)', range: '340°-60° (N/NE)' },
-    migjorn: { icon: '🌡️', name: 'Migjorn', desc: 'Aire càlid africà — segon en pluja (15%)', range: '150°-190° (S)' },
-    garbi: { icon: '🌀', name: 'Garbí', desc: 'Aire inestable del sud-oest — tempestes (11%)', range: '190°-250° (SW)' },
-    ponent: { icon: '🏔️', name: 'Ponent', desc: 'Aire sec continental — supressor de pluja (6%)', range: '250°-340° (W/NW)' },
+    llevantada: { icon: '🌊', name: 'Llevantada', desc: 'Humitat del mar contra les muntanyes, pluja #1 a Cardedeu (15% de probabilitat)', range: '60°-150° (E/SE)' },
+    tramuntana: { icon: '❄️', name: 'Tramuntana', desc: 'Vent fred del nord/nord-est, supressor de pluja (5%)', range: '340°-60° (N/NE)' },
+    migjorn: { icon: '🌡️', name: 'Migjorn', desc: 'Aire càlid africà, segon en pluja (15%)', range: '150°-190° (S)' },
+    garbi: { icon: '🌀', name: 'Garbí', desc: 'Aire inestable del sud-oest, tempestes (11%)', range: '190°-250° (SW)' },
+    ponent: { icon: '🏔️', name: 'Ponent', desc: 'Aire sec continental, supressor de pluja (6%)', range: '250°-340° (W/NW)' },
   };
   const activeRegime = w.is_llevantada ? regimes.llevantada :
                        w.is_tramuntana ? regimes.tramuntana :
@@ -855,8 +980,8 @@ function initCalendar(history) {
     } else if (s.isOngoing) {
       resolutionCls = 'in-progress';
       resolutionText = s.anyRain
-        ? `🌧️ En curs — Ha plogut (${s.rainMm.toFixed(1)} mm)`
-        : '📊 En curs — Encara no ha plogut';
+        ? `🌧️ En curs, ha plogut (${s.rainMm.toFixed(1)} mm)`
+        : '📊 En curs, encara no ha plogut';
     } else if (s.anyRain) {
       resolutionCls = 'rain';
       resolutionText = `🌧️ Va ploure (${s.rainMm.toFixed(1)} mm)`;
