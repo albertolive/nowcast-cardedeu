@@ -458,7 +458,9 @@ function renderDrivers(d) {
   const rainPushers = featureDrivers.filter(dr => dr.direction === 'pluja').sort((a, b) => b.contribution - a.contribution);
   const dryPushers = featureDrivers.filter(dr => dr.direction === 'sec').sort((a, b) => a.contribution - b.contribution);
 
-  // Human-readable explanations per group — data-aware to avoid lying
+  // Human-readable explanations — sensory language a general user understands
+  // Rule: show % for humidity/clouds (universally understood), words for everything else.
+  // When data contradicts the model direction, return null to skip that group.
   const fv = d.feature_vector || {};
   const cloud = fv.cloud_cover;
   const rh = fv.relative_humidity_2m;
@@ -467,71 +469,102 @@ function renderDrivers(d) {
   const radarKm = fv.radar_nearest_echo_km;
   const radarCov = fv.radar_coverage_20km;
   const rainAccum = fv.rain_accum_3h;
-  const li = fv.nwp_lifted_index;
   const cape = fv.cape;
-  const tt = fv.total_totals;
+  const li = fv.nwp_lifted_index;
   const lightning = fv.lightning_count_30km;
   const ensemble = d.ensemble || {};
 
-  // Helper: describe instability honestly
-  const instabDesc = (() => {
-    if (cape != null && cape >= 500) return `CAPE de ${Math.round(cape)}, atmosfera inestable`;
-    if (li != null && li < 0) return `Lifted Index de ${li.toFixed(1)}, atmosfera inestable`;
-    if (tt != null && tt > 44) return `Total Totals de ${tt.toFixed(1)}, inestabilitat moderada`;
-    if (li != null) return `Lifted Index de ${li.toFixed(1)}`;
-    if (tt != null) return `Total Totals de ${tt.toFixed(1)}`;
-    return null;
-  })();
+  function explainGroup(group, direction) {
+    const isRain = direction === 'pluja';
+    switch (group) {
+      case 'Models globals':
+        return isRain ? 'Els models globals preveuen pluja' : 'Els models globals no preveuen pluja';
+      case 'Consistència NWP':
+        return isRain ? 'La previsió de pluja és persistent' : 'La previsió de pluja és feble';
+      case 'Pluja confirmada':
+        if (isRain) return rainAccum > 0 ? `Ja plou (${rainAccum.toFixed(1)} mm en 3h)` : null;
+        return 'No plou ara mateix';
+      case 'Radar':
+        if (isRain) {
+          if (radarCov != null && radarCov > 0) return 'El radar detecta pluja a prop';
+          if (radarKm != null && radarKm < 25) return `Pluja detectada a ${Math.round(radarKm)} km`;
+          return null;
+        }
+        return 'El radar no detecta pluja a prop';
+      case 'Humitat':
+        if (rh == null) return isRain ? 'L\'aire és humit' : 'L\'aire és sec';
+        return isRain ? `L'aire és humit (${Math.round(rh)}%)` : `L'aire és sec (${Math.round(rh)}%)`;
+      case 'Aigua precipitable':
+        return isRain ? 'Hi ha molta humitat a l\'atmosfera' : 'Poca humitat a l\'atmosfera';
+      case 'Inestabilitat':
+        if (isRain) {
+          if ((cape != null && cape >= 300) || (li != null && li < 0)) return 'L\'atmosfera és inestable';
+          return null;
+        }
+        return 'L\'atmosfera és estable';
+      case 'Pressió':
+        if (pressChange == null) return isRain ? 'La pressió baixa' : 'La pressió és estable';
+        if (isRain) return pressChange <= 0 ? 'La pressió baixa' : null;
+        return pressChange >= 0 ? 'La pressió puja o és estable' : null;
+      case 'Règim de vent':
+        return isRain ? 'El vent porta humitat del mar' : 'El vent no porta humitat';
+      case 'Vent':
+        return isRain ? 'El vent afavoreix pluja' : 'El vent no afavoreix pluja';
+      case 'Núvols':
+        if (cloud == null) return isRain ? 'Cel ennuvolat' : 'Cel obert';
+        if (isRain) return cloud >= 50 ? `Cel ennuvolat (${Math.round(cloud)}%)` : null;
+        return cloud < 50 ? `Cel obert (${Math.round(cloud)}% núvols)` : `Cel ennuvolat (${Math.round(cloud)}%), però no plourà`;
+      case 'Temperatura':
+        return isRain ? 'La temperatura afavoreix pluja' : 'La temperatura no afavoreix pluja';
+      case 'Hora del dia':
+        return isRain ? 'Hora propensa a pluja' : 'Hora habitualment seca';
+      case 'Radiació solar':
+        if (solar == null) return isRain ? 'Poca llum solar' : 'Fa sol';
+        if (isRain) return solar < 200 ? 'Cel cobert, poca llum solar' : null;
+        return solar >= 200 ? 'Fa sol' : null;
+      case 'Sòl':
+        return isRain ? 'El terra està humit' : 'El terra està sec';
+      case 'Capa límit':
+        return isRain ? 'L\'aire es barreja i pot generar xàfecs' : 'L\'aire és calmat';
+      case 'Llamps':
+        if (isRain) {
+          if (lightning != null && lightning > 0) return `${Math.round(lightning)} llamps detectats a prop`;
+          return null;
+        }
+        return 'Sense llamps';
+      case 'Sentinella':
+        return isRain ? 'Ja plou a Granollers (a prop)' : 'No plou a Granollers';
+      case 'Previsió oficial':
+        return isRain ? 'AEMET i Meteocat preveuen pluja' : 'AEMET i Meteocat no preveuen pluja';
+      case 'Acord entre models':
+        if (ensemble.models_rain != null) {
+          const n = ensemble.models_rain, t = ensemble.total_models || 4;
+          return isRain ? `${n} de ${t} models preveuen pluja` : `Només ${n} de ${t} models preveuen pluja`;
+        }
+        return isRain ? 'Diversos models coincideixen en pluja' : 'Els models no preveuen pluja';
+      case 'Correcció local':
+        return isRain ? 'Les dades locals apunten a pluja' : 'Les dades locals apunten a temps sec';
+      default:
+        return null;
+    }
+  }
 
-  const explanations = {
-    'Models globals':     { rain: 'Els models meteorològics globals preveuen pluja', dry: 'Els models meteorològics globals no preveuen pluja' },
-    'Consistència NWP':   { rain: 'La previsió de pluja és persistent i consistent', dry: 'La previsió de pluja és feble o intermitent' },
-    'Pluja confirmada':   { rain: rainAccum != null && rainAccum > 0 ? `Pluja registrada (${rainAccum.toFixed(1)} mm en 3h)` : 'El patró de pluja recent empeny el model',
-                            dry:  'No hi ha pluja recent registrada' },
-    'Radar':              { rain: radarCov != null && radarCov > 0 ? `El radar detecta precipitació (${(radarCov * 100).toFixed(0)}% cobertura)` :
-                                  radarKm != null && radarKm < 30 ? `Eco radar a ${radarKm.toFixed(0)} km` : 'El patró radar empeny el model',
-                            dry:  'El radar no detecta precipitació a prop' },
-    'Humitat':            { rain: rh != null ? `Humitat del ${Math.round(rh)}%, condicions favorables` : 'L\'aire és humit, condicions favorables',
-                            dry:  rh != null ? `Humitat del ${Math.round(rh)}%, aire relativament sec` : 'L\'aire és sec, dificulta la formació de pluja' },
-    'Aigua precipitable': { rain: fv.tcwv != null ? `${fv.tcwv.toFixed(1)} mm d'aigua a l'atmosfera` : 'Hi ha molta aigua a l\'atmosfera',
-                            dry:  fv.tcwv != null ? `Només ${fv.tcwv.toFixed(1)} mm d'aigua a l'atmosfera` : 'Poca aigua disponible a l\'atmosfera' },
-    'Inestabilitat':      { rain: instabDesc ? `${instabDesc}, pot generar tempestes` : 'L\'atmosfera és inestable, pot generar tempestes',
-                            dry:  instabDesc ? `${instabDesc}, atmosfera estable` : 'L\'atmosfera és estable, inhibeix la pluja' },
-    'Pressió':            { rain: pressChange != null ? `Tendència de pressió ${pressChange >= 0 ? '+' : ''}${pressChange.toFixed(1)} hPa/3h` : 'La pressió atmosfèrica baixa, pot afavorir pluja',
-                            dry:  pressChange != null ? `Tendència de pressió ${pressChange >= 0 ? '+' : ''}${pressChange.toFixed(1)} hPa/3h` : 'La pressió és alta i estable, temps sec' },
-    'Règim de vent':      { rain: 'El vent porta humitat del mar cap a Cardedeu', dry: 'El vent no porta humitat cap aquí' },
-    'Vent':               { rain: 'El vent té característiques que afavoreixen pluja', dry: 'El patró de vent no afavoreix pluja' },
-    'Núvols':             { rain: cloud != null ? `Nuvolositat del ${Math.round(cloud)}%, el patró de núvols s'associa a pluja` : 'El patró de núvols s\'associa a pluja',
-                            dry:  cloud != null ? `Nuvolositat del ${Math.round(cloud)}%, cel majoritàriament obert` : 'El cel està poc ennuvolat' },
-    'Temperatura':        { rain: 'Les temperatures afavoreixen la precipitació', dry: 'Les temperatures no afavoreixen pluja' },
-    'Hora del dia':       { rain: 'És una hora amb més tendència a pluja', dry: 'És una hora habitualment seca' },
-    'Radiació solar':     { rain: solar != null ? `Radiació solar de ${Math.round(solar)} W/m²` : 'La radiació solar és baixa, cel cobert',
-                            dry:  solar != null ? `Radiació solar de ${Math.round(solar)} W/m²` : 'Hi ha molta radiació solar, cel obert' },
-    'Sòl':                { rain: 'La humitat del sòl afavoreix precipitació', dry: 'El sòl està sec' },
-    'Capa límit':         { rain: 'La barreja atmosfèrica afavoreix convecció', dry: 'La capa límit és estable' },
-    'Llamps':             { rain: lightning != null && lightning > 0 ? `${Math.round(lightning)} llamps detectats a prop` : 'El model detecta patrons associats a tempesta',
-                            dry:  'Sense activitat elèctrica' },
-    'Sentinella':         { rain: 'L\'estació de Granollers ja detecta pluja', dry: 'L\'estació de Granollers no detecta pluja' },
-    'Previsió oficial':   { rain: 'AEMET i SMC preveuen pluja a Cardedeu', dry: 'AEMET i SMC no preveuen pluja' },
-    'Acord entre models': { rain: ensemble.models_rain != null ? `${ensemble.models_rain}/${ensemble.total_models || 4} models globals preveuen pluja` : 'Diversos models globals coincideixen en pluja',
-                            dry:  ensemble.models_rain != null ? `Només ${ensemble.models_rain}/${ensemble.total_models || 4} models preveuen pluja` : 'Els models globals no s\'hi posen d\'acord o no preveuen pluja' },
-    'Correcció local':    { rain: 'Les condicions locals divergeixen del que preveien els models, a favor de pluja', dry: 'Les condicions locals divergeixen del que preveien els models, menys pluja del previst' },
-  };
-
-  // Top 2 rain and 2 dry reasons as bullet points
-  const topRain = rainPushers.slice(0, 2);
-  const topDry = dryPushers.slice(0, 2);
+  // Top 2 rain and 2 dry reasons — skip groups whose explanation would be misleading
+  const topRain = rainPushers.slice(0, 4);
+  const topDry = dryPushers.slice(0, 4);
 
   let naturalLines = [];
+  let rainCount = 0;
   for (const dr of topRain) {
-    const exp = explanations[dr.group];
-    const text = exp ? `${dr.icon} ${exp.rain}` : `${dr.icon} ${dr.group} empeny cap a pluja`;
-    naturalLines.push(`<li class="driver-reason rain">${text}</li>`);
+    if (rainCount >= 2) break;
+    const text = explainGroup(dr.group, 'pluja');
+    if (text) { naturalLines.push(`<li class="driver-reason rain">${dr.icon} ${text}</li>`); rainCount++; }
   }
+  let dryCount = 0;
   for (const dr of topDry) {
-    const exp = explanations[dr.group];
-    const text = exp ? `${dr.icon} ${exp.dry}` : `${dr.icon} ${dr.group} empeny cap a sec`;
-    naturalLines.push(`<li class="driver-reason dry">${text}</li>`);
+    if (dryCount >= 2) break;
+    const text = explainGroup(dr.group, 'sec');
+    if (text) { naturalLines.push(`<li class="driver-reason dry">${dr.icon} ${text}</li>`); dryCount++; }
   }
 
   // Correction narrative — our model vs global models
