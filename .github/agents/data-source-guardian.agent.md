@@ -31,11 +31,10 @@ Read `.github/instructions/data-modules.instructions.md` before every task — i
 - **Never raise exceptions** from public functions — XGBoost handles NaN natively
 
 ### Rain Gate
-Expensive/quota-limited APIs (Meteocat XEMA, XDDE, Predicció; AEMET) are only queried when `rain_gate` signals are present. The gate decision lives in `scripts/predict_now.py`, not in the module. Rain gate signals:
-- Radar echo detected (nearest echo < 30km)
-- Ensemble agreement >= 25%
-- CAPE >= 800 J/kg
-- Lightning activity
+Quota-limited Meteocat APIs (XEMA, XDDE, Predicció) are only queried when `rain_gate` signals are present. AEMET (forecast + radar) is called unconditionally (only gated by API key presence) because its output feeds INTO the rain gate decision. The gate decision lives in `src/model/predict.py`, not in the module. Rain gate signals:
+- Radar echo detected (nearest echo < 30km or `radar_has_echo`)
+- Ensemble agreement >= 20% (`RAIN_GATE_ENSEMBLE_PROB = 0.2`)
+- CAPE >= 800 J/kg (max of next 6h)
 - AEMET storm prob >= 10%
 - AEMET radar has echo
 
@@ -53,7 +52,7 @@ All modules use `src/data/_http.py`:
 from src.data._http import create_session
 SESSION = create_session(api_key_header={"X-Api-Key": config.YOUR_KEY})
 ```
-This provides automatic retry (3 attempts, backoff 1s/2s/4s, retries 502/503/504).
+This provides automatic retry (3 retries + initial = 4 total attempts, backoff 1s/2s/4s, retries 502/503/504).
 
 ### Config Integration
 - All URLs, coordinates, thresholds, API keys come from `config.py`
@@ -78,15 +77,17 @@ This provides automatic retry (3 attempts, backoff 1s/2s/4s, retries 502/503/504
 | `meteocat.py` | Yes | Yes | XEMA sentinel stations |
 | `meteocat_xdde.py` | Yes | Yes | Lightning within 30km |
 | `meteocat_prediccio.py` | Yes | Yes | SMC municipal forecast |
-| `aemet.py` | Yes | Yes | Expert storm/precip probability |
-| `aemet_radar.py` | Yes | Yes | Regional Barcelona radar + artifact filtering |
+| `aemet.py` | Yes | No* | Expert storm/precip probability |
+| `aemet_radar.py` | Yes | No* | Regional Barcelona radar + artifact filtering |
+
+\* AEMET modules are gated by API key presence (`_is_configured()`) but NOT by the rain gate — their output feeds into the rain gate decision.
 
 ## When Adding a New Data Source
 
-Follow `scripts/predict_now.py` wiring pattern:
+Follow `src/model/predict.py` wiring pattern:
 1. Add config constants to `config.py`
 2. Create module in `src/data/` with the full graceful degradation pattern
-3. Wire into `predict_now.py` — rain-gated sources go inside `if rain_signals:` block
+3. Wire into `src/model/predict.py` — rain-gated sources go inside `if rain_signals:` block
 4. Register output features in `FEATURE_COLUMNS` (see Feature Engineer agent)
 5. Add tests in `tests/`
 
