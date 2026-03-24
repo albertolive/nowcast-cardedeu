@@ -458,22 +458,33 @@ function renderDrivers(d) {
   const rainPushers = featureDrivers.filter(dr => dr.direction === 'pluja').sort((a, b) => b.contribution - a.contribution);
   const dryPushers = featureDrivers.filter(dr => dr.direction === 'sec').sort((a, b) => a.contribution - b.contribution);
 
-  // Human-readable explanations per group
+  // Human-readable explanations per group — data-aware where possible
+  const fv = d.feature_vector || {};
+  const cloud = fv.cloud_cover;
+  const rh = fv.relative_humidity_2m;
+  const pressure = d.conditions?.pressure;
+  const pressChange = fv.pressure_change_3h;
+  const solar = fv.shortwave_radiation;
+
   const explanations = {
     'Models globals':     { rain: 'Els models meteorològics globals preveuen pluja', dry: 'Els models meteorològics globals no preveuen pluja' },
     'Consistència NWP':   { rain: 'La previsió de pluja és persistent i consistent', dry: 'La previsió de pluja és feble o intermitent' },
     'Pluja confirmada':   { rain: 'Ja s\'està registrant pluja a la zona', dry: 'No hi ha pluja recent registrada' },
     'Radar':              { rain: 'El radar detecta precipitació propera', dry: 'El radar no detecta precipitació a prop' },
-    'Humitat':            { rain: 'L\'aire és molt humit, condicions favorables', dry: 'L\'aire és sec, dificulta la formació de pluja' },
+    'Humitat':            { rain: rh != null ? `Humitat del ${Math.round(rh)}%, condicions favorables` : 'L\'aire és humit, condicions favorables',
+                            dry:  rh != null ? `Humitat només del ${Math.round(rh)}%, aire sec` : 'L\'aire és sec, dificulta la formació de pluja' },
     'Aigua precipitable': { rain: 'Hi ha molta aigua a l\'atmosfera', dry: 'Poca aigua disponible a l\'atmosfera' },
     'Inestabilitat':      { rain: 'L\'atmosfera és inestable, pot generar tempestes', dry: 'L\'atmosfera és estable, inhibeix la pluja' },
-    'Pressió':            { rain: 'La pressió atmosfèrica baixa, pot afavorir pluja', dry: 'La pressió és alta i estable, temps sec' },
+    'Pressió':            { rain: pressChange != null ? `Pressió baixant (${pressChange > 0 ? '+' : ''}${pressChange.toFixed(1)} hPa/3h)` : 'La pressió atmosfèrica baixa, pot afavorir pluja',
+                            dry:  pressChange != null ? `Pressió estable (${pressChange > 0 ? '+' : ''}${pressChange.toFixed(1)} hPa/3h)` : 'La pressió és alta i estable, temps sec' },
     'Règim de vent':      { rain: 'El vent porta humitat del mar cap a Cardedeu', dry: 'El vent no porta humitat cap aquí' },
     'Vent':               { rain: 'El vent té característiques que afavoreixen pluja', dry: 'El patró de vent no afavoreix pluja' },
-    'Núvols':             { rain: 'El cel està molt ennuvolat', dry: 'El cel està poc ennuvolat' },
+    'Núvols':             { rain: cloud != null ? `Nuvolositat del ${Math.round(cloud)}%, el patró de núvols s'associa a pluja` : 'El patró de núvols s\'associa a pluja',
+                            dry:  cloud != null ? `Nuvolositat del ${Math.round(cloud)}%, cel majoritàriament obert` : 'El cel està poc ennuvolat' },
     'Temperatura':        { rain: 'Les temperatures afavoreixen la precipitació', dry: 'Les temperatures no afavoreixen pluja' },
     'Hora del dia':       { rain: 'És una hora amb més tendència a pluja', dry: 'És una hora habitualment seca' },
-    'Radiació solar':     { rain: 'La radiació solar és baixa, cel cobert', dry: 'Hi ha molta radiació solar, cel obert' },
+    'Radiació solar':     { rain: solar != null ? `Radiació solar baixa (${Math.round(solar)} W/m²), cel cobert` : 'La radiació solar és baixa, cel cobert',
+                            dry:  solar != null ? `Radiació solar alta (${Math.round(solar)} W/m²), cel obert` : 'Hi ha molta radiació solar, cel obert' },
     'Sòl':                { rain: 'El sòl està saturat, amplifica la precipitació', dry: 'El sòl està sec' },
     'Capa límit':         { rain: 'La barreja atmosfèrica afavoreix convecció', dry: 'La capa límit és estable' },
     'Llamps':             { rain: 'Hi ha activitat elèctrica propera', dry: 'Sense activitat elèctrica' },
