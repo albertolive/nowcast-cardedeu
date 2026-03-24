@@ -39,44 +39,22 @@ test("Models globals — rain always returns the same string", () => {
   );
 });
 
-test("Models globals — dry: sunny + dry air path", () => {
-  assert.equal(
-    explainGroup("Models globals", "sec", ctx({ solar: 300, rh: 40 })),
-    "Fa sol i l'aire és sec"
-  );
-});
-
-test("Models globals — dry: sunny but humid → skip to cloud check", () => {
-  // solar>=200 but rh>=60, so first condition fails
-  const result = explainGroup("Models globals", "sec", ctx({ solar: 300, rh: 65, cloud: 20 }));
-  assert.equal(result, "Cel clar, sense senyals de pluja");
-});
-
-test("Models globals — dry: clear sky (low cloud)", () => {
-  assert.equal(
-    explainGroup("Models globals", "sec", ctx({ cloud: 10 })),
-    "Cel clar, sense senyals de pluja"
-  );
-});
-
-test("Models globals — dry: low humidity (no solar, cloud>=30)", () => {
-  assert.equal(
-    explainGroup("Models globals", "sec", ctx({ cloud: 50, rh: 40 })),
-    "Aire sec, temps estable"
-  );
-});
-
-test("Models globals — dry: fallback (all null)", () => {
+test("Models globals — dry: always returns generic summary", () => {
   assert.equal(
     explainGroup("Models globals", "sec", ctx()),
-    "Temps estable, sense senyals de pluja"
+    "Les condicions generals no afavoreixen pluja"
   );
 });
 
-test("Models globals — dry: fallback (high cloud, high rh, low solar)", () => {
+test("Models globals — dry: same regardless of weather data", () => {
+  // Doesn't branch on solar/rh/cloud — always the same generic text
   assert.equal(
-    explainGroup("Models globals", "sec", ctx({ cloud: 80, rh: 70, solar: 50 })),
-    "Temps estable, sense senyals de pluja"
+    explainGroup("Models globals", "sec", ctx({ solar: 300, rh: 40 })),
+    "Les condicions generals no afavoreixen pluja"
+  );
+  assert.equal(
+    explainGroup("Models globals", "sec", ctx({ cloud: 80, rh: 70 })),
+    "Les condicions generals no afavoreixen pluja"
   );
 });
 
@@ -683,7 +661,7 @@ test("selectDriverExplanations — dry drivers sorted by contribution (most nega
   });
   const results = selectDriverExplanations(d);
   // Most negative first: Models globals (-3) > Humitat (-2) > Pressió (-1)
-  assert.ok(results[0].text.includes("estable")); // Models globals
+  assert.ok(results[0].text.includes("no afavoreixen")); // Models globals
   assert.ok(results[1].text.includes("sec")); // Humitat
   assert.ok(results[2].text.includes("pressió")); // Pressió
 });
@@ -710,7 +688,7 @@ test("selectDriverExplanations — feature_vector values passed correctly to exp
   const dry = results.filter(r => r.direction === "sec");
   assert.ok(rain[0].text.includes("1.5 mm")); // Pluja confirmada uses rainAccum
   assert.ok(rain[1].text.includes("Detectem pluja a prop")); // Radar uses radarCov
-  assert.ok(dry[0].text.includes("sol")); // Models globals: solar>=200, rh<60
+  assert.ok(dry[0].text.includes("no afavoreixen")); // Models globals: generic
   assert.ok(dry[1].text.includes("pressió")); // Pressió uses pressChange
 });
 
@@ -813,31 +791,8 @@ test("selectDriverExplanations — cloud contradiction at rain direction", () =>
 // getConceptTags — concept tagging tests
 // =====================================================================
 
-test("getConceptTags — Models globals sec: 'Fa sol i l'aire és sec' → sunshine + dry_air", () => {
-  const tags = getConceptTags("Models globals", "sec", "Fa sol i l'aire és sec");
-  assert.ok(tags.includes("sunshine"));
-  assert.ok(tags.includes("dry_air"));
-  assert.equal(tags.length, 2);
-});
-
-test("getConceptTags — Models globals sec: 'Cel clar...' → sunshine", () => {
-  const tags = getConceptTags("Models globals", "sec", "Cel clar, sense senyals de pluja");
-  assert.deepEqual(tags, ["sunshine"]);
-});
-
-test("getConceptTags — Models globals sec: 'Aire sec, temps estable' → dry_air + stable", () => {
-  const tags = getConceptTags("Models globals", "sec", "Aire sec, temps estable");
-  assert.ok(tags.includes("dry_air"));
-  assert.ok(tags.includes("stable"));
-  assert.equal(tags.length, 2);
-});
-
-test("getConceptTags — Models globals sec: 'Temps estable...' → stable", () => {
-  const tags = getConceptTags("Models globals", "sec", "Temps estable, sense senyals de pluja");
-  assert.deepEqual(tags, ["stable"]);
-});
-
-test("getConceptTags — Models globals pluja → no concepts (unique)", () => {
+test("getConceptTags — Models globals never claims concepts (generic summary)", () => {
+  assert.deepEqual(getConceptTags("Models globals", "sec", "Les condicions generals no afavoreixen pluja"), []);
   assert.deepEqual(getConceptTags("Models globals", "pluja", "Les condicions..."), []);
 });
 
@@ -906,8 +861,8 @@ test("getConceptTags — untagged groups return empty array", () => {
 // Concept deduplication — integration tests
 // =====================================================================
 
-test("DEDUP: Models globals 'sec' + Humitat 'sec' → Humitat skipped (dry_air overlap)", () => {
-  // The exact user scenario: both lines say "l'aire és sec"
+test("DEDUP: Models globals + Humitat on dry side → both shown (no concept overlap)", () => {
+  // Models globals is generic, Humitat adds specific RH% — no dedup
   const d = predData({
     pct: 5,
     drivers: [
@@ -918,17 +873,13 @@ test("DEDUP: Models globals 'sec' + Humitat 'sec' → Humitat skipped (dry_air o
     fv: { shortwave_radiation: 300, relative_humidity_2m: 42 },
   });
   const results = selectDriverExplanations(d);
-  // Models globals: "Fa sol i l'aire és sec" → claims [sunshine, dry_air]
-  // Humitat: "L'aire és sec (42%)" → wants [dry_air] → SKIPPED
-  // Pressió: no concepts → allowed
-  assert.equal(results.length, 2);
-  assert.ok(results[0].text.includes("sol")); // Models globals
-  assert.ok(results[1].text.includes("pressió")); // Pressió (Humitat was deduped)
+  assert.equal(results.length, 3);
+  assert.ok(results[0].text.includes("no afavoreixen pluja")); // Models globals generic
+  assert.ok(results[1].text.includes("sec (42%)")); // Humitat with concrete data
+  assert.ok(results[2].text.includes("pressió")); // Pressió
 });
 
-test("DEDUP: Humitat first + Models globals second → Models globals shows but sunshine not deduped", () => {
-  // Humitat appears first (higher contribution), claims dry_air
-  // Models globals appears second with "Cel clar" → claims sunshine, no overlap
+test("DEDUP: Humitat first + Models globals second → both shown (Models globals has no concepts)", () => {
   const d = predData({
     pct: 5,
     drivers: [
@@ -936,12 +887,12 @@ test("DEDUP: Humitat first + Models globals second → Models globals shows but 
       driver("Models globals", "sec", -2, "🌐"),
       driver("Pressió", "sec", -1, "📊"),
     ],
-    fv: { cloud_cover: 20 }, // Models globals → "Cel clar, sense senyals de pluja" (sunshine, not dry_air)
+    fv: { cloud_cover: 20 },
   });
   const results = selectDriverExplanations(d);
   assert.equal(results.length, 3);
-  assert.ok(results[0].text.includes("sec")); // Humitat → dry_air
-  assert.ok(results[1].text.includes("Cel clar")); // Models globals → sunshine (no overlap)
+  assert.ok(results[0].text.includes("sec")); // Humitat
+  assert.ok(results[1].text.includes("no afavoreixen")); // Models globals
   assert.ok(results[2].text.includes("pressió")); // Pressió
 });
 
@@ -1029,7 +980,7 @@ test("DEDUP: Pluja confirmada + Sentinella → second skipped (raining_nearby ov
   assert.ok(results[1].text.includes("humit")); // Humitat
 });
 
-test("DEDUP: Models globals 'estable' + Inestabilitat sec → Inestabilitat skipped (stable overlap)", () => {
+test("DEDUP: Models globals + Inestabilitat sec → both shown (Models globals has no concepts)", () => {
   const d = predData({
     pct: 5,
     drivers: [
@@ -1037,13 +988,12 @@ test("DEDUP: Models globals 'estable' + Inestabilitat sec → Inestabilitat skip
       driver("Inestabilitat", "sec", -2, "⚡"),
       driver("Pressió", "sec", -1, "📊"),
     ],
-    // All null → Models globals returns "Temps estable, sense senyals de pluja" → ['stable']
   });
   const results = selectDriverExplanations(d);
-  assert.equal(results.length, 2);
-  assert.ok(results[0].text.includes("estable")); // Models globals
-  // Inestabilitat "L'atmosfera és estable" → ['stable'] → SKIPPED
-  assert.ok(results[1].text.includes("pressió")); // Pressió
+  assert.equal(results.length, 3);
+  assert.ok(results[0].text.includes("no afavoreixen")); // Models globals
+  assert.ok(results[1].text.includes("estable")); // Inestabilitat
+  assert.ok(results[2].text.includes("pressió")); // Pressió
 });
 
 test("DEDUP: cross-direction concepts are shared (rain humidity blocks dry dry_air)", () => {
