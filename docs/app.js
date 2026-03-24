@@ -442,19 +442,25 @@ function renderDrivers(d) {
     const isRain = direction === 'pluja';
     switch (group) {
       case 'Models globals':
-        return isRain ? 'Les condicions meteorològiques afavoreixen pluja' : 'Les condicions meteorològiques no afavoreixen pluja';
+        // Most important driver — be specific about actual conditions
+        if (isRain) return 'Les condicions meteorològiques afavoreixen pluja';
+        // At dry: describe what the weather IS, not just "no afavoreix"
+        if (solar != null && solar >= 200 && rh != null && rh < 60) return 'Fa sol i l\'aire és sec';
+        if (cloud != null && cloud < 30) return 'Cel clar, sense senyals de pluja';
+        if (rh != null && rh < 50) return 'Aire sec, temps estable';
+        return 'Temps estable, sense senyals de pluja';
       case 'Consistència NWP':
-        return isRain ? 'La situació de pluja és persistent' : 'Els senyals de pluja són febles';
+        return isRain ? 'La situació de pluja és persistent' : null; // "feble" is redundant at low probs
       case 'Pluja confirmada':
         if (isRain) return rainAccum > 0 ? `Ja plou (${rainAccum.toFixed(1)} mm en 3h)` : null;
-        return 'No plou ara mateix';
+        return null; // "No plou" is always a tautology — skip
       case 'Radar':
         if (isRain) {
           if (radarCov != null && radarCov > 0) return 'Detectem pluja a prop';
           if (radarKm != null && radarKm < 25) return `Detectem pluja a ${Math.round(radarKm)} km`;
           return null;
         }
-        return 'No detectem pluja a prop';
+        return null; // "No detectem pluja" is obvious at low probs — skip
       case 'Humitat':
         if (rh == null) return isRain ? 'L\'aire és humit' : 'L\'aire és sec';
         return isRain ? `L'aire és humit (${Math.round(rh)}%)` : `L'aire és sec (${Math.round(rh)}%)`;
@@ -479,33 +485,33 @@ function renderDrivers(d) {
         if (isRain) return cloud >= 50 ? `Cel ennuvolat (${Math.round(cloud)}%)` : null;
         return cloud < 50 ? `Cel obert (${Math.round(cloud)}% núvols)` : `Cel ennuvolat (${Math.round(cloud)}%), però no plourà`;
       case 'Temperatura':
-        return isRain ? 'La temperatura afavoreix pluja' : 'La temperatura no afavoreix pluja';
+        return isRain ? 'La temperatura afavoreix pluja' : null; // "no afavoreix" is vacuous
       case 'Hora del dia':
-        return isRain ? 'Hora propensa a pluja' : 'Hora habitualment seca';
+        return isRain ? 'Hora propensa a pluja' : null; // "habitualment seca" adds nothing
       case 'Radiació solar':
         if (solar == null) return isRain ? 'Poca llum solar' : 'Fa sol';
         if (isRain) return solar < 200 ? 'Cel cobert, poca llum solar' : null;
         return solar >= 200 ? 'Fa sol' : null;
       case 'Sòl':
-        return isRain ? 'El terra està humit' : 'El terra està sec';
+        return isRain ? 'El terra està humit' : null; // "terra sec" is not interesting
       case 'Capa límit':
-        return isRain ? 'L\'aire es barreja i pot generar xàfecs' : 'L\'aire és calmat';
+        return isRain ? 'L\'aire es barreja i pot generar xàfecs' : null; // "calmat" is vacuous
       case 'Llamps':
         if (isRain) {
           if (lightning != null && lightning > 0) return `Detectem ${Math.round(lightning)} llamps a prop`;
           return null;
         }
-        return 'No detectem llamps';
+        return null; // "Sense llamps" is obvious — skip
       case 'Sentinella':
-        return isRain ? 'Ja plou a localitats properes' : 'No plou a localitats properes';
+        return isRain ? 'Ja plou a localitats properes' : null; // "no plou" is obvious
       case 'Previsió oficial':
-        return null; // skip — we don't show external source names
+        return null;
       case 'Acord entre models':
         if (ensemble.models_rain != null) {
           const n = ensemble.models_rain, t = ensemble.total_models || 4;
-          return isRain ? `${n} de ${t} fonts independents coincideixen` : `Només ${n} de ${t} fonts veuen pluja`;
+          return isRain ? `${n} de ${t} fonts independents coincideixen` : null; // "0 de 4" is obvious
         }
-        return isRain ? 'Diverses fonts independents coincideixen' : 'Les fonts no coincideixen en pluja';
+        return isRain ? 'Diverses fonts independents coincideixen' : null;
       case 'Correcció local':
         return isRain ? 'L\'experiència local a Cardedeu ho confirma' : 'L\'experiència local a Cardedeu no hi dona suport';
       default:
@@ -513,22 +519,44 @@ function renderDrivers(d) {
     }
   }
 
-  // Top 2 rain and 2 dry reasons — skip groups whose explanation would be misleading
-  const topRain = rainPushers.slice(0, 4);
-  const topDry = dryPushers.slice(0, 4);
+  // Adaptive display: at extremes, focus on dominant direction only
+  const pct = d.probability_pct;
+  const isExtreme = pct < 10 || pct > 90;
+
+  const topRain = rainPushers.slice(0, isExtreme ? 6 : 4);
+  const topDry = dryPushers.slice(0, isExtreme ? 6 : 4);
 
   let naturalLines = [];
-  let rainCount = 0;
-  for (const dr of topRain) {
-    if (rainCount >= 2) break;
-    const text = explainGroup(dr.group, 'pluja');
-    if (text) { naturalLines.push(`<li class="driver-reason rain">${dr.icon} ${text}</li>`); rainCount++; }
-  }
-  let dryCount = 0;
-  for (const dr of topDry) {
-    if (dryCount >= 2) break;
-    const text = explainGroup(dr.group, 'sec');
-    if (text) { naturalLines.push(`<li class="driver-reason dry">${dr.icon} ${text}</li>`); dryCount++; }
+  if (isExtreme && pct < 10) {
+    // Very low prob: show only the conditions keeping it dry (3 max)
+    let count = 0;
+    for (const dr of topDry) {
+      if (count >= 3) break;
+      const text = explainGroup(dr.group, 'sec');
+      if (text) { naturalLines.push(`<li class="driver-reason dry">${dr.icon} ${text}</li>`); count++; }
+    }
+  } else if (isExtreme && pct > 90) {
+    // Very high prob: show only rain drivers (3 max)
+    let count = 0;
+    for (const dr of topRain) {
+      if (count >= 3) break;
+      const text = explainGroup(dr.group, 'pluja');
+      if (text) { naturalLines.push(`<li class="driver-reason rain">${dr.icon} ${text}</li>`); count++; }
+    }
+  } else {
+    // Middle zone: show tug-of-war (2 rain + 2 dry)
+    let rainCount = 0;
+    for (const dr of topRain) {
+      if (rainCount >= 2) break;
+      const text = explainGroup(dr.group, 'pluja');
+      if (text) { naturalLines.push(`<li class="driver-reason rain">${dr.icon} ${text}</li>`); rainCount++; }
+    }
+    let dryCount = 0;
+    for (const dr of topDry) {
+      if (dryCount >= 2) break;
+      const text = explainGroup(dr.group, 'sec');
+      if (text) { naturalLines.push(`<li class="driver-reason dry">${dr.icon} ${text}</li>`); dryCount++; }
+    }
   }
 
   return `
