@@ -589,9 +589,7 @@ canvas { width: 100% !important; height: 100% !important; }
 .storm-note { opacity: 0.8; }
 
 .sources-analyzed {
-  margin-top: 14px;
-  padding-top: 10px;
-  border-top: 1px solid rgba(48, 54, 61, 0.25);
+  margin-bottom: 10px;
 }
 
 .sources-analyzed-title {
@@ -605,9 +603,11 @@ canvas { width: 100% !important; height: 100% !important; }
 }
 
 .tech-open-section {
-  margin-top: 10px;
-  padding-top: 10px;
-  border-top: 1px solid rgba(48, 54, 61, 0.25);
+  margin-top: 16px;
+  padding: 14px 16px;
+  background: var(--surface2);
+  border-radius: 10px;
+  text-align: left;
 }
 
 /* Vote tally + verdict — unified bottom section */
