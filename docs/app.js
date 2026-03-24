@@ -528,41 +528,39 @@ function renderTechExpandable(d) {
 
   const confirming = checks.filter(c => c.confirms).length;
 
-  const checkRows = checks.map(c => `
-    <div class="source-vote">
-      <span class="vote-badge ${c.confirms ? 'rain' : 'no-rain'}">${c.confirms ? '🌧️' : '☀️'}</span>
-      <div class="vote-info">
-        <span class="vote-name">${c.name}</span>
-        <span class="vote-detail">${c.detail}</span>
-      </div>
-    </div>
-  `).join('');
+  // Compact inline summary of each source
+  const checkChips = checks.map(c => {
+    const icon = c.confirms ? '🌧️' : '☀️';
+    return `<span class="source-chip">${icon} ${c.name}: ${c.detail}</span>`;
+  });
+
+  const stormChip = (a.prob_storm || 0) >= 10
+    ? `<span class="source-chip">⚡ Tronada: ${a.prob_storm}%</span>`
+    : '';
 
   // Disagreement insight — only when our model contradicts the external sources
   const mlCat = d.rain_category;
   const mlRain = mlCat === 'probable' || (mlCat == null && pct >= 65);
   let disagreementNote = '';
   if (confirming > checks.length / 2 && !mlRain) {
-    disagreementNote = `<p class="tech-explainer" style="margin-top:8px;font-style:italic">Diverses fonts indiquen pluja, però l'historial de Cardedeu mostra que aquest patró sovint és fals avís.</p>`;
+    disagreementNote = `<p class="tech-explainer" style="margin-top:6px;font-style:italic">Diverses fonts indiquen pluja, però l'historial de Cardedeu mostra que aquest patró sovint és fals avís.</p>`;
   } else if (confirming <= checks.length / 2 && mlRain) {
-    disagreementNote = `<p class="tech-explainer" style="margin-top:8px;font-style:italic">Les fonts convencionals no veuen pluja, però detectem patrons que històricament sí porten pluja aquí.</p>`;
+    disagreementNote = `<p class="tech-explainer" style="margin-top:6px;font-style:italic">Les fonts convencionals no veuen pluja, però detectem patrons que històricament sí porten pluja aquí.</p>`;
   }
 
   const detailId = 'tech-detail-' + Date.now();
   return `
     <div class="tech-open-section">
-      <div class="sources-analyzed">
-        <div class="sources-analyzed-title">Fonts analitzades</div>
-        <div class="source-votes">
-          ${checkRows}
-          ${stormNote}
-        </div>
-        ${disagreementNote}
-      </div>
-      <p class="tech-explainer" style="margin-top:10px">
+      <p class="tech-explainer">
         Integrem ${d.features_used || '209'} variables en un model entrenat amb 12 anys d'històric verificat a Cardedeu. Es re-entrena cada dia.
       </p>
       ${_renderBiasInsight(d)}
+      <div class="sources-inline">
+        <span class="sources-inline-label">Fonts:</span>
+        ${checkChips.join('')}
+        ${stormChip}
+      </div>
+      ${disagreementNote}
       <button class="expand-toggle mini" onclick="this.classList.toggle('open');document.getElementById('${detailId}').classList.toggle('open')">
         <span class="chevron">▶</span> Detall tècnic
       </button>
