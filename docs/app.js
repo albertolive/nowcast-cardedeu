@@ -1225,6 +1225,18 @@ async function loadAndRender() {
   return { latest, history };
 }
 
+// Tooltip toggle: tap to open/close, tap outside to dismiss
+document.addEventListener('click', (e) => {
+  const infoBtn = e.target.closest('.driver-info');
+  document.querySelectorAll('.driver-info.active').forEach(el => {
+    if (el !== infoBtn) el.classList.remove('active');
+  });
+  if (infoBtn) {
+    e.preventDefault();
+    infoBtn.classList.toggle('active');
+  }
+});
+
 async function init() {
   try {
     const { latest, history } = await loadAndRender();
