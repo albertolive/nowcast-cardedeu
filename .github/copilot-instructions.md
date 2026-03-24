@@ -16,7 +16,7 @@ scripts/        → Entry points: download_history, build_dataset, train_model, 
 config.py       → All constants, paths, thresholds, coordinates — single source of truth
 ```
 
-**Key pattern — Rain Gate:** Expensive APIs (Meteocat XEMA, AEMET) are only queried when `rain_gate` signals are present (radar echo, ensemble agreement ≥ 25%, CAPE ≥ 800, lightning, or AEMET storm prob ≥ 10%). Always preserve this cost optimization.
+**Key pattern — Rain Gate:** Quota-limited Meteocat APIs (XEMA, XDDE, Predicció) are only queried when `rain_gate` signals are present (radar echo, ensemble agreement ≥ 20%, CAPE ≥ 800, AEMET storm prob ≥ 10%, or AEMET radar echo). AEMET modules are called unconditionally (gated only by API key) because their output feeds INTO the rain gate decision. The gate logic lives in `src/model/predict.py`. Always preserve this cost optimization.
 
 **Key pattern — Graceful degradation:** Every `src/data/` module wraps API calls in try/except, logs warnings, and returns a dict with NaN values on failure. XGBoost handles NaN natively. Never let a single API failure crash the pipeline.
 

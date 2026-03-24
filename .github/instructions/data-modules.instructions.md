@@ -60,7 +60,7 @@ If the API is **rate-limited or requires an API key**, the module must support b
 
 1. Add a `_is_configured()` check for the API key
 2. Return the empty result immediately if not configured
-3. The rain gate decision lives in `scripts/predict_now.py` — the module itself just checks configuration
+3. The rain gate decision lives in `src/model/predict.py` — the module itself just checks configuration
 
 ```python
 def _is_configured() -> bool:
@@ -73,11 +73,14 @@ def fetch_gated_data() -> dict:
     # ... proceed with API call ...
 ```
 
-Rain gate signals (checked in `predict_now.py`, not in the module):
-- Radar echo detected (spatial scan: nearest echo < 30km)
-- Ensemble agreement ≥ 25%
-- CAPE ≥ 800 J/kg
-- Lightning activity
+Rain gate signals (checked in `src/model/predict.py`, not in the module):
+- Radar echo detected (spatial scan: nearest echo < 30km, or `radar_has_echo`)
+- Ensemble agreement ≥ 20% (`RAIN_GATE_ENSEMBLE_PROB = 0.2`)
+- CAPE ≥ 800 J/kg (max of next 6h)
+- AEMET storm prob ≥ 10%
+- AEMET radar has echo
+
+**Note:** AEMET modules are NOT rain-gated — they are called unconditionally (gated only by API key) because their output feeds INTO the rain gate decision. Only Meteocat modules (XEMA, XDDE, Predicció) are behind the rain gate.
 - AEMET storm prob ≥ 10%
 - AEMET radar has echo
 
@@ -106,5 +109,7 @@ Rain gate signals (checked in `predict_now.py`, not in the module):
 | `meteocat.py` | Yes | Yes | XEMA sentinel stations (Granollers, ETAP Cardedeu) |
 | `meteocat_xdde.py` | Yes | Yes | Lightning data (XDDE) within 30km |
 | `meteocat_prediccio.py` | Yes | Yes | SMC municipal forecast |
-| `aemet.py` | Yes | Yes | Expert storm/precip probability |
-| `aemet_radar.py` | Yes | Yes | Regional Barcelona radar |
+| `aemet.py` | Yes | No* | Expert storm/precip probability |
+| `aemet_radar.py` | Yes | No* | Regional Barcelona radar |
+
+\* AEMET modules require an API key but are NOT rain-gated — their output feeds into the rain gate decision.
