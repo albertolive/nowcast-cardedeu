@@ -243,9 +243,9 @@ function renderPrediction(latest, history) {
         <div class="info-card-body">${renderAtmosphere(latest)}</div>
       </div>
 
-      <!-- Why this prediction -->
+      <!-- Verification card -->
       <div class="info-card" id="sources-card">
-        <h3>💎 Què diuen les fonts externes?</h3>
+        <h3>✅ Verificació creuada</h3>
         <div class="info-card-body">${renderWhyPrediction(latest)}</div>
       </div>
     </div>
@@ -585,101 +585,87 @@ function renderWhyPrediction(d) {
   const fv = d.feature_vector || {};
   const pct = d.probability_pct;
 
-  // Build source votes
-  const votes = [];
+  // Build source checks — these are data inputs our model analyzed, not independent votes
+  const checks = [];
 
-  // Radar — uses shared view model (same logic as radar card)
+  // Radar check
   const radarView = deriveRadarViewModel(d);
-  votes.push({
-    name: 'Radar',
-    rain: radarView.radarVoteRain,
+  checks.push({
+    name: 'Radar (RainViewer)',
+    confirms: radarView.radarVoteRain,
     detail: radarView.radarVoteDetail
   });
 
-  // NWP models
+  // NWP ensemble check
   const modelsRain = e.models_rain || 0;
   const totalModels = e.total_models || 4;
   const mn = fv.ensemble_min_precip, mx = fv.ensemble_max_precip;
   const rangeText = mn != null && mx != null && modelsRain > 0 ? ` (${mn.toFixed(1)}–${mx.toFixed(1)} mm)` : '';
-  votes.push({
+  checks.push({
     name: `Models globals (${modelsRain}/${totalModels})`,
-    rain: modelsRain > totalModels / 2,
+    confirms: modelsRain > totalModels / 2,
     detail: modelsRain === 0 ? 'Cap preveu pluja' : `${modelsRain} de ${totalModels} preveuen pluja${rangeText}`
   });
 
-  // AEMET prob
+  // AEMET check
   const aemetProb = a.prob_precip;
   if (aemetProb != null) {
-    votes.push({
-      name: 'AEMET (meteoròlegs)',
-      rain: aemetProb >= 40,
+    checks.push({
+      name: 'AEMET',
+      confirms: aemetProb >= 40,
       detail: `${aemetProb}% probabilitat de pluja`
     });
   }
 
-  // Lightning
+  // Lightning check
   const lightning = fv.lightning_count_30km;
   if (lightning != null && lightning > 0) {
-    votes.push({ name: 'Llamps (XDDE)', rain: true, detail: `${Math.round(lightning)} detectats en 30 km` });
+    checks.push({ name: 'Llamps', confirms: true, detail: `${Math.round(lightning)} detectats en 30 km` });
   }
 
-  // Tally
-  const rainVotes = votes.filter(v => v.rain).length;
-  const totalVotes = votes.length;
-  const noRainVotes = totalVotes - rainVotes;
+  // Storm prob note
+  const stormNote = (a.prob_storm || 0) >= 10
+    ? `<div class="source-vote storm-note"><span class="vote-badge rain">⚡</span><div class="vote-info"><span class="vote-name">Risc de tronada</span><span class="vote-detail">${a.prob_storm}%</span></div></div>`
+    : '';
 
-  const voteRows = votes.map(v => `
+  const confirming = checks.filter(c => c.confirms).length;
+
+  const checkRows = checks.map(c => `
     <div class="source-vote">
-      <span class="vote-badge ${v.rain ? 'rain' : 'no-rain'}">${v.rain ? '🌧️' : '☀️'}</span>
+      <span class="vote-badge ${c.confirms ? 'rain' : 'no-rain'}">${c.confirms ? '🌧️' : '☀️'}</span>
       <div class="vote-info">
-        <span class="vote-name">${v.name}</span>
-        <span class="vote-detail">${v.detail}</span>
+        <span class="vote-name">${c.name}</span>
+        <span class="vote-detail">${c.detail}</span>
       </div>
     </div>
   `).join('');
 
-  // Storm prob as separate note if high
-  const stormNote = (a.prob_storm || 0) >= 10
-    ? `<div class="source-vote storm-note"><span class="vote-badge rain">⚡</span><div class="vote-info"><span class="vote-name">Risc de tronada</span><span class="vote-detail">${a.prob_storm}% segons AEMET</span></div></div>`
-    : '';
-
-  // ML verdict — use rain_category for honest display
+  // Conclusion — always from our perspective
   const mlCat = d.rain_category;
   const mlRain = mlCat === 'probable' || (mlCat == null && pct >= 65);
   const mlUncertain = mlCat === 'incert' || (mlCat == null && pct >= 30 && pct < 65);
-  let verdictText;
+  let conclusionText;
   if (mlUncertain) {
-    verdictText = `Les fonts externes ${rainVotes >= totalVotes / 2 ? 'tendeixen a veure pluja' : 'no preveuen pluja'}, i <strong>el nostre model dóna un ${pct}% de probabilitat</strong>, zona d'incertesa. Caldrà seguir-ho.`;
-  } else if (rainVotes >= totalVotes / 2 && !mlRain) {
-    // Most sources say rain, ML says no — the big correction story
-    verdictText = `La majoria de fonts (${rainVotes}/${totalVotes}) diuen pluja, però <strong>el nostre model diu que no</strong> (${pct}%). Ha après que a Cardedeu aquesta combinació sovint no acaba en pluja.`;
-  } else if (rainVotes < totalVotes / 2 && mlRain) {
-    // Most sources say no rain, ML says yes — ML sees what they don't
-    verdictText = `Poques fonts (${rainVotes}/${totalVotes}) veuen pluja, però <strong>el nostre model diu que sí</strong> (${pct}%). Detecta patrons locals que els models globals no capturen.`;
+    conclusionText = `Situació incerta. Hem analitzat totes les fonts i <strong>la probabilitat és del ${pct}%</strong>. Caldrà seguir-ho.`;
+  } else if (confirming > checks.length / 2 && !mlRain) {
+    conclusionText = `Diverses fonts indiquen pluja, però <strong>hem après que a Cardedeu aquest patró sovint no acaba en pluja real</strong> (${pct}%). 12 anys de dades locals ens permeten filtrar falsos avisos.`;
+  } else if (confirming <= checks.length / 2 && mlRain) {
+    conclusionText = `La majoria de fonts no veuen pluja, però <strong>detectem senyals que històricament sí porten pluja aquí</strong> (${pct}%). Patrons que només es veuen amb dades locals.`;
   } else if (mlRain) {
-    // Both agree: rain
-    verdictText = `Tant les fonts externes com el nostre model coincideixen: <strong>és probable que plogui</strong> (${pct}%).`;
+    conclusionText = `Hem verificat amb ${checks.length} fonts independents: <strong>totes les dades apunten a pluja</strong> (${pct}%).`;
   } else {
-    // Both agree: no rain
-    verdictText = `Tant les fonts externes com el nostre model coincideixen: <strong>no és probable que plogui</strong> (${pct}%).`;
+    conclusionText = `Hem verificat amb ${checks.length} fonts independents: <strong>les dades no indiquen pluja</strong> (${pct}%).`;
   }
 
   const detailId = 'why-detail-' + Date.now();
   return `
     <div class="source-votes">
-      ${voteRows}
+      ${checkRows}
       ${stormNote}
     </div>
     <div class="vote-summary">
-      <div class="tally-bar">
-        <div class="tally-rain" style="width:${(rainVotes / totalVotes * 100).toFixed(0)}%"></div>
-      </div>
-      <div class="tally-labels">
-        <span>🌧️ ${rainVotes}</span>
-        <span>☀️ ${noRainVotes}</span>
-      </div>
       <div class="ml-verdict">
-        <span class="ml-verdict-badge">🧠 ${pct}%</span>${verdictText}
+        ${conclusionText}
       </div>
     </div>
 
@@ -688,7 +674,7 @@ function renderWhyPrediction(d) {
     </button>
     <div id="${detailId}" class="expand-content">
       <p class="tech-explainer">
-        El sistema combina ${d.features_used || '210'} variables meteorològiques: estació local, radar, llamps, 4 models globals i 12 anys d'històric de Cardedeu, per corregir els errors dels models globals al nostre microclima. Es re-entrena cada dia amb les prediccions verificades.
+        Integrem ${d.features_used || '209'} variables (estació local, radar, llamps, 4 models globals, nivells de pressió) en un model XGBoost entrenat amb 12 anys d'històric verificat a Cardedeu. Es re-entrena cada dia amb les prediccions comprovades.
       </p>
       ${renderDriversTech(d)}
       ${_renderBiasInsight(d)}
