@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { explainGroup, selectDriverExplanations, getConceptTags } from "./driver_logic.js";
+import { explainGroup, selectDriverExplanations, getConceptTags, GROUP_TOOLTIP } from "./driver_logic.js";
 
 // ── Helpers ──────────────────────────────────────────────────────────
 
@@ -1025,4 +1025,60 @@ test("DEDUP: groups with no concepts never get deduped", () => {
   const results = selectDriverExplanations(d);
   // All have unique/empty concepts → all shown
   assert.equal(results.length, 3);
+});
+
+// ── GROUP_TOOLTIP tests ─────────────────────────────────────────────
+const GROUPS_WITH_EXPLANATIONS = [
+  'Models globals', 'Consistència NWP', 'Pluja confirmada', 'Radar',
+  'Humitat', 'Aigua precipitable', 'Inestabilitat', 'Pressió',
+  'Règim de vent', 'Vent', 'Núvols', 'Temperatura', 'Hora del dia',
+  'Radiació solar', 'Terra', 'Capa límit', 'Llamps', 'Sentinella',
+  'Acord entre models', 'Correcció local',
+];
+
+test("GROUP_TOOLTIP covers every group that produces explanations", () => {
+  for (const g of GROUPS_WITH_EXPLANATIONS) {
+    assert.ok(GROUP_TOOLTIP[g], `Missing tooltip for group: ${g}`);
+  }
+});
+
+test("GROUP_TOOLTIP values are all non-empty strings", () => {
+  for (const [key, val] of Object.entries(GROUP_TOOLTIP)) {
+    assert.equal(typeof val, 'string', `Tooltip for '${key}' is not a string`);
+    assert.ok(val.length > 10, `Tooltip for '${key}' is too short`);
+  }
+});
+
+test("GROUP_TOOLTIP does NOT include Previsió oficial (always returns null)", () => {
+  assert.equal(GROUP_TOOLTIP['Previsió oficial'], undefined);
+});
+
+// ── group field in output ───────────────────────────────────────────
+test("selectDriverExplanations output includes group field", () => {
+  const d = predData({
+    pct: 80,
+    drivers: [
+      driver("Humitat", "pluja", 3, "💧"),
+      driver("Pressió", "sec", -1, "📊"),
+    ],
+  });
+  const results = selectDriverExplanations(d);
+  for (const r of results) {
+    assert.ok('group' in r, `Result missing group field: ${JSON.stringify(r)}`);
+    assert.equal(typeof r.group, 'string');
+    assert.ok(r.group.length > 0);
+  }
+});
+
+test("selectDriverExplanations group field matches driver group name", () => {
+  const d = predData({
+    pct: 80,
+    drivers: [
+      driver("Humitat", "pluja", 5, "💧"),
+      driver("Pressió", "pluja", 3, "📊"),
+    ],
+  });
+  const results = selectDriverExplanations(d);
+  assert.ok(results.length >= 1);
+  assert.equal(results[0].group, 'Humitat');
 });

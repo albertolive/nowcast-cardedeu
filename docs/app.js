@@ -4,7 +4,7 @@ const RAW_BASE = `https://raw.githubusercontent.com/${REPO}/${BRANCH}/data`;
 const REFRESH_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
 
 import { deriveRadarViewModel } from './radar_logic.js';
-import { selectDriverExplanations } from './driver_logic.js';
+import { selectDriverExplanations, GROUP_TOOLTIP } from './driver_logic.js';
 
 async function fetchJSON(filename) {
   // Try local (GitHub Pages docs/) first, fall back to raw.githubusercontent.com
@@ -422,9 +422,13 @@ function renderDrivers(d) {
   const lines = selectDriverExplanations(d);
   if (lines.length === 0) return '';
 
-  const naturalLines = lines.map(l =>
-    `<li class="driver-reason ${l.direction === 'pluja' ? 'rain' : 'dry'}">${l.icon} ${l.text}</li>`
-  );
+  const naturalLines = lines.map(l => {
+    const tip = GROUP_TOOLTIP[l.group] || '';
+    const infoBtn = tip
+      ? ` <span class="driver-info" tabindex="0" role="button" aria-label="Més info"><span class="driver-info-icon">ⓘ</span><span class="driver-info-tip">${tip}</span></span>`
+      : '';
+    return `<li class="driver-reason ${l.direction === 'pluja' ? 'rain' : 'dry'}">${l.icon} ${l.text}${infoBtn}</li>`;
+  });
 
   return `
     <div class="drivers-section">
