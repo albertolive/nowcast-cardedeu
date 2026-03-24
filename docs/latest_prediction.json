@@ -4,7 +4,7 @@
   "will_rain": false,
   "rain_category": "sec",
   "confidence": "Molt Baixa",
-  "timestamp": "2026-03-24T22:40:28.259671",
+  "timestamp": "2026-03-24T22:50:48.757710",
   "conditions": {
     "temperature": "10.2",
     "humidity": 83,
@@ -257,7 +257,7 @@
     "local_rain_xema_3h": null,
     "ensemble_rain_agreement": 0.0,
     "ensemble_precip_spread": 0.0,
-    "ensemble_temp_spread": 0.6344288770224757,
+    "ensemble_temp_spread": 0.6670832032063166,
     "ensemble_max_precip": 0.0,
     "ensemble_min_precip": 0.0,
     "ensemble_models_rain": 0.0,
@@ -336,7 +336,7 @@
     {
       "group": "Terra",
       "icon": "🌱",
-      "contribution": 0.376,
+      "contribution": 0.375,
       "direction": "pluja"
     },
     {
