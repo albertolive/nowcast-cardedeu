@@ -122,13 +122,27 @@ El workflow `.github/workflows/nowcast.yml`:
 - **Informe d'accuracy** setmanal (dilluns 8:00) via Telegram
 - **Re-entrenament** automàtic diari a les 3:00 (amb feedback loop + calibratge isotònic)
 - Execució manual amb selector d'acció (predict / daily_summary / accuracy_report / retrain)
-- Configura els secrets al repositori:
-  - `TELEGRAM_BOT_TOKEN`
-  - `TELEGRAM_CHAT_ID`
-  - `METEOCAT_API_KEY`
-  - `AEMET_API_KEY`
-  - `AI_GITHUB_TOKEN` usa automàticament `GITHUB_TOKEN` (gratuït, sense configuració extra)
-  - `AI_OPENROUTER_KEY` (opcional, fallback a models gratuïts d'OpenRouter)
+- Configura els secrets al repositori: `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID`, `METEOCAT_API_KEY`, `AEMET_API_KEY`, `AI_GITHUB_TOKEN` (usa automàticament `GITHUB_TOKEN`, sense configuració extra) i `AI_OPENROUTER_KEY` (opcional).
+
+### 8. Dashboard a Vercel
+
+El dashboard web és un lloc estàtic dins de `docs/` i ja queda preparat per desplegar-se a Vercel amb el fitxer `vercel.json` del repositori.
+
+Passos:
+
+1. Importa el repositori a Vercel.
+2. El `vercel.json` ja força la configuració recomanada: `framework: null` (preset "Other"), build buit, `outputDirectory: docs` i `ignoreCommand`.
+3. No cal afegir cap rewrite manual ni tocar l'`Output Directory` al panell de Vercel, excepte si vols sobreescriure aquesta configuració.
+4. Desplega.
+
+Notes:
+
+- El mateix `docs/app.js` funciona tant a GitHub Pages com a Vercel: només canvia l'ordre de prioritat entre fitxers locals i GitHub raw segons el host.
+- Vercel servirà directament el contingut de `docs/`, que és més net que reescriure totes les rutes cap a aquest directori.
+- Quan la web corre fora de GitHub Pages, el dashboard prioritza `raw.githubusercontent.com/albertolive/nowcast-cardedeu/main/data/*` per llegir les dades en viu sense esperar un redeploy del frontend.
+- A GitHub Pages i en local, el dashboard manté el comportament actual: fitxers locals primer i GitHub raw com a fallback.
+- L'`ignoreCommand` fa que Vercel salti els commits que només actualitzen `docs/latest_prediction.json` o `docs/predictions_log.jsonl`, evitant gastar deploys innecessaris.
+- Si vols, pots desactivar GitHub Pages: ja no és necessària per al dashboard.
 
 ## Estructura
 
