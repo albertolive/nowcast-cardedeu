@@ -4,7 +4,7 @@
   "will_rain": false,
   "rain_category": "sec",
   "confidence": "Molt Baixa",
-  "timestamp": "2026-03-25T00:50:29.056950",
+  "timestamp": "2026-03-25T01:00:40.058603",
   "conditions": {
     "temperature": "8.4",
     "humidity": 87,
@@ -69,23 +69,23 @@
     "wind_dir_change_3h": -2.0
   },
   "pressure_levels": {
-    "temp_925": 10.7,
-    "rh_925": 49,
-    "wind_925_speed_kmh": 30.0,
-    "wind_925_dir": 255,
-    "wind_850_dir": 278,
-    "wind_850_speed_kmh": 19.8,
-    "temp_850": 6.0,
-    "rh_850": 62,
+    "temp_925": 10.8,
+    "rh_925": 47,
+    "wind_925_speed_kmh": 34.5,
+    "wind_925_dir": 259,
+    "wind_850_dir": 276,
+    "wind_850_speed_kmh": 22.0,
+    "temp_850": 6.2,
+    "rh_850": 56,
     "rh_700": 7,
     "temp_700": -0.3,
-    "temp_500": -14.7,
-    "wind_300_speed_kmh": 47.0,
-    "wind_300_dir": 6,
-    "gph_300": 9393.55,
-    "vt_index": 20.7,
-    "tt_index": 34.674929589483966,
-    "li_index": 3.49440844499512
+    "temp_500": -14.2,
+    "wind_300_speed_kmh": 49.2,
+    "wind_300_dir": 359,
+    "gph_300": 9395.16,
+    "vt_index": 20.4,
+    "tt_index": 32.677590688516375,
+    "li_index": 4.458144422954721
   },
   "sst": {
     "sst_med": 14.4
@@ -257,7 +257,7 @@
     "local_rain_xema_3h": null,
     "ensemble_rain_agreement": 0.0,
     "ensemble_precip_spread": 0.0,
-    "ensemble_temp_spread": 1.1121488209767612,
+    "ensemble_temp_spread": 1.5303185942802893,
     "ensemble_max_precip": 0.0,
     "ensemble_min_precip": 0.0,
     "ensemble_models_rain": 0.0,
@@ -312,7 +312,7 @@
     {
       "group": "Núvols",
       "icon": "☁️",
-      "contribution": -2.292,
+      "contribution": -2.294,
       "direction": "sec"
     },
     {
@@ -330,7 +330,7 @@
     {
       "group": "Acord entre models",
       "icon": "🤝",
-      "contribution": -0.38,
+      "contribution": -0.379,
       "direction": "sec"
     },
     {
