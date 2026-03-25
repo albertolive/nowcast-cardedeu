@@ -6,9 +6,27 @@ const REFRESH_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
 import { deriveRadarViewModel } from './radar_logic.js';
 import { selectDriverExplanations, GROUP_TOOLTIP } from './driver_logic.js';
 
+function getDataBases() {
+  const hostname = window.location.hostname.toLowerCase();
+
+  // GitHub Pages and local previews should prefer bundled files.
+  if (
+    hostname === 'localhost' ||
+    hostname === '127.0.0.1' ||
+    hostname.endsWith('.github.io')
+  ) {
+    return ['.', RAW_BASE];
+  }
+
+  // Vercel and any other host should prefer live repo data first to avoid
+  // waiting for a frontend redeploy on every prediction commit.
+  return [RAW_BASE, '.'];
+}
+
+const DATA_BASES = getDataBases();
+
 async function fetchJSON(filename) {
-  // Try local (GitHub Pages docs/) first, fall back to raw.githubusercontent.com
-  for (const base of ['.', RAW_BASE]) {
+  for (const base of DATA_BASES) {
     try {
       const r = await fetch(`${base}/${filename}`, { cache: 'no-cache' });
       if (r.ok) return r.json();
@@ -18,7 +36,7 @@ async function fetchJSON(filename) {
 }
 
 async function fetchJSONL(filename) {
-  for (const base of ['.', RAW_BASE]) {
+  for (const base of DATA_BASES) {
     try {
       const r = await fetch(`${base}/${filename}`, { cache: 'no-cache' });
       if (r.ok) {

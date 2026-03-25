@@ -118,7 +118,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git pull --rebase origin main || true
-          # Copy data to docs/ for GitHub Pages dashboard
+          # Copy data to docs/ for static dashboard deployment (GitHub Pages or Vercel)
           cp -f data/latest_prediction.json docs/latest_prediction.json 2>/dev/null || true
           cp -f data/predictions_log.jsonl docs/predictions_log.jsonl 2>/dev/null || true
           git add data/predictions_log.jsonl data/notification_state.json data/latest_prediction.json
