@@ -101,6 +101,61 @@ def _aemet_storm_above_threshold(aemet_data: dict) -> bool:
         return False
 
 
+def _apply_physical_constraints(probability: float, radar_data: dict,
+                                 sentinel_features: dict) -> tuple[float, list[str]]:
+    """
+    Aplica restriccions físiques a la probabilitat del model ML.
+    Estableix floors (mínims) basats en senyals de sensors que són fets físics,
+    no patrons estadístics. El model ML ignora radar/sentinella (0% importància)
+    perquè no tenia dades d'entrenament amb aquestes features. Aquesta capa
+    supleix aquella mancança fins que el feedback loop acumuli prou dades.
+
+    No aplica caps (màxims) perquè el model sap coses que el radar no pot
+    veure (setup sinòptic, humitat a 850hPa, patrons atmosfèrics).
+    """
+    adjustments = []
+    adjusted = probability
+
+    # 1. Radar mostra pluja al píxel de Cardedeu (és un FET, no una predicció)
+    radar_dbz = radar_data.get("radar_dbz", 0) or 0
+    if radar_data.get("radar_has_echo") and radar_dbz >= 10:
+        floor = 0.75
+        if adjusted < floor:
+            adjustments.append(f"Radar detecta pluja a Cardedeu ({radar_dbz:.0f} dBZ)")
+            adjusted = floor
+
+    # 2. Eco radar fort molt a prop (< 5km, dBZ > 20)
+    nearest_km = radar_data.get("radar_nearest_echo_km")
+    max_dbz_20km = radar_data.get("radar_max_dbz_20km", 0) or 0
+    if nearest_km is not None and nearest_km < 5 and max_dbz_20km >= 20:
+        floor = 0.50
+        if adjusted < floor:
+            adjustments.append(f"Eco radar a {nearest_km:.0f}km ({max_dbz_20km:.0f} dBZ)")
+            adjusted = floor
+
+    # 3. Tempesta aproximant-se amb ETA curta i eco fort
+    eta = radar_data.get("radar_storm_eta_min")
+    if (radar_data.get("radar_storm_approaching") and
+            eta is not None and eta <= 15 and max_dbz_20km >= 25):
+        floor = 0.40
+        if adjusted < floor:
+            adjustments.append(f"Tempesta aproximant-se, ETA ~{eta:.0f} min")
+            adjusted = floor
+
+    # 4. Plou a l'estació sentinella de Granollers (7km SO)
+    sentinel_raining = sentinel_features.get("sentinel_raining", 0) or 0
+    if sentinel_raining > 0:
+        floor = 0.25
+        if adjusted < floor:
+            adjustments.append("Plou a Granollers (7km SO)")
+            adjusted = floor
+
+    if adjustments:
+        logger.info(f"  Ajustament físic: {probability:.1%} → {adjusted:.1%} ({'; '.join(adjustments)})")
+
+    return adjusted, adjustments
+
+
 def predict_now() -> dict:
     """
     Executa una predicció en temps real.
@@ -162,7 +217,7 @@ def predict_now() -> dict:
     rain_signals = (
         ensemble_data.get("ensemble_rain_agreement", 0) >= config.RAIN_GATE_ENSEMBLE_PROB
         or radar_data.get("radar_has_echo", False)
-        or radar_data.get("radar_nearest_echo_km", 30) < config.RAIN_GATE_RADAR_NEARBY_KM
+        or radar_data.get("radar_nearest_echo_km", config.RADAR_SCAN_RADIUS_KM) < config.RAIN_GATE_RADAR_NEARBY_KM
         or _aemet_storm_above_threshold(aemet_data)
         or aemet_radar_data.get("aemet_radar_has_echo", False)
     )
@@ -329,6 +384,15 @@ def predict_now() -> dict:
         probability = float(calibrator.predict([raw_probability])[0])
     else:
         probability = raw_probability
+
+    # Ajustament per restriccions físiques: quan els sensors mostren senyal
+    # clara de pluja (radar, sentinella), el model no pot dir <X% perquè
+    # les features de radar/sentinella tenen 0% d'importància al model actual
+    # (NaN en les 7 anys de dades d'entrenament històriques).
+    probability, physical_adjustments = _apply_physical_constraints(
+        probability, radar_data, sentinel_features
+    )
+
     will_rain = probability >= threshold
 
     # Calcular els factors que més influeixen en la predicció
@@ -453,6 +517,7 @@ def predict_now() -> dict:
         "threshold": threshold,
         "calibrated": calibrator is not None,
         "raw_probability": round(raw_probability, 4),
+        "physical_adjustments": physical_adjustments,
         # Save ALL 131 FEATURE_COLUMNS (not just model's feature_names)
         # so the feedback loop accumulates radar/lightning/sentinel data for retraining
         "feature_vector": {

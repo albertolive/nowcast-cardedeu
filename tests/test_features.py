@@ -130,10 +130,10 @@ class TestFeatureColumnConsistency:
     """Validate FEATURE_COLUMNS is complete and consistent."""
 
     def test_feature_count(self):
-        """FEATURE_COLUMNS should have 209 entries."""
+        """FEATURE_COLUMNS should have 211 entries."""
         from src.features.engineering import FEATURE_COLUMNS
-        assert len(FEATURE_COLUMNS) == 209, (
-            f"Expected 209 features, got {len(FEATURE_COLUMNS)}. "
+        assert len(FEATURE_COLUMNS) == 211, (
+            f"Expected 211 features, got {len(FEATURE_COLUMNS)}. "
             f"If you added/removed features, update this test."
         )
 

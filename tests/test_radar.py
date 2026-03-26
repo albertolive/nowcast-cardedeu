@@ -123,14 +123,13 @@ class TestRainViewerConfig:
     """Validates tile coordinates for Cardedeu."""
 
     def test_tile_coordinates_for_cardedeu(self):
-        """Cardedeu (41.633°N, 2.364°E) at zoom=8:
-        tile_x=129, tile_y=95, pixel_x=174, pixel_y=97.
-        Bug caught: previously had Nice (France) coordinates."""
+        """Centre Cardedeu (41.639°N, 2.356°E) at zoom=8:
+        tile_x=129, tile_y=95, pixel_x=172, pixel_y=96."""
         assert config.RAINVIEWER_TILE_ZOOM == 8
         assert config.RAINVIEWER_TILE_X == 129
         assert config.RAINVIEWER_TILE_Y == 95
-        assert config.RAINVIEWER_PIXEL_X == 174
-        assert config.RAINVIEWER_PIXEL_Y == 97
+        assert config.RAINVIEWER_PIXEL_X == 172
+        assert config.RAINVIEWER_PIXEL_Y == 96
 
     def test_coordinates_within_catalonia(self):
         """Basic sanity: Cardedeu must be in Catalonia."""

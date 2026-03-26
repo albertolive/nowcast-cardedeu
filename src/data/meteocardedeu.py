@@ -59,6 +59,17 @@ def fetch_series(hours: int = 24) -> pd.DataFrame:
 
         df["datetime"] = pd.to_datetime(df["dt_local"])
         df = df.sort_values("datetime").reset_index(drop=True)
+
+        # PREC de meteocardedeu.net és un acumulat diari (running total des de mitjanit).
+        # El convertim a increment per lectura perquè downstream (verify.py, engineering.py)
+        # pugui fer .sum() correctament per obtenir la pluja real en una finestra.
+        # .diff() calcula l'increment entre lectures consecutives.
+        # .clip(lower=0) descarta els resets de mitjanit (el total cau de X a 0 → diff negatiu).
+        # La primera lectura queda NaN → la fem 0.
+        if "PREC" in df.columns:
+            df["PREC"] = pd.to_numeric(df["PREC"], errors="coerce")
+            df["PREC"] = df["PREC"].diff().clip(lower=0).fillna(0)
+
         return df
     except Exception as e:
         logger.warning(f"Error obtenint sèrie de MeteoCardedeu: {e}")

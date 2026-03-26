@@ -1015,6 +1015,21 @@ def _add_ensemble_features(df: pd.DataFrame) -> pd.DataFrame:
                 "aemet_prob_precip", "aemet_prob_storm", "aemet_precip_today"]:
         if col in df.columns:
             df[col] = pd.to_numeric(df[col], errors="coerce")
+
+    # Interaccions NWP-Ensemble: capturar desacord entre el forecast puntual i l'ensemble.
+    # L'ensemble té 0.8% d'importància perquè és redundant amb el NWP puntual quan coincideixen.
+    # Aquestes features aïllen els casos de DESACORD — on l'ensemble afegeix informació nova.
+    if "ensemble_models_rain" in df.columns and "model_predicts_precip" in df.columns:
+        # Ensemble veu pluja però el NWP puntual no (possible pluja que el punt no veu)
+        df["ensemble_surprise_rain"] = (
+            df["ensemble_models_rain"].fillna(0) * (1 - df["model_predicts_precip"].fillna(0))
+        )
+    if "nwp_precip_severity" in df.columns and "ensemble_rain_agreement" in df.columns:
+        # NWP diu pluja forta però l'ensemble no hi està d'acord (possible falsa alarma)
+        df["nwp_isolated_rain"] = (
+            df["nwp_precip_severity"].fillna(0) * (1 - df["ensemble_rain_agreement"].fillna(0))
+        )
+
     return df
 
 
@@ -1306,6 +1321,9 @@ FEATURE_COLUMNS = [
     "ensemble_rain_agreement", "ensemble_precip_spread",
     "ensemble_temp_spread", "ensemble_max_precip",
     "ensemble_min_precip", "ensemble_models_rain",
+    # Interaccions NWP-Ensemble (desacord entre forecast puntual i ensemble)
+    "ensemble_surprise_rain",  # ensemble veu pluja però NWP puntual no
+    "nwp_isolated_rain",       # NWP puntual diu pluja però ensemble discrepa
     # Bias del forecast vs observació real
     "forecast_temp_bias", "forecast_humidity_bias",
     # AEMET probabilitats de precipitació i tempesta

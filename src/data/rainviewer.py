@@ -393,7 +393,7 @@ def _estimate_storm_tracking(spatial_scans: list, pixel_size_km: float,
         approach_speed_kmh = (approach_km / total_time_min) * 60
         if approach_speed_kmh > 2:  # Mínim 2 km/h per ser significatiu
             latest_scan = spatial_scans[-1]
-            nearest_km = latest_scan.get("nearest_echo_km", 30)
+            nearest_km = latest_scan.get("nearest_echo_km", config.RADAR_SCAN_RADIUS_KM)
             eta_min = round((nearest_km / approach_speed_kmh) * 60)
             eta_min = max(0, min(eta_min, 180))  # Cap a 0-180 min
 
