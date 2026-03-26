@@ -1,8 +1,8 @@
 {
   "current_state": "clear",
-  "last_alert_time": 1774216225.9170048,
+  "last_alert_time": 1774483244.549866,
   "last_alert_type": "regime_change",
-  "last_probability": 0.3185,
+  "last_probability": 0.3814,
   "consecutive_high": 0,
   "consecutive_low": 0,
   "last_wind_regime": {
@@ -15,6 +15,6 @@
     "llevantada_strength": 0.0,
     "wind_dir_change_3h": -100.0
   },
-  "last_regime_alert_time": 1774216225.9170048,
-  "last_regime_alert_type": "garbi_inestable"
+  "last_regime_alert_time": 1774483244.549866,
+  "last_regime_alert_type": "backing_wind"
 }
