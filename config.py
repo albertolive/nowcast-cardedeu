@@ -5,10 +5,17 @@ Totes les constants i paràmetres en un sol lloc.
 import os
 from datetime import datetime as _dt
 
-# ── Coordenades de l'estació MeteoCardedeu Poble Sec ──
+# ── Coordenades ──
+# Estació MeteoCardedeu Poble Sec (font de dades locals)
 LATITUDE = 41.63282
 LONGITUDE = 2.364255
 ALTITUDE = 190  # metres
+# Centre del municipi de Cardedeu (radar, àrea de predicció)
+TOWN_CENTER_LAT = 41.6385
+TOWN_CENTER_LON = 2.3558
+MUNICIPALITY_AREA_KM2 = 12.8     # km²
+MUNICIPALITY_NS_KM = 6.5         # extensió nord-sud
+MUNICIPALITY_EW_KM = 3.7         # extensió est-oest
 
 # ── URLs de l'API de meteocardedeu.net ──
 BASE_URL = "https://meteocardedeu.net"
@@ -104,13 +111,13 @@ NOTIFICATION_COOLDOWN_MIN = 30      # Minuts mínims entre alertes
 # ── RainViewer (radar, sense API key) ──
 RAINVIEWER_API_URL = "https://api.rainviewer.com/public/weather-maps.json"
 RAINVIEWER_TILE_BASE = "https://tilecache.rainviewer.com"
-# Tile zoom=8 → cada tile ~1.5°. Cardedeu (41.633°N, 2.364°E) cau al tile x=129, y=95
+# Tile zoom=8 → cada tile ~1.5°. Centre Cardedeu (41.639°N, 2.356°E) cau al tile x=129, y=95
 RAINVIEWER_TILE_ZOOM = 8
 RAINVIEWER_TILE_X = 129
 RAINVIEWER_TILE_Y = 95
-# Píxel dins del tile on cau Cardedeu (256x256)
-RAINVIEWER_PIXEL_X = 174
-RAINVIEWER_PIXEL_Y = 97
+# Píxel dins del tile on cau el centre de Cardedeu (256x256)
+RAINVIEWER_PIXEL_X = 172
+RAINVIEWER_PIXEL_Y = 96
 
 # ── Meteocat XEMA API ──
 METEOCAT_API_KEY = os.environ.get("METEOCAT_API_KEY", "")
@@ -152,8 +159,10 @@ RAIN_GATE_RADAR_NEARBY_KM = 30  # Obrir rain gate si ecos de radar dins d'aquest
 RAIN_GATE_LIGHTNING_NEARBY_KM = 30  # Obrir rain gate si llamps dins d'aquest radi
 
 # ── Radar Spatial Scanning ──
-# A zoom 8, cada píxel ≈ 0.457 km a la latitud de Cardedeu (41.63°)
-RADAR_SCAN_RADIUS_KM = 30       # km al voltant de Cardedeu per escanejar ecos
+# A zoom 8, cada píxel ≈ 0.457 km a la latitud de Cardedeu (41.64°)
+# 40km: encaixa dins del tile (96px nord > 87px radi), mínima retallada a l'est (84px vs 87px)
+# Guanyem ~10km de detecció anticipada vs 30km → 12-20 min extra a 30-50 km/h
+RADAR_SCAN_RADIUS_KM = 40       # km al voltant de Cardedeu per escanejar ecos
 RADAR_PIXEL_SIZE_KM = 0.457     # km per píxel (zoom 8, lat ~41.6°)
 RADAR_MIN_DBZ = 10              # dBZ mínim per considerar un eco com a pluja real (filtra soroll/AP)
 AEMET_RADAR_MIN_ECHO_CLUSTER_PX = 10  # Píxels mínims per considerar un eco real (filtra fronteres/costes del mapa)
@@ -437,6 +446,9 @@ FEATURE_GROUP_MAP = {
     "ensemble_max_precip": ("Acord entre models", "🤝"),
     "ensemble_min_precip": ("Acord entre models", "🤝"),
     "ensemble_models_rain": ("Acord entre models", "🤝"),
+    # Interaccions NWP-Ensemble
+    "ensemble_surprise_rain": ("Acord entre models", "🤝"),
+    "nwp_isolated_rain": ("Acord entre models", "🤝"),
     # Bias observació vs forecast
     "forecast_temp_bias": ("Correcció local", "🔧"),
     "forecast_humidity_bias": ("Correcció local", "🔧"),

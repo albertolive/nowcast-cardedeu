@@ -81,7 +81,9 @@ def verify_pending_predictions() -> dict:
             skipped += 1
             continue
 
-        # PREC és acumulat en cada minut, sumem per obtenir total de pluja en la finestra
+        # PREC és l'increment de pluja per lectura (convertit a fetch_series).
+        # Per XEMA KX, PREC ja és l'acumulat per interval de 30min.
+        # En ambdós casos, .sum() dona el total de pluja real en la finestra.
         rain_mm = float(window["PREC"].astype(float).sum())
         actual_rain = rain_mm >= config.RAIN_THRESHOLD_MM
 

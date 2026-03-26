@@ -1,39 +1,39 @@
 {
-  "cv_auc_mean": 0.9631483373493582,
-  "cv_auc_std": 0.005602935457070717,
-  "cv_f1_mean": 0.7030862249899054,
-  "cv_f1_std": 0.03290201921237225,
-  "final_auc": 0.9664599804925866,
+  "cv_auc_mean": 0.9632197981299916,
+  "cv_auc_std": 0.005557290608730225,
+  "cv_f1_mean": 0.7021588271174644,
+  "cv_f1_std": 0.03470718262230334,
+  "final_auc": 0.9674883419797858,
   "final_report": {
     "0": {
-      "precision": 0.9699988416541179,
-      "recall": 0.9579043697094486,
-      "f1-score": 0.9639136690647482,
-      "support": 8742.0
+      "precision": 0.972597988206729,
+      "recall": 0.9533091568449683,
+      "f1-score": 0.9628569793395525,
+      "support": 8824.0
     },
     "1": {
-      "precision": 0.7015409570154095,
-      "recall": 0.7695729537366548,
-      "f1-score": 0.7339838778107765,
-      "support": 1124.0
+      "precision": 0.6717131474103586,
+      "recall": 0.7805555555555556,
+      "f1-score": 0.7220556745182013,
+      "support": 1080.0
     },
-    "accuracy": 0.9364484086762619,
+    "accuracy": 0.9344709208400647,
     "macro avg": {
-      "precision": 0.8357698993347638,
-      "recall": 0.8637386617230517,
-      "f1-score": 0.8489487734377623,
-      "support": 9866.0
+      "precision": 0.8221555678085438,
+      "recall": 0.866932356200262,
+      "f1-score": 0.842456326928877,
+      "support": 9904.0
     },
     "weighted avg": {
-      "precision": 0.9394143431406465,
-      "recall": 0.9364484086762619,
-      "f1-score": 0.9377185458770871,
-      "support": 9866.0
+      "precision": 0.9397874441780457,
+      "recall": 0.9344709208400647,
+      "f1-score": 0.9365983556312469,
+      "support": 9904.0
     }
   },
-  "n_samples": 98660,
+  "n_samples": 99040,
   "n_positive": 9178,
-  "n_features": 209,
+  "n_features": 211,
   "feature_names": [
     "hour_sin",
     "hour_cos",
@@ -199,6 +199,8 @@
     "ensemble_max_precip",
     "ensemble_min_precip",
     "ensemble_models_rain",
+    "ensemble_surprise_rain",
+    "nwp_isolated_rain",
     "forecast_temp_bias",
     "forecast_humidity_bias",
     "aemet_prob_precip",
@@ -246,7 +248,7 @@
     "freezing_level_height"
   ],
   "calibrated": true,
-  "optimal_threshold": 0.35714285714285715,
-  "calibration_oof_f1_uncalibrated": 0.6390513320337882,
-  "calibration_oof_f1_calibrated": 0.7038119358399896
+  "optimal_threshold": 0.3744394618834081,
+  "calibration_oof_f1_uncalibrated": 0.639493341994154,
+  "calibration_oof_f1_calibrated": 0.703508546459324
 }
