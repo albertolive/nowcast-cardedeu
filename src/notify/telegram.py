@@ -12,6 +12,31 @@ import config
 logger = logging.getLogger(__name__)
 
 
+def _round_prob_5(prob_pct: float) -> int:
+    """Arrodoneix la probabilitat al 5% més proper per evitar falsa precisió."""
+    return int(5 * round(prob_pct / 5))
+
+
+def _format_drivers(top_drivers: list) -> list[str]:
+    """Formata els 2-3 drivers principals que empugen cap a pluja."""
+    if not top_drivers:
+        return []
+    rain_drivers = [d for d in top_drivers if d.get("direction") == "pluja"
+                    and d.get("group") != "Base (climatologia)"]
+    if not rain_drivers:
+        return []
+    parts = [f"{d['icon']} {d['group']}" for d in rain_drivers[:3]]
+    return [f"📊 Per què: {' · '.join(parts)}"]
+
+
+def _format_physical_adjustments(prediction: dict) -> list[str]:
+    """Mostra els ajustos de restriccions físiques si s'han aplicat."""
+    adjustments = prediction.get("physical_adjustments", [])
+    if not adjustments:
+        return []
+    return [f"⚡ {adj}" for adj in adjustments]
+
+
 def send_telegram_message(text: str) -> bool:
     """Envia un missatge via Telegram bot."""
     if not config.TELEGRAM_BOT_TOKEN or not config.TELEGRAM_CHAT_ID:
@@ -102,7 +127,7 @@ def _format_conditions(prediction: dict) -> list[str]:
 
 def format_rain_incoming(prediction: dict) -> str:
     """Missatge quan la pluja s'acosta (clear → rain_alert)."""
-    prob = prediction["probability_pct"]
+    prob = _round_prob_5(prediction["probability_pct"])
     lines = [
         "🌧️ <b>Nowcast Cardedeu</b>",
         "",
@@ -110,8 +135,16 @@ def format_rain_incoming(prediction: dict) -> str:
         "",
         f"🎯 Probabilitat: <b>{prob}%</b>",
         f"📊 Confiança: <b>{prediction['confidence']}</b>",
-        "",
     ]
+    # Drivers: per què el model prediu pluja
+    driver_lines = _format_drivers(prediction.get("top_drivers", []))
+    if driver_lines:
+        lines.extend(driver_lines)
+    # Ajustos físics (radar/sentinella override)
+    adj_lines = _format_physical_adjustments(prediction)
+    if adj_lines:
+        lines.extend(adj_lines)
+    lines.append("")
     lines.extend(_format_conditions(prediction))
     lines.append("")
     lines.append(f"⏰ {prediction['timestamp'][:19]}")
@@ -120,7 +153,7 @@ def format_rain_incoming(prediction: dict) -> str:
 
 def format_rain_clearing(prediction: dict) -> str:
     """Missatge quan la pluja s'allunya (rain_alert → clear)."""
-    prob = prediction["probability_pct"]
+    prob = _round_prob_5(prediction["probability_pct"])
     lines = [
         "☀️ <b>Nowcast Cardedeu</b>",
         "",
@@ -136,7 +169,7 @@ def format_rain_clearing(prediction: dict) -> str:
 
 def format_daily_summary(prediction: dict) -> str:
     """Resum diari al matí."""
-    prob = prediction["probability_pct"]
+    prob = _round_prob_5(prediction["probability_pct"])
     confidence = prediction["confidence"]
 
     if prob >= 65:
@@ -162,7 +195,7 @@ def format_daily_summary(prediction: dict) -> str:
 def format_regime_change(prediction: dict, regime_change: dict) -> str:
     """Missatge d'alerta de canvi de règim atmosfèric."""
     severity_icon = "⚠️" if regime_change["severity"] == "warning" else "👁️"
-    prob = prediction["probability_pct"]
+    prob = _round_prob_5(prediction["probability_pct"])
     ensemble = prediction.get("ensemble", {})
 
     lines = [
@@ -180,6 +213,15 @@ def format_regime_change(prediction: dict, regime_change: dict) -> str:
     total_models = ensemble.get("total_models", 4)
     if models_rain is not None:
         lines.append(f"🔮 Models: {models_rain}/{total_models} prediuen pluja")
+
+    # Drivers: per què el model prediu pluja
+    driver_lines = _format_drivers(prediction.get("top_drivers", []))
+    if driver_lines:
+        lines.extend(driver_lines)
+    # Ajustos físics
+    adj_lines = _format_physical_adjustments(prediction)
+    if adj_lines:
+        lines.extend(adj_lines)
 
     lines.append("")
     lines.extend(_format_conditions(prediction))
@@ -223,7 +265,7 @@ def _format_radar_summary(radar: dict) -> str:
                 line += f" — ETA ~{eta} min"
         return line
 
-    nearest = radar.get("nearest_echo_km", 30)
+    nearest = radar.get("nearest_echo_km", config.RADAR_SCAN_RADIUS_KM)
     coverage = radar.get("coverage_20km", 0)
 
     if nearest < 10 and coverage > 0.05:
@@ -248,7 +290,7 @@ def format_daily_forecast(prediction: dict, hourly_outlook: list[dict] = None,
     Dissenyat per doble audiència: públic general (part superior) i
     entusiastes de la meteorologia (secció tècnica).
     """
-    prob = prediction["probability_pct"]
+    prob = _round_prob_5(prediction["probability_pct"])
     confidence = prediction["confidence"]
 
     if prob >= 65:
@@ -287,10 +329,10 @@ def format_daily_forecast(prediction: dict, hourly_outlook: list[dict] = None,
         for slot in hourly_outlook:
             icon = _rain_icon(slot.get("max_prob", 0))
             label = slot["label"]
-            max_prob = slot.get("max_prob", 0)
+            max_prob = _round_prob_5(slot.get("max_prob", 0))
             temp_range = slot.get("temp_range", "")
 
-            line = f"  {icon} <b>{label}</b>: {max_prob:.0f}% pluja"
+            line = f"  {icon} <b>{label}</b>: {max_prob}% pluja"
             if temp_range:
                 line += f" · {temp_range}"
             lines.append(line)
