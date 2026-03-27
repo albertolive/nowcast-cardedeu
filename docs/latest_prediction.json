@@ -4,7 +4,7 @@
   "will_rain": false,
   "rain_category": "sec",
   "confidence": "Molt Baixa",
-  "timestamp": "2026-03-27T09:10:30.490903",
+  "timestamp": "2026-03-27T09:20:27.735660",
   "conditions": {
     "temperature": null,
     "humidity": null,
@@ -103,11 +103,11 @@
     "month_sin": 1.0,
     "month_cos": 6.123233995736766e-17,
     "hours_since_sunrise": 2.2770910025847124,
-    "pressure_msl": 1017.1285714285715,
-    "pressure_change_1h": 0.1505714285714248,
-    "pressure_change_3h": 0.4264437689970464,
-    "pressure_change_6h": 0.7489795918368145,
-    "pressure_accel_3h": 0.046269855953482875,
+    "pressure_msl": 1017.1600000000001,
+    "pressure_change_1h": 0.18200000000001637,
+    "pressure_change_3h": 0.45787234042563796,
+    "pressure_change_6h": 0.7804081632654061,
+    "pressure_accel_3h": 0.07769842738207444,
     "temperature_2m": 0.0,
     "relative_humidity_2m": 0.0,
     "dew_point": 0.0,
@@ -258,7 +258,7 @@
     "local_rain_xema_3h": null,
     "ensemble_rain_agreement": 0.0,
     "ensemble_precip_spread": 0.0,
-    "ensemble_temp_spread": 0.46904157598234314,
+    "ensemble_temp_spread": 0.45483513496650657,
     "ensemble_max_precip": 0.0,
     "ensemble_min_precip": 0.0,
     "ensemble_models_rain": 0.0,
@@ -310,7 +310,7 @@
     "visibility": 36420.0,
     "freezing_level_height": 1840.0
   },
-  "pressure_change_3h": 0.4264437689970464,
+  "pressure_change_3h": 0.45787234042563796,
   "top_drivers": [
     {
       "group": "Núvols",
@@ -339,7 +339,7 @@
     {
       "group": "Acord entre models",
       "icon": "🤝",
-      "contribution": -0.292,
+      "contribution": -0.291,
       "direction": "sec"
     },
     {
