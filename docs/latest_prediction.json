@@ -4,10 +4,10 @@
   "will_rain": false,
   "rain_category": "sec",
   "confidence": "Molt Baixa",
-  "timestamp": "2026-03-27T23:40:27.110210",
+  "timestamp": "2026-03-27T23:50:25.112135",
   "conditions": {
     "temperature": "6.9",
-    "humidity": 84,
+    "humidity": 85,
     "pressure": "1019.8",
     "wind_speed": "0.0",
     "wind_dir": "ESE",
@@ -56,7 +56,7 @@
   },
   "bias": {
     "temp": 2.0,
-    "humidity": 6.0
+    "humidity": 5.0
   },
   "wind_regime": {
     "level": "850hPa",
@@ -103,17 +103,17 @@
     "month_sin": 1.0,
     "month_cos": 6.123233995736766e-17,
     "hours_since_sunrise": 16.27709100258471,
-    "pressure_msl": 1019.7055555555556,
-    "pressure_change_1h": 0.29704491725783555,
-    "pressure_change_3h": 1.1821513002365691,
-    "pressure_change_6h": 2.9864066193853205,
-    "pressure_accel_3h": -0.3944444444442752,
-    "temperature_2m": 7.172222222222222,
-    "relative_humidity_2m": 83.38888888888889,
-    "dew_point": 4.547251367126111,
-    "dew_point_depression": 2.6249708550961106,
-    "humidity_change_1h": 1.4527186761229274,
-    "humidity_change_3h": 9.835697399527177,
+    "pressure_msl": 1019.7481481481482,
+    "pressure_change_1h": 0.3396375098503768,
+    "pressure_change_3h": 1.2247438928291103,
+    "pressure_change_6h": 3.0289992119778617,
+    "pressure_accel_3h": -0.35185185185173395,
+    "temperature_2m": 7.0814814814814815,
+    "relative_humidity_2m": 83.88888888888889,
+    "dew_point": 4.543872045352888,
+    "dew_point_depression": 2.5376094361285935,
+    "humidity_change_1h": 1.9527186761229274,
+    "humidity_change_3h": 10.335697399527177,
     "vapour_pressure_deficit": 0.12,
     "vpd_change_3h": -0.020000000000000018,
     "wind_speed_10m": 0.0,
@@ -153,8 +153,8 @@
     "k_index": -12.95842139137596,
     "moisture_flux_850": 88.278969716,
     "moisture_flux_925": 236.55083196171927,
-    "theta_e_deficit": 13.321741894995323,
-    "inversion_925": -1.2722222222222213,
+    "theta_e_deficit": 13.225984618030669,
+    "inversion_925": -1.1814814814814811,
     "deep_layer_shear": 67.4,
     "bulk_richardson": 0.0,
     "jet_speed_300": 83.9,
@@ -186,7 +186,7 @@
     "nwp_rain_persistence_6h": 0.0,
     "nwp_rain_trend_3h": 0.0,
     "weather_code_change_3h": -1.0,
-    "cloud_humidity_convergence": -118.02836879432613,
+    "cloud_humidity_convergence": -124.02836879432613,
     "precip_trend_3h": 0.0,
     "showers": 0.0,
     "nwp_showers_fraction": 0.0,
@@ -265,7 +265,7 @@
     "ensemble_surprise_rain": null,
     "nwp_isolated_rain": null,
     "forecast_temp_bias": 2.0,
-    "forecast_humidity_bias": 6.0,
+    "forecast_humidity_bias": 5.0,
     "aemet_prob_precip": 0.0,
     "aemet_prob_storm": 0.0,
     "aemet_precip_today": 0.0,
@@ -288,8 +288,8 @@
     "orographic_forcing": 0.0,
     "frontal_passage": 0.0,
     "convective_composite": 0.0,
-    "thermal_buildup": 0.01609872446246148,
-    "low_level_convergence": 0.593912529550827,
+    "thermal_buildup": 0.01627152810918283,
+    "low_level_convergence": 0.618912529550827,
     "dry_intrusion_700": 0.7,
     "soil_moisture_0_to_7cm": null,
     "soil_moisture_7_to_28cm": null,
@@ -301,7 +301,7 @@
     "cloud_cover_high": 62.0,
     "cloud_low_fraction": 0.6296296296296297,
     "wet_bulb_temperature_2m": 8.2,
-    "wet_bulb_depression": -1.0277777777777777,
+    "wet_bulb_depression": -1.1185185185185178,
     "direct_radiation": 0.0,
     "diffuse_radiation": 0.0,
     "diffuse_fraction": 0.0,
@@ -310,7 +310,7 @@
     "visibility": 23540.0,
     "freezing_level_height": 1860.0
   },
-  "pressure_change_3h": 1.1821513002365691,
+  "pressure_change_3h": 1.2247438928291103,
   "top_drivers": [
     {
       "group": "Models globals",
@@ -321,13 +321,13 @@
     {
       "group": "Pluja confirmada",
       "icon": "🌧️",
-      "contribution": -0.724,
+      "contribution": -0.723,
       "direction": "sec"
     },
     {
       "group": "Núvols",
       "icon": "☁️",
-      "contribution": -0.513,
+      "contribution": -0.514,
       "direction": "sec"
     },
     {
@@ -339,7 +339,7 @@
     {
       "group": "Terra",
       "icon": "🌱",
-      "contribution": 0.283,
+      "contribution": 0.282,
       "direction": "pluja"
     },
     {
