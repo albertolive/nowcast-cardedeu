@@ -4,7 +4,7 @@
   "will_rain": false,
   "rain_category": "sec",
   "confidence": "Molt Baixa",
-  "timestamp": "2026-03-27T12:20:28.193930",
+  "timestamp": "2026-03-27T12:30:32.089056",
   "conditions": {
     "temperature": null,
     "humidity": null,
@@ -55,7 +55,7 @@
     "prob_storm": 0
   },
   "bias": {
-    "temp": 13.4,
+    "temp": 14.1,
     "humidity": null
   },
   "wind_regime": {
@@ -95,7 +95,7 @@
   "features_used": 211,
   "threshold": 0.3744394618834081,
   "calibrated": true,
-  "raw_probability": 0.002,
+  "raw_probability": 0.0021,
   "physical_adjustments": [],
   "feature_vector": {
     "hour_sin": 0.8660254037844387,
@@ -217,9 +217,9 @@
     "tcwv": 11.1,
     "tcwv_change_3h": -1.200000000000001,
     "tcwv_change_6h": -2.700000000000001,
-    "boundary_layer_height": 300.0,
-    "blh_change_3h": 80.0,
-    "tcwv_blh_ratio": 3.6999999999999997,
+    "boundary_layer_height": 370.0,
+    "blh_change_3h": 150.0,
+    "tcwv_blh_ratio": 3.0,
     "terrestrial_radiation": 193.2,
     "soil_moisture_28_to_100cm": null,
     "soil_saturation_ratio": null,
@@ -264,7 +264,7 @@
     "ensemble_models_rain": 0.0,
     "ensemble_surprise_rain": null,
     "nwp_isolated_rain": null,
-    "forecast_temp_bias": 13.4,
+    "forecast_temp_bias": 14.1,
     "forecast_humidity_bias": null,
     "aemet_prob_precip": 0.0,
     "aemet_prob_storm": 0.0,
@@ -315,31 +315,31 @@
     {
       "group": "Núvols",
       "icon": "☁️",
-      "contribution": -1.328,
+      "contribution": -1.319,
       "direction": "sec"
     },
     {
       "group": "Models globals",
       "icon": "🌐",
-      "contribution": -0.972,
+      "contribution": -0.973,
       "direction": "sec"
     },
     {
       "group": "Pluja confirmada",
       "icon": "🌧️",
-      "contribution": -0.747,
+      "contribution": -0.742,
       "direction": "sec"
     },
     {
       "group": "Acord entre models",
       "icon": "🤝",
-      "contribution": -0.343,
+      "contribution": -0.347,
       "direction": "sec"
     },
     {
       "group": "Terra",
       "icon": "🌱",
-      "contribution": 0.313,
+      "contribution": 0.311,
       "direction": "pluja"
     },
     {
