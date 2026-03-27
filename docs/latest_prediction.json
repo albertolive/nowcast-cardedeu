@@ -4,7 +4,7 @@
   "will_rain": false,
   "rain_category": "sec",
   "confidence": "Molt Baixa",
-  "timestamp": "2026-03-27T13:10:27.992413",
+  "timestamp": "2026-03-27T13:20:31.092933",
   "conditions": {
     "temperature": null,
     "humidity": null,
@@ -88,7 +88,7 @@
     "li_index": 7.738701770861066
   },
   "sst": {
-    "sst_med": 14.8
+    "sst_med": 14.6
   },
   "rain_gate_open": false,
   "station_available": true,
@@ -295,7 +295,7 @@
     "soil_moisture_7_to_28cm": null,
     "soil_moisture_change_24h": null,
     "convective_inhibition": 0.0,
-    "sst_med": 14.8,
+    "sst_med": 14.6,
     "cloud_cover_low": 14.0,
     "cloud_cover_mid": 0.0,
     "cloud_cover_high": 0.0,
@@ -315,7 +315,7 @@
     {
       "group": "Núvols",
       "icon": "☁️",
-      "contribution": -1.326,
+      "contribution": -1.327,
       "direction": "sec"
     },
     {
@@ -327,7 +327,7 @@
     {
       "group": "Pluja confirmada",
       "icon": "🌧️",
-      "contribution": -0.746,
+      "contribution": -0.747,
       "direction": "sec"
     },
     {
