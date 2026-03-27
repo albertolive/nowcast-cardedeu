@@ -4,7 +4,7 @@
   "will_rain": false,
   "rain_category": "sec",
   "confidence": "Molt Baixa",
-  "timestamp": "2026-03-27T12:30:32.089056",
+  "timestamp": "2026-03-27T12:40:29.493285",
   "conditions": {
     "temperature": null,
     "humidity": null,
@@ -214,16 +214,16 @@
     "cape": 0.0,
     "cape_change_3h": -10.0,
     "cape_diurnal_weighted": 0.0,
-    "tcwv": 11.1,
-    "tcwv_change_3h": -1.200000000000001,
-    "tcwv_change_6h": -2.700000000000001,
+    "tcwv": 11.4,
+    "tcwv_change_3h": -0.9000000000000004,
+    "tcwv_change_6h": -2.4000000000000004,
     "boundary_layer_height": 370.0,
     "blh_change_3h": 150.0,
-    "tcwv_blh_ratio": 3.0,
+    "tcwv_blh_ratio": 3.081081081081081,
     "terrestrial_radiation": 193.2,
     "soil_moisture_28_to_100cm": null,
     "soil_saturation_ratio": null,
-    "tcwv_monthly_anomaly": 0.8671874999999999,
+    "tcwv_monthly_anomaly": 0.890625,
     "shortwave_radiation": 213.42857142857142,
     "radar_dbz": 0.0,
     "radar_rain_rate": 0.0,
@@ -258,7 +258,7 @@
     "local_rain_xema_3h": null,
     "ensemble_rain_agreement": 0.0,
     "ensemble_precip_spread": 0.0,
-    "ensemble_temp_spread": 0.5678908345800273,
+    "ensemble_temp_spread": 0.5356071321407138,
     "ensemble_max_precip": 0.0,
     "ensemble_min_precip": 0.0,
     "ensemble_models_rain": 0.0,
@@ -315,25 +315,25 @@
     {
       "group": "Núvols",
       "icon": "☁️",
-      "contribution": -1.319,
+      "contribution": -1.326,
       "direction": "sec"
     },
     {
       "group": "Models globals",
       "icon": "🌐",
-      "contribution": -0.973,
+      "contribution": -0.975,
       "direction": "sec"
     },
     {
       "group": "Pluja confirmada",
       "icon": "🌧️",
-      "contribution": -0.742,
+      "contribution": -0.746,
       "direction": "sec"
     },
     {
       "group": "Acord entre models",
       "icon": "🤝",
-      "contribution": -0.347,
+      "contribution": -0.351,
       "direction": "sec"
     },
     {
