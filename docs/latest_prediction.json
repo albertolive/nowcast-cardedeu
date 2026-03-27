@@ -4,11 +4,11 @@
   "will_rain": false,
   "rain_category": "sec",
   "confidence": "Molt Baixa",
-  "timestamp": "2026-03-27T09:30:30.134034",
+  "timestamp": "2026-03-27T09:40:26.535350",
   "conditions": {
     "temperature": null,
     "humidity": null,
-    "pressure": "1017.1",
+    "pressure": "1016.8",
     "wind_speed": null,
     "wind_dir": "---",
     "rain_today": "-0.2",
@@ -103,11 +103,11 @@
     "month_sin": 1.0,
     "month_cos": 6.123233995736766e-17,
     "hours_since_sunrise": 2.2770910025847124,
-    "pressure_msl": 1017.132,
-    "pressure_change_1h": 0.15399999999988268,
-    "pressure_change_3h": 0.42987234042550426,
-    "pressure_change_6h": 0.7524081632652724,
-    "pressure_accel_3h": 0.049698427381940746,
+    "pressure_msl": 1017.0787878787878,
+    "pressure_change_1h": 0.10078787878774165,
+    "pressure_change_3h": 0.37666021921336323,
+    "pressure_change_6h": 0.6991960420531314,
+    "pressure_accel_3h": -0.003513693830200282,
     "temperature_2m": 0.0,
     "relative_humidity_2m": 0.0,
     "dew_point": 0.0,
@@ -310,36 +310,36 @@
     "visibility": 36420.0,
     "freezing_level_height": 1840.0
   },
-  "pressure_change_3h": 0.42987234042550426,
+  "pressure_change_3h": 0.37666021921336323,
   "top_drivers": [
     {
       "group": "Núvols",
       "icon": "☁️",
-      "contribution": -1.659,
+      "contribution": -1.655,
       "direction": "sec"
     },
     {
       "group": "Models globals",
       "icon": "🌐",
-      "contribution": -0.933,
+      "contribution": -0.932,
       "direction": "sec"
     },
     {
       "group": "Pluja confirmada",
       "icon": "🌧️",
-      "contribution": -0.686,
+      "contribution": -0.683,
       "direction": "sec"
     },
     {
       "group": "Humitat",
       "icon": "💧",
-      "contribution": -0.304,
+      "contribution": -0.306,
       "direction": "sec"
     },
     {
       "group": "Acord entre models",
       "icon": "🤝",
-      "contribution": -0.291,
+      "contribution": -0.29,
       "direction": "sec"
     },
     {
