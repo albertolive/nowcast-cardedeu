@@ -4,7 +4,7 @@
   "will_rain": false,
   "rain_category": "sec",
   "confidence": "Molt Baixa",
-  "timestamp": "2026-03-27T10:10:26.990777",
+  "timestamp": "2026-03-27T10:20:29.588861",
   "conditions": {
     "temperature": null,
     "humidity": null,
@@ -95,7 +95,7 @@
   "features_used": 211,
   "threshold": 0.3744394618834081,
   "calibrated": true,
-  "raw_probability": 0.003,
+  "raw_probability": 0.0031,
   "physical_adjustments": [],
   "feature_vector": {
     "hour_sin": 0.49999999999999994,
@@ -103,23 +103,23 @@
     "month_sin": 1.0,
     "month_cos": 6.123233995736766e-17,
     "hours_since_sunrise": 3.2770910025847124,
-    "pressure_msl": 1017.0571428571428,
-    "pressure_change_1h": -0.009523809523898308,
-    "pressure_change_3h": 0.06825396825388452,
-    "pressure_change_6h": 0.44012158054704287,
-    "pressure_accel_3h": -0.2962850388383913,
+    "pressure_msl": 1017.0,
+    "pressure_change_1h": null,
+    "pressure_change_3h": 0.01111111111106311,
+    "pressure_change_6h": 0.38297872340422145,
+    "pressure_accel_3h": null,
     "temperature_2m": 0.0,
     "relative_humidity_2m": 0.0,
     "dew_point": 0.0,
     "dew_point_depression": 0.0,
-    "humidity_change_1h": 0.0,
+    "humidity_change_1h": null,
     "humidity_change_3h": -88.4888888888889,
     "vapour_pressure_deficit": 0.54,
     "vpd_change_3h": 0.47000000000000003,
     "wind_speed_10m": 0.0,
     "wind_u": null,
     "wind_v": null,
-    "wind_speed_change_1h": 0.0,
+    "wind_speed_change_1h": null,
     "wind_speed_change_3h": -1.848888888888889,
     "is_sea_breeze": 0.0,
     "llevantada_strength": 0.0,
@@ -310,37 +310,37 @@
     "visibility": 40580.0,
     "freezing_level_height": 1830.0
   },
-  "pressure_change_3h": 0.06825396825388452,
+  "pressure_change_3h": 0.01111111111106311,
   "top_drivers": [
     {
       "group": "Núvols",
       "icon": "☁️",
-      "contribution": -1.791,
+      "contribution": -1.846,
       "direction": "sec"
     },
     {
       "group": "Models globals",
       "icon": "🌐",
-      "contribution": -0.931,
+      "contribution": -0.927,
       "direction": "sec"
     },
     {
       "group": "Pluja confirmada",
       "icon": "🌧️",
-      "contribution": -0.718,
+      "contribution": -0.726,
       "direction": "sec"
     },
     {
       "group": "Capa límit",
       "icon": "🏔️",
-      "contribution": 0.425,
+      "contribution": 0.413,
       "direction": "pluja"
     },
     {
-      "group": "Terra",
-      "icon": "🌱",
-      "contribution": 0.296,
-      "direction": "pluja"
+      "group": "Acord entre models",
+      "icon": "🤝",
+      "contribution": -0.272,
+      "direction": "sec"
     },
     {
       "group": "Base (climatologia)",
