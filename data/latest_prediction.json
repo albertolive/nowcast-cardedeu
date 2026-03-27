@@ -4,7 +4,7 @@
   "will_rain": false,
   "rain_category": "sec",
   "confidence": "Molt Baixa",
-  "timestamp": "2026-03-27T11:50:28.489993",
+  "timestamp": "2026-03-27T12:00:38.387262",
   "conditions": {
     "temperature": 6.4,
     "humidity": 84,
@@ -69,26 +69,26 @@
     "wind_dir_change_3h": 39.0
   },
   "pressure_levels": {
-    "temp_925": 4.8,
-    "rh_925": 47,
-    "wind_925_speed_kmh": 10.6,
-    "wind_925_dir": 233,
-    "wind_850_dir": 306,
-    "wind_850_speed_kmh": 10.8,
-    "temp_850": 1.6,
+    "temp_925": 5.6,
+    "rh_925": 57,
+    "wind_925_speed_kmh": 10.4,
+    "wind_925_dir": 216,
+    "wind_850_dir": 307,
+    "wind_850_speed_kmh": 9.8,
+    "temp_850": 1.7,
     "rh_850": 37,
-    "rh_700": 50,
-    "temp_700": -6.8,
-    "temp_500": -16.1,
-    "wind_300_speed_kmh": 128.5,
-    "wind_300_dir": 352,
+    "rh_700": 44,
+    "temp_700": -6.5,
+    "temp_500": -16.6,
+    "wind_300_speed_kmh": 126.3,
+    "wind_300_dir": 351,
     "gph_300": 9224.19,
-    "vt_index": 17.700000000000003,
-    "tt_index": 22.29032867238925,
-    "li_index": 9.527093880615105
+    "vt_index": 18.3,
+    "tt_index": 23.4796700662419,
+    "li_index": 8.932156718535097
   },
   "sst": {
-    "sst_med": 14.6
+    "sst_med": 14.7
   },
   "rain_gate_open": false,
   "station_available": true,
@@ -258,7 +258,7 @@
     "local_rain_xema_3h": null,
     "ensemble_rain_agreement": 0.0,
     "ensemble_precip_spread": 0.0,
-    "ensemble_temp_spread": 0.7119515432949071,
+    "ensemble_temp_spread": 0.683282518435822,
     "ensemble_max_precip": 0.0,
     "ensemble_min_precip": 0.0,
     "ensemble_models_rain": 0.0,
@@ -295,7 +295,7 @@
     "soil_moisture_7_to_28cm": null,
     "soil_moisture_change_24h": null,
     "convective_inhibition": 0.0,
-    "sst_med": 14.6,
+    "sst_med": 14.7,
     "cloud_cover_low": 14.0,
     "cloud_cover_mid": 0.0,
     "cloud_cover_high": 0.0,
@@ -321,19 +321,19 @@
     {
       "group": "Models globals",
       "icon": "🌐",
-      "contribution": -0.973,
+      "contribution": -0.972,
       "direction": "sec"
     },
     {
       "group": "Pluja confirmada",
       "icon": "🌧️",
-      "contribution": -0.749,
+      "contribution": -0.747,
       "direction": "sec"
     },
     {
       "group": "Acord entre models",
       "icon": "🤝",
-      "contribution": -0.344,
+      "contribution": -0.343,
       "direction": "sec"
     },
     {
