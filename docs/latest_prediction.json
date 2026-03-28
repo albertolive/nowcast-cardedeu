@@ -4,13 +4,13 @@
   "will_rain": false,
   "rain_category": "sec",
   "confidence": "Molt Baixa",
-  "timestamp": "2026-03-28T21:00:35.623995",
+  "timestamp": "2026-03-28T21:02:01.805478",
   "conditions": {
     "temperature": "14.3",
     "humidity": 59,
     "pressure": "1018.5",
     "wind_speed": "4.8",
-    "wind_dir": "NE",
+    "wind_dir": "ENE",
     "rain_today": "0.0",
     "solar_radiation": 0
   },
@@ -95,7 +95,7 @@
   "features_used": 211,
   "threshold": 0.3744394618834081,
   "calibrated": true,
-  "raw_probability": 0.3053,
+  "raw_probability": 0.3076,
   "physical_adjustments": [],
   "feature_vector": {
     "hour_sin": -0.8660254037844386,
@@ -103,11 +103,11 @@
     "month_sin": 1.0,
     "month_cos": 6.123233995736766e-17,
     "hours_since_sunrise": 13.300944074544354,
-    "pressure_msl": 1018.4177777777777,
-    "pressure_change_1h": 0.10908212560389074,
-    "pressure_change_3h": 0.8866666666665424,
-    "pressure_change_6h": 0.2177777777777692,
-    "pressure_accel_3h": 0.09842555994725899,
+    "pressure_msl": 1018.4200000000001,
+    "pressure_change_1h": 0.11130434782626253,
+    "pressure_change_3h": 0.8888888888889142,
+    "pressure_change_6h": 0.22000000000014097,
+    "pressure_accel_3h": 0.10064778216963077,
     "temperature_2m": 14.024444444444445,
     "relative_humidity_2m": 64.84444444444445,
     "dew_point": 7.510993456721164,
@@ -310,12 +310,12 @@
     "visibility": 38260.0,
     "freezing_level_height": 2130.0
   },
-  "pressure_change_3h": 0.8866666666665424,
+  "pressure_change_3h": 0.8888888888889142,
   "top_drivers": [
     {
       "group": "Núvols",
       "icon": "☁️",
-      "contribution": 1.371,
+      "contribution": 1.374,
       "direction": "pluja"
     },
     {
@@ -327,19 +327,19 @@
     {
       "group": "Pluja confirmada",
       "icon": "🌧️",
-      "contribution": -0.579,
+      "contribution": -0.576,
       "direction": "sec"
     },
     {
       "group": "Acord entre models",
       "icon": "🤝",
-      "contribution": 0.372,
+      "contribution": 0.373,
       "direction": "pluja"
     },
     {
       "group": "Terra",
       "icon": "🌱",
-      "contribution": 0.368,
+      "contribution": 0.367,
       "direction": "pluja"
     },
     {
