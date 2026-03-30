@@ -4,15 +4,15 @@
   "will_rain": false,
   "rain_category": "sec",
   "confidence": "Molt Baixa",
-  "timestamp": "2026-03-30T15:00:35.312357",
+  "timestamp": "2026-03-30T15:02:02.190456",
   "conditions": {
-    "temperature": "19.6",
-    "humidity": 30,
-    "pressure": "1022.6",
-    "wind_speed": "3.2",
+    "temperature": "19.4",
+    "humidity": 31,
+    "pressure": "1022.5",
+    "wind_speed": "6.4",
     "wind_dir": "SSO",
     "rain_today": "0.0",
-    "solar_radiation": 798
+    "solar_radiation": 779
   },
   "radar": {
     "dbz": 0.0,
@@ -55,8 +55,8 @@
     "prob_storm": 0
   },
   "bias": {
-    "temp": -0.6000000000000014,
-    "humidity": 2.0
+    "temp": -0.3999999999999986,
+    "humidity": 1.0
   },
   "wind_regime": {
     "level": "850hPa",
@@ -165,7 +165,7 @@
     "rain_accum_6h": 0.0,
     "rained_last_3h": 0.0,
     "rain_accum_24h": 0.0,
-    "pressure_min_24h": 1020.1295454545456,
+    "pressure_min_24h": 1020.1302325581395,
     "cloud_cover": 100.0,
     "cloud_change_1h": 36.0,
     "cloud_change_3h": 54.0,
@@ -264,8 +264,8 @@
     "ensemble_models_rain": 0.0,
     "ensemble_surprise_rain": null,
     "nwp_isolated_rain": null,
-    "forecast_temp_bias": -0.6000000000000014,
-    "forecast_humidity_bias": 2.0,
+    "forecast_temp_bias": -0.3999999999999986,
+    "forecast_humidity_bias": 1.0,
     "aemet_prob_precip": 0.0,
     "aemet_prob_storm": 0.0,
     "aemet_precip_today": 0.0,
