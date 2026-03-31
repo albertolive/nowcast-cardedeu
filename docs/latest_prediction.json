@@ -4,15 +4,15 @@
   "will_rain": false,
   "rain_category": "sec",
   "confidence": "Molt Baixa",
-  "timestamp": "2026-03-31T10:25:11.511524",
+  "timestamp": "2026-03-31T10:26:44.669456",
   "conditions": {
     "temperature": "11.9",
     "humidity": 70,
     "pressure": "1020.6",
-    "wind_speed": "8.0",
+    "wind_speed": "4.8",
     "wind_dir": "ENE",
     "rain_today": "0.0",
-    "solar_radiation": 141
+    "solar_radiation": 156
   },
   "radar": {
     "dbz": 0.0,
@@ -116,11 +116,11 @@
     "humidity_change_3h": -14.555555555555557,
     "vapour_pressure_deficit": 0.22,
     "vpd_change_3h": -0.01999999999999999,
-    "wind_speed_10m": 10.383333333333333,
-    "wind_u": -9.592949145908861,
-    "wind_v": -3.9735296393908492,
-    "wind_speed_change_1h": 2.177210884353741,
-    "wind_speed_change_3h": 6.783333333333333,
+    "wind_speed_10m": 10.288888888888888,
+    "wind_u": -9.505693856727238,
+    "wind_v": -3.937387315223035,
+    "wind_speed_change_1h": 2.082766439909296,
+    "wind_speed_change_3h": 6.688888888888888,
     "is_sea_breeze": 1.0,
     "llevantada_strength": 0.0,
     "llevantada_moisture": 0.0,
@@ -158,7 +158,7 @@
     "deep_layer_shear": 116.9,
     "bulk_richardson": 0.0,
     "jet_speed_300": 123.7,
-    "wind_shear_speed": 3.583333333333333,
+    "wind_shear_speed": 3.488888888888888,
     "wind_shear_dir": -30.5,
     "precipitation": 0.0,
     "rain_accum_3h": 0.0,
@@ -196,7 +196,7 @@
     "sunshine_duration": 3600.0,
     "sunshine_accum_3h": 6048.49,
     "wind_speed_100m": 6.3,
-    "boundary_layer_shear": -4.083333333333333,
+    "boundary_layer_shear": -3.988888888888888,
     "wind_dir_shear_100m": 81.5,
     "snowfall": 0.0,
     "nwp_lifted_index": 7.2,
@@ -306,7 +306,7 @@
     "diffuse_radiation": 88.0,
     "diffuse_fraction": 0.5365853658536586,
     "wind_gusts_10m": 9.4,
-    "gust_factor": 0.9052969502407705,
+    "gust_factor": 0.9136069114470844,
     "visibility": 27260.0,
     "freezing_level_height": 2120.0
   },
@@ -315,7 +315,7 @@
     {
       "group": "Models globals",
       "icon": "🌐",
-      "contribution": -0.808,
+      "contribution": -0.809,
       "direction": "sec"
     },
     {
@@ -339,7 +339,7 @@
     {
       "group": "Vent",
       "icon": "💨",
-      "contribution": 0.309,
+      "contribution": 0.308,
       "direction": "pluja"
     },
     {
