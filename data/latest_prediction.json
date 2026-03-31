@@ -4,13 +4,13 @@
   "will_rain": false,
   "rain_category": "sec",
   "confidence": "Molt Baixa",
-  "timestamp": "2026-03-31T11:29:09.873571",
+  "timestamp": "2026-03-31T11:30:45.101822",
   "conditions": {
-    "temperature": "15.2",
-    "humidity": 57,
-    "pressure": "1021.1",
-    "wind_speed": "11.3",
-    "wind_dir": "NE",
+    "temperature": "15.0",
+    "humidity": 56,
+    "pressure": "1021.0",
+    "wind_speed": "8.0",
+    "wind_dir": "ENE",
     "rain_today": "0.0",
     "solar_radiation": 733
   },
@@ -55,7 +55,7 @@
     "prob_storm": 0
   },
   "bias": {
-    "temp": -2.0,
+    "temp": -0.8000000000000007,
     "humidity": 19.0
   },
   "wind_regime": {
@@ -264,7 +264,7 @@
     "ensemble_models_rain": 2.0,
     "ensemble_surprise_rain": null,
     "nwp_isolated_rain": null,
-    "forecast_temp_bias": -2.0,
+    "forecast_temp_bias": -0.8000000000000007,
     "forecast_humidity_bias": 19.0,
     "aemet_prob_precip": 5.0,
     "aemet_prob_storm": 0.0,
