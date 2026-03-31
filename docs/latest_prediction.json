@@ -4,7 +4,7 @@
   "will_rain": false,
   "rain_category": "sec",
   "confidence": "Molt Baixa",
-  "timestamp": "2026-03-31T04:23:45.221592",
+  "timestamp": "2026-03-31T04:30:44.682635",
   "conditions": {
     "temperature": null,
     "humidity": null,
@@ -55,7 +55,7 @@
     "prob_storm": 0
   },
   "bias": {
-    "temp": 9.2,
+    "temp": 8.0,
     "humidity": null
   },
   "wind_regime": {
@@ -264,7 +264,7 @@
     "ensemble_models_rain": 0.0,
     "ensemble_surprise_rain": null,
     "nwp_isolated_rain": null,
-    "forecast_temp_bias": 9.2,
+    "forecast_temp_bias": 8.0,
     "forecast_humidity_bias": null,
     "aemet_prob_precip": 0.0,
     "aemet_prob_storm": 0.0,
