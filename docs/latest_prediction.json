@@ -4,15 +4,15 @@
   "will_rain": false,
   "rain_category": "sec",
   "confidence": "Molt Baixa",
-  "timestamp": "2026-03-31T10:55:14.447974",
+  "timestamp": "2026-03-31T10:56:59.847090",
   "conditions": {
     "temperature": "12.9",
     "humidity": 62,
     "pressure": "1020.7",
-    "wind_speed": "9.7",
-    "wind_dir": "NE",
+    "wind_speed": "3.2",
+    "wind_dir": "ENE",
     "rain_today": "0.0",
-    "solar_radiation": 192
+    "solar_radiation": 202
   },
   "radar": {
     "dbz": 0.0,
@@ -278,10 +278,10 @@
     "lightning_has_activity": 0.0,
     "aemet_radar_dbz": 0.0,
     "aemet_radar_has_echo": 0.0,
-    "aemet_radar_nearest_echo_km": 38.9,
+    "aemet_radar_nearest_echo_km": 40.0,
     "aemet_radar_max_dbz_20km": 0.0,
-    "aemet_radar_coverage_20km": 0.0005,
-    "aemet_radar_echoes_found": 1.0,
+    "aemet_radar_coverage_20km": 0.0,
+    "aemet_radar_echoes_found": 0.0,
     "smc_prob_precip_1h": null,
     "smc_prob_precip_6h": null,
     "smc_precip_intensity": null,
