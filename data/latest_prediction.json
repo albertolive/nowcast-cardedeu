@@ -4,7 +4,7 @@
   "will_rain": false,
   "rain_category": "sec",
   "confidence": "Molt Baixa",
-  "timestamp": "2026-03-31T05:50:28.368943",
+  "timestamp": "2026-03-31T05:52:15.149175",
   "conditions": {
     "temperature": "6.1",
     "humidity": 86,
@@ -70,7 +70,7 @@
   },
   "pressure_levels": {
     "temp_925": 8.3,
-    "rh_925": 74,
+    "rh_925": 66,
     "wind_925_speed_kmh": 18.2,
     "wind_925_dir": 239,
     "wind_850_dir": 290,
@@ -130,7 +130,7 @@
     "wind_dir_change_3h": -12.0,
     "has_pressure_levels": 1.0,
     "temp_925": 8.3,
-    "rh_925": 74.0,
+    "rh_925": 66.0,
     "wind_925_speed": 18.2,
     "wind_925_dir": 239.0,
     "wind_850_speed": 19.9,
@@ -152,7 +152,7 @@
     "li_unstable": 0.0,
     "k_index": 6.0121720335004625,
     "moisture_flux_850": 102.78684520050065,
-    "moisture_flux_925": 147.38097643268614,
+    "moisture_flux_925": 131.44789789942277,
     "theta_e_deficit": 8.281939220188569,
     "inversion_925": 2.200000000000002,
     "deep_layer_shear": 142.2,
@@ -315,7 +315,7 @@
     {
       "group": "Núvols",
       "icon": "☁️",
-      "contribution": -2.212,
+      "contribution": -2.219,
       "direction": "sec"
     },
     {
@@ -327,13 +327,13 @@
     {
       "group": "Pluja confirmada",
       "icon": "🌧️",
-      "contribution": -0.838,
+      "contribution": -0.841,
       "direction": "sec"
     },
     {
       "group": "Terra",
       "icon": "🌱",
-      "contribution": 0.308,
+      "contribution": 0.307,
       "direction": "pluja"
     },
     {
