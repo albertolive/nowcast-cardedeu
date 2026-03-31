@@ -1,10 +1,10 @@
 {
-  "probability": 0.0003,
-  "probability_pct": 0.0,
+  "probability": 0.0009,
+  "probability_pct": 0.1,
   "will_rain": false,
   "rain_category": "sec",
   "confidence": "Molt Baixa",
-  "timestamp": "2026-03-31T06:52:15.296188",
+  "timestamp": "2026-03-31T07:01:29.299178",
   "conditions": {
     "temperature": "5.7",
     "humidity": 88,
@@ -45,9 +45,9 @@
     "raining": 0
   },
   "ensemble": {
-    "rain_agreement": 0.0,
-    "precip_spread_mm": 0.0,
-    "models_rain": 0,
+    "rain_agreement": 0.25,
+    "precip_spread_mm": 0.1,
+    "models_rain": 1,
     "total_models": 4
   },
   "aemet": {
@@ -69,33 +69,33 @@
     "wind_dir_change_3h": 13.0
   },
   "pressure_levels": {
-    "temp_925": 8.3,
-    "rh_925": 78,
-    "wind_925_speed_kmh": 20.8,
-    "wind_925_dir": 238,
-    "wind_850_dir": 307,
-    "wind_850_speed_kmh": 17.6,
-    "temp_850": 5.2,
-    "rh_850": 61,
-    "rh_700": 33,
+    "temp_925": 7.8,
+    "rh_925": 93,
+    "wind_925_speed_kmh": 28.8,
+    "wind_925_dir": 229,
+    "wind_850_dir": 310,
+    "wind_850_speed_kmh": 15.5,
+    "temp_850": 4.5,
+    "rh_850": 68,
+    "rh_700": 27,
     "temp_700": -2.1,
-    "temp_500": -18.2,
-    "wind_300_speed_kmh": 165.0,
-    "wind_300_dir": 352,
-    "gph_300": 9264.52,
-    "vt_index": 23.4,
-    "tt_index": 39.89758707129014,
-    "li_index": 0.8786461411371853
+    "temp_500": -18.4,
+    "wind_300_speed_kmh": 148.1,
+    "wind_300_dir": 355,
+    "gph_300": 9253.23,
+    "vt_index": 22.9,
+    "tt_index": 40.41156172945526,
+    "li_index": 0.6595081785087515
   },
   "sst": {
     "sst_med": 14.4
   },
-  "rain_gate_open": false,
+  "rain_gate_open": true,
   "station_available": true,
   "features_used": 211,
   "threshold": 0.3744394618834081,
   "calibrated": true,
-  "raw_probability": 0.0011,
+  "raw_probability": 0.0026,
   "physical_adjustments": [],
   "feature_vector": {
     "hour_sin": 1.0,
@@ -256,12 +256,12 @@
     "sentinel_raining": 0.0,
     "local_rain_xema": null,
     "local_rain_xema_3h": null,
-    "ensemble_rain_agreement": 0.0,
-    "ensemble_precip_spread": 0.0,
-    "ensemble_temp_spread": 0.9027735042633893,
-    "ensemble_max_precip": 0.0,
+    "ensemble_rain_agreement": 0.25,
+    "ensemble_precip_spread": 0.1,
+    "ensemble_temp_spread": 0.44999999999999984,
+    "ensemble_max_precip": 0.1,
     "ensemble_min_precip": 0.0,
-    "ensemble_models_rain": 0.0,
+    "ensemble_models_rain": 1.0,
     "ensemble_surprise_rain": null,
     "nwp_isolated_rain": null,
     "forecast_temp_bias": 2.3,
@@ -269,13 +269,13 @@
     "aemet_prob_precip": 0.0,
     "aemet_prob_storm": 0.0,
     "aemet_precip_today": 0.0,
-    "lightning_count_30km": null,
-    "lightning_count_15km": null,
-    "lightning_nearest_km": null,
-    "lightning_cloud_ground": null,
-    "lightning_max_current_ka": null,
-    "lightning_approaching": null,
-    "lightning_has_activity": null,
+    "lightning_count_30km": 0.0,
+    "lightning_count_15km": 0.0,
+    "lightning_nearest_km": 40.0,
+    "lightning_cloud_ground": 0.0,
+    "lightning_max_current_ka": 0.0,
+    "lightning_approaching": 0.0,
+    "lightning_has_activity": 0.0,
     "aemet_radar_dbz": 0.0,
     "aemet_radar_has_echo": 0.0,
     "aemet_radar_nearest_echo_km": 40.0,
@@ -315,32 +315,32 @@
     {
       "group": "Núvols",
       "icon": "☁️",
-      "contribution": -1.708,
+      "contribution": -1.573,
       "direction": "sec"
     },
     {
       "group": "Models globals",
       "icon": "🌐",
-      "contribution": -0.975,
+      "contribution": -0.94,
       "direction": "sec"
     },
     {
       "group": "Pluja confirmada",
       "icon": "🌧️",
-      "contribution": -0.815,
-      "direction": "sec"
-    },
-    {
-      "group": "Acord entre models",
-      "icon": "🤝",
-      "contribution": -0.356,
+      "contribution": -0.774,
       "direction": "sec"
     },
     {
       "group": "Terra",
       "icon": "🌱",
-      "contribution": 0.301,
+      "contribution": 0.298,
       "direction": "pluja"
+    },
+    {
+      "group": "Inestabilitat",
+      "icon": "⚡",
+      "contribution": -0.265,
+      "direction": "sec"
     },
     {
       "group": "Base (climatologia)",
