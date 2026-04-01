@@ -2,18 +2,18 @@
   "current_state": "clear",
   "last_alert_time": 1774483244.549866,
   "last_alert_type": "regime_change",
-  "last_probability": 0.0841,
+  "last_probability": 0.125,
   "consecutive_high": 0,
   "consecutive_low": 0,
   "last_wind_regime": {
     "level": "850hPa",
-    "is_tramuntana": true,
+    "is_tramuntana": false,
     "is_llevantada": false,
     "is_migjorn": false,
     "is_garbi": false,
-    "is_ponent": false,
+    "is_ponent": true,
     "llevantada_strength": 0.0,
-    "wind_dir_change_3h": 14.0
+    "wind_dir_change_3h": -61.0
   },
   "last_regime_alert_time": 1774483244.549866,
   "last_regime_alert_type": "backing_wind"
