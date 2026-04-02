@@ -42,10 +42,15 @@ if [ -n "$GIT_TOKEN" ] && [ -n "$GIT_REPO" ]; then
     cp -f "$REPO_DIR/data/latest_prediction.json" /app/data/latest_prediction.json 2>/dev/null || true
     cp -f "$REPO_DIR/data/notification_state.json" /app/data/notification_state.json 2>/dev/null || true
     cp -f "$REPO_DIR/data/aemet_cache.json" /app/data/aemet_cache.json 2>/dev/null || true
+    cp -f "$REPO_DIR/data/meteocat_cache.json" /app/data/meteocat_cache.json 2>/dev/null || true
 fi
 
 echo "🌦️  Nowcast Cardedeu — Container started ($(date))"
 echo "   Predict every 10 min (24/7) | Daily summary 7:00 | Accuracy report Mon 8:00"
+
+# Track last prediction time to enforce minimum interval
+LAST_PREDICT_EPOCH=0
+MIN_INTERVAL_SECS=480  # 8 minutes minimum between predictions
 
 while true; do
     HOUR=$(TZ=Europe/Madrid date +%H)
@@ -95,6 +100,16 @@ while true; do
     fi
 
     # ── Prediction (every 10 min, 24/7) ──
+    # Enforce minimum interval to prevent rapid-fire predictions
+    # (can happen if git push exceeds 10-min window on low CPU)
+    now_epoch=$(date +%s)
+    elapsed=$(( now_epoch - LAST_PREDICT_EPOCH ))
+    if [ "$elapsed" -lt "$MIN_INTERVAL_SECS" ]; then
+        remaining=$(( MIN_INTERVAL_SECS - elapsed ))
+        echo "⏳ Massa aviat (${elapsed}s des de l'última predicció, mínim ${MIN_INTERVAL_SECS}s). Esperant ${remaining}s..."
+        sleep "$remaining"
+    fi
+    LAST_PREDICT_EPOCH=$(date +%s)
     python scripts/predict_now.py || {
         echo "⚠️  predict_now.py failed (exit $?)"
         notify_failure "predict_now"
@@ -112,11 +127,22 @@ while true; do
                 git fetch origin main
                 git reset --hard origin/main
 
+                # Truncate JSONL to last 30 days (~4320 lines at 10-min cadence)
+                # to prevent unbounded growth that slows git operations on low-CPU containers
+                MAX_JSONL_LINES=5000
+                JSONL_FILE=/app/data/predictions_log.jsonl
+                line_count=$(wc -l < "$JSONL_FILE" 2>/dev/null || echo 0)
+                if [ "$line_count" -gt "$MAX_JSONL_LINES" ]; then
+                    echo "✂️  Truncating JSONL: ${line_count} → ${MAX_JSONL_LINES} lines"
+                    tail -n "$MAX_JSONL_LINES" "$JSONL_FILE" > "${JSONL_FILE}.tmp" && mv "${JSONL_FILE}.tmp" "$JSONL_FILE"
+                fi
+
                 # Copy updated data files from app into repo clone
                 cp -f /app/data/latest_prediction.json data/latest_prediction.json
                 cp -f /app/data/predictions_log.jsonl data/predictions_log.jsonl
                 cp -f /app/data/notification_state.json data/notification_state.json
                 cp -f /app/data/aemet_cache.json data/aemet_cache.json 2>/dev/null || true
+                cp -f /app/data/meteocat_cache.json data/meteocat_cache.json 2>/dev/null || true
 
                 # Copy to docs/ for dashboard
                 cp -f /app/data/latest_prediction.json docs/latest_prediction.json
@@ -124,6 +150,7 @@ while true; do
 
                 git add data/predictions_log.jsonl data/notification_state.json \
                         data/latest_prediction.json data/aemet_cache.json \
+                        data/meteocat_cache.json \
                         docs/latest_prediction.json docs/predictions_log.jsonl 2>/dev/null || true
                 git diff --cached --quiet || git commit -m "📊 Prediction $(date -u +%Y-%m-%dT%H:%M)"
                 git push origin main
@@ -138,7 +165,9 @@ while true; do
     now=$(date +%s)
     next=$(( (now / 600 + 1) * 600 ))
     sleep_secs=$(( next - $(date +%s) ))
-    [ "$sleep_secs" -le 0 ] && sleep_secs=60
+    # Minimum sleep of 480s prevents rapid-fire if cycle exceeds 10 min
+    [ "$sleep_secs" -lt 120 ] && sleep_secs=$(( next + 600 - $(date +%s) ))
+    [ "$sleep_secs" -le 0 ] && sleep_secs=480
     echo "⏱️  Next run in ${sleep_secs}s (at $(TZ=Europe/Madrid date -d @$next +%H:%M 2>/dev/null || date -r $next +%H:%M))"
     sleep "$sleep_secs"
 done
