@@ -64,7 +64,7 @@ while true; do
     if [ -d "$REPO_DIR" ]; then
         (
             cd "$REPO_DIR"
-            git fetch origin main 2>/dev/null && git reset --hard origin/main 2>/dev/null
+            timeout 20 git fetch origin main 2>/dev/null && git reset --hard origin/main 2>/dev/null
         ) && {
             cp -rf "$REPO_DIR/src/" /app/src/
             cp -rf "$REPO_DIR/scripts/" /app/scripts/
@@ -116,6 +116,7 @@ while true; do
     }
 
     # Push state files back to GitHub (with retry for concurrent pushes)
+    # Total push budget: max 180s (3 attempts × ~45s each + sleeps)
     if [ -n "$GIT_TOKEN" ] && [ -n "$GIT_REPO" ] && [ -d "$REPO_DIR" ]; then
         push_ok=false
         for attempt in 1 2 3; do
@@ -124,7 +125,7 @@ while true; do
 
                 # Reset any failed rebase state, then pull fresh
                 git rebase --abort 2>/dev/null || true
-                git fetch origin main
+                timeout 30 git fetch origin main
                 git reset --hard origin/main
 
                 # Truncate JSONL to last 30 days (~4320 lines at 10-min cadence)
@@ -153,12 +154,18 @@ while true; do
                         data/meteocat_cache.json \
                         docs/latest_prediction.json docs/predictions_log.jsonl 2>/dev/null || true
                 git diff --cached --quiet || git commit -m "📊 Prediction $(date -u +%Y-%m-%dT%H:%M)"
-                git push origin main
+                timeout 30 git push origin main
             ) && push_ok=true && break
             echo "⚠️  git push attempt $attempt failed, retrying in 5s..."
             sleep 5
         done
         [ "$push_ok" = true ] || echo "⚠️  git sync failed after 3 attempts"
+
+        # Compact git objects to prevent .git growth from repeated fetch/reset cycles
+        # (144 fetches/day on a shallow clone can balloon .git/objects/pack/)
+        if [ "$push_ok" = true ]; then
+            (cd "$REPO_DIR" && git gc --prune=now 2>/dev/null) || true
+        fi
     fi
     
     # Sleep until next 10-minute mark (e.g. :00, :10, :20, :30, :40, :50)
