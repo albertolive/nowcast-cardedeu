@@ -21,6 +21,7 @@ COPY data/notification_state.json data/notification_state.json
 COPY data/predictions_log.jsonl data/predictions_log.jsonl
 COPY data/latest_prediction.json data/latest_prediction.json
 COPY data/aemet_cache.json data/aemet_cache.json
+COPY data/meteocat_cache.json data/meteocat_cache.json
 COPY docs/ docs/
 
 # Entrypoint
