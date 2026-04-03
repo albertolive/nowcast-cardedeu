@@ -1,0 +1,43 @@
+name: "🖥️ Deploy Dashboard"
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "docs/**"
+      - "!docs/latest_prediction.json"
+      - "!docs/predictions_log.jsonl"
+      - "vercel.json"
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Detectar canvis de frontend
+        id: frontend
+        run: |
+          changed=$(git diff --name-only HEAD^ HEAD -- docs vercel.json | grep -Ev '^(docs/latest_prediction\.json|docs/predictions_log\.jsonl)$' || true)
+          if [[ -z "$changed" ]]; then
+            echo "skip=true" >> $GITHUB_OUTPUT
+            echo "Sense canvis de frontend rellevants; saltem deploy."
+          else
+            echo "skip=false" >> $GITHUB_OUTPUT
+            echo "Canvis de frontend detectats:"
+            echo "$changed"
+          fi
+
+      - name: Deploy a Vercel
+        if: steps.frontend.outputs.skip != 'true'
+        run: |
+          npx vercel deploy --prod --yes --token="$VERCEL_TOKEN"
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}

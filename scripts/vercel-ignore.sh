@@ -1,8 +1,10 @@
 #!/bin/bash
 set -euo pipefail
 
-# Si no hi ha commit anterior disponible (primer deploy o shallow edge case),
-# deixem que Vercel construeixi el frontend.
+# Vercel Git integration està desconnectada.
+# Els deploys es fan via GitHub Actions (deploy_dashboard job).
+# Aquest script es manté com a fallback si es reconnecta la integració Git.
+
 if ! git rev-parse --verify HEAD^ >/dev/null 2>&1; then
   echo "No hi ha HEAD^ disponible; fem deploy."
   exit 1

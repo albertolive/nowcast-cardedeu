@@ -7,3 +7,5 @@ data/meteocat_cache/
 venv/
 .venv/
 catboost_info/
+.vercel
+.env*.local
