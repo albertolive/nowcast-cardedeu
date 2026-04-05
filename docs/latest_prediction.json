@@ -4,12 +4,12 @@
   "will_rain": false,
   "rain_category": "sec",
   "confidence": "Molt Baixa",
-  "timestamp": "2026-04-06T01:03:32.536989",
+  "timestamp": "2026-04-06T01:05:43.389766",
   "conditions": {
     "temperature": "13.4",
     "humidity": 66,
     "pressure": "1026.7",
-    "wind_speed": "1.6",
+    "wind_speed": "0.0",
     "wind_dir": "OSO",
     "rain_today": "0.0",
     "solar_radiation": 0
@@ -116,11 +116,11 @@
     "humidity_change_3h": -0.024390243902445263,
     "vapour_pressure_deficit": 0.26,
     "vpd_change_3h": 0.020000000000000018,
-    "wind_speed_10m": 2.4000000000000004,
-    "wind_u": 2.2173108780270887,
-    "wind_v": 0.918440237676215,
-    "wind_speed_change_1h": 0.9361702127659579,
-    "wind_speed_change_3h": 1.7365853658536587,
+    "wind_speed_10m": 1.6,
+    "wind_u": 1.4782072520180591,
+    "wind_v": 0.6122934917841433,
+    "wind_speed_change_1h": 0.13617021276595764,
+    "wind_speed_change_3h": 0.9365853658536586,
     "is_sea_breeze": 0.0,
     "llevantada_strength": 0.0,
     "llevantada_moisture": 0.0,
@@ -158,7 +158,7 @@
     "deep_layer_shear": 25.299999999999997,
     "bulk_richardson": 0.0,
     "jet_speed_300": 27.9,
-    "wind_shear_speed": 0.19999999999999973,
+    "wind_shear_speed": 1.0,
     "wind_shear_dir": 67.5,
     "precipitation": 0.0,
     "rain_accum_3h": 0.0,
@@ -196,7 +196,7 @@
     "sunshine_duration": 0.0,
     "sunshine_accum_3h": 0.0,
     "wind_speed_100m": 4.4,
-    "boundary_layer_shear": 2.0,
+    "boundary_layer_shear": 2.8000000000000003,
     "wind_dir_shear_100m": 31.5,
     "snowfall": 0.0,
     "nwp_lifted_index": 6.5,
@@ -306,7 +306,7 @@
     "diffuse_radiation": 0.0,
     "diffuse_fraction": 0.0,
     "wind_gusts_10m": 11.9,
-    "gust_factor": 4.958333333333333,
+    "gust_factor": 7.4375,
     "visibility": 32440.0,
     "freezing_level_height": 3280.0
   },
@@ -315,7 +315,7 @@
     {
       "group": "Núvols",
       "icon": "☁️",
-      "contribution": -2.147,
+      "contribution": -2.143,
       "direction": "sec"
     },
     {
@@ -327,19 +327,19 @@
     {
       "group": "Pluja confirmada",
       "icon": "🌧️",
-      "contribution": -0.891,
+      "contribution": -0.877,
       "direction": "sec"
     },
     {
       "group": "Terra",
       "icon": "🌱",
-      "contribution": 0.351,
+      "contribution": 0.352,
       "direction": "pluja"
     },
     {
       "group": "Pressió",
       "icon": "📊",
-      "contribution": -0.269,
+      "contribution": -0.27,
       "direction": "sec"
     },
     {
