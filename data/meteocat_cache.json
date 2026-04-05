@@ -68,5 +68,19 @@
       "lightning_approaching": false,
       "lightning_has_activity": false
     }
+  },
+  "lightning_features_20260405_15": {
+    "timestamp": 1775401237.2646523,
+    "data": {
+      "lightning_count_30km": 0,
+      "lightning_count_15km": 0,
+      "lightning_nearest_km": 40,
+      "lightning_nearest_bearing": null,
+      "lightning_nearest_compass": null,
+      "lightning_cloud_ground": 0,
+      "lightning_max_current_ka": 0.0,
+      "lightning_approaching": false,
+      "lightning_has_activity": false
+    }
   }
 }
