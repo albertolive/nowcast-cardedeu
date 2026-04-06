@@ -4,13 +4,13 @@
   "will_rain": false,
   "rain_category": "sec",
   "confidence": "Molt Baixa",
-  "timestamp": "2026-04-06T03:02:21.801851",
+  "timestamp": "2026-04-06T03:04:12.697678",
   "conditions": {
     "temperature": "11.6",
     "humidity": 75,
     "pressure": "1026.8",
     "wind_speed": "1.6",
-    "wind_dir": "OSO",
+    "wind_dir": "SO",
     "rain_today": "0.0",
     "solar_radiation": 0
   },
@@ -117,8 +117,8 @@
     "vapour_pressure_deficit": 0.32,
     "vpd_change_3h": 0.06,
     "wind_speed_10m": 1.6,
-    "wind_u": 1.4782072520180591,
-    "wind_v": 0.6122934917841433,
+    "wind_u": 1.131370849898476,
+    "wind_v": 1.1313708498984762,
     "wind_speed_change_1h": 0.5666666666666667,
     "wind_speed_change_3h": 0.13617021276595764,
     "is_sea_breeze": 0.0,
@@ -159,7 +159,7 @@
     "bulk_richardson": 0.0,
     "jet_speed_300": 26.8,
     "wind_shear_speed": 1.2999999999999998,
-    "wind_shear_dir": 94.5,
+    "wind_shear_dir": 117.0,
     "precipitation": 0.0,
     "rain_accum_3h": 0.0,
     "rain_accum_6h": 0.0,
@@ -197,7 +197,7 @@
     "sunshine_accum_3h": 0.0,
     "wind_speed_100m": 6.7,
     "boundary_layer_shear": 5.1,
-    "wind_dir_shear_100m": 58.5,
+    "wind_dir_shear_100m": 81.0,
     "snowfall": 0.0,
     "nwp_lifted_index": 6.7,
     "gph_850": 1588.0,
@@ -315,13 +315,13 @@
     {
       "group": "Núvols",
       "icon": "☁️",
-      "contribution": -2.076,
+      "contribution": -2.08,
       "direction": "sec"
     },
     {
       "group": "Models globals",
       "icon": "🌐",
-      "contribution": -0.974,
+      "contribution": -0.973,
       "direction": "sec"
     },
     {
@@ -333,13 +333,13 @@
     {
       "group": "Terra",
       "icon": "🌱",
-      "contribution": 0.349,
+      "contribution": 0.352,
       "direction": "pluja"
     },
     {
       "group": "Pressió",
       "icon": "📊",
-      "contribution": -0.286,
+      "contribution": -0.285,
       "direction": "sec"
     },
     {
