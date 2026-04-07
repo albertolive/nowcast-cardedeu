@@ -2,15 +2,15 @@
   "current_state": "rain_alert",
   "last_alert_time": 1775541416.3506284,
   "last_alert_type": "rain_incoming",
-  "last_probability": 0.6545,
+  "last_probability": 0.6154,
   "consecutive_high": 0,
   "consecutive_low": 0,
   "last_wind_regime": {
     "level": "10m",
     "is_tramuntana": false,
     "is_llevantada": false,
-    "is_migjorn": false,
-    "is_garbi": true,
+    "is_migjorn": true,
+    "is_garbi": false,
     "is_ponent": false,
     "llevantada_strength": 0.0,
     "wind_dir_change_3h": 0.0
