@@ -3,9 +3,8 @@ const BRANCH = 'main';
 const RAW_BASE = `https://raw.githubusercontent.com/${REPO}/${BRANCH}/data`;
 const REFRESH_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
 
-// Container serves real-time data via HTTP (set after enabling public access in ClawCloud).
-// Leave empty to use git-based sources only (raw.githubusercontent / local files).
-const CONTAINER_DATA_URL = '';
+// Container serves real-time data via HTTP (ClawCloud public endpoint).
+const CONTAINER_DATA_URL = 'https://lllutzbxivhx.eu-central-1.clawcloudrun.com';
 
 import { deriveRadarViewModel } from './radar_logic.js';
 import { selectDriverExplanations, GROUP_TOOLTIP } from './driver_logic.js';
