@@ -3,6 +3,7 @@ __pycache__/
 .env
 data/raw/
 data/meteocat_cache/
+docs/predictions_log.jsonl
 *.egg-info/
 venv/
 .venv/

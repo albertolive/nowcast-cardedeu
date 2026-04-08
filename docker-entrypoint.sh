@@ -48,6 +48,11 @@ fi
 echo "🌦️  Nowcast Cardedeu — Container started ($(date))"
 echo "   Predict every 10 min (24/7) | Daily summary 7:00 | Accuracy report Mon 8:00"
 
+# Start HTTP data server (serves latest_prediction.json + predictions_log.jsonl
+# on port 80 for the dashboard to fetch directly)
+python scripts/serve_data.py 80 /app/data &
+echo "📡 Data server started on port 80"
+
 # Track last prediction time to enforce minimum interval
 LAST_PREDICT_EPOCH=0
 MIN_INTERVAL_SECS=480  # 8 minutes minimum between predictions
@@ -116,8 +121,10 @@ while true; do
     }
 
     # Push state files back to GitHub (with retry for concurrent pushes)
-    # Total push budget: max 180s (3 attempts × ~45s each + sleeps)
+    # Small files every cycle (~60KB); JSONL only hourly (~13MB) to minimize git bloat.
+    # Dashboard gets real-time data from the HTTP server on port 80.
     if [ -n "$GIT_TOKEN" ] && [ -n "$GIT_REPO" ] && [ -d "$REPO_DIR" ]; then
+        PUSH_MINUTE=$(TZ=Europe/Madrid date +%M)
         push_ok=false
         for attempt in 1 2 3; do
             (
@@ -128,31 +135,31 @@ while true; do
                 timeout 30 git fetch origin main
                 git reset --hard origin/main
 
-                # Truncate JSONL to last 30 days (~4320 lines at 10-min cadence)
-                # to prevent unbounded growth that slows git operations on low-CPU containers
-                MAX_JSONL_LINES=5000
-                JSONL_FILE=/app/data/predictions_log.jsonl
-                line_count=$(wc -l < "$JSONL_FILE" 2>/dev/null || echo 0)
-                if [ "$line_count" -gt "$MAX_JSONL_LINES" ]; then
-                    echo "✂️  Truncating JSONL: ${line_count} → ${MAX_JSONL_LINES} lines"
-                    tail -n "$MAX_JSONL_LINES" "$JSONL_FILE" > "${JSONL_FILE}.tmp" && mv "${JSONL_FILE}.tmp" "$JSONL_FILE"
-                fi
-
-                # Copy updated data files from app into repo clone
+                # Always push small files (latest prediction + state + caches)
                 cp -f /app/data/latest_prediction.json data/latest_prediction.json
-                cp -f /app/data/predictions_log.jsonl data/predictions_log.jsonl
+                cp -f /app/data/latest_prediction.json docs/latest_prediction.json
                 cp -f /app/data/notification_state.json data/notification_state.json
                 cp -f /app/data/aemet_cache.json data/aemet_cache.json 2>/dev/null || true
                 cp -f /app/data/meteocat_cache.json data/meteocat_cache.json 2>/dev/null || true
 
-                # Copy to docs/ for dashboard
-                cp -f /app/data/latest_prediction.json docs/latest_prediction.json
-                cp -f /app/data/predictions_log.jsonl docs/predictions_log.jsonl
+                git add data/latest_prediction.json docs/latest_prediction.json \
+                        data/notification_state.json data/aemet_cache.json \
+                        data/meteocat_cache.json 2>/dev/null || true
 
-                git add data/predictions_log.jsonl data/notification_state.json \
-                        data/latest_prediction.json data/aemet_cache.json \
-                        data/meteocat_cache.json \
-                        docs/latest_prediction.json docs/predictions_log.jsonl 2>/dev/null || true
+                # Push JSONL only hourly (at :00 mark) — this is the big file (~13MB)
+                if [ "${PUSH_MINUTE#0}" -lt 10 ]; then
+                    # Truncate JSONL to ~35 days before pushing
+                    MAX_JSONL_LINES=5000
+                    JSONL_FILE=/app/data/predictions_log.jsonl
+                    line_count=$(wc -l < "$JSONL_FILE" 2>/dev/null || echo 0)
+                    if [ "$line_count" -gt "$MAX_JSONL_LINES" ]; then
+                        echo "✂️  Truncating JSONL: ${line_count} → ${MAX_JSONL_LINES} lines"
+                        tail -n "$MAX_JSONL_LINES" "$JSONL_FILE" > "${JSONL_FILE}.tmp" && mv "${JSONL_FILE}.tmp" "$JSONL_FILE"
+                    fi
+                    cp -f /app/data/predictions_log.jsonl data/predictions_log.jsonl
+                    git add data/predictions_log.jsonl
+                fi
+
                 git diff --cached --quiet || git commit -m "📊 Prediction $(date -u +%Y-%m-%dT%H:%M)"
                 timeout 30 git push origin main
             ) && push_ok=true && break
