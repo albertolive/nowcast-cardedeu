@@ -146,8 +146,11 @@ while true; do
                         data/notification_state.json data/aemet_cache.json \
                         data/meteocat_cache.json 2>/dev/null || true
 
-                # Push JSONL only hourly (at :00 mark) — this is the big file (~13MB)
-                if [ "${PUSH_MINUTE#0}" -lt 10 ]; then
+                # Push JSONL once daily at 3:00 (before retrain cron at 3:00 UTC Sunday).
+                # Dashboard reads JSONL from the HTTP server, not git.
+                # On container restart, startup sync recovers the last pushed version.
+                PUSH_HOUR=$(TZ=Europe/Madrid date +%H)
+                if [ "$PUSH_HOUR" -eq 3 ] && [ "${PUSH_MINUTE#0}" -lt 10 ]; then
                     # Truncate JSONL to ~35 days before pushing
                     MAX_JSONL_LINES=5000
                     JSONL_FILE=/app/data/predictions_log.jsonl
