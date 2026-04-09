@@ -4,11 +4,11 @@
   "will_rain": false,
   "rain_category": "sec",
   "confidence": "Molt Baixa",
-  "timestamp": "2026-04-09T23:40:38.560515",
+  "timestamp": "2026-04-09T23:50:43.339862",
   "conditions": {
-    "temperature": "15.3",
-    "humidity": 62,
-    "pressure": "1019.0",
+    "temperature": "15.1",
+    "humidity": 63,
+    "pressure": "1019.1",
     "wind_speed": "0.0",
     "wind_dir": "N",
     "rain_today": "0.0",
@@ -55,8 +55,8 @@
     "prob_storm": 0
   },
   "bias": {
-    "temp": -1.3000000000000007,
-    "humidity": 8.0
+    "temp": -1.0999999999999996,
+    "humidity": 7.0
   },
   "wind_regime": {
     "level": "850hPa",
@@ -103,17 +103,17 @@
     "month_sin": 0.8660254037844387,
     "month_cos": -0.4999999999999998,
     "hours_since_sunrise": 15.584250349947126,
-    "pressure_msl": 1018.990909090909,
-    "pressure_change_1h": 0.0015473887813186593,
-    "pressure_change_3h": 1.1474308300394114,
-    "pressure_change_6h": 1.2409090909089855,
-    "pressure_accel_3h": -0.27943087208825546,
-    "temperature_2m": 15.681818181818182,
-    "relative_humidity_2m": 60.93939393939394,
-    "dew_point": 8.165395237668564,
-    "dew_point_depression": 7.5164229441496175,
-    "humidity_change_1h": 3.8542875564152155,
-    "humidity_change_3h": 22.78722002635046,
+    "pressure_msl": 1019.01,
+    "pressure_change_1h": 0.020638297872324074,
+    "pressure_change_3h": 1.1665217391304168,
+    "pressure_change_6h": 1.259999999999991,
+    "pressure_accel_3h": -0.26033996299725004,
+    "temperature_2m": 15.594999999999999,
+    "relative_humidity_2m": 61.15,
+    "dew_point": 8.134431213404733,
+    "dew_point_depression": 7.460568786595266,
+    "humidity_change_1h": 4.064893617021276,
+    "humidity_change_3h": 22.997826086956522,
     "vapour_pressure_deficit": 0.51,
     "vpd_change_3h": -0.35,
     "wind_speed_10m": 0.0,
@@ -153,8 +153,8 @@
     "k_index": 27.585875984529658,
     "moisture_flux_850": 102.57638168418309,
     "moisture_flux_925": 93.69632258189468,
-    "theta_e_deficit": 11.019159679461033,
-    "inversion_925": 4.518181818181818,
+    "theta_e_deficit": 10.875101340051579,
+    "inversion_925": 4.605,
     "deep_layer_shear": 74.6,
     "bulk_richardson": 0.0,
     "jet_speed_300": 89.1,
@@ -186,7 +186,7 @@
     "nwp_rain_persistence_6h": 0.0,
     "nwp_rain_trend_3h": 0.0,
     "weather_code_change_3h": 0.0,
-    "cloud_humidity_convergence": -45.57444005270092,
+    "cloud_humidity_convergence": -45.995652173913044,
     "precip_trend_3h": 0.0,
     "showers": 0.0,
     "nwp_showers_fraction": 0.0,
@@ -264,8 +264,8 @@
     "ensemble_models_rain": 0.0,
     "ensemble_surprise_rain": null,
     "nwp_isolated_rain": null,
-    "forecast_temp_bias": -1.3000000000000007,
-    "forecast_humidity_bias": 8.0,
+    "forecast_temp_bias": -1.0999999999999996,
+    "forecast_humidity_bias": 7.0,
     "aemet_prob_precip": 0.0,
     "aemet_prob_storm": 0.0,
     "aemet_precip_today": 0.0,
@@ -288,7 +288,7 @@
     "orographic_forcing": 0.0,
     "frontal_passage": 0.0,
     "convective_composite": 0.2984229040951605,
-    "thermal_buildup": 0.022377814376134134,
+    "thermal_buildup": 0.02254314803219017,
     "low_level_convergence": 1.1147826086956523,
     "dry_intrusion_700": 0.0,
     "soil_moisture_0_to_7cm": null,
@@ -301,7 +301,7 @@
     "cloud_cover_high": 97.0,
     "cloud_low_fraction": 0.0,
     "wet_bulb_temperature_2m": 11.5,
-    "wet_bulb_depression": 4.181818181818182,
+    "wet_bulb_depression": 4.094999999999999,
     "direct_radiation": 0.0,
     "diffuse_radiation": 0.0,
     "diffuse_fraction": 0.0,
@@ -310,7 +310,7 @@
     "visibility": 39320.0,
     "freezing_level_height": 3240.0
   },
-  "pressure_change_3h": 1.1474308300394114,
+  "pressure_change_3h": 1.1665217391304168,
   "top_drivers": [
     {
       "group": "Núvols",
@@ -321,13 +321,13 @@
     {
       "group": "Models globals",
       "icon": "🌐",
-      "contribution": -0.874,
+      "contribution": -0.873,
       "direction": "sec"
     },
     {
       "group": "Pluja confirmada",
       "icon": "🌧️",
-      "contribution": -0.766,
+      "contribution": -0.77,
       "direction": "sec"
     },
     {
@@ -339,7 +339,7 @@
     {
       "group": "Acord entre models",
       "icon": "🤝",
-      "contribution": -0.384,
+      "contribution": -0.382,
       "direction": "sec"
     },
     {
