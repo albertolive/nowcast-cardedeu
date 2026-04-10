@@ -4,15 +4,15 @@
   "will_rain": false,
   "rain_category": "sec",
   "confidence": "Molt Baixa",
-  "timestamp": "2026-04-10T07:20:40.731026",
+  "timestamp": "2026-04-10T07:30:42.256905",
   "conditions": {
-    "temperature": "10.3",
+    "temperature": "10.2",
     "humidity": 78,
-    "pressure": "1018.2",
+    "pressure": "1018.3",
     "wind_speed": "0.0",
     "wind_dir": "SE",
     "rain_today": "0.0",
-    "solar_radiation": 5
+    "solar_radiation": 11
   },
   "radar": {
     "dbz": 0.0,
@@ -55,8 +55,8 @@
     "prob_storm": 0
   },
   "bias": {
-    "temp": 2.0,
-    "humidity": -1.0
+    "temp": 2.4000000000000004,
+    "humidity": -3.0
   },
   "wind_regime": {
     "level": "850hPa",
@@ -103,15 +103,15 @@
     "month_sin": 0.8660254037844387,
     "month_cos": -0.4999999999999998,
     "hours_since_sunrise": 0.0,
-    "pressure_msl": 1018.2714285714285,
-    "pressure_change_1h": -0.004081632653196721,
-    "pressure_change_3h": -0.255654761904907,
-    "pressure_change_6h": -1.000310559006266,
-    "pressure_accel_3h": 0.3433031191198097,
-    "temperature_2m": 10.314285714285715,
+    "pressure_msl": 1018.2523809523809,
+    "pressure_change_1h": -0.023129251700765963,
+    "pressure_change_3h": -0.27470238095247623,
+    "pressure_change_6h": -1.0193581780538352,
+    "pressure_accel_3h": 0.32425550007224047,
+    "temperature_2m": 10.304761904761905,
     "relative_humidity_2m": 78.0,
-    "dew_point": 6.646365183899313,
-    "dew_point_depression": 3.667920530386402,
+    "dew_point": 6.637120984187501,
+    "dew_point_depression": 3.6676409205744047,
     "humidity_change_1h": 0.6326530612244881,
     "humidity_change_3h": 3.1666666666666714,
     "vapour_pressure_deficit": 0.33,
@@ -153,8 +153,8 @@
     "k_index": 20.253836383249237,
     "moisture_flux_850": 55.9679171699848,
     "moisture_flux_925": 23.180324665798008,
-    "theta_e_deficit": 9.090291402057307,
-    "inversion_925": 8.985714285714286,
+    "theta_e_deficit": 9.06522730908684,
+    "inversion_925": 8.995238095238095,
     "deep_layer_shear": 63.800000000000004,
     "bulk_richardson": 0.0,
     "jet_speed_300": 75.4,
@@ -224,7 +224,7 @@
     "soil_moisture_28_to_100cm": null,
     "soil_saturation_ratio": null,
     "tcwv_monthly_anomaly": 1.2,
-    "shortwave_radiation": 0.35714285714285715,
+    "shortwave_radiation": 2.9523809523809526,
     "radar_dbz": 0.0,
     "radar_rain_rate": 0.0,
     "radar_has_echo": 0.0,
@@ -264,8 +264,8 @@
     "ensemble_models_rain": 0.0,
     "ensemble_surprise_rain": null,
     "nwp_isolated_rain": null,
-    "forecast_temp_bias": 2.0,
-    "forecast_humidity_bias": -1.0,
+    "forecast_temp_bias": 2.4000000000000004,
+    "forecast_humidity_bias": -3.0,
     "aemet_prob_precip": 0.0,
     "aemet_prob_storm": 0.0,
     "aemet_precip_today": 0.0,
@@ -286,10 +286,10 @@
     "smc_prob_precip_6h": null,
     "smc_precip_intensity": null,
     "orographic_forcing": 0.0,
-    "frontal_passage": 0.0209241248582885,
+    "frontal_passage": 0.022587730300461333,
     "convective_composite": 0.055746091768858294,
-    "thermal_buildup": 0.02391813628838067,
-    "low_level_convergence": 0.24688492063496925,
+    "thermal_buildup": 0.023936273114275618,
+    "low_level_convergence": 0.253234126984159,
     "dry_intrusion_700": 0.0,
     "soil_moisture_0_to_7cm": null,
     "soil_moisture_7_to_28cm": null,
@@ -301,7 +301,7 @@
     "cloud_cover_high": 0.0,
     "cloud_low_fraction": 0.0,
     "wet_bulb_temperature_2m": 9.8,
-    "wet_bulb_depression": 0.5142857142857142,
+    "wet_bulb_depression": 0.5047619047619047,
     "direct_radiation": 0.0,
     "diffuse_radiation": 0.0,
     "diffuse_fraction": 0.0,
@@ -310,7 +310,7 @@
     "visibility": 36920.0,
     "freezing_level_height": 3200.0
   },
-  "pressure_change_3h": -0.255654761904907,
+  "pressure_change_3h": -0.27470238095247623,
   "top_drivers": [
     {
       "group": "Núvols",
@@ -333,7 +333,7 @@
     {
       "group": "Terra",
       "icon": "🌱",
-      "contribution": 0.343,
+      "contribution": 0.344,
       "direction": "pluja"
     },
     {
