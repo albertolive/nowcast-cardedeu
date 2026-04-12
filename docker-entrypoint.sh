@@ -76,7 +76,10 @@ while true; do
             cp -f  "$REPO_DIR/config.py" /app/config.py
             cp -rf "$REPO_DIR/models/" /app/models/
             cp -rf "$REPO_DIR/docs/" /app/docs/
-            echo "🔄 Code updated from GitHub"
+            # Restart data server so it picks up code changes
+            pkill -f 'serve_data.py' 2>/dev/null || true
+            python scripts/serve_data.py 80 /app/data &
+            echo "🔄 Code updated from GitHub (data server restarted)"
         } || echo "⚠️  Code update failed (continuing with current version)"
     fi
 
