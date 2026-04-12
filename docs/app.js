@@ -1238,12 +1238,17 @@ function drawChart(history, latest) {
 
 /* ---- Init ---- */
 let _latestTimestamp = null;
+let _lastHistory = [];
 
 async function loadAndRender() {
-  const [latest, history] = await Promise.all([
-    fetchJSON('latest_prediction.json'),
-    fetchJSONL('predictions_log.jsonl')
-  ]);
+  const latest = await fetchJSON('latest_prediction.json');
+  let history = _lastHistory || [];
+  try {
+    history = await fetchJSONL('predictions_log.jsonl');
+    _lastHistory = history;
+  } catch (e) {
+    console.warn('History load failed (using cached):', e.message);
+  }
   const isUpdate = _latestTimestamp && _latestTimestamp !== latest.timestamp;
   _latestTimestamp = latest.timestamp;
   renderPrediction(latest, history);
