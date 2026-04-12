@@ -306,13 +306,17 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add models/ data/processed/ data/predictions_log.jsonl
+          git add models/ data/processed/
           git diff --cached --quiet && exit 0
           git commit -m "🤖 Retrain model $(date +%Y-%m-%d)"
           for attempt in 1 2 3; do
             git push && exit 0
             echo "Push failed (attempt $attempt), pulling and retrying..."
-            git pull --rebase origin main
+            git pull --rebase origin main || {
+              echo "Rebase conflict — aborting and retrying..."
+              git rebase --abort 2>/dev/null || true
+              git pull --rebase origin main
+            }
           done
           echo "ERROR: Failed to push after 3 attempts"
           exit 1
