@@ -66,6 +66,10 @@ while true; do
     echo "━━━ $(date) ━━━"
 
     # Auto-update code from GitHub (hot-reload without container restart)
+    # NOTE: Long-running background processes (e.g. serve_data.py started at
+    # boot) are NOT restarted here. Code that changes in those processes only
+    # takes effect on the next container reboot — that's deliberate, because
+    # restarting serve_data.py in-loop races on port 80 and kills the pod.
     if [ -d "$REPO_DIR" ]; then
         (
             cd "$REPO_DIR"
@@ -76,10 +80,7 @@ while true; do
             cp -f  "$REPO_DIR/config.py" /app/config.py
             cp -rf "$REPO_DIR/models/" /app/models/
             cp -rf "$REPO_DIR/docs/" /app/docs/
-            # Restart data server so it picks up code changes
-            pkill -f 'serve_data.py' 2>/dev/null || true
-            python scripts/serve_data.py 80 /app/data &
-            echo "🔄 Code updated from GitHub (data server restarted)"
+            echo "🔄 Code updated from GitHub"
         } || echo "⚠️  Code update failed (continuing with current version)"
     fi
 

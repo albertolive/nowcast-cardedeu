@@ -78,10 +78,15 @@ class DataHandler(http.server.SimpleHTTPRequestHandler):
         pass
 
 
+class ReusableHTTPServer(http.server.HTTPServer):
+    # Allow fast rebind so a restart doesn't race on TIME_WAIT sockets.
+    allow_reuse_address = True
+
+
 if __name__ == "__main__":
     port = int(sys.argv[1]) if len(sys.argv) > 1 else 80
     directory = sys.argv[2] if len(sys.argv) > 2 else "/app/data"
     os.chdir(directory)
-    server = http.server.HTTPServer(("0.0.0.0", port), DataHandler)
+    server = ReusableHTTPServer(("0.0.0.0", port), DataHandler)
     print(f"📡 Data server on :{port} (serving {directory})")
     server.serve_forever()
