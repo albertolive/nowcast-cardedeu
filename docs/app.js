@@ -39,7 +39,10 @@ const DATA_BASES = getDataBases();
 async function fetchJSON(filename) {
   for (const base of DATA_BASES) {
     try {
-      const r = await fetch(`${base}/${filename}`, { cache: 'no-cache' });
+      const ctrl = new AbortController();
+      const tid = setTimeout(() => ctrl.abort(), 8000);
+      const r = await fetch(`${base}/${filename}`, { cache: 'no-cache', signal: ctrl.signal });
+      clearTimeout(tid);
       if (r.ok) return r.json();
     } catch {}
   }
@@ -49,7 +52,10 @@ async function fetchJSON(filename) {
 async function fetchJSONL(filename) {
   for (const base of DATA_BASES) {
     try {
-      const r = await fetch(`${base}/${filename}`, { cache: 'no-cache' });
+      const ctrl = new AbortController();
+      const tid = setTimeout(() => ctrl.abort(), 8000);
+      const r = await fetch(`${base}/${filename}`, { cache: 'no-cache', signal: ctrl.signal });
+      clearTimeout(tid);
       if (r.ok) {
         const text = await r.text();
         return text.trim().split('\n').filter(Boolean).map(line => JSON.parse(line));

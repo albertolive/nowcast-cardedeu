@@ -163,7 +163,21 @@ while true; do
                         echo "✂️  Truncating JSONL: ${line_count} → ${MAX_JSONL_LINES} lines"
                         tail -n "$MAX_JSONL_LINES" "$JSONL_FILE" > "${JSONL_FILE}.tmp" && mv "${JSONL_FILE}.tmp" "$JSONL_FILE"
                     fi
-                    cp -f /app/data/predictions_log.jsonl data/predictions_log.jsonl
+                    # Push slim JSONL (dashboard fields only) so the git fallback
+                    # is ~300 KB instead of the full ~15 MB with 211 feature columns.
+                    python3 -c "
+import json, sys
+KEEP = {'timestamp','probability_pct','rain_category','verified','actual_rain','actual_rain_mm','correct'}
+with open('/app/data/predictions_log.jsonl') as f:
+    for raw in f:
+        raw = raw.strip()
+        if not raw: continue
+        try:
+            obj = json.loads(raw)
+            print(json.dumps({k: obj[k] for k in KEEP if k in obj}, separators=(',',':')))
+        except Exception:
+            pass
+" > data/predictions_log.jsonl
                     git add data/predictions_log.jsonl
                 fi
 
