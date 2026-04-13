@@ -990,12 +990,16 @@ function drawChart(history, latest) {
   const W = rect.width;
   const H = rect.height;
 
-  // Data
+  // Data — try 24h, widen to 48h / 7d if gap (e.g. after container restart)
   const now = Date.now();
-  const cutoff = now - 24 * 60 * 60 * 1000;
-  const points = history
-    .filter(h => new Date(h.timestamp).getTime() > cutoff)
-    .map(h => ({ t: new Date(h.timestamp).getTime(), p: h.probability_pct }));
+  let points = [];
+  for (const hours of [24, 48, 168]) {
+    const cutoff = now - hours * 60 * 60 * 1000;
+    points = history
+      .filter(h => new Date(h.timestamp).getTime() > cutoff)
+      .map(h => ({ t: new Date(h.timestamp).getTime(), p: h.probability_pct }));
+    if (points.length >= 2) break;
+  }
 
   if (points.length < 2) {
     ctx.fillStyle = '#8b949e';
