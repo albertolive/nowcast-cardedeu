@@ -24,11 +24,12 @@ function getDataBases() {
     hostname === '127.0.0.1' ||
     hostname.endsWith('.github.io')
   ) {
-    // GitHub Pages: raw.githubusercontent first (always fresh), local as fallback.
-    bases.push(RAW_BASE, '.');
+    // GitHub Pages: local first (docs/ has fresh slim JSONL pushed every 10 min),
+    // then raw.githubusercontent as last resort (stale full JSONL pushed daily).
+    bases.push('.', RAW_BASE);
   } else {
-    // Vercel and any other host: raw.githubusercontent first.
-    bases.push(RAW_BASE, '.');
+    // Vercel and any other host: local first, raw.githubusercontent as fallback.
+    bases.push('.', RAW_BASE);
   }
 
   return bases;

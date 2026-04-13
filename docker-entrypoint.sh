@@ -149,7 +149,22 @@ while true; do
                 git add data/latest_prediction.json docs/latest_prediction.json \
                         data/notification_state.json data/aemet_cache.json \
                         data/meteocat_cache.json 2>/dev/null || true
-
+                # Push slim JSONL to docs/ every cycle (~30KB) so GitHub Pages
+                # serves fresh history when the container is unreachable.
+                python3 -c "
+import json
+KEEP = {'timestamp','probability_pct','rain_category','verified','actual_rain','actual_rain_mm','correct'}
+with open('/app/data/predictions_log.jsonl') as f:
+    for raw in f:
+        raw = raw.strip()
+        if not raw: continue
+        try:
+            obj = json.loads(raw)
+            print(json.dumps({k: obj[k] for k in KEEP if k in obj}, separators=(',',':')))
+        except Exception:
+            pass
+" > docs/predictions_log.jsonl
+                git add docs/predictions_log.jsonl
                 # Push JSONL once daily at 3:00 (before retrain cron at 3:00 UTC Sunday).
                 # Dashboard reads JSONL from the HTTP server, not git.
                 # On container restart, startup sync recovers the last pushed version.
