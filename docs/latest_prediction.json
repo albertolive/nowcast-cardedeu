@@ -4,7 +4,7 @@
   "will_rain": false,
   "rain_category": "sec",
   "confidence": "Molt Baixa",
-  "timestamp": "2026-04-14T08:30:52.408999",
+  "timestamp": "2026-04-14T08:40:52.558604",
   "conditions": {
     "temperature": "7.0",
     "humidity": 93,
@@ -51,8 +51,8 @@
     "total_models": 4
   },
   "aemet": {
-    "prob_precip": null,
-    "prob_storm": null
+    "prob_precip": 0,
+    "prob_storm": 0
   },
   "bias": {
     "temp": 2.9000000000000004,
@@ -266,9 +266,9 @@
     "nwp_isolated_rain": null,
     "forecast_temp_bias": 2.9000000000000004,
     "forecast_humidity_bias": 0.0,
-    "aemet_prob_precip": null,
-    "aemet_prob_storm": null,
-    "aemet_precip_today": null,
+    "aemet_prob_precip": 0.0,
+    "aemet_prob_storm": 0.0,
+    "aemet_precip_today": 0.0,
     "lightning_count_30km": null,
     "lightning_count_15km": null,
     "lightning_nearest_km": null,
