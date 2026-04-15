@@ -4,7 +4,7 @@
   "will_rain": false,
   "rain_category": "sec",
   "confidence": "Molt Baixa",
-  "timestamp": "2026-04-16T01:30:51.155047",
+  "timestamp": "2026-04-16T01:40:52.137574",
   "conditions": {
     "temperature": "11.4",
     "humidity": 82,
@@ -214,16 +214,16 @@
     "cape": 0.0,
     "cape_change_3h": 0.0,
     "cape_diurnal_weighted": 0.0,
-    "tcwv": 16.8,
-    "tcwv_change_3h": 0.0,
-    "tcwv_change_6h": 1.8000000000000007,
+    "tcwv": 16.2,
+    "tcwv_change_3h": 0.09999999999999787,
+    "tcwv_change_6h": 1.1999999999999993,
     "boundary_layer_height": 10.0,
     "blh_change_3h": -5.0,
-    "tcwv_blh_ratio": 33.6,
+    "tcwv_blh_ratio": 32.4,
     "terrestrial_radiation": 0.0,
     "soil_moisture_28_to_100cm": null,
     "soil_saturation_ratio": null,
-    "tcwv_monthly_anomaly": 1.12,
+    "tcwv_monthly_anomaly": 1.0799999999999998,
     "shortwave_radiation": 0.0,
     "radar_dbz": 0.0,
     "radar_rain_rate": 0.0,
@@ -258,7 +258,7 @@
     "local_rain_xema_3h": null,
     "ensemble_rain_agreement": 0.0,
     "ensemble_precip_spread": 0.0,
-    "ensemble_temp_spread": 1.533786165017797,
+    "ensemble_temp_spread": 1.5089317413322583,
     "ensemble_max_precip": 0.0,
     "ensemble_min_precip": 0.0,
     "ensemble_models_rain": 0.0,
@@ -315,31 +315,31 @@
     {
       "group": "Núvols",
       "icon": "☁️",
-      "contribution": -1.664,
+      "contribution": -1.667,
       "direction": "sec"
     },
     {
       "group": "Models globals",
       "icon": "🌐",
-      "contribution": -0.95,
+      "contribution": -0.948,
       "direction": "sec"
     },
     {
       "group": "Pluja confirmada",
       "icon": "🌧️",
-      "contribution": -0.782,
+      "contribution": -0.786,
       "direction": "sec"
     },
     {
       "group": "Terra",
       "icon": "🌱",
-      "contribution": 0.361,
+      "contribution": 0.359,
       "direction": "pluja"
     },
     {
       "group": "Acord entre models",
       "icon": "🤝",
-      "contribution": -0.309,
+      "contribution": -0.31,
       "direction": "sec"
     },
     {
