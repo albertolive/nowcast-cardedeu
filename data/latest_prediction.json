@@ -4,7 +4,7 @@
   "will_rain": false,
   "rain_category": "sec",
   "confidence": "Molt Baixa",
-  "timestamp": "2026-04-16T02:31:02.172981",
+  "timestamp": "2026-04-16T02:40:49.754170",
   "conditions": {
     "temperature": "11.4",
     "humidity": 82,
@@ -199,7 +199,7 @@
     "boundary_layer_shear": 0.8846153846153846,
     "wind_dir_shear_100m": -76.0,
     "snowfall": 0.0,
-    "nwp_lifted_index": 8.5,
+    "nwp_lifted_index": 8.8,
     "gph_850": 1545.0,
     "gph_850_change_3h": 10.0,
     "rh_500": 17.0,
@@ -315,7 +315,7 @@
     {
       "group": "Models globals",
       "icon": "🌐",
-      "contribution": -0.893,
+      "contribution": -0.894,
       "direction": "sec"
     },
     {
