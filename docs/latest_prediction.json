@@ -4,7 +4,7 @@
   "will_rain": false,
   "rain_category": "sec",
   "confidence": "Molt Baixa",
-  "timestamp": "2026-04-17T08:00:58.354842",
+  "timestamp": "2026-04-17T08:10:49.090942",
   "conditions": {
     "temperature": "11.1",
     "humidity": 81,
@@ -69,23 +69,23 @@
     "wind_dir_change_3h": 22.0
   },
   "pressure_levels": {
-    "temp_925": 16.1,
+    "temp_925": 15.9,
     "rh_925": 44,
-    "wind_925_speed_kmh": 1.7,
-    "wind_925_dir": 284,
-    "wind_850_dir": 262,
-    "wind_850_speed_kmh": 6.4,
-    "temp_850": 10.4,
+    "wind_925_speed_kmh": 0.8,
+    "wind_925_dir": 90,
+    "wind_850_dir": 259,
+    "wind_850_speed_kmh": 4.6,
+    "temp_850": 9.9,
     "rh_850": 74,
     "rh_700": 38,
     "temp_700": 0.9,
-    "temp_500": -15.6,
-    "wind_300_speed_kmh": 36.7,
-    "wind_300_dir": 322,
+    "temp_500": -15.4,
+    "wind_300_speed_kmh": 34.9,
+    "wind_300_dir": 319,
     "gph_300": 9390.32,
-    "vt_index": 26.0,
-    "tt_index": 47.56577346699345,
-    "li_index": -2.8937423968218905
+    "vt_index": 25.3,
+    "tt_index": 46.18346911631429,
+    "li_index": -2.20214783024929
   },
   "sst": {
     "sst_med": 15.1
