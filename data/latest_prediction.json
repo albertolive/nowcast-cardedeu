@@ -4,15 +4,15 @@
   "will_rain": false,
   "rain_category": "sec",
   "confidence": "Molt Baixa",
-  "timestamp": "2026-04-19T07:11:07.882385",
+  "timestamp": "2026-04-19T07:13:57.000499",
   "conditions": {
     "temperature": "11.3",
     "humidity": 83,
     "pressure": "1018.5",
-    "wind_speed": "0.0",
+    "wind_speed": "1.6",
     "wind_dir": "NNE",
     "rain_today": "0.0",
-    "solar_radiation": 7
+    "solar_radiation": 11
   },
   "radar": {
     "dbz": 0.0,
@@ -103,11 +103,11 @@
     "month_sin": 0.8660254037844387,
     "month_cos": -0.4999999999999998,
     "hours_since_sunrise": 0.0,
-    "pressure_msl": 1018.4100000000001,
-    "pressure_change_1h": 0.24392857142856883,
-    "pressure_change_3h": -0.20071428571429806,
-    "pressure_change_6h": -1.3092307692306804,
-    "pressure_accel_3h": 0.4634029649595277,
+    "pressure_msl": 1018.4307692307692,
+    "pressure_change_1h": 0.264697802197702,
+    "pressure_change_3h": -0.17994505494516488,
+    "pressure_change_6h": -1.2884615384615472,
+    "pressure_accel_3h": 0.4841721957286609,
     "temperature_2m": 11.3,
     "relative_humidity_2m": 83.0,
     "dew_point": 8.517225203896254,
@@ -224,7 +224,7 @@
     "soil_moisture_28_to_100cm": null,
     "soil_saturation_ratio": null,
     "tcwv_monthly_anomaly": 1.0733333333333335,
-    "shortwave_radiation": 1.7,
+    "shortwave_radiation": 3.230769230769231,
     "radar_dbz": 0.0,
     "radar_rain_rate": 0.0,
     "radar_has_echo": 0.0,
@@ -286,10 +286,10 @@
     "smc_prob_precip_6h": null,
     "smc_precip_intensity": null,
     "orographic_forcing": 0.4306764688962305,
-    "frontal_passage": 0.049882278911567685,
+    "frontal_passage": 0.04472063055994359,
     "convective_composite": 0.3128534047904586,
     "thermal_buildup": 0.018363536218639526,
-    "low_level_convergence": 0.7629761904761945,
+    "low_level_convergence": 0.7560531135531501,
     "dry_intrusion_700": 0.19,
     "soil_moisture_0_to_7cm": null,
     "soil_moisture_7_to_28cm": null,
@@ -310,12 +310,12 @@
     "visibility": 29860.0,
     "freezing_level_height": 3290.0
   },
-  "pressure_change_3h": -0.20071428571429806,
+  "pressure_change_3h": -0.17994505494516488,
   "top_drivers": [
     {
       "group": "Núvols",
       "icon": "☁️",
-      "contribution": -1.592,
+      "contribution": -1.593,
       "direction": "sec"
     },
     {
@@ -327,7 +327,7 @@
     {
       "group": "Pluja confirmada",
       "icon": "🌧️",
-      "contribution": -0.843,
+      "contribution": -0.842,
       "direction": "sec"
     },
     {
