@@ -41,7 +41,7 @@ import config
 logger = logging.getLogger(__name__)
 
 SESSION = requests.Session()
-SESSION.headers.update({"User-Agent": "NowcastCardedeu/1.0 (research)"})
+SESSION.headers.update({"User-Agent": "NowcastCardedeu/1.0"})
 ```
 
 Must include:

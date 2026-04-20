@@ -25,7 +25,7 @@ def create_session(api_key_header: dict | None = None) -> requests.Session:
     session = requests.Session()
     session.mount("https://", adapter)
     session.mount("http://", adapter)
-    session.headers.update({"User-Agent": "NowcastCardedeu/1.0 (research)"})
+    session.headers.update({"User-Agent": "NowcastCardedeu/1.0"})
 
     if api_key_header:
         session.headers.update(api_key_header)
