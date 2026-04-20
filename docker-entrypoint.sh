@@ -75,11 +75,17 @@ while true; do
             cd "$REPO_DIR"
             timeout 20 git fetch origin main 2>/dev/null && git reset --hard origin/main 2>/dev/null
         ) && {
-            cp -rf "$REPO_DIR/src/" /app/src/
-            cp -rf "$REPO_DIR/scripts/" /app/scripts/
-            cp -f  "$REPO_DIR/config.py" /app/config.py
-            cp -rf "$REPO_DIR/models/" /app/models/
-            cp -rf "$REPO_DIR/docs/" /app/docs/
+            # -T: treat dest as a file, not a dir. Without -T, when dest exists
+            # (e.g. /app/src) cp nests the source inside as /app/src/src/... and
+            # the baked-in /app/src/ never gets updated — hot-reload silently
+            # no-ops and the container keeps running the image's original code.
+            cp -rfT "$REPO_DIR/src"     /app/src
+            cp -rfT "$REPO_DIR/scripts" /app/scripts
+            cp -f   "$REPO_DIR/config.py" /app/config.py
+            cp -rfT "$REPO_DIR/models"  /app/models
+            cp -rfT "$REPO_DIR/docs"    /app/docs
+            # Clear any stale bytecode so subprocess imports pick up the new .py
+            find /app/src /app/scripts -name __pycache__ -type d -prune -exec rm -rf {} + 2>/dev/null || true
             echo "🔄 Code updated from GitHub"
         } || echo "⚠️  Code update failed (continuing with current version)"
     fi
