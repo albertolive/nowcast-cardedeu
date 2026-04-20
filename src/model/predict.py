@@ -102,7 +102,10 @@ def _aemet_storm_above_threshold(aemet_data: dict) -> bool:
 
 
 def _apply_physical_constraints(probability: float, radar_data: dict,
-                                 sentinel_features: dict) -> tuple[float, list[str]]:
+                                 sentinel_features: dict,
+                                 aemet_radar_data: dict | None = None,
+                                 current: dict | None = None,
+                                 station_df=None) -> tuple[float, list[str]]:
     """
     Aplica restriccions físiques a la probabilitat del model ML.
     Estableix floors (mínims) basats en senyals de sensors que són fets físics,
@@ -148,6 +151,51 @@ def _apply_physical_constraints(probability: float, radar_data: dict,
         floor = 0.25
         if adjusted < floor:
             adjustments.append("Plou a Granollers (7km SO)")
+            adjusted = floor
+
+    # 5. Radar AEMET C-banda Barcelona: eco fort a prop
+    # Font independent del RainViewer; un eco fort a <20km és una tempesta
+    # propera que arribarà dins la finestra de predicció de 60min.
+    if aemet_radar_data:
+        a_nearest = aemet_radar_data.get("aemet_radar_nearest_echo_km")
+        a_max_dbz = aemet_radar_data.get("aemet_radar_max_dbz_20km", 0) or 0
+        a_cov = aemet_radar_data.get("aemet_radar_coverage_20km", 0) or 0
+        if a_nearest is not None and a_nearest <= 20 and a_max_dbz >= 35:
+            floor = 0.55
+            if adjusted < floor:
+                adjustments.append(
+                    f"Radar AEMET: eco {a_max_dbz:.0f} dBZ a {a_nearest:.0f}km"
+                )
+                adjusted = floor
+        elif a_cov >= 0.10 and a_max_dbz >= 30:
+            floor = 0.40
+            if adjusted < floor:
+                adjustments.append(
+                    f"Radar AEMET: {a_cov:.0%} cobertura amb {a_max_dbz:.0f} dBZ"
+                )
+                adjusted = floor
+
+    # 6. L'estació de Cardedeu està plovent ARA (PINT mm/h o PREC recent >0)
+    # Observació directa: la predicció a 60 min mai pot ser "sec" si plou ja aquí.
+    station_raining_now = False
+    pint_str = (current or {}).get("PINT")
+    if pint_str is not None:
+        try:
+            if float(pint_str) > 0:
+                station_raining_now = True
+        except (TypeError, ValueError):
+            pass
+    if not station_raining_now and station_df is not None and not station_df.empty:
+        try:
+            recent = station_df.tail(6)  # ~últims 6 minuts
+            if "PREC" in recent.columns and float(recent["PREC"].astype(float).sum()) > 0:
+                station_raining_now = True
+        except Exception:
+            pass
+    if station_raining_now:
+        floor = 0.80
+        if adjusted < floor:
+            adjustments.append("Plou ara mateix a l'estació de Cardedeu")
             adjusted = floor
 
     if adjustments:
@@ -390,7 +438,10 @@ def predict_now() -> dict:
     # les features de radar/sentinella tenen 0% d'importància al model actual
     # (NaN en les 7 anys de dades d'entrenament històriques).
     probability, physical_adjustments = _apply_physical_constraints(
-        probability, radar_data, sentinel_features
+        probability, radar_data, sentinel_features,
+        aemet_radar_data=aemet_radar_data,
+        current=current,
+        station_df=station_df,
     )
 
     will_rain = probability >= threshold
