@@ -29,23 +29,39 @@ def verify_pending_predictions() -> dict:
         return {"verified_count": 0, "correct_count": 0, "wrong_count": 0, "skipped": 0}
 
     now = datetime.now()
-    # Obtenim les últimes 3h de dades de l'estació (suficient per verificar)
+    # Cover at least the oldest pending entry's verification window so a short
+    # upstream outage doesn't permanently strand old predictions as "Pendent".
+    oldest_pending = min(
+        (datetime.fromisoformat(e["timestamp"]) for e in entries if not e.get("verified")),
+        default=now,
+    )
+    needed_hours = max(3, int((now - oldest_pending).total_seconds() // 3600) + 2)
+    lookup_hours = min(needed_hours, 48)
     # Font primària: MeteoCardedeu.net (minut a minut)
     # Fallback: XEMA KX La Roca - ETAP Cardedeu (cada 30min, professional SMC)
     verification_source = "meteocardedeu"
+    mc_error = None
     try:
-        station_df = fetch_series(hours=3)
+        station_df = fetch_series(hours=lookup_hours)
     except Exception as e:
         logger.warning(f"MeteoCardedeu no disponible per verificar: {e}")
         station_df = None
+        mc_error = str(e)[:200]
 
     if station_df is None or station_df.empty or "PREC" not in station_df.columns:
         logger.info("MeteoCardedeu sense dades — provant fallback XEMA KX (La Roca)...")
-        station_df = fetch_kx_precipitation_series(hours=3)
+        station_df = fetch_kx_precipitation_series(hours=lookup_hours)
         verification_source = "xema_kx"
         if station_df.empty or "PREC" not in station_df.columns:
             logger.warning("Ni MeteoCardedeu ni XEMA KX disponibles per verificar.")
-            return {"verified_count": 0, "correct_count": 0, "wrong_count": 0, "skipped": 0}
+            return {
+                "verified_count": 0, "correct_count": 0, "wrong_count": 0, "skipped": 0,
+                "source": "none",
+                "lookup_hours": lookup_hours,
+                "station_rows": 0,
+                "mc_error": mc_error,
+                "pending_total": sum(1 for e in entries if not e.get("verified")),
+            }
         logger.info(f"Usant XEMA KX (La Roca) com a font de verificació ({len(station_df)} lectures)")
 
     # Assegurar que datetime no té timezone (KX ja arriba sense, MC.net pot tenir-ne)
@@ -89,11 +105,16 @@ def verify_pending_predictions() -> dict:
 
         # Comparar predicció vs realitat
         # Verificació justa: la zona incerta (30-65%) no es puntua com encert/error
-        predicted_rain = entry["will_rain"]
+        # Slim log entries (pushed daily to git) lack `probability` and `will_rain`;
+        # derive them from `probability_pct` / `rain_category` so verify still runs.
+        prob = entry.get("probability")
+        if prob is None and entry.get("probability_pct") is not None:
+            prob = entry["probability_pct"] / 100.0
         rain_category = entry.get("rain_category")
-        # Retrocompatibilitat: si no hi ha rain_category, calcular-la des de la probabilitat
         if rain_category is None:
-            prob = entry["probability"]
+            if prob is None:
+                skipped += 1
+                continue
             if prob >= config.DISPLAY_THRESHOLD_RAIN:
                 rain_category = "probable"
             elif prob >= config.DISPLAY_THRESHOLD_UNCERTAIN:
@@ -112,7 +133,7 @@ def verify_pending_predictions() -> dict:
             is_correct = display_predicted_rain == actual_rain
 
         # Brier score component: (probabilitat - resultat real)²
-        brier_component = (entry["probability"] - (1.0 if actual_rain else 0.0)) ** 2
+        brier_component = ((prob if prob is not None else 0.0) - (1.0 if actual_rain else 0.0)) ** 2
 
         entry["verified"] = True
         entry["actual_rain"] = actual_rain
@@ -140,9 +161,10 @@ def verify_pending_predictions() -> dict:
         else:
             symbol = "❌"
             label = "PLUJA" if entry.get("rain_category") == "probable" else "SEC"
+        pct = entry.get("probability_pct", round((prob or 0.0) * 100, 1))
         logger.info(
             f"  {symbol} {pred_time.strftime('%H:%M')} → "
-            f"Predit: {label} ({entry['probability_pct']}%) | "
+            f"Predit: {label} ({pct}%) | "
             f"Real: {'PLUJA' if actual_rain else 'SEC'} ({rain_mm:.1f}mm)"
         )
 
@@ -154,6 +176,12 @@ def verify_pending_predictions() -> dict:
         "correct_count": correct_count,
         "wrong_count": wrong_count,
         "skipped": skipped,
+        "source": verification_source,
+        "lookup_hours": lookup_hours,
+        "station_rows": int(len(station_df)),
+        "station_first_ts": station_df["datetime"].iloc[0].isoformat() if len(station_df) else None,
+        "station_last_ts": station_df["datetime"].iloc[-1].isoformat() if len(station_df) else None,
+        "pending_total": sum(1 for e in entries if not e.get("verified")),
     }
     if verified_count > 0:
         summary["accuracy"] = round(correct_count / verified_count * 100, 1)

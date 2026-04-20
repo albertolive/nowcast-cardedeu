@@ -68,10 +68,19 @@ def main():
 
     # ── Verificar prediccions passades (60+ min enrere) ──
     logger.info("🔍 Verificant prediccions anteriors...")
-    verification = verify_pending_predictions()
-    if verification["verified_count"] > 0:
+    try:
+        verification = verify_pending_predictions()
+    except Exception as e:
+        logger.error(f"verify_pending_predictions va fallar: {e}", exc_info=True)
+        verification = {"verified_count": 0, "skipped": 0, "error": str(e)[:200]}
+    if verification.get("verified_count", 0) > 0:
         acc = verification.get("accuracy", "?")
         logger.info(f"  Verificades: {verification['verified_count']} | Accuracy: {acc}%")
+
+    # Embed diagnostics so they land in data/latest_prediction.json (pushed every cycle).
+    result["verification"] = verification
+    with open(output_path, "w") as f:
+        json.dump(_sanitize_nans(result), f, indent=2, ensure_ascii=False, cls=_NumpyEncoder)
 
     # ── Notificacions basades en transicions d'estat ──
     state = load_state()
