@@ -4,7 +4,7 @@
   "will_rain": false,
   "rain_category": "sec",
   "confidence": "Molt Baixa",
-  "timestamp": "2026-04-21T03:30:48.247749",
+  "timestamp": "2026-04-21T03:40:48.250851",
   "conditions": {
     "temperature": "14.3",
     "humidity": 88,
@@ -356,8 +356,8 @@
     "skipped": 389,
     "source": "meteocardedeu",
     "lookup_hours": 48,
-    "station_rows": 2552,
-    "station_first_ts": "2026-04-19T03:31:00",
+    "station_rows": 2544,
+    "station_first_ts": "2026-04-19T03:41:00",
     "station_last_ts": "2026-04-21T03:10:00",
     "pending_total": 389,
     "accuracy": 100.0
