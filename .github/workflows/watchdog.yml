@@ -1,0 +1,66 @@
+name: "🩺 Prediction freshness watchdog"
+
+# Independent backstop for the Cloudflare Worker that schedules predictions.
+# If the Worker dies, its PAT expires, or `predict_now.py` starts failing
+# silently, this catches it within ~hour and Telegrams. The watchdog runs
+# on GH Actions cron deliberately — different platform from the trigger,
+# so a CF-side outage can't take this down too.
+#
+# Cron drift on hourly is negligible (a few minutes), so the 30-min
+# staleness threshold gives plenty of margin against false positives.
+
+on:
+  schedule:
+    - cron: "15 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  STALE_THRESHOLD_MIN: 30
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Check latest_prediction.json freshness
+        id: freshness
+        # TZ matters: predict_now.py writes naive timestamps in Europe/Madrid
+        # local time. GH runners default to UTC, so without this override
+        # `datetime.now()` would be 1–2 h behind and ages would go negative.
+        env:
+          TZ: Europe/Madrid
+        run: |
+          set -euo pipefail
+          curl -fsSL "https://raw.githubusercontent.com/${GITHUB_REPOSITORY}/main/data/latest_prediction.json" \
+            -o latest.json
+          AGE_MIN=$(python3 - <<'PY'
+          import json, datetime
+          with open("latest.json") as f:
+              data = json.load(f)
+          ts = datetime.datetime.fromisoformat(data["timestamp"])
+          now = datetime.datetime.now(tz=ts.tzinfo) if ts.tzinfo else datetime.datetime.now()
+          age_min = (now - ts).total_seconds() / 60
+          print(f"{age_min:.0f}")
+          PY
+          )
+          echo "age_min=${AGE_MIN}" >> "$GITHUB_OUTPUT"
+          echo "Latest prediction is ${AGE_MIN} min old (threshold: ${STALE_THRESHOLD_MIN})"
+          if [ "${AGE_MIN}" -gt "${STALE_THRESHOLD_MIN}" ]; then
+            echo "stale=true" >> "$GITHUB_OUTPUT"
+            exit 1
+          fi
+
+      - name: Telegram alert on staleness
+        if: failure() && steps.freshness.outputs.stale == 'true'
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          AGE_MIN: ${{ steps.freshness.outputs.age_min }}
+        run: |
+          curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+            -d chat_id="${TELEGRAM_CHAT_ID}" \
+            -d parse_mode=HTML \
+            -d text="⚠️ <b>Nowcast STALE</b>: <code>latest_prediction.json</code> és de fa <b>${AGE_MIN} min</b> (llindar ${STALE_THRESHOLD_MIN} min).%0AEl cron del Cloudflare Worker o el job <code>predict</code> s'ha aturat.%0A<a href='${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}'>Veure logs</a>"

@@ -1,0 +1,19 @@
+name = "nowcast-cardedeu-cron"
+main = "predict-cron.js"
+compatibility_date = "2026-04-26"
+
+# Every 10 min, on the dot. Cloudflare's scheduler has sub-minute precision
+# and is independent of GitHub Actions' best-effort cron, which is the bug
+# this Worker is here to work around (see commit 16b69cf for context).
+[triggers]
+crons = ["*/10 * * * *"]
+
+[vars]
+GH_REPO = "albertolive/nowcast-cardedeu"
+GH_WORKFLOW = "nowcast.yml"
+GH_REF = "main"
+
+# GH_TOKEN is set as a secret, NOT a var:
+#   cd worker && wrangler secret put GH_TOKEN
+# Scope: fine-grained PAT, repo = albertolive/nowcast-cardedeu,
+# permission = Actions: Read and write.
