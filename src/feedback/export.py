@@ -65,13 +65,14 @@ def export_verified_for_training() -> int:
         df = df.drop(columns=obj_cols)
 
     # Append-only merge with any existing parquet so we never lose verified history
-    # when the source JSONL is trimmed for repo size. Dedup on timestamp.
+    # when the source JSONL is trimmed for repo size. Dedup on the parsed `datetime`
+    # column (the raw `timestamp` string was dropped above as an object dtype).
     os.makedirs(os.path.dirname(FEEDBACK_TRAINING_PATH), exist_ok=True)
     if os.path.exists(FEEDBACK_TRAINING_PATH):
         try:
             existing = pd.read_parquet(FEEDBACK_TRAINING_PATH)
             df = pd.concat([existing, df], ignore_index=True)
-            df = df.drop_duplicates(subset=["timestamp"], keep="last")
+            df = df.drop_duplicates(subset=["datetime"], keep="last")
         except Exception as e:
             logger.warning(f"No s'ha pogut llegir parquet existent ({e}); reescrivint des de zero.")
 
