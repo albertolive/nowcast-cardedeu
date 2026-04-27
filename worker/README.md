@@ -11,6 +11,19 @@ instead of 10 min (see commit `16b69cf`). Cloudflare cron triggers are
 precise. The Worker free tier covers ~144 invocations/day by 3 orders of
 magnitude.
 
+> **2026-04-27 status:** CF cron is silently disabled on this account.
+> Verified via `AccountWorkersInvocationsScheduled` GraphQL dataset: 0
+> scheduled invocations across the entire account in the last 5 days,
+> despite a registered `*/10 * * * *` trigger and a per-minute diagnostic
+> deploy that produced 0 firings in 4 min. Account is verified, super-admin,
+> not suspended, on the standard usage model. Per docs, Free plan supports
+> 5 cron triggers/account with no billing requirement. Root cause is
+> CF-internal — needs support ticket.
+>
+> Stopgap: trigger via [cron-job.org](https://cron-job.org) hitting the
+> Worker's `/dispatch` endpoint. Worker stays deployed as the receiver, so
+> when CF cron is fixed we can drop cron-job.org with no code change.
+
 ## Deploy
 
 Prereqs: a Cloudflare account (free) and `wrangler` CLI (`npm i -g wrangler`).
