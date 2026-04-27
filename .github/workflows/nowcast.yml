@@ -9,9 +9,12 @@ on:
       - "tests/**"
       - "requirements.txt"
   schedule:
-    # Daily summary + accuracy report → ClawCloud container (Docker)
     # Re-entrenar setmanalment (diumenge 3:00 Barcelona = 2:00 UTC estiu)
     - cron: "0 2 * * 0"
+    # Resum diari (07:00 Barcelona = 05:00 UTC estiu / 06:00 UTC hivern; acceptem ±30min jitter)
+    - cron: "0 5 * * *"
+    # Informe d'accuracy setmanal (dilluns 08:00 Barcelona = 06:00 UTC estiu)
+    - cron: "0 6 * * 1"
   workflow_dispatch:
     inputs:
       action:
@@ -137,9 +140,9 @@ jobs:
   daily_summary:
     runs-on: ubuntu-latest
     timeout-minutes: 5
-    # Runs in container. Manual fallback only via workflow_dispatch.
     if: >-
-      github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'daily_summary'
+      github.event.schedule == '0 5 * * *' ||
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'daily_summary')
 
     steps:
       - name: Checkout
@@ -181,9 +184,9 @@ jobs:
   accuracy_report:
     runs-on: ubuntu-latest
     timeout-minutes: 5
-    # Runs in container. Manual fallback only via workflow_dispatch.
     if: >-
-      github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'accuracy_report'
+      github.event.schedule == '0 6 * * 1' ||
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'accuracy_report')
 
     steps:
       - name: Checkout
