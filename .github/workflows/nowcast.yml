@@ -122,10 +122,24 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git pull --rebase origin main || true
           cp -f data/latest_prediction.json docs/latest_prediction.json 2>/dev/null || true
+          # Slim predictions log into docs/ so dashboards (Vercel + GH Pages) serve fresh history.
+          python3 -c "
+          import json
+          KEEP = {'timestamp','probability_pct','rain_category','verified','actual_rain','actual_rain_mm','correct'}
+          with open('data/predictions_log.jsonl') as f:
+              for raw in f:
+                  raw = raw.strip()
+                  if not raw: continue
+                  try:
+                      obj = json.loads(raw)
+                      print(json.dumps({k: obj[k] for k in KEEP if k in obj}, separators=(',',':')))
+                  except Exception:
+                      pass
+          " > docs/predictions_log.jsonl
           git add data/predictions_log.jsonl data/notification_state.json data/latest_prediction.json
           git add data/aemet_cache.json 2>/dev/null || true
           git add data/meteocat_cache.json 2>/dev/null || true
-          git add docs/latest_prediction.json 2>/dev/null || true
+          git add docs/latest_prediction.json docs/predictions_log.jsonl 2>/dev/null || true
           git diff --cached --quiet || git commit -m "📊 Prediction $(date -u +%Y-%m-%dT%H:%M)"
           git push || (git pull --rebase origin main && git push)
 
