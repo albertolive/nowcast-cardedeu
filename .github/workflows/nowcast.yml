@@ -115,6 +115,20 @@ jobs:
         id: nowcast
         run: python scripts/predict_now.py
 
+      - name: Trim predictions log if past high-water mark
+        # Verified rows are persisted to data/processed/feedback_verified.parquet by every retrain (append-only),
+        # so we can safely cap the JSONL. Trim runs inside the predict job so it serialises
+        # under the existing predict-push concurrency group — no races with other predict ticks.
+        run: |
+          MAX=5000
+          HIGH_WATER=6000
+          FILE=data/predictions_log.jsonl
+          line_count=$(wc -l < "$FILE" 2>/dev/null || echo 0)
+          if [ "$line_count" -gt "$HIGH_WATER" ]; then
+            echo "Trimming $FILE: $line_count → $MAX lines"
+            tail -n "$MAX" "$FILE" > "$FILE.tmp" && mv "$FILE.tmp" "$FILE"
+          fi
+
       - name: Commit prediction data
         if: always()
         run: |
@@ -123,6 +137,7 @@ jobs:
           git pull --rebase origin main || true
           cp -f data/latest_prediction.json docs/latest_prediction.json 2>/dev/null || true
           # Slim predictions log into docs/ so dashboards (Vercel + GH Pages) serve fresh history.
+          # Write to .tmp and mv on success so a parse error never leaves an empty file.
           python3 -c "
           import json
           KEEP = {'timestamp','probability_pct','rain_category','verified','actual_rain','actual_rain_mm','correct'}
@@ -135,7 +150,7 @@ jobs:
                       print(json.dumps({k: obj[k] for k in KEEP if k in obj}, separators=(',',':')))
                   except Exception:
                       pass
-          " > docs/predictions_log.jsonl
+          " > docs/predictions_log.jsonl.tmp && mv docs/predictions_log.jsonl.tmp docs/predictions_log.jsonl
           git add data/predictions_log.jsonl data/notification_state.json data/latest_prediction.json
           git add data/aemet_cache.json 2>/dev/null || true
           git add data/meteocat_cache.json 2>/dev/null || true
@@ -304,18 +319,6 @@ jobs:
       - name: Train model
         run: python scripts/train_model.py
 
-      - name: Trim predictions log (cap repo growth)
-        # train_model.py already exported verified rows to data/processed/feedback_verified.parquet,
-        # so we can safely cap predictions_log.jsonl to ~52 days of recent rows.
-        run: |
-          MAX_LINES=5000
-          FILE=data/predictions_log.jsonl
-          line_count=$(wc -l < "$FILE")
-          if [ "$line_count" -gt "$MAX_LINES" ]; then
-            echo "Trimming $FILE: $line_count → $MAX_LINES lines"
-            tail -n "$MAX_LINES" "$FILE" > "$FILE.tmp" && mv "$FILE.tmp" "$FILE"
-          fi
-
       - name: Validate model quality
         run: |
           python << 'EOF'
@@ -335,7 +338,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add models/ data/processed/ data/predictions_log.jsonl
+          git add models/ data/processed/
           git diff --cached --quiet && exit 0
           git commit -m "🤖 Retrain model $(date +%Y-%m-%d)"
           for attempt in 1 2 3; do
