@@ -3,36 +3,13 @@ const BRANCH = 'main';
 const RAW_BASE = `https://raw.githubusercontent.com/${REPO}/${BRANCH}/data`;
 const REFRESH_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
 
-// Container serves real-time data via HTTP (ClawCloud public endpoint).
-const CONTAINER_DATA_URL = 'https://lllutzbxivhx.eu-central-1.clawcloudrun.com';
-
 import { deriveRadarViewModel } from './radar_logic.js';
 import { selectDriverExplanations, GROUP_TOOLTIP } from './driver_logic.js';
 
 function getDataBases() {
-  const bases = [];
-
-  // Container URL is the freshest source (updates every 10 min without git).
-  if (CONTAINER_DATA_URL) {
-    bases.push(CONTAINER_DATA_URL);
-  }
-
-  const hostname = window.location.hostname.toLowerCase();
-
-  if (
-    hostname === 'localhost' ||
-    hostname === '127.0.0.1' ||
-    hostname.endsWith('.github.io')
-  ) {
-    // GitHub Pages: local first (docs/ has fresh slim JSONL pushed every 10 min),
-    // then raw.githubusercontent as last resort (stale full JSONL pushed daily).
-    bases.push('.', RAW_BASE);
-  } else {
-    // Vercel and any other host: local first, raw.githubusercontent as fallback.
-    bases.push('.', RAW_BASE);
-  }
-
-  return bases;
+  // Local docs/ first (fresh slim JSONL pushed every 10 min by the predict job),
+  // then raw.githubusercontent as fallback (full JSONL).
+  return ['.', RAW_BASE];
 }
 
 const DATA_BASES = getDataBases();
@@ -991,7 +968,7 @@ function drawChart(history, latest) {
   const W = rect.width;
   const H = rect.height;
 
-  // Data — try 24h, widen to 48h / 7d if gap (e.g. after container restart)
+  // Data — try 24h, widen to 48h / 7d if gap
   const now = Date.now();
   let points = [];
   for (const hours of [24, 48, 168]) {
