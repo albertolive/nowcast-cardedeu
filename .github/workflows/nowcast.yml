@@ -111,6 +111,16 @@ jobs:
       - name: Activate venv
         run: echo "${{ github.workspace }}/.venv/bin" >> $GITHUB_PATH
 
+      - name: Sync to latest origin/main
+        # The concurrency group queues runs but checkout already ran before the
+        # queue gate, so by the time predict_now.py starts our working copy may
+        # be stale (a previous run pushed while we were waiting). Reset hard so
+        # predict reads/writes against the latest tree and the final push is
+        # always a fast-forward.
+        run: |
+          git fetch origin main
+          git reset --hard origin/main
+
       - name: Run prediction
         id: nowcast
         run: python scripts/predict_now.py
@@ -132,12 +142,13 @@ jobs:
       - name: Commit prediction data
         if: always()
         run: |
+          set -e
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git pull --rebase origin main || true
-          cp -f data/latest_prediction.json docs/latest_prediction.json 2>/dev/null || true
+
           # Slim predictions log into docs/ so dashboards (Vercel + GH Pages) serve fresh history.
           # Write to .tmp and mv on success so a parse error never leaves an empty file.
+          cp -f data/latest_prediction.json docs/latest_prediction.json 2>/dev/null || true
           python3 -c "
           import json
           KEEP = {'timestamp','probability_pct','rain_category','verified','actual_rain','actual_rain_mm','correct'}
@@ -151,12 +162,31 @@ jobs:
                   except Exception:
                       pass
           " > docs/predictions_log.jsonl.tmp && mv docs/predictions_log.jsonl.tmp docs/predictions_log.jsonl
+
           git add data/predictions_log.jsonl data/notification_state.json data/latest_prediction.json
           git add data/aemet_cache.json 2>/dev/null || true
           git add data/meteocat_cache.json 2>/dev/null || true
           git add docs/latest_prediction.json docs/predictions_log.jsonl 2>/dev/null || true
-          git diff --cached --quiet || git commit -m "📊 Prediction $(date -u +%Y-%m-%dT%H:%M)"
-          git push || (git pull --rebase origin main && git push)
+          git diff --cached --quiet && exit 0
+          git commit -m "📊 Prediction $(date -u +%Y-%m-%dT%H:%M)"
+
+          # Concurrency group serialises predict runs and we synced to origin/main
+          # before predict_now.py, so push should be a fast-forward. Retry once
+          # in case of a transient network hiccup or external push (retrain).
+          for i in 1 2 3; do
+            if git push; then exit 0; fi
+            echo "Push attempt $i rejected; refetching"
+            git fetch origin main
+            git rebase origin/main || {
+              echo "Rebase conflict — keeping our version of generated files"
+              git checkout --ours data/predictions_log.jsonl data/latest_prediction.json data/notification_state.json data/aemet_cache.json data/meteocat_cache.json docs/latest_prediction.json docs/predictions_log.jsonl 2>/dev/null || true
+              git add data/ docs/ 2>/dev/null || true
+              git rebase --continue || git rebase --abort
+            }
+            sleep $((i * 2))
+          done
+          echo "ERROR: Failed to push after 3 attempts"
+          exit 1
 
       - name: Notificar fallada per Telegram
         if: failure()
