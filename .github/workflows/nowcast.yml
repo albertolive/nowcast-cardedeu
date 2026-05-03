@@ -177,7 +177,7 @@ jobs:
             if git push; then exit 0; fi
             echo "Push attempt $i rejected; refetching"
             git fetch origin main
-            git rebase origin/main || {
+            git rebase --autostash origin/main || {
               echo "Rebase conflict — keeping our version of generated files"
               git checkout --ours data/predictions_log.jsonl data/latest_prediction.json data/notification_state.json data/aemet_cache.json data/meteocat_cache.json docs/latest_prediction.json docs/predictions_log.jsonl 2>/dev/null || true
               git add data/ docs/ 2>/dev/null || true
@@ -287,6 +287,12 @@ jobs:
   retrain:
     needs: test
     runs-on: ubuntu-latest
+    # Share the predict-push concurrency group so retrain and predict can never
+    # push simultaneously — eliminates the rejected-push race that triggered
+    # the rebase-on-dirty-tree failure mode.
+    concurrency:
+      group: predict-push
+      cancel-in-progress: false
     if: >-
       github.event.schedule == '0 2 * * 0' ||
       (github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'retrain')
