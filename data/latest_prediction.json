@@ -4,12 +4,12 @@
   "will_rain": false,
   "rain_category": "sec",
   "confidence": "Molt Baixa",
-  "timestamp": "2026-05-05T01:11:18.243328",
+  "timestamp": "2026-05-05T01:12:10.964137",
   "conditions": {
     "temperature": "13.6",
     "humidity": 91,
     "pressure": "1012.6",
-    "wind_speed": "1.6",
+    "wind_speed": "0.0",
     "wind_dir": "SO",
     "rain_today": "0.0",
     "solar_radiation": 0
@@ -39,9 +39,9 @@
   },
   "sentinel": {
     "station": "Granollers",
-    "temp": null,
-    "humidity": null,
-    "precip": null,
+    "temp": 13.1,
+    "humidity": 100.0,
+    "precip": 0.0,
     "raining": 0
   },
   "ensemble": {
@@ -250,12 +250,12 @@
     "radar_quadrant_coverage_W": 0.0,
     "radar_echo_bearing_sin": null,
     "radar_echo_bearing_cos": null,
-    "sentinel_temp_diff": null,
-    "sentinel_humidity_diff": null,
-    "sentinel_precip": null,
+    "sentinel_temp_diff": 0.5,
+    "sentinel_humidity_diff": 9.0,
+    "sentinel_precip": 0.0,
     "sentinel_raining": 0.0,
-    "local_rain_xema": null,
-    "local_rain_xema_3h": null,
+    "local_rain_xema": 0.0,
+    "local_rain_xema_3h": 1.0,
     "ensemble_rain_agreement": 0.25,
     "ensemble_precip_spread": 0.4,
     "ensemble_temp_spread": 0.7314369419163902,
@@ -350,16 +350,15 @@
     }
   ],
   "verification": {
-    "verified_count": 1,
-    "correct_count": 1,
+    "verified_count": 0,
+    "correct_count": 0,
     "wrong_count": 0,
-    "skipped": 397,
+    "skipped": 398,
     "source": "meteocardedeu",
     "lookup_hours": 48,
     "station_rows": 2569,
-    "station_first_ts": "2026-05-03T01:12:00",
-    "station_last_ts": "2026-05-05T01:11:00",
-    "pending_total": 397,
-    "accuracy": 100.0
+    "station_first_ts": "2026-05-03T01:13:00",
+    "station_last_ts": "2026-05-05T01:12:00",
+    "pending_total": 398
   }
 }
