@@ -49,12 +49,6 @@ def compute_accuracy(days: int = None) -> dict:
     tn = sum(1 for e in scorable if e.get("rain_category") == "sec" and not e["actual_rain"])
     fn = sum(1 for e in scorable if e.get("rain_category") == "sec" and e["actual_rain"])
 
-    # Legacy confusion matrix (all verified, using will_rain for backward compat)
-    legacy_tp = sum(1 for e in verified if e["will_rain"] and e["actual_rain"])
-    legacy_fp = sum(1 for e in verified if e["will_rain"] and not e["actual_rain"])
-    legacy_tn = sum(1 for e in verified if not e["will_rain"] and not e["actual_rain"])
-    legacy_fn = sum(1 for e in verified if not e["will_rain"] and e["actual_rain"])
-
     total = tp + fp + tn + fn
     accuracy = (tp + tn) / total if total > 0 else 0
     precision = tp / (tp + fp) if (tp + fp) > 0 else None
@@ -128,7 +122,6 @@ def compute_accuracy(days: int = None) -> dict:
         "f1": round(f1 * 100, 1) if f1 is not None else None,
         "brier_score": round(brier_score, 4) if brier_score is not None else None,
         "confusion": {"tp": tp, "fp": fp, "tn": tn, "fn": fn},
-        "legacy_confusion": {"tp": legacy_tp, "fp": legacy_fp, "tn": legacy_tn, "fn": legacy_fn},
         "calibration": calibration,
         "by_confidence": by_confidence,
         "daily": dict(sorted(daily.items(), reverse=True)[:7]),
