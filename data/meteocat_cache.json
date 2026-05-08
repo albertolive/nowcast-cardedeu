@@ -1,4 +1,22 @@
 {
+  "lightning_features_20260508_08": {
+    "timestamp": 1778227288.5709317,
+    "data": {
+      "lightning_count_30km": 0,
+      "lightning_count_15km": 0,
+      "lightning_nearest_km": 40,
+      "lightning_nearest_bearing": null,
+      "lightning_nearest_compass": null,
+      "lightning_cloud_ground": 0,
+      "lightning_max_current_ka": 0.0,
+      "lightning_approaching": false,
+      "lightning_has_activity": false
+    }
+  },
+  "xdde_2026-05-08_08": {
+    "timestamp": 1778227287.557862,
+    "data": []
+  },
   "xema_35_2026-05-08": {
     "timestamp": 1778226103.7838743,
     "data": [
@@ -756202,29 +756220,5 @@
   "xdde_2026-05-03_11": {
     "timestamp": 1777806094.683009,
     "data": []
-  },
-  "smc_forecast_20260503_12": {
-    "timestamp": 1777802492.9245274,
-    "data": {
-      "smc_prob_precip_1h": 0,
-      "smc_prob_precip_6h": 0,
-      "smc_precip_intensity": 0,
-      "smc_temp_forecast": 18.5,
-      "smc_weather_symbol": 5
-    }
-  },
-  "lightning_features_20260503_10": {
-    "timestamp": 1777802490.3973756,
-    "data": {
-      "lightning_count_30km": 0,
-      "lightning_count_15km": 0,
-      "lightning_nearest_km": 40,
-      "lightning_nearest_bearing": null,
-      "lightning_nearest_compass": null,
-      "lightning_cloud_ground": 0,
-      "lightning_max_current_ka": 0.0,
-      "lightning_approaching": false,
-      "lightning_has_activity": false
-    }
   }
 }
