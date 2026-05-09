@@ -569,7 +569,12 @@ def predict_now() -> dict:
             "sst_med": sst_data.get("sst_med"),
         },
         "rain_gate_open": rain_signals,
-        "station_available": not station_df.empty,
+        # True when *any* station signal is reachable: either fetch_latest()
+        # gave us a current snapshot (PINT, etc.) or fetch_series() returned
+        # the time series. Must mirror _compute_station_raining_now's input
+        # space — otherwise station_raining_now=True with PINT-only data
+        # would be silently discarded by the frontend's freshness gate.
+        "station_available": bool(current) or not station_df.empty,
         "station_raining_now": _compute_station_raining_now(current, station_df),
         "features_used": len(feature_names),
         "threshold": threshold,
