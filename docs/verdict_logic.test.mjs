@@ -221,3 +221,15 @@ test("missing probability_pct never produces 'undefined%' string", () => {
   assert.ok(!out.includes("undefined"), `Got: ${out}`);
   assert.ok(!out.includes("null"), `Got: ${out}`);
 });
+
+test("explicit null probability_pct does not trigger dry verdict (JS null < 30 trap)", () => {
+  // The serialiser writes JSON null when the model produced NaN, and
+  // `null < 30` is true in JS — without a guard this routes to "No plourà".
+  const d = { timestamp: FRESH_TS, rain_category: "incert", probability_pct: null };
+  assert.equal(verdictText(d, FRESH_NOW), "🌫️ Sense dades suficients");
+});
+
+test("explicit null pct with no category falls through to uncertainText", () => {
+  const d = { timestamp: FRESH_TS, probability_pct: null };
+  assert.equal(verdictText(d, FRESH_NOW), "🌫️ Sense dades suficients");
+});

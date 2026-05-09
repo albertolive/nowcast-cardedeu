@@ -35,8 +35,11 @@ export function isStationStateKnown(d, now = Date.now()) {
 export function verdictText(d, now = Date.now()) {
   const cat = d?.rain_category;
   const pct = d?.probability_pct;
-  const isProbable = cat === 'probable' || pct >= 65;
-  const isDry = cat === 'sec' || pct < 30;
+  // Null-guard the numeric checks: in JS `null < 30` coerces null to 0
+  // and evaluates true, which would silently route a missing pct to the
+  // dry verdict. `undefined < 30` is false (NaN), but null leaks through.
+  const isProbable = cat === 'probable' || (pct != null && pct >= 65);
+  const isDry = cat === 'sec' || (pct != null && pct < 30);
   // Honest fallback when both signals are missing — showing "0%" or
   // "undefined%" would either mislead or look broken.
   const uncertainText = pct == null
