@@ -1,0 +1,63 @@
+// Verdict text logic. Decides the headline label shown next to the probability
+// ring, distinguishing five user-relevant states:
+//   - persistence (it's raining now and the model expects it to continue)
+//   - rain ending (raining now but model leans dry — rare, the 0.80 floor in
+//     predict.py blocks most cases)
+//   - uncertain while raining (raining now, probability in the 30-65% band)
+//   - anticipation (not raining now but probability ≥65% — the valuable case)
+//   - dry / uncertain / probable fallbacks when no trustworthy local signal
+//
+// The station signal is trusted only when:
+//   1. the JSON exposes station_raining_now (post-refactor predictions),
+//   2. station_available is not explicitly false (station was online),
+//   3. the prediction itself is fresh (≤15 min old — the cron runs every 10).
+
+// Keep in lockstep with the cron interval. 15 min covers normal jitter
+// without claiming "plou ara" hours after an outage.
+export const STATION_FRESHNESS_MS = 15 * 60 * 1000;
+
+// Strict TZ marker check (Z, +HH:MM, +HHMM, -HH:MM, -HHMM). Without one,
+// `new Date(iso)` silently parses as the user's local time — if the server
+// and user are in different timezones the freshness gate either always
+// passes or always fails. Refusing to interpret naive timestamps surfaces
+// the issue as a fallback rather than as a wrong-by-N-hours decision.
+const TZ_MARKER = /(?:Z|[+-]\d{2}:?\d{2})$/;
+
+export function isStationStateKnown(d, now = Date.now()) {
+  if (d == null || d.station_raining_now == null) return false;
+  if (d.station_available === false) return false;
+  if (!d.timestamp || !TZ_MARKER.test(d.timestamp)) return false;
+  const ts = new Date(d.timestamp).getTime();
+  if (!Number.isFinite(ts)) return false;
+  return now - ts <= STATION_FRESHNESS_MS;
+}
+
+export function verdictText(d, now = Date.now()) {
+  const cat = d?.rain_category;
+  const pct = d?.probability_pct;
+  // Null-guard the numeric checks: in JS `null < 30` coerces null to 0
+  // and evaluates true, which would silently route a missing pct to the
+  // dry verdict. `undefined < 30` is false (NaN), but null leaks through.
+  const isProbable = cat === 'probable' || (pct != null && pct >= 65);
+  const isDry = cat === 'sec' || (pct != null && pct < 30);
+  // Honest fallback when both signals are missing — showing "0%" or
+  // "undefined%" would either mislead or look broken.
+  const uncertainText = pct == null
+    ? '🌫️ Sense dades suficients'
+    : `🌤️ ${pct}% probabilitat de pluja`;
+
+  if (isStationStateKnown(d, now)) {
+    if (d.station_raining_now === true) {
+      if (isProbable) return '🌧️ Plou ara · continua';
+      if (isDry) return '🌧️ Plou ara · acabarà aviat';
+      return '🌧️ Plou ara · pot parar aviat';
+    }
+    if (isProbable) return '⚠️ Pluja imminent';
+    if (isDry) return '☀️ No plourà';
+    return uncertainText;
+  }
+
+  if (isProbable) return '🌧️ Pluja probable';
+  if (isDry) return '☀️ No plourà';
+  return uncertainText;
+}

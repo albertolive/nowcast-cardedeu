@@ -59,6 +59,8 @@ def log_prediction(result: dict) -> None:
         "threshold": result.get("threshold"),
         "raw_probability": result.get("raw_probability"),
         "rain_gate_open": result.get("rain_gate_open"),
+        "station_available": result.get("station_available"),
+        "station_raining_now": result.get("station_raining_now"),
         # Condicions locals
         "conditions": result.get("conditions", {}),
         # Radar complet (RainViewer)
