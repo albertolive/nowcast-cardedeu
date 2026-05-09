@@ -115,13 +115,10 @@ def _compute_station_raining_now(current: dict | None, station_df) -> bool:
                 return True
         except (TypeError, ValueError):
             pass
-    if station_df is not None and not station_df.empty:
-        try:
-            recent = station_df.tail(6)
-            if "PREC" in recent.columns and float(recent["PREC"].astype(float).sum()) > 0:
-                return True
-        except Exception:
-            pass
+    if station_df is not None and not station_df.empty and "PREC" in station_df.columns:
+        recent_prec = pd.to_numeric(station_df["PREC"].tail(6), errors="coerce")
+        if recent_prec.sum() > 0:
+            return True
     return False
 
 

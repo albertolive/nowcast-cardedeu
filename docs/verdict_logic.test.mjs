@@ -160,3 +160,26 @@ test("rain_category overrides probability when category is 'sec'", () => {
   const d = pred({ station_raining_now: false, probability_pct: 50, rain_category: "sec" });
   assert.equal(verdictText(d, FRESH_NOW), "☀️ No plourà");
 });
+
+// ── missing probability_pct ─────────────────────────────────────────────
+
+test("missing probability_pct in fallback branch → honest 'sense dades' text", () => {
+  // Legacy/corrupt entry: no station signal AND no probability.
+  const d = { timestamp: FRESH_TS, rain_category: "incert" };
+  assert.equal(verdictText(d, FRESH_NOW), "🌫️ Sense dades suficients");
+});
+
+test("missing probability_pct with known station signal also yields 'sense dades'", () => {
+  // Station says not raining but probability is missing — uncertain bucket.
+  const d = pred({ station_raining_now: false });
+  delete d.probability_pct;
+  d.rain_category = "incert";
+  assert.equal(verdictText(d, FRESH_NOW), "🌫️ Sense dades suficients");
+});
+
+test("missing probability_pct never produces 'undefined%' string", () => {
+  const d = { timestamp: FRESH_TS };
+  const out = verdictText(d, FRESH_NOW);
+  assert.ok(!out.includes("undefined"), `Got: ${out}`);
+  assert.ok(!out.includes("null"), `Got: ${out}`);
+});

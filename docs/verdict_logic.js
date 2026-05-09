@@ -29,6 +29,11 @@ export function verdictText(d, now = Date.now()) {
   const pct = d?.probability_pct;
   const isProbable = cat === 'probable' || pct >= 65;
   const isDry = cat === 'sec' || pct < 30;
+  // Honest fallback when both signals are missing — showing "0%" or
+  // "undefined%" would either mislead or look broken.
+  const uncertainText = pct == null
+    ? '🌫️ Sense dades suficients'
+    : `🌤️ ${pct}% probabilitat de pluja`;
 
   if (isStationStateKnown(d, now)) {
     if (d.station_raining_now === true) {
@@ -38,10 +43,10 @@ export function verdictText(d, now = Date.now()) {
     }
     if (isProbable) return '⚠️ Pluja imminent';
     if (isDry) return '☀️ No plourà';
-    return `🌤️ ${pct}% probabilitat de pluja`;
+    return uncertainText;
   }
 
   if (isProbable) return '🌧️ Pluja probable';
   if (isDry) return '☀️ No plourà';
-  return `🌤️ ${pct}% probabilitat de pluja`;
+  return uncertainText;
 }
