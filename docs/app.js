@@ -5,6 +5,7 @@ const REFRESH_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
 
 import { deriveRadarViewModel } from './radar_logic.js';
 import { selectDriverExplanations, GROUP_TOOLTIP } from './driver_logic.js';
+import { verdictText } from './verdict_logic.js';
 
 function getDataBases() {
   // Local docs/ first (fresh slim JSONL pushed every 10 min by the predict job),
@@ -111,14 +112,9 @@ function _probTrend(history) {
   return { arrow: '→', label: 'estable', cls: 'trend-stable' };
 }
 
-/** Honest verdict text based on rain_category or probability thresholds */
+/** Honest verdict text — see verdict_logic.js for state machine. */
 function _verdictText(d) {
-  const cat = d.rain_category;
-  const pct = d.probability_pct;
-  if (cat === 'probable' || pct >= 65) return '🌧️ Pluja probable';
-  if (cat === 'sec' || pct < 30) return '☀️ No plourà';
-  // Uncertain zone: show the probability honestly
-  return `🌤️ ${pct}% probabilitat de pluja`;
+  return verdictText(d);
 }
 
 /** Display label for history rows: sec/incert/probable */

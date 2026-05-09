@@ -101,6 +101,30 @@ def _aemet_storm_above_threshold(aemet_data: dict) -> bool:
         return False
 
 
+def _compute_station_raining_now(current: dict | None, station_df) -> bool:
+    """Whether the local Cardedeu station shows rain at this moment.
+
+    PINT (mm/h, current intensity) is the primary signal. If unavailable or
+    zero, falls back to summing PREC over the last ~6 minutes. Returns False
+    when neither signal is present (station offline or no precipitation).
+    """
+    pint_str = (current or {}).get("PINT")
+    if pint_str is not None:
+        try:
+            if float(pint_str) > 0:
+                return True
+        except (TypeError, ValueError):
+            pass
+    if station_df is not None and not station_df.empty:
+        try:
+            recent = station_df.tail(6)
+            if "PREC" in recent.columns and float(recent["PREC"].astype(float).sum()) > 0:
+                return True
+        except Exception:
+            pass
+    return False
+
+
 def _apply_physical_constraints(probability: float, radar_data: dict,
                                  sentinel_features: dict,
                                  aemet_radar_data: dict | None = None,
@@ -177,22 +201,7 @@ def _apply_physical_constraints(probability: float, radar_data: dict,
 
     # 6. L'estació de Cardedeu està plovent ARA (PINT mm/h o PREC recent >0)
     # Observació directa: la predicció a 60 min mai pot ser "sec" si plou ja aquí.
-    station_raining_now = False
-    pint_str = (current or {}).get("PINT")
-    if pint_str is not None:
-        try:
-            if float(pint_str) > 0:
-                station_raining_now = True
-        except (TypeError, ValueError):
-            pass
-    if not station_raining_now and station_df is not None and not station_df.empty:
-        try:
-            recent = station_df.tail(6)  # ~últims 6 minuts
-            if "PREC" in recent.columns and float(recent["PREC"].astype(float).sum()) > 0:
-                station_raining_now = True
-        except Exception:
-            pass
-    if station_raining_now:
+    if _compute_station_raining_now(current, station_df):
         floor = 0.80
         if adjusted < floor:
             adjustments.append("Plou ara mateix a l'estació de Cardedeu")
@@ -564,6 +573,7 @@ def predict_now() -> dict:
         },
         "rain_gate_open": rain_signals,
         "station_available": not station_df.empty,
+        "station_raining_now": _compute_station_raining_now(current, station_df),
         "features_used": len(feature_names),
         "threshold": threshold,
         "calibrated": calibrator is not None,
