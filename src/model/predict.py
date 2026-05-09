@@ -2,7 +2,7 @@
 Predicció en temps real: combina dades locals + models i executa XGBoost.
 """
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 
 import numpy as np
@@ -482,7 +482,11 @@ def predict_now() -> dict:
         "will_rain": will_rain,
         "rain_category": rain_category,
         "confidence": confidence,
-        "timestamp": datetime.now().isoformat(),
+        # Timezone-aware ISO so the frontend can compare against Date.now()
+        # without ambiguity. Naive timestamps would be parsed as the user's
+        # local time by JS, breaking the freshness gate for any user not in
+        # the same TZ as the cron (TZ=Europe/Madrid).
+        "timestamp": datetime.now(timezone.utc).isoformat(),
         "conditions": {
             "temperature": current.get("TEMP"),
             "humidity": current.get("HUM"),

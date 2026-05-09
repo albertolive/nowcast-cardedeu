@@ -16,10 +16,18 @@
 // without claiming "plou ara" hours after an outage.
 export const STATION_FRESHNESS_MS = 15 * 60 * 1000;
 
+// Strict TZ marker check (Z, +HH:MM, +HHMM, -HH:MM, -HHMM). Without one,
+// `new Date(iso)` silently parses as the user's local time — if the server
+// and user are in different timezones the freshness gate either always
+// passes or always fails. Refusing to interpret naive timestamps surfaces
+// the issue as a fallback rather than as a wrong-by-N-hours decision.
+const TZ_MARKER = /(?:Z|[+-]\d{2}:?\d{2})$/;
+
 export function isStationStateKnown(d, now = Date.now()) {
   if (d == null || d.station_raining_now == null) return false;
   if (d.station_available === false) return false;
-  const ts = d.timestamp ? new Date(d.timestamp).getTime() : NaN;
+  if (!d.timestamp || !TZ_MARKER.test(d.timestamp)) return false;
+  const ts = new Date(d.timestamp).getTime();
   if (!Number.isFinite(ts)) return false;
   return now - ts <= STATION_FRESHNESS_MS;
 }

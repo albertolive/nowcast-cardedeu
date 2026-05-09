@@ -65,6 +65,44 @@ test("station state unknown when timestamp unparseable", () => {
   assert.equal(isStationStateKnown(pred({ timestamp: "not-a-date" }), FRESH_NOW), false);
 });
 
+test("station state unknown when timestamp lacks timezone marker (naive ISO)", () => {
+  // datetime.now().isoformat() produces this — no TZ → ambiguous → reject.
+  assert.equal(
+    isStationStateKnown(pred({ timestamp: "2026-05-09T16:20:33.551852" }), FRESH_NOW),
+    false
+  );
+});
+
+test("station state known with explicit Z timezone marker", () => {
+  assert.equal(
+    isStationStateKnown(pred({ timestamp: "2026-05-09T16:20:00Z" }), FRESH_NOW),
+    true
+  );
+});
+
+test("station state known with +00:00 offset", () => {
+  assert.equal(
+    isStationStateKnown(pred({ timestamp: "2026-05-09T16:20:00+00:00" }), FRESH_NOW),
+    true
+  );
+});
+
+test("station state known with +02:00 offset (Madrid summer)", () => {
+  // Same instant as 16:20 UTC: 18:20 in Madrid summer time. FRESH_NOW is
+  // 16:25 UTC, so this is 5 min old → fresh.
+  assert.equal(
+    isStationStateKnown(pred({ timestamp: "2026-05-09T18:20:00+02:00" }), FRESH_NOW),
+    true
+  );
+});
+
+test("station state known with +0200 offset (no colon)", () => {
+  assert.equal(
+    isStationStateKnown(pred({ timestamp: "2026-05-09T18:20:00+0200" }), FRESH_NOW),
+    true
+  );
+});
+
 test("station state unknown when prediction is null", () => {
   assert.equal(isStationStateKnown(null, FRESH_NOW), false);
 });
