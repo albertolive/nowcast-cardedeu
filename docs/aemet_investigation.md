@@ -124,14 +124,19 @@ rarely emits 20-80%, and when it does the few entries fall on dry days).
    rain (the 4 hit days). The model learns from when this regional signal
    does and doesn't translate.
 
-4. **Possible micro-bug worth a follow-up commit**: the period filter at
-   `aemet.py:97-102` is `h_start <= current_hour + 6 and h_end >
-   current_hour`, which keeps a period that's almost expired. Example: at
-   11:00 the period `0612` (6-12 AM) still passes the filter (`6 <= 17
-   and 12 > 11`) and contributes to the max even though only 1 hour of
-   it remains. Tightening to `h_start <= current_hour and h_end >
-   current_hour` (or filtering to "this period or the next two") would
-   reduce noise. **Not done in this branch — diagnostic only.**
+4. **The period filter at `aemet.py:97-102` is correct** — initial
+   reading flagged it as a "micro-bug" but a second look (and a
+   reviewer's pushback) shows it's doing the right thing. The filter
+   `h_start <= current_hour + 6 and h_end > current_hour` keeps **any**
+   6h AEMET period that overlaps the [now, now + 6h] forecast window,
+   and the max over them is conservative — pessimistic in either edge
+   of the window. Tightening it to "current period only" would, at
+   11:00, exclude the 12-18 period that covers 5 of the next 6 hours.
+   The conservative max is the intended semantic.
+
+   The only remaining design question is whether a duration-weighted
+   average (instead of max) would be more meaningful. That's a feature
+   redesign, not a bug fix.
 
 ## Recommended follow-ups
 
@@ -140,7 +145,7 @@ rarely emits 20-80%, and when it does the few entries fall on dry days).
 | Update `benchmark_vs_baselines.py` to disclose AEMET's window mismatch and de-emphasise it as a baseline | `scripts/` | High |
 | Add a per-day hit-rate metric (more honest for AEMET) | `scripts/` | Medium |
 | Add Open-Meteo per-hour `precipitation_probability` as a true 60-min baseline | features pipeline + script | Medium |
-| Tighten the period filter at `aemet.py:97-102` | data layer | Low |
+| (withdrawn — period filter is correct, see point 4 above) | — | — |
 | Re-run the benchmark when more rain events accumulate (4 days isn't enough) | quarterly | High |
 
 ## What this does NOT change
