@@ -2,7 +2,7 @@
   "current_state": "rain_alert",
   "last_alert_time": 1778339435.7605555,
   "last_alert_type": "regime_change",
-  "last_probability": 0.952,
+  "last_probability": 0.9835,
   "consecutive_high": 0,
   "consecutive_low": 0,
   "last_wind_regime": {
@@ -12,8 +12,8 @@
     "is_migjorn": false,
     "is_garbi": false,
     "is_ponent": false,
-    "llevantada_strength": 14.6,
-    "wind_dir_change_3h": 9.0
+    "llevantada_strength": 16.0,
+    "wind_dir_change_3h": -4.0
   },
   "last_regime_alert_time": 1778339435.7605555,
   "last_regime_alert_type": "pressure_drop"
