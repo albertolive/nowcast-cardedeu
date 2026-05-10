@@ -308,6 +308,42 @@ class TestVerificationWindow:
         # No normalisation needed; naive comparisons just work.
         _ = datetime.now() < pred_time + timedelta(minutes=15)
 
+    def test_parse_log_timestamp_helper_aware(self):
+        """The helper used by verify.py must strip TZ info on aware ISO."""
+        from src.feedback.verify import _parse_log_timestamp
+        out = _parse_log_timestamp("2026-05-10T16:10:35.582690+00:00")
+        assert out.tzinfo is None
+
+    def test_parse_log_timestamp_helper_naive(self):
+        from src.feedback.verify import _parse_log_timestamp
+        out = _parse_log_timestamp("2026-04-30T08:50:00.123456")
+        assert out.tzinfo is None
+
+    def test_min_over_mixed_aware_and_naive_log(self):
+        """The cutover left the log with a mix of legacy naive entries and
+        new TZ-aware ones. `min()` over the raw parsed datetimes raises
+        TypeError; via the helper it works."""
+        from src.feedback.verify import _parse_log_timestamp
+        legacy = "2026-04-30T08:50:00.123456"
+        post_pr1 = "2026-05-10T16:10:35.582690+00:00"
+
+        # Bare comparison reproduces the second regression Gemini caught:
+        with pytest.raises(TypeError):
+            _ = min(datetime.fromisoformat(t) for t in (legacy, post_pr1))
+
+        # Through the helper, both come out naive and min() works.
+        out = min(_parse_log_timestamp(t) for t in (legacy, post_pr1))
+        assert out.tzinfo is None
+
+    def test_now_minus_oldest_pending_works_after_normalisation(self):
+        """The needed_hours arithmetic at verify.py:38 needs `now` and
+        `oldest_pending` in the same TZ-naive space."""
+        from src.feedback.verify import _parse_log_timestamp
+        oldest = _parse_log_timestamp("2026-05-10T16:10:35.582690+00:00")
+        delta = datetime.now() - oldest
+        # Just must not raise — value is unimportant.
+        assert isinstance(delta, timedelta)
+
 
 class TestSafeFloat:
     """Test the _safe_float helper used in regime detection."""
