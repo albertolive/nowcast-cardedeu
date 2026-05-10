@@ -78,6 +78,14 @@ def verify_pending_predictions() -> dict:
             continue
 
         pred_time = datetime.fromisoformat(entry["timestamp"])
+        # Post-PR #1 timestamps are TZ-aware UTC; verify runs with naive
+        # local-time `now` and naive station_df["datetime"]. Comparing
+        # aware vs naive raises TypeError, which silently breaks
+        # verification for every entry written after the cutover.
+        # Normalise to naive local time so the comparisons below work for
+        # both new (TZ-aware) and legacy (naive) entries.
+        if pred_time.tzinfo is not None:
+            pred_time = pred_time.astimezone().replace(tzinfo=None)
         verification_window_end = pred_time + timedelta(minutes=config.PREDICTION_HORIZON_MIN)
 
         # Només verificar si ja han passat 60 min + 15 min de marge

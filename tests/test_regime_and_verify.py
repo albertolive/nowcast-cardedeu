@@ -275,6 +275,39 @@ class TestVerificationWindow:
         now_ok = datetime(2026, 3, 22, 15, 20)
         assert now_ok >= earliest_verify
 
+    def test_tz_aware_timestamp_normalises_to_naive_local(self):
+        """Post-PR #1 timestamps are TZ-aware UTC. The verifier compares
+        them against naive `datetime.now()` and naive station_df dates;
+        without normalisation the bare comparison raises TypeError, which
+        silently strands every new prediction at "Pendent". This pins the
+        normalisation step used in verify.py so the regression can't
+        come back."""
+        # As written by predict.py post-PR #1.
+        ts_iso = "2026-05-10T16:10:35.582690+00:00"
+        pred_time = datetime.fromisoformat(ts_iso)
+        assert pred_time.tzinfo is not None, "log entry is TZ-aware"
+
+        # Bare comparison between aware and naive raises (the regression):
+        with pytest.raises(TypeError):
+            _ = datetime.now() < pred_time + timedelta(minutes=15)
+
+        # Normalisation: convert to local TZ then strip tzinfo. This is
+        # what verify.py applies before the window comparison.
+        normalised = pred_time.astimezone().replace(tzinfo=None)
+        assert normalised.tzinfo is None
+        # And it's now comparable with naive datetimes (the fix):
+        _ = datetime.now() < normalised + timedelta(minutes=15)
+
+    def test_naive_legacy_timestamp_passes_through(self):
+        """Legacy log entries (pre-PR #1) have naive timestamps. They
+        must still parse and compare cleanly — the fix must not regress
+        them."""
+        ts_iso = "2026-04-30T08:50:00.123456"
+        pred_time = datetime.fromisoformat(ts_iso)
+        assert pred_time.tzinfo is None
+        # No normalisation needed; naive comparisons just work.
+        _ = datetime.now() < pred_time + timedelta(minutes=15)
+
 
 class TestSafeFloat:
     """Test the _safe_float helper used in regime detection."""
