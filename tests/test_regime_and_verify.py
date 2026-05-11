@@ -275,6 +275,75 @@ class TestVerificationWindow:
         now_ok = datetime(2026, 3, 22, 15, 20)
         assert now_ok >= earliest_verify
 
+    def test_tz_aware_timestamp_normalises_to_naive_local(self):
+        """Post-PR #1 timestamps are TZ-aware UTC. The verifier compares
+        them against naive `datetime.now()` and naive station_df dates;
+        without normalisation the bare comparison raises TypeError, which
+        silently strands every new prediction at "Pendent". This pins the
+        normalisation step used in verify.py so the regression can't
+        come back."""
+        # As written by predict.py post-PR #1.
+        ts_iso = "2026-05-10T16:10:35.582690+00:00"
+        pred_time = datetime.fromisoformat(ts_iso)
+        assert pred_time.tzinfo is not None, "log entry is TZ-aware"
+
+        # Bare comparison between aware and naive raises (the regression):
+        with pytest.raises(TypeError):
+            _ = datetime.now() < pred_time + timedelta(minutes=15)
+
+        # Normalisation: convert to local TZ then strip tzinfo. This is
+        # what verify.py applies before the window comparison.
+        normalised = pred_time.astimezone().replace(tzinfo=None)
+        assert normalised.tzinfo is None
+        # And it's now comparable with naive datetimes (the fix):
+        _ = datetime.now() < normalised + timedelta(minutes=15)
+
+    def test_naive_legacy_timestamp_passes_through(self):
+        """Legacy log entries (pre-PR #1) have naive timestamps. They
+        must still parse and compare cleanly — the fix must not regress
+        them."""
+        ts_iso = "2026-04-30T08:50:00.123456"
+        pred_time = datetime.fromisoformat(ts_iso)
+        assert pred_time.tzinfo is None
+        # No normalisation needed; naive comparisons just work.
+        _ = datetime.now() < pred_time + timedelta(minutes=15)
+
+    def test_parse_log_timestamp_helper_aware(self):
+        """The helper used by verify.py must strip TZ info on aware ISO."""
+        from src.feedback.verify import _parse_log_timestamp
+        out = _parse_log_timestamp("2026-05-10T16:10:35.582690+00:00")
+        assert out.tzinfo is None
+
+    def test_parse_log_timestamp_helper_naive(self):
+        from src.feedback.verify import _parse_log_timestamp
+        out = _parse_log_timestamp("2026-04-30T08:50:00.123456")
+        assert out.tzinfo is None
+
+    def test_min_over_mixed_aware_and_naive_log(self):
+        """The cutover left the log with a mix of legacy naive entries and
+        new TZ-aware ones. `min()` over the raw parsed datetimes raises
+        TypeError; via the helper it works."""
+        from src.feedback.verify import _parse_log_timestamp
+        legacy = "2026-04-30T08:50:00.123456"
+        post_pr1 = "2026-05-10T16:10:35.582690+00:00"
+
+        # Bare comparison reproduces the second regression Gemini caught:
+        with pytest.raises(TypeError):
+            _ = min(datetime.fromisoformat(t) for t in (legacy, post_pr1))
+
+        # Through the helper, both come out naive and min() works.
+        out = min(_parse_log_timestamp(t) for t in (legacy, post_pr1))
+        assert out.tzinfo is None
+
+    def test_now_minus_oldest_pending_works_after_normalisation(self):
+        """The needed_hours arithmetic at verify.py:38 needs `now` and
+        `oldest_pending` in the same TZ-naive space."""
+        from src.feedback.verify import _parse_log_timestamp
+        oldest = _parse_log_timestamp("2026-05-10T16:10:35.582690+00:00")
+        delta = datetime.now() - oldest
+        # Just must not raise — value is unimportant.
+        assert isinstance(delta, timedelta)
+
 
 class TestSafeFloat:
     """Test the _safe_float helper used in regime detection."""

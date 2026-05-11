@@ -16,6 +16,22 @@ from src.feedback.logger import load_predictions_log, save_predictions_log
 logger = logging.getLogger(__name__)
 
 
+def _parse_log_timestamp(iso: str) -> datetime:
+    """Parse a log timestamp into a naive local datetime.
+
+    Predictions written before PR #1 are naive (Europe/Madrid local). Those
+    written after are TZ-aware UTC. Verifier code below compares parsed
+    timestamps against `datetime.now()` (naive local) and against
+    `station_df["datetime"]` (naive local), so we must normalise to a single
+    representation. Mixing aware and naive in `min()` or arithmetic raises
+    TypeError, which is exactly the regression PR #3 is fixing.
+    """
+    dt = datetime.fromisoformat(iso)
+    if dt.tzinfo is not None:
+        dt = dt.astimezone().replace(tzinfo=None)
+    return dt
+
+
 def verify_pending_predictions() -> dict:
     """
     Revisa les prediccions no verificades i comprova si va ploure
@@ -31,8 +47,10 @@ def verify_pending_predictions() -> dict:
     now = datetime.now()
     # Cover at least the oldest pending entry's verification window so a short
     # upstream outage doesn't permanently strand old predictions as "Pendent".
+    # _parse_log_timestamp normalises aware/naive so a log mixing both (post-
+    # PR #1 cutover) doesn't break min() with TypeError.
     oldest_pending = min(
-        (datetime.fromisoformat(e["timestamp"]) for e in entries if not e.get("verified")),
+        (_parse_log_timestamp(e["timestamp"]) for e in entries if not e.get("verified")),
         default=now,
     )
     needed_hours = max(3, int((now - oldest_pending).total_seconds() // 3600) + 2)
@@ -77,7 +95,7 @@ def verify_pending_predictions() -> dict:
         if entry.get("verified"):
             continue
 
-        pred_time = datetime.fromisoformat(entry["timestamp"])
+        pred_time = _parse_log_timestamp(entry["timestamp"])
         verification_window_end = pred_time + timedelta(minutes=config.PREDICTION_HORIZON_MIN)
 
         # Només verificar si ja han passat 60 min + 15 min de marge
