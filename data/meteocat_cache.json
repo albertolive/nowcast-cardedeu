@@ -1,16 +1,16 @@
 {
-  "smc_forecast_20260512_16": {
-    "timestamp": 1778594465.3887892,
+  "smc_forecast_20260512_17": {
+    "timestamp": 1778598058.3653543,
     "data": {
       "smc_prob_precip_1h": 0,
       "smc_prob_precip_6h": 0,
       "smc_precip_intensity": 0,
-      "smc_temp_forecast": 17.1,
+      "smc_temp_forecast": 16.5,
       "smc_weather_symbol": 8
     }
   },
-  "lightning_features_20260512_14": {
-    "timestamp": 1778594463.212972,
+  "lightning_features_20260512_15": {
+    "timestamp": 1778598056.1622036,
     "data": {
       "lightning_count_30km": 0,
       "lightning_count_15km": 0,
@@ -96283,6 +96283,30 @@
         "estat": ""
       }
     ]
+  },
+  "smc_forecast_20260512_16": {
+    "timestamp": 1778594465.3887892,
+    "data": {
+      "smc_prob_precip_1h": 0,
+      "smc_prob_precip_6h": 0,
+      "smc_precip_intensity": 0,
+      "smc_temp_forecast": 17.1,
+      "smc_weather_symbol": 8
+    }
+  },
+  "lightning_features_20260512_14": {
+    "timestamp": 1778594463.212972,
+    "data": {
+      "lightning_count_30km": 0,
+      "lightning_count_15km": 0,
+      "lightning_nearest_km": 40,
+      "lightning_nearest_bearing": null,
+      "lightning_nearest_compass": null,
+      "lightning_cloud_ground": 0,
+      "lightning_max_current_ka": 0.0,
+      "lightning_approaching": false,
+      "lightning_has_activity": false
+    }
   },
   "smc_forecast_20260512_15": {
     "timestamp": 1778590860.1726162,
@@ -441451,24 +441475,6 @@
   },
   "lightning_features_20260507_14": {
     "timestamp": 1778162661.8326778,
-    "data": {
-      "lightning_count_30km": 0,
-      "lightning_count_15km": 0,
-      "lightning_nearest_km": 40,
-      "lightning_nearest_bearing": null,
-      "lightning_nearest_compass": null,
-      "lightning_cloud_ground": 0,
-      "lightning_max_current_ka": 0.0,
-      "lightning_approaching": false,
-      "lightning_has_activity": false
-    }
-  },
-  "xdde_2026-05-07_14": {
-    "timestamp": 1778162660.9093888,
-    "data": []
-  },
-  "lightning_features_20260507_13": {
-    "timestamp": 1778158948.5764647,
     "data": {
       "lightning_count_30km": 0,
       "lightning_count_15km": 0,
