@@ -1,16 +1,16 @@
 {
-  "smc_forecast_20260513_08": {
-    "timestamp": 1778652063.3978956,
+  "smc_forecast_20260513_09": {
+    "timestamp": 1778655654.557391,
     "data": {
       "smc_prob_precip_1h": 0,
       "smc_prob_precip_6h": 0,
       "smc_precip_intensity": 0,
-      "smc_temp_forecast": 17.3,
+      "smc_temp_forecast": 18.6,
       "smc_weather_symbol": 3
     }
   },
-  "lightning_features_20260513_06": {
-    "timestamp": 1778652061.1173038,
+  "lightning_features_20260513_07": {
+    "timestamp": 1778655652.517267,
     "data": {
       "lightning_count_30km": 0,
       "lightning_count_15km": 0,
@@ -43195,6 +43195,30 @@
         "estat": ""
       }
     ]
+  },
+  "smc_forecast_20260513_08": {
+    "timestamp": 1778652063.3978956,
+    "data": {
+      "smc_prob_precip_1h": 0,
+      "smc_prob_precip_6h": 0,
+      "smc_precip_intensity": 0,
+      "smc_temp_forecast": 17.3,
+      "smc_weather_symbol": 3
+    }
+  },
+  "lightning_features_20260513_06": {
+    "timestamp": 1778652061.1173038,
+    "data": {
+      "lightning_count_30km": 0,
+      "lightning_count_15km": 0,
+      "lightning_nearest_km": 40,
+      "lightning_nearest_bearing": null,
+      "lightning_nearest_compass": null,
+      "lightning_cloud_ground": 0,
+      "lightning_max_current_ka": 0.0,
+      "lightning_approaching": false,
+      "lightning_has_activity": false
+    }
   },
   "smc_forecast_20260513_07": {
     "timestamp": 1778648451.1063588,
@@ -435058,23 +435082,5 @@
       "smc_temp_forecast": 18.8,
       "smc_weather_symbol": 3
     }
-  },
-  "lightning_features_20260508_14": {
-    "timestamp": 1778248866.4919112,
-    "data": {
-      "lightning_count_30km": 0,
-      "lightning_count_15km": 0,
-      "lightning_nearest_km": 40,
-      "lightning_nearest_bearing": null,
-      "lightning_nearest_compass": null,
-      "lightning_cloud_ground": 0,
-      "lightning_max_current_ka": 0.0,
-      "lightning_approaching": false,
-      "lightning_has_activity": false
-    }
-  },
-  "xdde_2026-05-08_14": {
-    "timestamp": 1778248865.3868697,
-    "data": []
   }
 }
