@@ -27,6 +27,7 @@ on:
           - daily_summary
           - accuracy_report
           - retrain
+          - backfill_verify
 
 permissions:
   contents: write
@@ -282,6 +283,80 @@ jobs:
             -d chat_id="${TELEGRAM_CHAT_ID}" \
             -d parse_mode=HTML \
             -d text="🔴 <b>Nowcast FALLADA</b>: Job <code>accuracy_report</code> ha fallat.%0A<a href='${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}'>Veure logs</a>"
+
+  # Backfill de prediccions que han quedat penjades com a `verified:false`
+  # (estació MeteoCardedeu o XEMA caigudes durant la finestra de verificació
+  # de 48h). Usa l'històric XEMA KX (1 trucada API per dia distint).
+  backfill_verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    # Comparteix el grup de concurrència amb predict per evitar push races
+    # sobre predictions_log.jsonl.
+    concurrency:
+      group: predict-push
+      cancel-in-progress: false
+    if: >-
+      github.event_name == 'workflow_dispatch' &&
+      github.event.inputs.action == 'backfill_verify'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Cache venv
+        id: cache-venv
+        uses: actions/cache@v4
+        with:
+          path: .venv
+          key: venv-${{ runner.os }}-py3.12-${{ hashFiles('requirements.txt') }}
+
+      - name: Install dependencies
+        if: steps.cache-venv.outputs.cache-hit != 'true'
+        run: |
+          python -m venv .venv
+          .venv/bin/pip install -r requirements.txt
+
+      - name: Activate venv
+        run: echo "${{ github.workspace }}/.venv/bin" >> $GITHUB_PATH
+
+      - name: Sync to latest origin/main
+        run: |
+          git fetch origin main
+          git reset --hard origin/main
+
+      - name: Run backfill
+        run: python scripts/backfill_verify.py
+
+      - name: Commit updated log
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/predictions_log.jsonl docs/predictions_log.jsonl 2>/dev/null || true
+          git diff --cached --quiet && { echo "No changes to commit"; exit 0; }
+          git commit -m "🔧 Backfill verify $(date +%Y-%m-%d)"
+          for attempt in 1 2 3; do
+            git push && exit 0
+            echo "Push failed (attempt $attempt), pulling and retrying..."
+            git pull --rebase --autostash origin main || {
+              git rebase --abort 2>/dev/null || true
+              git pull --rebase --autostash origin main
+            }
+          done
+          echo "ERROR: Failed to push after 3 attempts"
+          exit 1
+
+      - name: Notificar fallada per Telegram
+        if: failure()
+        run: |
+          curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+            -d chat_id="${TELEGRAM_CHAT_ID}" \
+            -d parse_mode=HTML \
+            -d text="🔴 <b>Nowcast FALLADA</b>: Job <code>backfill_verify</code> ha fallat.%0A<a href='${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}'>Veure logs</a>"
 
   # Re-entrenar el model setmanalment (diumenge a les 3am)
   retrain:

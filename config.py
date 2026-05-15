@@ -26,6 +26,7 @@ LATEST_URL = f"{BASE_URL}/{YEAR}/data/{SLUG}/latest.json"
 SERIES_URL = f"{BASE_URL}/{YEAR}/api/graphs-series.php"
 HISTORY_LIST_URL = f"{BASE_URL}/{YEAR}/api/history/historics_list.php"
 HISTORY_FILE_URL = f"{BASE_URL}/{YEAR}/api/history/historics_file.php"
+HISTORY_DAILY_URL = f"{BASE_URL}/{YEAR}/api/history/daily.php"
 
 SERIES_VARS = "TEMP,HUM,VEL,DIR,PREC,BAR,SUN,UVI,PINT"
 

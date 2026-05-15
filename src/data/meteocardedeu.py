@@ -86,6 +86,68 @@ def fetch_history_list() -> list[dict]:
     return data["files"]
 
 
+def fetch_daily(date) -> pd.DataFrame:
+    """
+    Retorna un DataFrame amb dades minut-a-minut d'una data concreta.
+    Usa l'endpoint /api/history/daily.php paginat (500 files per pàgina).
+
+    Param `date` accepta str "YYYY-MM-DD", datetime.date o datetime.datetime.
+
+    Format idèntic a `fetch_series()`:
+      - Columna `datetime` (timezone-naive, local).
+      - PREC convertit de running total a increment per lectura
+        (.diff().clip(lower=0).fillna(0)) per poder fer .sum() en finestres.
+
+    Retorna DataFrame buit si la data no té dades o hi ha error.
+    """
+    # Normalitzar a YYYY-MM-DD
+    if hasattr(date, "strftime"):
+        date_str = date.strftime("%Y-%m-%d")
+    else:
+        date_str = str(date)[:10]
+
+    all_rows: list[dict] = []
+    try:
+        for page in range(1, 20):  # safety cap: ~10000 rows = 1 dia segur
+            params = {"slug": config.SLUG, "date": date_str, "page": page}
+            r = SESSION.get(config.HISTORY_DAILY_URL, params=params, timeout=30)
+            r.raise_for_status()
+            data = r.json()
+            if not data.get("ok"):
+                logger.warning(f"MeteoCardedeu daily {date_str} page={page} error: {data}")
+                break
+            rows = data.get("rows", [])
+            if not rows:
+                break
+            all_rows.extend(rows)
+            # Última pàgina si retorna menys del tamany esperat
+            page_size = data.get("meta", {}).get("size", 500)
+            if len(rows) < page_size:
+                break
+    except Exception as e:
+        logger.warning(f"Error obtenint històric diari de MeteoCardedeu ({date_str}): {e}")
+        return pd.DataFrame()
+
+    if not all_rows:
+        return pd.DataFrame()
+
+    df = pd.DataFrame(all_rows)
+    df["datetime"] = pd.to_datetime(
+        df["DATA"].astype(str) + " " + df["HORA"].astype(str),
+        errors="coerce",
+    )
+    df = df.dropna(subset=["datetime"]).sort_values("datetime").reset_index(drop=True)
+
+    # PREC és running total diari (igual que fetch_series). Convertir a increment.
+    # Aquí no hi ha reset de mitjanit perquè cada crida cobreix un sol dia,
+    # però mantenim el .clip(lower=0) per seguretat (lectures fora d'ordre, etc.).
+    if "PREC" in df.columns:
+        df["PREC"] = pd.to_numeric(df["PREC"], errors="coerce")
+        df["PREC"] = df["PREC"].diff().clip(lower=0).fillna(0)
+
+    return df
+
+
 def fetch_history_file(filename: str) -> str:
     """Descarrega el contingut TXT (format NOAA) d'un fitxer històric."""
     r = SESSION.get(
