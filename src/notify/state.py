@@ -91,10 +91,41 @@ def should_notify(probability: float, state: dict) -> str | None:
         return "rain_incoming"
 
     # Transició: rain_alert → clear
+    # Requereix ≥ MIN_CONSECUTIVE_CLEAR lectures sota el llindar per evitar
+    # que un blip enmig d'una tempesta tanqui l'alerta espúriament.
     if current_state == "rain_alert" and probability <= config.ALERT_THRESHOLD_DOWN:
-        return "rain_clearing"
+        if state.get("consecutive_low", 0) >= config.MIN_CONSECUTIVE_CLEAR:
+            return "rain_clearing"
+        logger.info(
+            f"Prob {probability:.2f} sota llindar però només "
+            f"{state.get('consecutive_low', 0)} lectures consecutives "
+            f"(cal {config.MIN_CONSECUTIVE_CLEAR}). Mantenint rain_alert."
+        )
+        return None
 
     return None
+
+
+def update_consecutive_counters(state: dict, probability: float) -> dict:
+    """Actualitza els comptadors de lectures consecutives alta/baixa.
+
+    Es crida cada cicle de predicció, abans de `should_notify`. Així el
+    comptador reflecteix l'historial recent quan `should_notify` decideix
+    si pot disparar `rain_clearing`.
+
+    Regla: una lectura dins del gap (0.30 < prob < 0.65) reseteja ambdós
+    comptadors — no és ni clarament cessament ni clarament inici.
+    """
+    if probability <= config.ALERT_THRESHOLD_DOWN:
+        state["consecutive_low"] = state.get("consecutive_low", 0) + 1
+        state["consecutive_high"] = 0
+    elif probability >= config.ALERT_THRESHOLD_UP:
+        state["consecutive_high"] = state.get("consecutive_high", 0) + 1
+        state["consecutive_low"] = 0
+    else:
+        state["consecutive_low"] = 0
+        state["consecutive_high"] = 0
+    return state
 
 
 def should_notify_regime(regime_change: dict, state: dict) -> bool:
