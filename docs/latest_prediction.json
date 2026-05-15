@@ -4,11 +4,11 @@
   "will_rain": false,
   "rain_category": "sec",
   "confidence": "Molt Baixa",
-  "timestamp": "2026-05-15T22:01:26.579802+00:00",
+  "timestamp": "2026-05-15T22:11:16.242167+00:00",
   "conditions": {
-    "temperature": "10.2",
+    "temperature": "10.1",
     "humidity": 92,
-    "pressure": "1012.1",
+    "pressure": "1012.2",
     "wind_speed": "0.0",
     "wind_dir": "ENE",
     "rain_today": "0.0",
@@ -55,7 +55,7 @@
     "prob_storm": 0
   },
   "bias": {
-    "temp": -1.1999999999999993,
+    "temp": -1.0999999999999996,
     "humidity": 2.0
   },
   "wind_regime": {
@@ -104,15 +104,15 @@
     "month_sin": 0.49999999999999994,
     "month_cos": -0.8660254037844387,
     "hours_since_sunrise": 0.0,
-    "pressure_msl": 1012.1,
-    "pressure_change_1h": 0.34375,
-    "pressure_change_3h": 2.0977272727272975,
-    "pressure_change_6h": 4.355319148936246,
-    "pressure_accel_3h": -0.5244801740811909,
-    "temperature_2m": 10.2,
+    "pressure_msl": 1012.1777777777778,
+    "pressure_change_1h": 0.42152777777778283,
+    "pressure_change_3h": 2.1755050505050804,
+    "pressure_change_6h": 4.433096926714029,
+    "pressure_accel_3h": -0.446702396303408,
+    "temperature_2m": 10.122222222222222,
     "relative_humidity_2m": 92.0,
-    "dew_point": 8.958003162931647,
-    "dew_point_depression": 1.2419968370683527,
+    "dew_point": 8.88100265635721,
+    "dew_point_depression": 1.241219565865011,
     "humidity_change_1h": 0.9583333333333286,
     "humidity_change_3h": 5.068181818181813,
     "vapour_pressure_deficit": 0.07,
@@ -154,8 +154,8 @@
     "k_index": 15.37800850963432,
     "moisture_flux_850": 73.4737711919063,
     "moisture_flux_925": 144.84495317948435,
-    "theta_e_deficit": 22.440565747638036,
-    "inversion_925": -2.3999999999999995,
+    "theta_e_deficit": 22.21440029771799,
+    "inversion_925": -2.322222222222222,
     "deep_layer_shear": 50.49999999999999,
     "bulk_richardson": 0.0,
     "jet_speed_300": 65.6,
@@ -193,7 +193,7 @@
     "nwp_showers_fraction": 0.0,
     "et0_fao_evapotranspiration": 0.0,
     "soil_temperature_0_to_7cm": 11.0,
-    "soil_air_temp_diff": 0.8000000000000007,
+    "soil_air_temp_diff": 0.8777777777777782,
     "sunshine_duration": 0.0,
     "sunshine_accum_3h": 0.0,
     "wind_speed_100m": 10.7,
@@ -265,7 +265,7 @@
     "ensemble_models_rain": 0.0,
     "ensemble_surprise_rain": null,
     "nwp_isolated_rain": null,
-    "forecast_temp_bias": -1.1999999999999993,
+    "forecast_temp_bias": -1.0999999999999996,
     "forecast_humidity_bias": 2.0,
     "aemet_prob_precip": 0.0,
     "aemet_prob_storm": 0.0,
@@ -289,7 +289,7 @@
     "orographic_forcing": 0.0,
     "frontal_passage": 0.0,
     "convective_composite": 0.16912886485346007,
-    "thermal_buildup": 1.7120865781391435e-06,
+    "thermal_buildup": 1.7236461041821653e-06,
     "low_level_convergence": 0.3552272727272725,
     "dry_intrusion_700": 0.09,
     "soil_moisture_0_to_7cm": 0.317,
@@ -302,7 +302,7 @@
     "cloud_cover_high": 0.0,
     "cloud_low_fraction": 1.0,
     "wet_bulb_temperature_2m": 8.3,
-    "wet_bulb_depression": 1.8999999999999986,
+    "wet_bulb_depression": 1.822222222222221,
     "direct_radiation": 0.0,
     "diffuse_radiation": 0.0,
     "diffuse_fraction": 0.0,
@@ -311,7 +311,7 @@
     "visibility": 15380.0,
     "freezing_level_height": 2000.0
   },
-  "pressure_change_3h": 2.0977272727272975,
+  "pressure_change_3h": 2.1755050505050804,
   "top_drivers": [
     {
       "group": "Models globals",
@@ -322,7 +322,7 @@
     {
       "group": "Pluja confirmada",
       "icon": "🌧️",
-      "contribution": -0.131,
+      "contribution": -0.13,
       "direction": "sec"
     },
     {
@@ -334,7 +334,7 @@
     {
       "group": "Radiació solar",
       "icon": "☀️",
-      "contribution": -0.05,
+      "contribution": -0.051,
       "direction": "sec"
     },
     {
@@ -357,9 +357,9 @@
     "skipped": 45,
     "source": "meteocardedeu",
     "lookup_hours": 48,
-    "station_rows": 2235,
-    "station_first_ts": "2026-05-14T00:02:00",
-    "station_last_ts": "2026-05-16T00:00:00",
+    "station_rows": 2234,
+    "station_first_ts": "2026-05-14T00:13:00",
+    "station_last_ts": "2026-05-16T00:11:00",
     "pending_total": 45,
     "accuracy": 100.0
   }
