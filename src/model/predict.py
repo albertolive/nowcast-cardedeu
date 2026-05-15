@@ -126,9 +126,7 @@ def _apply_physical_constraints(probability: float, radar_data: dict,
                                  sentinel_features: dict,
                                  aemet_radar_data: dict | None = None,
                                  current: dict | None = None,
-                                 station_df=None,
-                                 aemet_data: dict | None = None,
-                                 ensemble_data: dict | None = None) -> tuple[float, list[str]]:
+                                 station_df=None) -> tuple[float, list[str]]:
     """
     Aplica restriccions físiques a la probabilitat del model ML.
     Estableix floors (mínims) basats en senyals de sensors que són fets físics,
@@ -205,22 +203,6 @@ def _apply_physical_constraints(probability: float, radar_data: dict,
         if adjusted < floor:
             adjustments.append("Plou ara mateix a l'estació de Cardedeu")
             adjusted = floor
-
-    # 7. AEMET + Ensemble unànimes (cobertura training: aemet=0%, ens=38%).
-    # Empíric (60 dies / 125 events): aquesta conjunció dispara 203 cops,
-    # 88 cops plou (43% prec). El model sol perd events quan NWP "suavitza"
-    # la tempesta (weather_code 95→80) — manté el floor de seguretat.
-    if aemet_data and ensemble_data:
-        aemet_pp = aemet_data.get("aemet_prob_precip")
-        ens_agr = ensemble_data.get("ensemble_rain_agreement")
-        if (aemet_pp is not None and aemet_pp >= 80 and
-                ens_agr is not None and ens_agr >= 1.0):
-            floor = 0.65
-            if adjusted < floor:
-                adjustments.append(
-                    f"AEMET {aemet_pp:.0f}% + ensemble unànime"
-                )
-                adjusted = floor
 
     if adjustments:
         logger.info(f"  Ajustament físic: {probability:.1%} → {adjusted:.1%} ({'; '.join(adjustments)})")
@@ -466,8 +448,6 @@ def predict_now() -> dict:
         aemet_radar_data=aemet_radar_data,
         current=current,
         station_df=station_df,
-        aemet_data=aemet_data,
-        ensemble_data=ensemble_data,
     )
 
     will_rain = probability >= threshold
