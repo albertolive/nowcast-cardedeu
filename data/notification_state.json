@@ -1,8 +1,8 @@
 {
-  "current_state": "clear",
-  "last_alert_time": 1778621458.9818892,
-  "last_alert_type": "rain_clearing",
-  "last_probability": 0.2107,
+  "current_state": "rain_alert",
+  "last_alert_time": 1778854890.495786,
+  "last_alert_type": "rain_incoming",
+  "last_probability": 0.8,
   "consecutive_high": 0,
   "consecutive_low": 0,
   "last_wind_regime": {
