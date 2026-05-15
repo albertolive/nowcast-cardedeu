@@ -163,9 +163,19 @@ function renderPrediction(latest, history) {
     const vr = _verificationResult(h);
     return vr.cls !== 'uncertain';
   });
-  const correct = scorable.filter(h => h.correct).length;
-  const accuracy = scorable.length > 0 ? ((correct / scorable.length) * 100).toFixed(0) : '—';
   const pending = history.filter(h => !h.verified).length;
+
+  // Rain-event metrics — more honest than overall accuracy (which is dominated
+  // by correctly predicting "no rain" on dry days).
+  // Recall: of all real rain episodes, how many did we flag as probable?
+  // Precision: of all our "probable" alerts, how many actually rained?
+  const tp = scorable.filter(h => h.rain_category === 'probable' && h.actual_rain).length;
+  const fp = scorable.filter(h => h.rain_category === 'probable' && !h.actual_rain).length;
+  const fn = scorable.filter(h => h.rain_category === 'sec' && h.actual_rain).length;
+  const totalRainEvents = tp + fn;
+  const totalRainAlerts = tp + fp;
+  const recallPct = totalRainEvents > 0 ? ((tp / totalRainEvents) * 100).toFixed(0) : '—';
+  const precisionPct = totalRainAlerts > 0 ? ((tp / totalRainAlerts) * 100).toFixed(0) : '—';
 
   // Day-level accuracy: only count scorable predictions
   const dayBuckets = {};
@@ -220,7 +230,8 @@ function renderPrediction(latest, history) {
 
       <div class="prediction-meta">
         Encerts: <strong style="color:var(--accent-green)">${dayAccuracy}%</strong> per dia (${daysCorrect}/${daysTotal})
-        · <strong>${accuracy}%</strong> per predicció (${correct}/${scorable.length})${pending > 0 ? ` · <span style="color:var(--text-muted)">${pending} pendents de verificar</span>` : ''}
+        · Episodis de pluja detectats: <strong>${recallPct}%</strong> (${tp}/${totalRainEvents})
+        · Alertes correctes: <strong>${precisionPct}%</strong> (${tp}/${totalRainAlerts})${pending > 0 ? ` · <span style="color:var(--text-muted)">${pending} pendents</span>` : ''}
       </div>
 
       ${renderTechExpandable(latest)}
