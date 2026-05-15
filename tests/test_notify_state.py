@@ -14,7 +14,6 @@ from src.notify.state import (
     should_notify,
     should_notify_regime,
     update_state,
-    update_consecutive_counters,
     load_state,
     save_state,
     DEFAULT_STATE,
@@ -33,16 +32,10 @@ def _clear_state(**overrides):
 
 
 def _rain_alert_state(**overrides):
-    """Crea estat 'rain_alert' amb cooldown expirat.
-
-    Per defecte sembla `consecutive_low = MIN_CONSECUTIVE_CLEAR` perquè els
-    tests de clàssics (rain_clearing single-reading) passin sense haver de
-    repetir el setup. Tests específics de blip-guard sobreescriuen el camp.
-    """
+    """Crea estat 'rain_alert' amb cooldown expirat."""
     state = DEFAULT_STATE.copy()
     state["current_state"] = "rain_alert"
     state["last_alert_time"] = 0
-    state["consecutive_low"] = config.MIN_CONSECUTIVE_CLEAR
     state.update(overrides)
     return state
 
@@ -239,75 +232,3 @@ class TestStatePersistence:
         assert state["current_state"] == "rain_alert"
         assert state["last_alert_time"] == 0
         assert state["last_regime_alert_type"] is None
-
-
-# ── Blip guard: consecutive_low requirement for rain_clearing ──
-
-class TestBlipGuard:
-    def test_single_low_reading_no_clear(self):
-        """Una sola lectura sota 0.30 (blip) NO ha de disparar rain_clearing."""
-        state = _rain_alert_state(consecutive_low=1)
-        assert should_notify(0.21, state) is None
-
-    def test_two_consecutive_low_clears(self):
-        """Dues lectures consecutives sota 0.30 → rain_clearing."""
-        state = _rain_alert_state(consecutive_low=2)
-        assert should_notify(0.20, state) == "rain_clearing"
-
-    def test_zero_consecutive_low_no_clear(self):
-        """consecutive_low=0 (fresc del rain_incoming) → no clear amb blip."""
-        state = _rain_alert_state(consecutive_low=0)
-        assert should_notify(0.10, state) is None
-
-    def test_may_15_2026_scenario(self):
-        """Reprodueix el cas 15/05/2026 16:01→16:11→16:21 local:
-        0.55 → 0.21 (blip) → 0.80 (pic real). El blip no ha de tancar l'alerta.
-        """
-        state = _rain_alert_state(consecutive_low=0, consecutive_high=0)
-        # 16:01: prob 0.55 (dins gap)
-        update_consecutive_counters(state, 0.55)
-        assert state["consecutive_low"] == 0
-        # 16:11: prob 0.21 (blip)
-        update_consecutive_counters(state, 0.21)
-        assert state["consecutive_low"] == 1
-        # En aquest punt, should_notify NO ha de disparar rain_clearing
-        assert should_notify(0.21, state) is None
-        # 16:21: prob 0.80 (pic real) — counter low es reseteja
-        update_consecutive_counters(state, 0.80)
-        assert state["consecutive_low"] == 0
-        assert state["consecutive_high"] == 1
-
-
-class TestConsecutiveCounters:
-    def test_low_increments_on_below_threshold(self):
-        state = _rain_alert_state(consecutive_low=0, consecutive_high=0)
-        update_consecutive_counters(state, 0.20)
-        assert state["consecutive_low"] == 1
-        update_consecutive_counters(state, 0.10)
-        assert state["consecutive_low"] == 2
-
-    def test_high_increments_on_above_threshold(self):
-        state = _clear_state(consecutive_high=0, consecutive_low=0)
-        update_consecutive_counters(state, 0.80)
-        assert state["consecutive_high"] == 1
-        update_consecutive_counters(state, 0.90)
-        assert state["consecutive_high"] == 2
-
-    def test_high_resets_low(self):
-        state = _rain_alert_state(consecutive_low=3, consecutive_high=0)
-        update_consecutive_counters(state, 0.80)
-        assert state["consecutive_low"] == 0
-        assert state["consecutive_high"] == 1
-
-    def test_low_resets_high(self):
-        state = _clear_state(consecutive_high=3, consecutive_low=0)
-        update_consecutive_counters(state, 0.10)
-        assert state["consecutive_high"] == 0
-        assert state["consecutive_low"] == 1
-
-    def test_gap_resets_both(self):
-        """Probabilitat dins del gap (0.30-0.65) reseteja ambdós comptadors."""
-        state = _rain_alert_state(consecutive_low=2, consecutive_high=2)
-        update_consecutive_counters(state, 0.50)
-        assert state["consecutive_low"] == 0
-        assert state["consecutive_high"] == 0

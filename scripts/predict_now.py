@@ -18,7 +18,6 @@ from src.model.predict import predict_now
 from src.notify.telegram import send_rain_incoming, send_rain_clearing, send_regime_change
 from src.notify.state import (
     load_state, save_state, should_notify, should_notify_regime, update_state,
-    update_consecutive_counters,
 )
 from src.features.regime import detect_regime_change
 from src.feedback.logger import log_prediction, _NumpyEncoder, _sanitize_nans
@@ -85,11 +84,7 @@ def main():
 
     # ── Notificacions basades en transicions d'estat ──
     state = load_state()
-    update_consecutive_counters(state, probability)
-    logger.info(
-        f"  Estat actual: {state['current_state']} | Prob: {result['probability_pct']}% "
-        f"| consec_low={state['consecutive_low']} consec_high={state['consecutive_high']}"
-    )
+    logger.info(f"  Estat actual: {state['current_state']} | Prob: {result['probability_pct']}%")
 
     wind_regime = result.get("wind_regime", {})
     threshold = result.get("threshold", config.ALERT_PROBABILITY_THRESHOLD)

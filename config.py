@@ -108,10 +108,6 @@ ALERT_PROBABILITY_THRESHOLD = 0.65  # Compat: usat pel model per marcar will_rai
 ALERT_THRESHOLD_UP = 0.65           # clear → rain_alert (probabilitat puja)
 ALERT_THRESHOLD_DOWN = 0.30         # rain_alert → clear (probabilitat baixa)
 NOTIFICATION_COOLDOWN_MIN = 30      # Minuts mínims entre alertes
-# Nombre de lectures consecutives sota ALERT_THRESHOLD_DOWN abans de disparar
-# rain_clearing. Evita que un blip de probabilitat enmig d'una tempesta
-# (p.ex. oscil·lació 0.55→0.21→0.80) tanqui l'alerta espúriament.
-MIN_CONSECUTIVE_CLEAR = 2
 
 # ── RainViewer (radar, sense API key) ──
 RAINVIEWER_API_URL = "https://api.rainviewer.com/public/weather-maps.json"
