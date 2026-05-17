@@ -37,7 +37,8 @@ def export_verified_for_training() -> int:
 
     df = pd.DataFrame(verified)
     df["will_rain"] = df["actual_rain"].astype(int)  # Ground truth real
-    df["datetime"] = pd.to_datetime(df["timestamp"])
+    # pandas 2.2+ no infereix timestamps amb offset (`+00:00`) sense format explícit
+    df["datetime"] = pd.to_datetime(df["timestamp"], format="ISO8601", utc=True)
 
     # Expandir el vector de features complet (guardat pel logger) en columnes
     if "features" in df.columns:
