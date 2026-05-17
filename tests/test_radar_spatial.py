@@ -349,15 +349,35 @@ class TestClutterMask:
             assert result.sum() == 0
 
     def test_persistent_static_echo_detected_as_clutter(self):
-        """Eco persistent estàtic (variància zero) → clutter, encara que sigui >0.5% del tile."""
-        # 400 píxels amb mateixa intensitat en tots els frames = clutter (muntanya)
-        echoes = [(x, 128, 146, 255) for x in range(50, 250)]  # 200 px per frame
-        echoes += [(x, 129, 146, 255) for x in range(50, 250)]  # +200 = 400 > 327
+        """Eco persistent estàtic SATURAT (R≥200, mountain return) → clutter.
+
+        Pre-2026-05-15 bug: aquest test esperava que R=146 sostingut també
+        fos clutter. Però RainViewer quantitza la intensitat en pocs nivells,
+        de manera que pluja SOSTINGUDA durant 2h+ a la mateixa intensitat té
+        variància 0 i es marcava com a clutter — fent RainViewer cec durant
+        tempestes pre-frontals. El clutter ara requereix també mean_R≥200.
+        """
+        # 400 píxels amb R=240 (mountain return saturat) → clutter real
+        echoes = [(x, 128, 240, 255) for x in range(50, 250)]
+        echoes += [(x, 129, 240, 255) for x in range(50, 250)]
         tile = _make_tile(echoes=echoes)
         tiles = [tile, tile, tile]
         result = _build_clutter_mask(tiles)
-        assert result is not None  # Clutter estàtic detectat
-        assert result.sum() == 400  # Tots els ecos persistents estàtics marcats
+        assert result is not None
+        assert result.sum() == 400  # Tots els ecos saturats persistents marcats
+
+    def test_sustained_moderate_rain_not_flagged_as_clutter(self):
+        """Regressió 2026-05-15: pluja sostinguda R=146 (41 dBZ) durant
+        múltiples frames NO ha de marcar-se com a clutter."""
+        echoes = [(x, 128, 146, 255) for x in range(50, 250)]
+        echoes += [(x, 129, 146, 255) for x in range(50, 250)]
+        tile = _make_tile(echoes=echoes)
+        tiles = [tile] * 6
+        result = _build_clutter_mask(tiles)
+        if result is not None:
+            assert result.sum() == 0, (
+                f"Pluja sostinguda R=146 marcada com a clutter ({int(result.sum())} px)"
+            )
 
     def test_none_frames_ignored(self):
         """Frames None s'ignoren."""

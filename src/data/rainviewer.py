@@ -289,9 +289,15 @@ def _build_clutter_mask(tile_bytes_list: list) -> Optional[np.ndarray]:
     safe_count = np.maximum(echo_count, 1)
     mean_int = intensity_sum / safe_count
     var_int = intensity_sq_sum / safe_count - mean_int ** 2
-    # Llindars de variància: <1.0 = estàtic (clutter), >=1.0 = variable (pluja)
-    static_persistent = persistent & (var_int < 1.0)
-    variable_persistent = persistent & (var_int >= 1.0)
+    # Llindars de variància: <1.0 = estàtic, >=1.0 = variable
+    # IMPORTANT: la quantització de RainViewer (10 nivells) fa que la pluja
+    # SOSTINGUDA durant >2h tingui variància 0 si la intensitat és estable.
+    # Per evitar filtrar pluja real, el clutter requereix també intensitat
+    # SATURADA (mean R ≥ 200, dBZ ≥ 68): les muntanyes retornen senyals
+    # extrems consistentment; la pluja real, fins i tot sostinguda, rarament
+    # supera R=200 sense fluctuar.
+    static_persistent = persistent & (var_int < 1.0) & (mean_int >= 200)
+    variable_persistent = persistent & ~static_persistent
 
     # Ecos persistents estàtics = clutter definitiu (sempre filtrat)
     # Ecos persistents variables = possible pluja frontal

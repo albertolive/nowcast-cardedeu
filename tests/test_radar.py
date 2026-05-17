@@ -135,3 +135,87 @@ class TestRainViewerConfig:
         """Basic sanity: Cardedeu must be in Catalonia."""
         assert 41.0 < config.LATITUDE < 42.5
         assert 1.5 < config.LONGITUDE < 3.5
+
+
+class TestClutterMask:
+    """
+    Validates clutter mask doesn't filter sustained real rain.
+
+    Regression for the bug that left RainViewer effectively blind during
+    the 2026-05-15 storm: the variance-based clutter detector flagged
+    sustained moderate-intensity rain (R=110-180, dBZ 23-58) as clutter
+    because RainViewer quantizes intensity into ~10 discrete levels, so
+    rain stuck at the same intensity for 2h has variance ≈ 0.
+
+    Fix: clutter requires BOTH variance<1.0 AND mean_R≥200. Real mountain
+    clutter saturates the radar (R≥200, dBZ≥68); sustained rain rarely
+    holds R≥200 without fluctuating.
+    """
+
+    def _make_tile(self, r_value: int, alpha: int = 200) -> bytes:
+        """Build a minimal 256x256 PNG with uniform R value at all pixels."""
+        import io as _io
+        from PIL import Image
+        arr = np.zeros((256, 256, 4), dtype=np.uint8)
+        arr[:, :, 0] = r_value
+        arr[:, :, 1] = r_value
+        arr[:, :, 2] = r_value
+        arr[:, :, 3] = alpha if r_value > 0 else 0
+        img = Image.fromarray(arr, mode="RGBA")
+        buf = _io.BytesIO()
+        img.save(buf, format="PNG")
+        return buf.getvalue()
+
+    def test_sustained_moderate_rain_not_flagged_as_clutter(self):
+        """R=146 (41 dBZ) at all pixels for 13 frames = sustained heavy rain.
+        Must NOT be flagged as clutter."""
+        from src.data.rainviewer import _build_clutter_mask
+        tiles = [self._make_tile(146) for _ in range(13)]
+        mask = _build_clutter_mask(tiles)
+        # Either no clutter detected at all, or none of the rain pixels masked.
+        if mask is not None:
+            assert not mask.any(), (
+                "Sustained R=146 rain must not be flagged as clutter "
+                f"({int(mask.sum())} px filtered)"
+            )
+
+    def test_saturated_persistent_signal_is_clutter(self):
+        """R=240 (mountain return) at all pixels for 13 frames = real clutter.
+        MUST be flagged."""
+        from src.data.rainviewer import _build_clutter_mask
+        tiles = [self._make_tile(240) for _ in range(13)]
+        mask = _build_clutter_mask(tiles)
+        assert mask is not None and mask.any(), (
+            "Saturated persistent signal (R=240) must be flagged as clutter"
+        )
+
+    def test_mixed_rain_and_mountain(self):
+        """Half the tile is sustained rain (R=146), half is mountain (R=240).
+        Only the mountain half should be filtered."""
+        import io as _io
+        from PIL import Image
+        from src.data.rainviewer import _build_clutter_mask
+
+        def make_mixed():
+            arr = np.zeros((256, 256, 4), dtype=np.uint8)
+            # Left half: rain
+            arr[:, :128, 0] = 146
+            arr[:, :128, 1] = 146
+            arr[:, :128, 2] = 146
+            arr[:, :128, 3] = 200
+            # Right half: mountain
+            arr[:, 128:, 0] = 240
+            arr[:, 128:, 1] = 240
+            arr[:, 128:, 2] = 240
+            arr[:, 128:, 3] = 200
+            buf = _io.BytesIO()
+            Image.fromarray(arr, mode="RGBA").save(buf, format="PNG")
+            return buf.getvalue()
+
+        tiles = [make_mixed() for _ in range(13)]
+        mask = _build_clutter_mask(tiles)
+        assert mask is not None
+        # Rain side must not be filtered
+        assert not mask[:, :128].any(), "Rain pixels misflagged as clutter"
+        # Mountain side must be fully filtered
+        assert mask[:, 128:].all(), "Mountain pixels not flagged as clutter"
