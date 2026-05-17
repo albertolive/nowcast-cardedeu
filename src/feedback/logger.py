@@ -65,8 +65,10 @@ def log_prediction(result: dict) -> None:
         "conditions": result.get("conditions", {}),
         # Radar complet (RainViewer)
         "radar": result.get("radar", {}),
-        # Radar AEMET
+        # AEMET (previsió textual)
         "aemet": result.get("aemet", {}),
+        # Radar AEMET Barcelona (eco directe, complement a RainViewer)
+        "aemet_radar": result.get("aemet_radar", {}),
         # Sentinella XEMA
         "sentinel": result.get("sentinel", {}),
         # Ensemble

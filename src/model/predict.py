@@ -536,6 +536,15 @@ def predict_now() -> dict:
             "prob_precip": aemet_data.get("aemet_prob_precip"),
             "prob_storm": aemet_data.get("aemet_prob_storm"),
         },
+        "aemet_radar": {
+            "dbz": aemet_radar_data.get("aemet_radar_dbz"),
+            "has_echo": aemet_radar_data.get("aemet_radar_has_echo"),
+            "nearest_echo_km": aemet_radar_data.get("aemet_radar_nearest_echo_km"),
+            "max_dbz_20km": aemet_radar_data.get("aemet_radar_max_dbz_20km"),
+            "coverage_20km": aemet_radar_data.get("aemet_radar_coverage_20km"),
+            "echoes_found": aemet_radar_data.get("aemet_radar_echoes_found"),
+            "available": aemet_radar_data.get("aemet_radar_available"),
+        },
         "bias": {
             "temp": bias_data.get("forecast_temp_bias"),
             "humidity": bias_data.get("forecast_humidity_bias"),
