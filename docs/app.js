@@ -2,6 +2,10 @@ const REPO = 'albertolive/nowcast-cardedeu';
 const BRANCH = 'main';
 const RAW_BASE = `https://raw.githubusercontent.com/${REPO}/${BRANCH}/data`;
 const REFRESH_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
+// Stale threshold: if local docs/ JSON is older than this, fall back to raw.
+// Vercel skips redeploys for prediction-only commits, so docs/ can serve a
+// stale snapshot even when the repo on main is fresh.
+const STALE_THRESHOLD_MS = 30 * 60 * 1000; // 30 minutes
 
 import { deriveRadarViewModel } from './radar_logic.js';
 import { selectDriverExplanations, GROUP_TOOLTIP } from './driver_logic.js';
@@ -15,32 +19,55 @@ function getDataBases() {
 
 const DATA_BASES = getDataBases();
 
-async function fetchJSON(filename) {
+function isFresh(iso) {
+  if (!iso) return false;
+  const t = Date.parse(iso);
+  if (Number.isNaN(t)) return false;
+  return (Date.now() - t) < STALE_THRESHOLD_MS;
+}
+
+async function fetchJSON(filename, { freshnessKey = 'timestamp' } = {}) {
+  let lastStale = null;
   for (const base of DATA_BASES) {
     try {
       const ctrl = new AbortController();
       const tid = setTimeout(() => ctrl.abort(), 8000);
       const r = await fetch(`${base}/${filename}`, { cache: 'no-cache', signal: ctrl.signal });
       clearTimeout(tid);
-      if (r.ok) return r.json();
+      if (!r.ok) continue;
+      const data = await r.json();
+      if (freshnessKey && !isFresh(data?.[freshnessKey])) {
+        // Stale snapshot (typical when Vercel hasn't redeployed). Try next base.
+        lastStale = data;
+        continue;
+      }
+      return data;
     } catch {}
   }
+  if (lastStale) return lastStale; // better stale than nothing
   throw new Error(`No s'ha pogut carregar ${filename}`);
 }
 
-async function fetchJSONL(filename) {
+async function fetchJSONL(filename, { freshnessKey = 'timestamp' } = {}) {
+  let lastStale = null;
   for (const base of DATA_BASES) {
     try {
       const ctrl = new AbortController();
       const tid = setTimeout(() => ctrl.abort(), 8000);
       const r = await fetch(`${base}/${filename}`, { cache: 'no-cache', signal: ctrl.signal });
       clearTimeout(tid);
-      if (r.ok) {
-        const text = await r.text();
-        return text.trim().split('\n').filter(Boolean).map(line => JSON.parse(line));
+      if (!r.ok) continue;
+      const text = await r.text();
+      const rows = text.trim().split('\n').filter(Boolean).map(line => JSON.parse(line));
+      const last = rows[rows.length - 1];
+      if (freshnessKey && !isFresh(last?.[freshnessKey])) {
+        lastStale = rows;
+        continue;
       }
+      return rows;
     } catch {}
   }
+  if (lastStale) return lastStale;
   throw new Error(`No s'ha pogut carregar ${filename}`);
 }
 
@@ -933,7 +960,7 @@ function initCalendar(history) {
         <span class="pred-pct">Prob.</span>
         <span class="pred-said">Vam dir</span>
         <span class="pred-result">Resultat</span>
-        <span class="pred-rain-mm">Pluja real</span>
+        <span class="pred-rain-mm" title="Pluja acumulada a Cardedeu en els 60 min posteriors a la predicció">Pluja 60min</span>
       </div>`;
 
     panel.innerHTML = `
