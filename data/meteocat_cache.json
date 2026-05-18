@@ -1,16 +1,16 @@
 {
-  "smc_forecast_20260518_18": {
-    "timestamp": 1779120097.5621698,
+  "smc_forecast_20260518_19": {
+    "timestamp": 1779123697.8192546,
     "data": {
       "smc_prob_precip_1h": 0,
       "smc_prob_precip_6h": 0,
       "smc_precip_intensity": 0,
-      "smc_temp_forecast": 17.3,
+      "smc_temp_forecast": 16.0,
       "smc_weather_symbol": 21
     }
   },
-  "lightning_features_20260518_16": {
-    "timestamp": 1779120094.8606486,
+  "lightning_features_20260518_17": {
+    "timestamp": 1779123695.4060683,
     "data": {
       "lightning_count_30km": 0,
       "lightning_count_15km": 0,
@@ -109813,6 +109813,30 @@
         "estat": ""
       }
     ]
+  },
+  "smc_forecast_20260518_18": {
+    "timestamp": 1779120097.5621698,
+    "data": {
+      "smc_prob_precip_1h": 0,
+      "smc_prob_precip_6h": 0,
+      "smc_precip_intensity": 0,
+      "smc_temp_forecast": 17.3,
+      "smc_weather_symbol": 21
+    }
+  },
+  "lightning_features_20260518_16": {
+    "timestamp": 1779120094.8606486,
+    "data": {
+      "lightning_count_30km": 0,
+      "lightning_count_15km": 0,
+      "lightning_nearest_km": 40,
+      "lightning_nearest_bearing": null,
+      "lightning_nearest_compass": null,
+      "lightning_cloud_ground": 0,
+      "lightning_max_current_ka": 0.0,
+      "lightning_approaching": false,
+      "lightning_has_activity": false
+    }
   },
   "smc_forecast_20260518_17": {
     "timestamp": 1779116508.9586332,
@@ -856462,30 +856486,6 @@
       "smc_prob_precip_6h": 0,
       "smc_precip_intensity": 0,
       "smc_temp_forecast": 15.2,
-      "smc_weather_symbol": 20
-    }
-  },
-  "lightning_features_20260513_18": {
-    "timestamp": 1778695303.30687,
-    "data": {
-      "lightning_count_30km": 0,
-      "lightning_count_15km": 0,
-      "lightning_nearest_km": 40,
-      "lightning_nearest_bearing": null,
-      "lightning_nearest_compass": null,
-      "lightning_cloud_ground": 0,
-      "lightning_max_current_ka": 0.0,
-      "lightning_approaching": false,
-      "lightning_has_activity": false
-    }
-  },
-  "smc_forecast_20260513_19": {
-    "timestamp": 1778691703.0608103,
-    "data": {
-      "smc_prob_precip_1h": 0,
-      "smc_prob_precip_6h": 0,
-      "smc_precip_intensity": 0,
-      "smc_temp_forecast": 15.8,
       "smc_weather_symbol": 20
     }
   }
