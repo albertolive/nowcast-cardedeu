@@ -4,11 +4,11 @@
   "will_rain": false,
   "rain_category": "sec",
   "confidence": "Molt Baixa",
-  "timestamp": "2026-05-21T23:02:24.487239+00:00",
+  "timestamp": "2026-05-21T23:11:14.260174+00:00",
   "conditions": {
     "temperature": "16.9",
     "humidity": 81,
-    "pressure": "1025.5",
+    "pressure": "1025.4",
     "wind_speed": "0.0",
     "wind_dir": "250",
     "rain_today": "0.0",
@@ -97,7 +97,7 @@
     "li_index": -1.7893019668374492
   },
   "sst": {
-    "sst_med": null
+    "sst_med": 20.0
   },
   "rain_gate_open": true,
   "station_available": true,
@@ -113,11 +113,11 @@
     "month_sin": 0.49999999999999994,
     "month_cos": -0.8660254037844387,
     "hours_since_sunrise": 0.0,
-    "pressure_msl": 1025.5,
-    "pressure_change_1h": 0.028205128205172514,
-    "pressure_change_3h": 0.07857142857142208,
-    "pressure_change_6h": 1.3292682926828547,
-    "pressure_accel_3h": -0.4301799649624627,
+    "pressure_msl": 1025.4222222222224,
+    "pressure_change_1h": -0.04957264957238294,
+    "pressure_change_3h": 0.0007936507938666182,
+    "pressure_change_6h": 1.2514905149052993,
+    "pressure_accel_3h": -0.5079577427400181,
     "temperature_2m": 16.9,
     "relative_humidity_2m": 81.0,
     "dew_point": 13.615539030416398,
@@ -305,7 +305,7 @@
     "soil_moisture_7_to_28cm": 0.149,
     "soil_moisture_change_24h": null,
     "convective_inhibition": 124.0,
-    "sst_med": null,
+    "sst_med": 20.0,
     "cloud_cover_low": 0.0,
     "cloud_cover_mid": 0.0,
     "cloud_cover_high": 0.0,
@@ -320,18 +320,18 @@
     "visibility": 34280.0,
     "freezing_level_height": 4310.0
   },
-  "pressure_change_3h": 0.07857142857142208,
+  "pressure_change_3h": 0.0007936507938666182,
   "top_drivers": [
     {
       "group": "Models globals",
       "icon": "🌐",
-      "contribution": -0.66,
+      "contribution": -0.661,
       "direction": "sec"
     },
     {
       "group": "Núvols",
       "icon": "☁️",
-      "contribution": -0.331,
+      "contribution": -0.329,
       "direction": "sec"
     },
     {
@@ -366,9 +366,9 @@
     "skipped": 45,
     "source": "meteocardedeu",
     "lookup_hours": 48,
-    "station_rows": 2032,
-    "station_first_ts": "2026-05-20T01:03:00",
-    "station_last_ts": "2026-05-22T01:01:00",
+    "station_rows": 2033,
+    "station_first_ts": "2026-05-20T01:12:00",
+    "station_last_ts": "2026-05-22T01:11:00",
     "pending_total": 45,
     "accuracy": 100.0
   }
