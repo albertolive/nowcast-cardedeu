@@ -4,7 +4,7 @@
   "will_rain": false,
   "rain_category": "sec",
   "confidence": "Molt Baixa",
-  "timestamp": "2026-05-21T01:01:37.956251+00:00",
+  "timestamp": "2026-05-21T01:11:22.472908+00:00",
   "conditions": {
     "temperature": "14.8",
     "humidity": 85,
@@ -113,11 +113,11 @@
     "month_sin": 0.49999999999999994,
     "month_cos": -0.8660254037844387,
     "hours_since_sunrise": 0.0,
-    "pressure_msl": 1025.9,
-    "pressure_change_1h": -0.15116279069752636,
-    "pressure_change_3h": -0.5652173913042589,
-    "pressure_change_6h": 0.009302325581529658,
-    "pressure_accel_3h": 0.06584204022033191,
+    "pressure_msl": 1025.8875,
+    "pressure_change_1h": -0.16366279069757184,
+    "pressure_change_3h": -0.5777173913043043,
+    "pressure_change_6h": -0.003197674418515817,
+    "pressure_accel_3h": 0.053342040220286435,
     "temperature_2m": 14.8,
     "relative_humidity_2m": 85.0,
     "dew_point": 12.300890007977715,
@@ -205,9 +205,9 @@
     "soil_air_temp_diff": 2.599999999999998,
     "sunshine_duration": 0.0,
     "sunshine_accum_3h": 0.0,
-    "wind_speed_100m": 2.9,
-    "boundary_layer_shear": 2.9,
-    "wind_dir_shear_100m": 140.0,
+    "wind_speed_100m": 3.2,
+    "boundary_layer_shear": 3.2,
+    "wind_dir_shear_100m": 113.0,
     "snowfall": 0.0,
     "nwp_lifted_index": 4.1,
     "gph_850": 1605.0,
@@ -296,10 +296,10 @@
     "smc_prob_precip_6h": null,
     "smc_precip_intensity": null,
     "orographic_forcing": 0.0,
-    "frontal_passage": 0.11838437303085722,
+    "frontal_passage": 0.12100248897289573,
     "convective_composite": 0.1601942925503043,
     "thermal_buildup": 0.0002086054128687393,
-    "low_level_convergence": 0.5655797101448977,
+    "low_level_convergence": 0.5697463768115796,
     "dry_intrusion_700": 0.44,
     "soil_moisture_0_to_7cm": 0.211,
     "soil_moisture_7_to_28cm": 0.15,
@@ -320,7 +320,7 @@
     "visibility": 23500.0,
     "freezing_level_height": 4110.0
   },
-  "pressure_change_3h": -0.5652173913042589,
+  "pressure_change_3h": -0.5777173913043043,
   "top_drivers": [
     {
       "group": "Models globals",
@@ -331,13 +331,13 @@
     {
       "group": "Núvols",
       "icon": "☁️",
-      "contribution": -0.322,
+      "contribution": -0.321,
       "direction": "sec"
     },
     {
       "group": "Pluja confirmada",
       "icon": "🌧️",
-      "contribution": -0.196,
+      "contribution": -0.195,
       "direction": "sec"
     },
     {
@@ -366,9 +366,9 @@
     "skipped": 45,
     "source": "meteocardedeu",
     "lookup_hours": 48,
-    "station_rows": 2122,
-    "station_first_ts": "2026-05-19T03:02:00",
-    "station_last_ts": "2026-05-21T03:00:00",
+    "station_rows": 2121,
+    "station_first_ts": "2026-05-19T03:12:00",
+    "station_last_ts": "2026-05-21T03:10:00",
     "pending_total": 45,
     "accuracy": 100.0
   }
