@@ -4,7 +4,7 @@
   "will_rain": false,
   "rain_category": "sec",
   "confidence": "Molt Baixa",
-  "timestamp": "2026-05-22T06:31:10.444391+00:00",
+  "timestamp": "2026-05-22T06:41:16.860295+00:00",
   "conditions": {
     "temperature": "18.2",
     "humidity": 79,
@@ -227,9 +227,9 @@
     "tcwv": 22.0,
     "tcwv_change_3h": 1.6999999999999993,
     "tcwv_change_6h": 2.1999999999999993,
-    "boundary_layer_height": 115.0,
-    "blh_change_3h": 100.0,
-    "tcwv_blh_ratio": 19.130434782608695,
+    "boundary_layer_height": 170.0,
+    "blh_change_3h": 155.0,
+    "tcwv_blh_ratio": 12.941176470588237,
     "terrestrial_radiation": 239.4,
     "soil_moisture_28_to_100cm": 0.131,
     "soil_saturation_ratio": 1.32824427480916,
@@ -325,13 +325,13 @@
     {
       "group": "Models globals",
       "icon": "🌐",
-      "contribution": -0.697,
+      "contribution": -0.696,
       "direction": "sec"
     },
     {
       "group": "Núvols",
       "icon": "☁️",
-      "contribution": -0.312,
+      "contribution": -0.314,
       "direction": "sec"
     },
     {
@@ -366,8 +366,8 @@
     "skipped": 45,
     "source": "meteocardedeu",
     "lookup_hours": 48,
-    "station_rows": 2009,
-    "station_first_ts": "2026-05-20T08:33:00",
+    "station_rows": 2003,
+    "station_first_ts": "2026-05-20T08:42:00",
     "station_last_ts": "2026-05-22T08:15:00",
     "pending_total": 45,
     "accuracy": 100.0
