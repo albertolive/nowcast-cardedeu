@@ -4,15 +4,15 @@
   "will_rain": false,
   "rain_category": "sec",
   "confidence": "Molt Baixa",
-  "timestamp": "2026-05-24T06:10:29.822378+00:00",
+  "timestamp": "2026-05-24T06:11:08.087494+00:00",
   "conditions": {
-    "temperature": "18.9",
-    "humidity": 78,
+    "temperature": "19.0",
+    "humidity": 77,
     "pressure": "1026.2",
-    "wind_speed": "0.0",
-    "wind_dir": "101",
+    "wind_speed": "1.6",
+    "wind_dir": "83",
     "rain_today": "0.0",
-    "solar_radiation": 246
+    "solar_radiation": 250
   },
   "radar": {
     "dbz": 0.0,
@@ -64,8 +64,8 @@
     "available": true
   },
   "bias": {
-    "temp": -2.1999999999999993,
-    "humidity": -6.0
+    "temp": -2.3000000000000007,
+    "humidity": -5.0
   },
   "wind_regime": {
     "level": "850hPa",
@@ -274,8 +274,8 @@
     "ensemble_models_rain": 0.0,
     "ensemble_surprise_rain": null,
     "nwp_isolated_rain": null,
-    "forecast_temp_bias": -2.1999999999999993,
-    "forecast_humidity_bias": -6.0,
+    "forecast_temp_bias": -2.3000000000000007,
+    "forecast_humidity_bias": -5.0,
     "aemet_prob_precip": 0.0,
     "aemet_prob_storm": 0.0,
     "aemet_precip_today": 0.0,
@@ -360,16 +360,15 @@
     }
   ],
   "verification": {
-    "verified_count": 2,
-    "correct_count": 2,
+    "verified_count": 0,
+    "correct_count": 0,
     "wrong_count": 0,
-    "skipped": 19,
+    "skipped": 20,
     "source": "meteocardedeu",
     "lookup_hours": 48,
-    "station_rows": 2008,
-    "station_first_ts": "2026-05-22T08:11:00",
+    "station_rows": 2007,
+    "station_first_ts": "2026-05-22T08:12:00",
     "station_last_ts": "2026-05-24T08:10:00",
-    "pending_total": 19,
-    "accuracy": 100.0
+    "pending_total": 20
   }
 }
