@@ -13,10 +13,10 @@
     }
   },
   "forecast": {
-    "cached_at": 1780124631.208713,
+    "cached_at": 1780128711.35263,
     "data": {
-      "aemet_prob_precip": 0,
-      "aemet_prob_storm": 0,
+      "aemet_prob_precip": 100,
+      "aemet_prob_storm": 75,
       "aemet_precip_today": 0
     }
   }
