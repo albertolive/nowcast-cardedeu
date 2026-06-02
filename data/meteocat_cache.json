@@ -1,6 +1,6 @@
 {
-  "lightning_features_20260602_20": {
-    "timestamp": 1780430473.3832128,
+  "lightning_features_20260602_21": {
+    "timestamp": 1780434074.6083555,
     "data": {
       "lightning_count_30km": 0,
       "lightning_count_15km": 0,
@@ -13,8 +13,8 @@
       "lightning_has_activity": false
     }
   },
-  "xdde_2026-06-02_20": {
-    "timestamp": 1780430472.7767906,
+  "xdde_2026-06-02_21": {
+    "timestamp": 1780434073.9665298,
     "data": []
   },
   "xema_35_2026-06-02": {
@@ -135325,6 +135325,24 @@
         "estat": ""
       }
     ]
+  },
+  "lightning_features_20260602_20": {
+    "timestamp": 1780430473.3832128,
+    "data": {
+      "lightning_count_30km": 0,
+      "lightning_count_15km": 0,
+      "lightning_nearest_km": 40,
+      "lightning_nearest_bearing": null,
+      "lightning_nearest_compass": null,
+      "lightning_cloud_ground": 0,
+      "lightning_max_current_ka": 0.0,
+      "lightning_approaching": false,
+      "lightning_has_activity": false
+    }
+  },
+  "xdde_2026-06-02_20": {
+    "timestamp": 1780430472.7767906,
+    "data": []
   },
   "lightning_features_20260602_19": {
     "timestamp": 1780426874.5520363,
@@ -294234,10 +294252,6 @@
       "lightning_approaching": false,
       "lightning_has_activity": false
     }
-  },
-  "xdde_2026-06-02_21": {
-    "timestamp": 1780358476.2653837,
-    "data": []
   },
   "xdde_2026-06-02_22": {
     "timestamp": 1780358475.6736085,
@@ -454046,20 +454060,6 @@
   },
   "lightning_features_20260528_19": {
     "timestamp": 1779994863.8669198,
-    "data": {
-      "lightning_count_30km": 0,
-      "lightning_count_15km": 0,
-      "lightning_nearest_km": 40,
-      "lightning_nearest_bearing": null,
-      "lightning_nearest_compass": null,
-      "lightning_cloud_ground": 0,
-      "lightning_max_current_ka": 0.0,
-      "lightning_approaching": false,
-      "lightning_has_activity": false
-    }
-  },
-  "lightning_features_20260528_18": {
-    "timestamp": 1779991285.7262363,
     "data": {
       "lightning_count_30km": 0,
       "lightning_count_15km": 0,
