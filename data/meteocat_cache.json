@@ -1,6 +1,6 @@
 {
-  "lightning_features_20260603_05": {
-    "timestamp": 1780462880.9823244,
+  "lightning_features_20260603_06": {
+    "timestamp": 1780466482.1554885,
     "data": {
       "lightning_count_30km": 0,
       "lightning_count_15km": 0,
@@ -13,8 +13,8 @@
       "lightning_has_activity": false
     }
   },
-  "xdde_2026-06-03_05": {
-    "timestamp": 1780462880.2961745,
+  "xdde_2026-06-03_06": {
+    "timestamp": 1780466481.4572601,
     "data": []
   },
   "xema_35_2026-06-03": {
@@ -36247,6 +36247,24 @@
         "estat": ""
       }
     ]
+  },
+  "lightning_features_20260603_05": {
+    "timestamp": 1780462880.9823244,
+    "data": {
+      "lightning_count_30km": 0,
+      "lightning_count_15km": 0,
+      "lightning_nearest_km": 40,
+      "lightning_nearest_bearing": null,
+      "lightning_nearest_compass": null,
+      "lightning_cloud_ground": 0,
+      "lightning_max_current_ka": 0.0,
+      "lightning_approaching": false,
+      "lightning_has_activity": false
+    }
+  },
+  "xdde_2026-06-03_05": {
+    "timestamp": 1780462880.2961745,
+    "data": []
   },
   "lightning_features_20260603_04": {
     "timestamp": 1780459279.322839,
@@ -513063,34 +513081,6 @@
   },
   "lightning_features_20260529_17": {
     "timestamp": 1780074083.700966,
-    "data": {
-      "lightning_count_30km": 0,
-      "lightning_count_15km": 0,
-      "lightning_nearest_km": 40,
-      "lightning_nearest_bearing": null,
-      "lightning_nearest_compass": null,
-      "lightning_cloud_ground": 0,
-      "lightning_max_current_ka": 0.0,
-      "lightning_approaching": false,
-      "lightning_has_activity": false
-    }
-  },
-  "lightning_features_20260529_16": {
-    "timestamp": 1780070487.2316182,
-    "data": {
-      "lightning_count_30km": 0,
-      "lightning_count_15km": 0,
-      "lightning_nearest_km": 40,
-      "lightning_nearest_bearing": null,
-      "lightning_nearest_compass": null,
-      "lightning_cloud_ground": 0,
-      "lightning_max_current_ka": 0.0,
-      "lightning_approaching": false,
-      "lightning_has_activity": false
-    }
-  },
-  "lightning_features_20260529_15": {
-    "timestamp": 1780066884.464847,
     "data": {
       "lightning_count_30km": 0,
       "lightning_count_15km": 0,
