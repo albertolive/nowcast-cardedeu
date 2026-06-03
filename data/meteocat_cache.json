@@ -18,7 +18,7 @@
     "data": []
   },
   "xema_35_2026-06-03": {
-    "timestamp": 1780485687.9699388,
+    "timestamp": 1780487502.65286,
     "data": [
       {
         "station_code": "C6",
@@ -16696,6 +16696,12 @@
       },
       {
         "station_code": "XH",
+        "datetime": "2026-06-03T09:00:00+00:00",
+        "value": 0,
+        "estat": "V"
+      },
+      {
+        "station_code": "XH",
         "datetime": "2026-06-03T09:30:00+00:00",
         "value": 0,
         "estat": ""
@@ -23381,7 +23387,7 @@
     ]
   },
   "xema_33_2026-06-03": {
-    "timestamp": 1780485684.559871,
+    "timestamp": 1780487500.055512,
     "data": [
       {
         "station_code": "C6",
@@ -39555,6 +39561,12 @@
       },
       {
         "station_code": "XH",
+        "datetime": "2026-06-03T09:00:00+00:00",
+        "value": 26,
+        "estat": "T"
+      },
+      {
+        "station_code": "XH",
         "datetime": "2026-06-03T09:30:00+00:00",
         "value": 29,
         "estat": ""
@@ -46348,7 +46360,7 @@
     ]
   },
   "xema_32_2026-06-03": {
-    "timestamp": 1780485681.283614,
+    "timestamp": 1780487497.4734783,
     "data": [
       {
         "station_code": "C6",
@@ -62519,6 +62531,12 @@
         "datetime": "2026-06-03T08:30:00+00:00",
         "value": 21.2,
         "estat": ""
+      },
+      {
+        "station_code": "XH",
+        "datetime": "2026-06-03T09:00:00+00:00",
+        "value": 23.3,
+        "estat": "T"
       },
       {
         "station_code": "XH",
