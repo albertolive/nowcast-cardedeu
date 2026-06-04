@@ -128,7 +128,8 @@ def _apply_physical_constraints(probability: float, radar_data: dict,
                                  current: dict | None = None,
                                  station_df=None,
                                  aemet_forecast: dict | None = None,
-                                 ensemble: dict | None = None) -> tuple[float, list[str]]:
+                                 ensemble: dict | None = None,
+                                 lightning: dict | None = None) -> tuple[float, list[str]]:
     """
     Aplica restriccions físiques a la probabilitat del model ML.
     Estableix floors (mínims) basats en senyals de sensors que són fets físics,
@@ -175,10 +176,12 @@ def _apply_physical_constraints(probability: float, radar_data: dict,
             adjusted = floor
 
     # 3. Tempesta aproximant-se amb ETA curta i eco fort
+    # Floor 0.50: per sobre del llindar d'alerta (~0.44). Amb 0.40 la regla
+    # era decorativa — detectava la tempesta i no alertava ningú.
     eta = radar_data.get("radar_storm_eta_min")
     if (radar_data.get("radar_storm_approaching") and
             eta is not None and eta <= 15 and max_dbz_20km >= 25):
-        floor = 0.40
+        floor = 0.50
         if adjusted < floor:
             adjustments.append(f"Tempesta aproximant-se, ETA ~{eta:.0f} min")
             adjusted = floor
@@ -190,6 +193,24 @@ def _apply_physical_constraints(probability: float, radar_data: dict,
         if adjusted < floor:
             adjustments.append("Plou a Granollers (7km SO)")
             adjusted = floor
+
+    # 4b. Llamps XDDE de l'última hora: cèl·lula elèctricament activa a prop.
+    # L'activitat elèctrica precedeix la pluja a terra 10-30 min i delata
+    # cèl·lules en desenvolupament abans del màxim de dBZ al radar.
+    if lightning:
+        l15_1h = lightning.get("lightning_count_15km_1h") or 0
+        l30_1h = lightning.get("lightning_count_30km_1h") or 0
+        l_nearest = lightning.get("lightning_nearest_km")
+        if l15_1h >= 2:
+            floor = 0.50
+            if adjusted < floor:
+                adjustments.append(f"{l15_1h} llamps a <15km en l'última hora")
+                adjusted = floor
+        elif l30_1h >= 5 and l_nearest is not None and l_nearest <= 20:
+            floor = 0.40
+            if adjusted < floor:
+                adjustments.append(f"{l30_1h} llamps a <30km en l'última hora")
+                adjusted = floor
 
     # 5. Radar AEMET C-banda Barcelona: eco fort a prop
     # Font independent del RainViewer; un eco fort a <20km és una tempesta
@@ -487,6 +508,7 @@ def predict_now() -> dict:
         station_df=station_df,
         aemet_forecast=aemet_data,
         ensemble=ensemble_data,
+        lightning=lightning_data,
     )
 
     will_rain = probability >= threshold
@@ -539,6 +561,7 @@ def predict_now() -> dict:
             "dbz": radar_data["radar_dbz"],
             "rain_rate_mmh": radar_data["radar_rain_rate"],
             "has_echo": radar_data["radar_has_echo"],
+            "frames_frozen": radar_data.get("radar_frames_frozen", False),
             "approaching": radar_data["radar_approaching"],
             "nearest_echo_km": radar_data.get("radar_nearest_echo_km"),
             "nearest_echo_compass": radar_data.get("radar_nearest_echo_compass"),

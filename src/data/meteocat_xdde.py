@@ -208,9 +208,16 @@ def compute_lightning_features(
         avg_older = sum(s["dist_km"] for s in older) / len(older)
         approaching = avg_recent < avg_older - 2  # ≥2km més a prop
 
+    # Comptadors de NOMÉS l'última hora: el window de 3h és massa llarg per
+    # a regles físiques (una tempesta que va passar fa 2h encara hi compta).
+    count_15km_1h = sum(1 for s in recent if s["dist_km"] <= 15)
+    count_30km_1h = sum(1 for s in recent if s["dist_km"] <= 30)
+
     result = {
         "lightning_count_30km": count_30km,
         "lightning_count_15km": count_15km,
+        "lightning_count_15km_1h": count_15km_1h,
+        "lightning_count_30km_1h": count_30km_1h,
         "lightning_nearest_km": round(nearest["dist_km"], 1),
         "lightning_nearest_bearing": round(nearest["bearing"]),
         "lightning_nearest_compass": _bearing_to_compass(nearest["bearing"]),
@@ -233,6 +240,8 @@ def _empty_lightning_result(radius_km: float = config.RADAR_SCAN_RADIUS_KM) -> d
     return {
         "lightning_count_30km": 0,
         "lightning_count_15km": 0,
+        "lightning_count_15km_1h": 0,
+        "lightning_count_30km_1h": 0,
         "lightning_nearest_km": radius_km,
         "lightning_nearest_bearing": None,
         "lightning_nearest_compass": None,

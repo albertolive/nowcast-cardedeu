@@ -102,13 +102,35 @@ def main():
         logger.info(f"  Sense canvi d'estat de pluja. (estat={state['current_state']})")
 
         # ── Detecció de canvi de règim atmosfèric ──
+        # Una alerta de règim és un avís d'hores vista: té valor quan la
+        # probabilitat encara és BAIXA (el model no ho veu) i és soroll quan
+        # ja estem en alerta o plovent. (El 2026-06-04 la porta era al revés:
+        # va silenciar el backing wind a les 19:00 amb prob 8.8% i el va
+        # enviar a les 19:40 quan ja plovia.)
         regime_change = detect_regime_change(result, state)
-        if regime_change and probability < threshold:
+        if regime_change and (probability >= threshold
+                              or result.get("station_raining_now")):
             logger.info(
                 f"🌬️  Canvi de règim detectat: {regime_change['type']} "
-                f"— però model diu {result['probability_pct']}% (< llindar {threshold:.0%}), no s'envia."
+                f"— però ja estem en alerta o plovent; redundant, no s'envia."
             )
             regime_change = None
+        if regime_change:
+            # Exigir suport mínim dels models per no avisar de fronts secs
+            ens = result.get("ensemble") or {}
+            aemet = result.get("aemet") or {}
+            models_rain = ens.get("models_rain")
+            prob_precip = aemet.get("prob_precip")
+            has_support = (
+                (models_rain is not None and models_rain >= 2)
+                or (prob_precip is not None and prob_precip >= 40)
+            )
+            if not has_support:
+                logger.info(
+                    f"🌬️  Canvi de règim detectat: {regime_change['type']} "
+                    f"— sense suport de models (ensemble={models_rain}, AEMET={prob_precip}%), no s'envia."
+                )
+                regime_change = None
         if regime_change:
             logger.info(f"🌬️  Canvi de règim detectat: {regime_change['type']} ({regime_change['severity']})")
             if should_notify_regime(regime_change, state):

@@ -161,9 +161,11 @@ RAIN_GATE_LIGHTNING_NEARBY_KM = 30  # Obrir rain gate si llamps dins d'aquest ra
 
 # ── Radar Spatial Scanning ──
 # A zoom 8, cada píxel ≈ 0.457 km a la latitud de Cardedeu (41.64°)
-# 40km: encaixa dins del tile (96px nord > 87px radi), mínima retallada a l'est (84px vs 87px)
-# Guanyem ~10km de detecció anticipada vs 30km → 12-20 min extra a 30-50 km/h
-RADAR_SCAN_RADIUS_KM = 40       # km al voltant de Cardedeu per escanejar ecos
+# 60km: aprofita els marges amples del tile cap a l'oest (79km) i sud (72km),
+# d'on arriba la majoria de convecció. A l'est (37km) i nord (44km) l'escaneig
+# queda retallat pel tile — acceptable, el mar i el Montseny aporten menys.
+# Un eco a 50km movent-se a 30km/h = ~100 min d'anticipació (amb vector de moviment).
+RADAR_SCAN_RADIUS_KM = 60       # km al voltant de Cardedeu per escanejar ecos
 RADAR_PIXEL_SIZE_KM = 0.457     # km per píxel (zoom 8, lat ~41.6°)
 RADAR_MIN_DBZ = 10              # dBZ mínim per considerar un eco com a pluja real (filtra soroll/AP)
 AEMET_RADAR_MIN_ECHO_CLUSTER_PX = 10  # Píxels mínims per considerar un eco real (filtra fronteres/costes del mapa)

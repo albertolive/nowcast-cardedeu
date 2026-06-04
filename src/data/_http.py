@@ -16,9 +16,10 @@ def create_session(api_key_header: dict | None = None) -> requests.Session:
     retry = Retry(
         total=3,
         backoff_factor=1,           # 1s, 2s, 4s entre reintents
-        status_forcelist=[502, 503, 504],
+        status_forcelist=[429, 502, 503, 504],
         allowed_methods=["GET"],    # Només GET (tots els clients són lectura)
         raise_on_status=False,      # Deixar que requests.raise_for_status() gestioni
+        respect_retry_after_header=False,  # els 429 d'AEMET poden demanar esperes llargues; 1-4s i prou
     )
     adapter = HTTPAdapter(max_retries=retry)
 

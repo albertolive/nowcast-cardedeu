@@ -5,6 +5,7 @@ Inclou escaneig espacial: detecta ecos en un radi de 30km,
 rastreja el moviment de les cel·les de pluja i estima ETA.
 https://www.rainviewer.com/api.html
 """
+import hashlib
 import io
 import logging
 from datetime import datetime, timezone
@@ -337,20 +338,131 @@ def _empty_spatial_result(radius_km: float) -> dict:
     return result
 
 
-def _estimate_storm_tracking(spatial_scans: list, pixel_size_km: float,
-                              frame_interval_min: float = 10.0) -> dict:
+def _echo_field(tile_bytes: bytes, clutter_mask: Optional[np.ndarray] = None) -> Optional[np.ndarray]:
     """
-    Estima la velocitat i ETA de les cel·les de pluja a partir del
-    moviment del centroide entre frames consecutius.
+    Camp d'intensitat d'eco del tile sencer (float, 0 on no hi ha eco vàlid).
+    Per a la correlació de fase entre frames. Retorna None si el tile falla
+    o té massa pocs píxels d'eco per correlacionar de manera fiable.
+    """
+    try:
+        from PIL import Image
+        img = Image.open(io.BytesIO(tile_bytes)).convert("RGBA")
+        arr = np.array(img)
+    except Exception:
+        return None
+    r_ch = arr[:, :, 0].astype(float)
+    alpha = arr[:, :, 3]
+    dbz = r_ch / 2.0 - 32.0
+    mask = (alpha > 0) & (r_ch > 0) & (dbz >= config.RADAR_MIN_DBZ) & (r_ch < 255)
+    if clutter_mask is not None:
+        mask = mask & ~clutter_mask
+    if mask.sum() < 10:
+        return None
+    return np.where(mask, r_ch, 0.0)
+
+
+def _xcorr_displacement(prev_field: np.ndarray, curr_field: np.ndarray) -> Optional[tuple]:
+    """
+    Desplaçament (dy_px, dx_px) del camp d'ecos prev→curr per correlació
+    creuada (estàndard en nowcasting tipus TREC). A diferència del centroide,
+    funciona amb múltiples cel·les i amb cel·les que neixen/moren: troba el
+    desplaçament que millor superposa els dos camps. Correlació plana (no de
+    fase): la normalització de fase és fràgil quan la forma del camp canvia
+    entre frames (cel·les creixent) i dóna desplaçaments espuris.
+    """
+    f_prev = np.fft.fft2(prev_field)
+    f_curr = np.fft.fft2(curr_field)
+    corr = np.fft.ifft2(f_curr * np.conj(f_prev)).real
+    h, w = corr.shape
+    # Mitjana de l'altiplà del pic (no argmax): quan una cel·la petita queda
+    # dins d'una de gran, l'overlap és constant per a un rang de desplaçaments
+    # i argmax triaria un punt arbitrari de l'altiplà. La mitjana, per
+    # simetria, dóna el centre (0 en el cas estacionari).
+    ys, xs = np.nonzero(corr >= 0.999 * corr.max())
+    dys = np.where(ys <= h // 2, ys, ys - h).astype(float)
+    dxs = np.where(xs <= w // 2, xs, xs - w).astype(float)
+    dy = float(dys.mean())
+    dx = float(dxs.mean())
+    # Desplaçaments >45px/frame (~120 km/h) són soroll de correlació, no tempestes
+    if abs(dy) > 45 or abs(dx) > 45:
+        return None
+    return float(dy), float(dx)
+
+
+def _estimate_motion_xcorr(tile_bytes_list: list,
+                           clutter_mask: Optional[np.ndarray],
+                           pixel_size_km: float,
+                           frame_interval_min: float = 10.0) -> Optional[tuple]:
+    """
+    Vector de moviment (v_ew_kmh, v_ns_kmh) del camp d'ecos, com a mediana
+    dels desplaçaments per correlació de fase entre frames consecutius.
+    Retorna None si no hi ha prou parells vàlids.
+    """
+    fields = [
+        _echo_field(tb, clutter_mask) if tb is not None else None
+        for tb in tile_bytes_list
+    ]
+    displacements = []
+    for prev_f, curr_f in zip(fields, fields[1:]):
+        if prev_f is not None and curr_f is not None:
+            d = _xcorr_displacement(prev_f, curr_f)
+            if d is not None:
+                displacements.append(d)
+    if not displacements:
+        return None
+    med_dy = float(np.median([d[0] for d in displacements]))
+    med_dx = float(np.median([d[1] for d in displacements]))
+    km_per_min = pixel_size_km / frame_interval_min
+    v_ew = med_dx * km_per_min * 60  # + = cap a l'est
+    v_ns = med_dy * km_per_min * 60  # + = cap al sud (Y creix avall)
+    return v_ew, v_ns
+
+
+def _estimate_storm_tracking(spatial_scans: list, pixel_size_km: float,
+                              frame_interval_min: float = 10.0,
+                              xcorr_velocity: Optional[tuple] = None) -> dict:
+    """
+    Estima la velocitat i ETA de les cel·les de pluja.
+
+    Mètode preferit: vector de correlació de fase (xcorr_velocity) projectat
+    radialment sobre l'eco més proper. Fallback: moviment del centroide entre
+    frames (falla amb cel·les que neixen in situ — el centroide no es mou).
 
     Args:
         spatial_scans: Llista de resultats de _scan_radar_spatial()
         pixel_size_km: km per píxel
         frame_interval_min: Minuts entre frames (~10 min per RainViewer)
+        xcorr_velocity: (v_ew_kmh, v_ns_kmh) de _estimate_motion_xcorr(), o None
 
     Returns:
         Dict amb velocitat de la tempesta i ETA estimat.
     """
+    if xcorr_velocity is not None:
+        velocity_ew, velocity_ns = xcorr_velocity
+        velocity_kmh = float(np.hypot(velocity_ew, velocity_ns))
+        latest = spatial_scans[-1] if spatial_scans else {}
+        bearing = latest.get("nearest_echo_bearing")
+        nearest_km = latest.get("nearest_echo_km")
+        approaching = False
+        eta_min = None
+        if latest.get("echoes_found") and bearing is not None and nearest_km is not None:
+            # Posició de l'eco en coords (E, S); velocitat d'aproximació = -(v·p̂)
+            theta = np.radians(bearing)
+            p_e = np.sin(theta)
+            p_s = -np.cos(theta)
+            approach_speed_kmh = -(velocity_ew * p_e + velocity_ns * p_s)
+            approaching = approach_speed_kmh > 2
+            if approaching and approach_speed_kmh > 0:
+                eta_min = round(nearest_km / approach_speed_kmh * 60)
+                eta_min = max(0, min(eta_min, 180))
+        return {
+            "storm_velocity_kmh": round(velocity_kmh, 1),
+            "storm_velocity_ns": round(velocity_ns, 1),
+            "storm_velocity_ew": round(velocity_ew, 1),
+            "storm_approaching": bool(approaching),
+            "storm_eta_min": eta_min,
+        }
+
     # Filtrar scans amb ecos i centroide vàlid
     valid = [(s["_centroid_dx"], s["_centroid_dy"])
              for s in spatial_scans
@@ -508,9 +620,32 @@ def fetch_radar_at_cardedeu(wind_from_dir: Optional[float] = None) -> dict:
     latest_spatial = spatial_scans[-1] if spatial_scans else _empty_spatial_result(
         config.RADAR_SCAN_RADIUS_KM)
 
+    # ── Detecció de frames congelats ──
+    # RainViewer pot servir el MATEIX contingut amb timestamps nous quan el
+    # composite font es queda penjat (vist el 2026-06-04: 6 frames idèntics
+    # durant >1h en plena tempesta). Amb frames congelats el vector de
+    # moviment és 0 per construcció i la imatge pot tenir hores; cal
+    # marcar-ho perquè ningú es cregui un radar "fresc" que no ho és.
+    valid_tiles = [t for t in tile_bytes_list if t is not None]
+    frames_frozen = (
+        len(valid_tiles) >= 3
+        and len({hashlib.md5(t).hexdigest() for t in valid_tiles}) == 1
+    )
+    if frames_frozen:
+        logger.warning(
+            f"  RainViewer FROZEN: {len(valid_tiles)} frames amb contingut idèntic "
+            f"(timestamps diferents) — el composite font està penjat, dades potencialment velles"
+        )
+
     # ── Tracking de tempesta (moviment entre frames) ──
+    xcorr_velocity = _estimate_motion_xcorr(
+        tile_bytes_list, clutter_mask, config.RADAR_PIXEL_SIZE_KM
+    )
+    if frames_frozen:
+        xcorr_velocity = None  # 0.0 km/h seria mentida; no hi ha informació de moviment
     storm_tracking = _estimate_storm_tracking(
-        spatial_scans, config.RADAR_PIXEL_SIZE_KM
+        spatial_scans, config.RADAR_PIXEL_SIZE_KM,
+        xcorr_velocity=xcorr_velocity,
     )
 
     # Combinar approaching: puntual O espacial
@@ -540,6 +675,7 @@ def fetch_radar_at_cardedeu(wind_from_dir: Optional[float] = None) -> dict:
         "radar_approaching": approaching or spatial_approaching,
         "radar_max_intensity_1h": max(intensities) if intensities else 0,
         "radar_timestamp": radar_time,
+        "radar_frames_frozen": frames_frozen,
         # Espacials (noves)
         "radar_nearest_echo_km": latest_spatial["nearest_echo_km"],
         "radar_nearest_echo_bearing": latest_spatial.get("nearest_echo_bearing"),
@@ -592,6 +728,7 @@ def _empty_radar_result() -> dict:
         "radar_approaching": False,
         "radar_max_intensity_1h": 0,
         "radar_timestamp": "",
+        "radar_frames_frozen": False,
         # Espacials
         "radar_nearest_echo_km": config.RADAR_SCAN_RADIUS_KM,
         "radar_nearest_echo_bearing": None,

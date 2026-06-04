@@ -109,6 +109,44 @@ class TestStrongEchoNearby:
         assert adj == []
 
 
+class TestLightningRules:
+    def test_active_cell_within_15km_floors_at_50(self):
+        prob, adj = _apply_physical_constraints(
+            0.10, _radar(), NO_SENTINEL, AEMET_DOWN, None, None,
+            lightning={"lightning_count_15km_1h": 3, "lightning_count_30km_1h": 8,
+                       "lightning_nearest_km": 9.0},
+        )
+        assert prob == pytest.approx(0.50)
+        assert any("llamps" in a for a in adj)
+
+    def test_activity_30km_with_nearby_strikes_floors_at_40(self):
+        prob, adj = _apply_physical_constraints(
+            0.10, _radar(), NO_SENTINEL, AEMET_DOWN, None, None,
+            lightning={"lightning_count_15km_1h": 0, "lightning_count_30km_1h": 6,
+                       "lightning_nearest_km": 18.0},
+        )
+        assert prob == pytest.approx(0.40)
+
+    def test_old_storm_3h_window_does_not_trigger(self):
+        # Tempesta de fa 2h: comptadors de 3h alts però 1h a zero
+        prob, adj = _apply_physical_constraints(
+            0.10, _radar(), NO_SENTINEL, AEMET_DOWN, None, None,
+            lightning={"lightning_count_15km": 12, "lightning_count_30km": 30,
+                       "lightning_count_15km_1h": 0, "lightning_count_30km_1h": 0,
+                       "lightning_nearest_km": 8.0},
+        )
+        assert prob == pytest.approx(0.10)
+        assert adj == []
+
+    def test_distant_strikes_do_not_trigger(self):
+        prob, adj = _apply_physical_constraints(
+            0.10, _radar(), NO_SENTINEL, AEMET_DOWN, None, None,
+            lightning={"lightning_count_15km_1h": 0, "lightning_count_30km_1h": 6,
+                       "lightning_nearest_km": 28.0},
+        )
+        assert prob == pytest.approx(0.10)
+
+
 class TestSynopticConsensus:
     def test_strong_consensus_floors_at_35(self):
         # Cas real 2026-06-04 tarda: AEMET 100%, 4/4 models, min 16.4mm, pred 8%
