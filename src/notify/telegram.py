@@ -128,10 +128,16 @@ def _format_conditions(prediction: dict) -> list[str]:
 def format_rain_incoming(prediction: dict) -> str:
     """Missatge quan la pluja s'acosta (clear → rain_alert)."""
     prob = _round_prob_5(prediction["probability_pct"])
+    # No diguis "imminent" si ja està plovent a l'estació: és una constatació,
+    # no una predicció, i resta credibilitat a l'alerta.
+    if prediction.get("station_raining_now"):
+        headline = "🌧️ <b>Està plovent ara a Cardedeu</b>"
+    else:
+        headline = "⚠️ <b>ALERTA: Pluja imminent en els propers 60 min!</b>"
     lines = [
         "🌧️ <b>Nowcast Cardedeu</b>",
         "",
-        "⚠️ <b>ALERTA: Pluja imminent en els propers 60 min!</b>",
+        headline,
         "",
         f"🎯 Probabilitat: <b>{prob}%</b>",
         f"📊 Confiança: <b>{prediction['confidence']}</b>",

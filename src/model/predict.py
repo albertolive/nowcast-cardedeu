@@ -126,7 +126,9 @@ def _apply_physical_constraints(probability: float, radar_data: dict,
                                  sentinel_features: dict,
                                  aemet_radar_data: dict | None = None,
                                  current: dict | None = None,
-                                 station_df=None) -> tuple[float, list[str]]:
+                                 station_df=None,
+                                 aemet_forecast: dict | None = None,
+                                 ensemble: dict | None = None) -> tuple[float, list[str]]:
     """
     Aplica restriccions físiques a la probabilitat del model ML.
     Estableix floors (mínims) basats en senyals de sensors que són fets físics,
@@ -155,6 +157,21 @@ def _apply_physical_constraints(probability: float, radar_data: dict,
         floor = 0.50
         if adjusted < floor:
             adjustments.append(f"Eco radar a {nearest_km:.0f}km ({max_dbz_20km:.0f} dBZ)")
+            adjusted = floor
+
+    # 2b. Eco molt fort a prop (<15km, ≥45 dBZ): xàfec torrencial a un poble
+    # de distància. No depèn del vector de moviment (sovint surt 0.0 amb
+    # cel·les quasi-estacionàries, com el 2026-06-04: 56 dBZ a 7km i pred 10%).
+    # Si l'eco és al sector de sobrevent, ve cap aquí: floor més alt.
+    if nearest_km is not None and nearest_km < 15 and max_dbz_20km >= 45:
+        upwind_km = radar_data.get("radar_upwind_nearest_echo_km")
+        upwind = upwind_km is not None and upwind_km < 15
+        floor = 0.55 if upwind else 0.45
+        if adjusted < floor:
+            adjustments.append(
+                f"Eco fort {max_dbz_20km:.0f} dBZ a {nearest_km:.0f}km"
+                + (" (a sobrevent)" if upwind else "")
+            )
             adjusted = floor
 
     # 3. Tempesta aproximant-se amb ETA curta i eco fort
@@ -203,6 +220,26 @@ def _apply_physical_constraints(probability: float, radar_data: dict,
         if adjusted < floor:
             adjustments.append("Plou ara mateix a l'estació de Cardedeu")
             adjusted = floor
+
+    # 7. Consens sinòptic fort: AEMET ≥80% + tots els models d'ensemble amb
+    # quantitats serioses (≥5mm en 6h). No sabem el minut (això és feina del
+    # radar), però mostrar "sec 10%" amb aquest consens és mentir. Floor a la
+    # zona incerta (35%), per sota del llindar d'alerta: puja la categoria
+    # mostrada, no dispara notificacions.
+    if aemet_forecast and ensemble:
+        prob_precip = aemet_forecast.get("aemet_prob_precip")
+        agreement = ensemble.get("ensemble_rain_agreement")
+        min_precip = ensemble.get("ensemble_min_precip")
+        if (prob_precip is not None and prob_precip >= 80
+                and agreement is not None and agreement >= 1.0
+                and min_precip is not None and min_precip >= 5):
+            floor = 0.35
+            if adjusted < floor:
+                adjustments.append(
+                    f"Consens sinòptic: AEMET {prob_precip:.0f}% i tots els models "
+                    f"preveuen ≥{min_precip:.0f}mm en 6h"
+                )
+                adjusted = floor
 
     if adjustments:
         logger.info(f"  Ajustament físic: {probability:.1%} → {adjusted:.1%} ({'; '.join(adjustments)})")
@@ -448,6 +485,8 @@ def predict_now() -> dict:
         aemet_radar_data=aemet_radar_data,
         current=current,
         station_df=station_df,
+        aemet_forecast=aemet_data,
+        ensemble=ensemble_data,
     )
 
     will_rain = probability >= threshold

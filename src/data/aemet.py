@@ -13,7 +13,7 @@ import sys, os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 import config
 from src.data._http import create_session
-from src.data.aemet_cache import get_cached, set_cached, FORECAST_TTL
+from src.data.aemet_cache import get_cached, get_stale, set_cached, FORECAST_TTL, FORECAST_STALE_MAX_AGE
 
 logger = logging.getLogger(__name__)
 
@@ -130,6 +130,11 @@ def fetch_hourly_forecast() -> dict:
 
     except Exception as e:
         logger.warning(f"Error obtenint AEMET: {e}")
+        # Fallback: cache caducada (la previsió només canvia cada ~6-12h,
+        # i els 429 d'AEMET poden durar hores)
+        stale = get_stale("forecast", FORECAST_STALE_MAX_AGE)
+        if stale is not None:
+            return stale
         return {
             "aemet_prob_precip": np.nan,
             "aemet_prob_storm": np.nan,

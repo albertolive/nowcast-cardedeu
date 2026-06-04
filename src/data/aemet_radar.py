@@ -25,7 +25,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 import config
 from src.data._http import create_session
 from src.data._geo import _bearing_to_compass
-from src.data.aemet_cache import get_cached, set_cached, RADAR_TTL
+from src.data.aemet_cache import get_cached, get_stale, set_cached, RADAR_TTL, RADAR_STALE_MAX_AGE
 
 logger = logging.getLogger(__name__)
 
@@ -213,7 +213,7 @@ def fetch_aemet_radar() -> dict:
         data_url = _aemet_fetch_url("/red/radar/regional/ba")
         if not data_url:
             logger.warning("No s'ha obtingut URL del radar AEMET Barcelona")
-            return result
+            return _stale_or_empty()
 
         # Descarregar la imatge
         r = SESSION.get(data_url, timeout=15)
@@ -221,7 +221,7 @@ def fetch_aemet_radar() -> dict:
 
         if len(r.content) < 500:
             logger.warning("Imatge de radar AEMET massa petita")
-            return result
+            return _stale_or_empty()
 
         # Processar la imatge
         try:
@@ -230,7 +230,7 @@ def fetch_aemet_radar() -> dict:
             arr = np.array(img)
         except ImportError:
             logger.warning("PIL no disponible per processar radar AEMET")
-            return result
+            return _stale_or_empty()
 
         h, w = arr.shape[:2]
 
@@ -241,7 +241,7 @@ def fetch_aemet_radar() -> dict:
         cardedeu_px = _find_cardedeu_pixel(arr, img_bounds)
         if cardedeu_px is None:
             logger.warning("No s'ha pogut localitzar Cardedeu a la imatge de radar AEMET")
-            return result
+            return _stale_or_empty()
 
         cx, cy = cardedeu_px
         logger.debug(f"  Radar AEMET: Cardedeu al pixel ({cx}, {cy}) d'imatge {w}x{h}")
@@ -340,7 +340,17 @@ def fetch_aemet_radar() -> dict:
 
     except Exception as e:
         logger.warning(f"Error processant radar AEMET: {e}")
-        return result
+        return _stale_or_empty()
+
+
+def _stale_or_empty() -> dict:
+    """Fallback quan el fetch falla: cache caducada (fins a 45 min) abans que res.
+
+    Els 429 d'AEMET poden durar hores; una imatge de radar de fa 20-40 min
+    encara permet que les regles físiques vegin una tempesta que s'acosta.
+    """
+    stale = get_stale("radar", RADAR_STALE_MAX_AGE)
+    return stale if stale is not None else _empty_aemet_radar()
 
 
 def _empty_aemet_radar() -> dict:
