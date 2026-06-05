@@ -143,9 +143,18 @@ def _apply_physical_constraints(probability: float, radar_data: dict,
     adjustments = []
     adjusted = probability
 
+    # Si RainViewer serveix frames congelats (contingut idèntic amb timestamps
+    # nous), els ecos poden tenir hores: cap regla RainViewer (1, 2, 2b, 3)
+    # pot disparar amb dades fantasma. (2026-06-05: un eco congelat de 56 dBZ
+    # va mantenir la predicció clavada al 55% tota la nit.) Les regles AEMET
+    # i de llamps usen fonts independents i no es veuen afectades.
+    rv_frozen = bool(radar_data.get("radar_frames_frozen"))
+    if rv_frozen:
+        logger.warning("  RainViewer congelat: regles físiques de RainViewer desactivades")
+
     # 1. Radar mostra pluja al píxel de Cardedeu (és un FET, no una predicció)
     radar_dbz = radar_data.get("radar_dbz", 0) or 0
-    if radar_data.get("radar_has_echo") and radar_dbz >= 10:
+    if not rv_frozen and radar_data.get("radar_has_echo") and radar_dbz >= 10:
         floor = 0.75
         if adjusted < floor:
             adjustments.append(f"Radar detecta pluja a Cardedeu ({radar_dbz:.0f} dBZ)")
@@ -154,7 +163,7 @@ def _apply_physical_constraints(probability: float, radar_data: dict,
     # 2. Eco radar fort molt a prop (< 5km, dBZ > 20)
     nearest_km = radar_data.get("radar_nearest_echo_km")
     max_dbz_20km = radar_data.get("radar_max_dbz_20km", 0) or 0
-    if nearest_km is not None and nearest_km < 5 and max_dbz_20km >= 20:
+    if not rv_frozen and nearest_km is not None and nearest_km < 5 and max_dbz_20km >= 20:
         floor = 0.50
         if adjusted < floor:
             adjustments.append(f"Eco radar a {nearest_km:.0f}km ({max_dbz_20km:.0f} dBZ)")
@@ -164,7 +173,7 @@ def _apply_physical_constraints(probability: float, radar_data: dict,
     # de distància. No depèn del vector de moviment (sovint surt 0.0 amb
     # cel·les quasi-estacionàries, com el 2026-06-04: 56 dBZ a 7km i pred 10%).
     # Si l'eco és al sector de sobrevent, ve cap aquí: floor més alt.
-    if nearest_km is not None and nearest_km < 15 and max_dbz_20km >= 45:
+    if not rv_frozen and nearest_km is not None and nearest_km < 15 and max_dbz_20km >= 45:
         upwind_km = radar_data.get("radar_upwind_nearest_echo_km")
         upwind = upwind_km is not None and upwind_km < 15
         floor = 0.55 if upwind else 0.45
@@ -179,7 +188,7 @@ def _apply_physical_constraints(probability: float, radar_data: dict,
     # Floor 0.50: per sobre del llindar d'alerta (~0.44). Amb 0.40 la regla
     # era decorativa — detectava la tempesta i no alertava ningú.
     eta = radar_data.get("radar_storm_eta_min")
-    if (radar_data.get("radar_storm_approaching") and
+    if (not rv_frozen and radar_data.get("radar_storm_approaching") and
             eta is not None and eta <= 15 and max_dbz_20km >= 25):
         floor = 0.50
         if adjusted < floor:

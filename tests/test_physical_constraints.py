@@ -31,6 +31,7 @@ def _radar(**overrides):
         "radar_storm_approaching": 0,
         "radar_storm_eta_min": None,
         "radar_upwind_nearest_echo_km": 30.0,
+        "radar_frames_frozen": False,
     }
     base.update(overrides)
     return base
@@ -107,6 +108,54 @@ class TestStrongEchoNearby:
         )
         assert prob == pytest.approx(0.90)
         assert adj == []
+
+
+class TestFrozenFrames:
+    def test_frozen_frames_disable_rainviewer_floors(self):
+        # Cas real 2026-06-05: RainViewer congelat 12h amb un eco fantasma de
+        # 56 dBZ a 7km → la predicció es va quedar clavada al 55% tota la nit
+        radar = _radar(
+            radar_nearest_echo_km=7.2,
+            radar_max_dbz_20km=56.5,
+            radar_upwind_nearest_echo_km=7.2,
+            radar_frames_frozen=True,
+        )
+        prob, adj = _apply_physical_constraints(
+            0.09, radar, NO_SENTINEL, AEMET_DOWN, None, None
+        )
+        assert prob == pytest.approx(0.09)
+        assert adj == []
+
+    def test_frozen_frames_disable_pixel_echo_floor(self):
+        radar = _radar(radar_dbz=30.0, radar_has_echo=True, radar_frames_frozen=True)
+        prob, adj = _apply_physical_constraints(
+            0.09, radar, NO_SENTINEL, AEMET_DOWN, None, None
+        )
+        assert prob == pytest.approx(0.09)
+
+    def test_frozen_frames_do_not_affect_aemet_rules(self):
+        # AEMET és font independent: amb RainViewer congelat ha de seguir manant
+        radar = _radar(radar_frames_frozen=True)
+        aemet_live = {
+            "aemet_radar_available": True,
+            "aemet_radar_nearest_echo_km": 5.0,
+            "aemet_radar_max_dbz_20km": 40.0,
+            "aemet_radar_coverage_20km": 0.2,
+        }
+        prob, adj = _apply_physical_constraints(
+            0.09, radar, NO_SENTINEL, aemet_live, None, None
+        )
+        assert prob == pytest.approx(0.55)
+        assert any("AEMET" in a for a in adj)
+
+    def test_frozen_frames_do_not_affect_lightning_rules(self):
+        radar = _radar(radar_frames_frozen=True)
+        prob, adj = _apply_physical_constraints(
+            0.09, radar, NO_SENTINEL, AEMET_DOWN, None, None,
+            lightning={"lightning_count_15km_1h": 3, "lightning_count_30km_1h": 8,
+                       "lightning_nearest_km": 9.0},
+        )
+        assert prob == pytest.approx(0.50)
 
 
 class TestLightningRules:
