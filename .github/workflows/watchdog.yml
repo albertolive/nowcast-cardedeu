@@ -53,6 +53,41 @@ jobs:
             exit 1
           fi
 
+      - name: Check radar sources health
+        id: radar
+        # Cegues totals: RainViewer congelat (frames idèntics amb timestamps
+        # nous) I radar AEMET caigut (429) alhora — vist el 2026-06-04. Les
+        # regles físiques queden sense cap font de radar i la predicció vola
+        # sense instruments. Només alerta quan fallen TOTES DUES (una de sola
+        # té backup); es repeteix cada hora mentre duri, que és el que toca.
+        run: |
+          set -euo pipefail
+          BLIND=$(python3 - <<'PY'
+          import json
+          with open("latest.json") as f:
+              data = json.load(f)
+          rv_frozen = bool((data.get("radar") or {}).get("frames_frozen"))
+          aemet_down = not (data.get("aemet_radar") or {}).get("available", False)
+          print("true" if (rv_frozen and aemet_down) else "false")
+          PY
+          )
+          echo "blind=${BLIND}" >> "$GITHUB_OUTPUT"
+          echo "Radar sources blind: ${BLIND}"
+          if [ "${BLIND}" = "true" ]; then
+            exit 1
+          fi
+
+      - name: Telegram alert on blind radar
+        if: failure() && steps.radar.outputs.blind == 'true'
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+            -d chat_id="${TELEGRAM_CHAT_ID}" \
+            -d parse_mode=HTML \
+            -d text="🟠 <b>Nowcast CEC</b>: les dues fonts de radar han fallat alhora.%0A• RainViewer: frames congelats%0A• Radar AEMET: no disponible (429?)%0ALes regles físiques no veuen res; la predicció es basa només en NWP/llamps/estació.%0A<a href='${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}'>Veure logs</a>"
+
       - name: Telegram alert on staleness
         if: failure() && steps.freshness.outputs.stale == 'true'
         env:
