@@ -1,4 +1,36 @@
 {
+  "lightning_features_20260608_00": {
+    "timestamp": 1780876842.8682039,
+    "data": {
+      "lightning_count_30km": 0,
+      "lightning_count_15km": 0,
+      "lightning_count_15km_1h": 0,
+      "lightning_count_30km_1h": 0,
+      "lightning_nearest_km": 60,
+      "lightning_nearest_bearing": null,
+      "lightning_nearest_compass": null,
+      "lightning_cloud_ground": 0,
+      "lightning_max_current_ka": 0.0,
+      "lightning_approaching": false,
+      "lightning_has_activity": false
+    }
+  },
+  "xdde_2026-06-08_21": {
+    "timestamp": 1780876842.4229546,
+    "data": []
+  },
+  "xdde_2026-06-08_22": {
+    "timestamp": 1780876841.6369786,
+    "data": []
+  },
+  "xdde_2026-06-08_23": {
+    "timestamp": 1780876840.8423223,
+    "data": []
+  },
+  "xdde_2026-06-08_00": {
+    "timestamp": 1780876840.0682335,
+    "data": []
+  },
   "lightning_features_20260607_23": {
     "timestamp": 1780873239.0918896,
     "data": {
@@ -473099,45 +473131,5 @@
       "lightning_approaching": false,
       "lightning_has_activity": false
     }
-  },
-  "xdde_2026-06-04_03": {
-    "timestamp": 1780542046.7660236,
-    "data": []
-  },
-  "lightning_features_20260604_02": {
-    "timestamp": 1780538447.5592694,
-    "data": {
-      "lightning_count_30km": 0,
-      "lightning_count_15km": 0,
-      "lightning_nearest_km": 40,
-      "lightning_nearest_bearing": null,
-      "lightning_nearest_compass": null,
-      "lightning_cloud_ground": 0,
-      "lightning_max_current_ka": 0.0,
-      "lightning_approaching": false,
-      "lightning_has_activity": false
-    }
-  },
-  "xdde_2026-06-04_02": {
-    "timestamp": 1780538446.6933951,
-    "data": []
-  },
-  "lightning_features_20260604_01": {
-    "timestamp": 1780534849.1542814,
-    "data": {
-      "lightning_count_30km": 0,
-      "lightning_count_15km": 0,
-      "lightning_nearest_km": 40,
-      "lightning_nearest_bearing": null,
-      "lightning_nearest_compass": null,
-      "lightning_cloud_ground": 0,
-      "lightning_max_current_ka": 0.0,
-      "lightning_approaching": false,
-      "lightning_has_activity": false
-    }
-  },
-  "xdde_2026-06-04_01": {
-    "timestamp": 1780534848.4780743,
-    "data": []
   }
 }
