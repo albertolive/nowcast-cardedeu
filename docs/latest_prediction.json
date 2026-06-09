@@ -4,7 +4,7 @@
   "will_rain": false,
   "rain_category": "sec",
   "confidence": "Molt Baixa",
-  "timestamp": "2026-06-09T03:01:59.273190+00:00",
+  "timestamp": "2026-06-09T03:11:18.961067+00:00",
   "conditions": {
     "temperature": "20.1",
     "humidity": 85,
@@ -127,11 +127,11 @@
     "humidity_change_3h": 6.638297872340431,
     "vapour_pressure_deficit": 0.25,
     "vpd_change_3h": -0.21999999999999997,
-    "wind_speed_10m": 1.6,
-    "wind_u": 1.3568769538502816,
-    "wind_v": 0.8478708227731281,
-    "wind_speed_change_1h": 0.9890909090909091,
-    "wind_speed_change_3h": 0.17021276595744683,
+    "wind_speed_10m": 0.6000000000000001,
+    "wind_u": 0.5088288576938557,
+    "wind_v": 0.3179515585399231,
+    "wind_speed_change_1h": -0.010909090909090868,
+    "wind_speed_change_3h": -0.8297872340425532,
     "is_sea_breeze": 0.0,
     "llevantada_strength": 0.0,
     "llevantada_moisture": 0.0,
@@ -169,7 +169,7 @@
     "deep_layer_shear": 108.5,
     "bulk_richardson": 0.0,
     "jet_speed_300": 114.1,
-    "wind_shear_speed": 3.9999999999999996,
+    "wind_shear_speed": 5.0,
     "wind_shear_dir": -23.0,
     "precipitation": 0.0,
     "rain_accum_3h": 0.0,
@@ -207,7 +207,7 @@
     "sunshine_duration": 0.0,
     "sunshine_accum_3h": 0.0,
     "wind_speed_100m": 4.7,
-    "boundary_layer_shear": 3.1,
+    "boundary_layer_shear": 4.1,
     "wind_dir_shear_100m": 5.0,
     "snowfall": 0.0,
     "nwp_lifted_index": 2.8,
@@ -300,7 +300,7 @@
     "frontal_passage": 0.05078690206730751,
     "convective_composite": 0.051803214626330536,
     "thermal_buildup": 0.0018962201194747455,
-    "low_level_convergence": 0.4333333333333478,
+    "low_level_convergence": 0.5163120567376032,
     "dry_intrusion_700": 0.0,
     "soil_moisture_0_to_7cm": 0.147,
     "soil_moisture_7_to_28cm": 0.16,
@@ -317,7 +317,7 @@
     "diffuse_radiation": 0.0,
     "diffuse_fraction": 0.0,
     "wind_gusts_10m": 4.3,
-    "gust_factor": 2.6874999999999996,
+    "gust_factor": 7.166666666666665,
     "visibility": 27140.0,
     "freezing_level_height": 3870.0
   },
@@ -326,25 +326,25 @@
     {
       "group": "Models globals",
       "icon": "🌐",
-      "contribution": -0.587,
+      "contribution": -0.586,
       "direction": "sec"
     },
     {
       "group": "Núvols",
       "icon": "☁️",
-      "contribution": 0.398,
+      "contribution": 0.393,
       "direction": "pluja"
     },
     {
       "group": "Pluja confirmada",
       "icon": "🌧️",
-      "contribution": -0.121,
+      "contribution": -0.123,
       "direction": "sec"
     },
     {
       "group": "Radiació solar",
       "icon": "☀️",
-      "contribution": -0.045,
+      "contribution": -0.046,
       "direction": "sec"
     },
     {
@@ -367,9 +367,9 @@
     "skipped": 8,
     "source": "meteocardedeu",
     "lookup_hours": 3,
-    "station_rows": 1138,
-    "station_first_ts": "2026-06-08T05:03:00",
-    "station_last_ts": "2026-06-09T05:01:00",
+    "station_rows": 1137,
+    "station_first_ts": "2026-06-08T05:12:00",
+    "station_last_ts": "2026-06-09T05:11:00",
     "pending_total": 8,
     "accuracy": 100.0
   }
