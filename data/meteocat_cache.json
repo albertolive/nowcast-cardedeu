@@ -1,4 +1,14 @@
 {
+  "smc_forecast_20260609_06": {
+    "timestamp": 1780978837.7573123,
+    "data": {
+      "smc_prob_precip_1h": 0,
+      "smc_prob_precip_6h": 0,
+      "smc_precip_intensity": 0,
+      "smc_temp_forecast": 21.0,
+      "smc_weather_symbol": 3
+    }
+  },
   "lightning_features_20260609_04": {
     "timestamp": 1780977677.8018637,
     "data": {
@@ -156845,9 +156855,5 @@
       "lightning_approaching": false,
       "lightning_has_activity": false
     }
-  },
-  "xdde_2026-06-05_03": {
-    "timestamp": 1780628463.6350346,
-    "data": []
   }
 }
