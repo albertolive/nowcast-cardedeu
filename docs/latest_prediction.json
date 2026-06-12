@@ -4,11 +4,11 @@
   "will_rain": false,
   "rain_category": "sec",
   "confidence": "Molt Baixa",
-  "timestamp": "2026-06-12T21:02:25.116509+00:00",
+  "timestamp": "2026-06-12T21:11:39.761882+00:00",
   "conditions": {
-    "temperature": "21.8",
-    "humidity": 62,
-    "pressure": "1024.6",
+    "temperature": "21.3",
+    "humidity": 63,
+    "pressure": "1024.7",
     "wind_speed": "0.0",
     "wind_dir": "5",
     "rain_today": "0.0",
@@ -65,8 +65,8 @@
     "available": true
   },
   "bias": {
-    "temp": -2.1000000000000014,
-    "humidity": 6.0
+    "temp": -1.6000000000000014,
+    "humidity": 5.0
   },
   "wind_regime": {
     "level": "850hPa",
@@ -114,17 +114,17 @@
     "month_sin": 1.2246467991473532e-16,
     "month_cos": -1.0,
     "hours_since_sunrise": 16.646244246970696,
-    "pressure_msl": 1024.6,
-    "pressure_change_1h": 0.19787234042541968,
-    "pressure_change_3h": 0.7283018867924511,
-    "pressure_change_6h": 0.6132075471696226,
-    "pressure_accel_3h": 0.194801678198246,
-    "temperature_2m": 21.8,
-    "relative_humidity_2m": 62.0,
-    "dew_point": 14.188255800562668,
-    "dew_point_depression": 7.611744199437332,
-    "humidity_change_1h": 4.574468085106382,
-    "humidity_change_3h": 18.0,
+    "pressure_msl": 1024.6666666666667,
+    "pressure_change_1h": 0.2645390070922531,
+    "pressure_change_3h": 0.7949685534592845,
+    "pressure_change_6h": 0.679874213836456,
+    "pressure_accel_3h": 0.2614683448650794,
+    "temperature_2m": 21.655555555555555,
+    "relative_humidity_2m": 62.22222222222222,
+    "dew_point": 14.107409479533164,
+    "dew_point_depression": 7.548146076022391,
+    "humidity_change_1h": 4.796690307328603,
+    "humidity_change_3h": 18.22222222222222,
     "vapour_pressure_deficit": 0.73,
     "vpd_change_3h": -1.07,
     "wind_speed_10m": 0.0,
@@ -137,7 +137,7 @@
     "llevantada_moisture": 0.0,
     "garbi_strength": 0.0,
     "tramuntana_strength": 27.0,
-    "tramuntana_moisture": 0.62,
+    "tramuntana_moisture": 0.6222222222222222,
     "wind_dir_change_3h": -10.0,
     "has_pressure_levels": 1.0,
     "temp_925": 21.5,
@@ -164,8 +164,8 @@
     "k_index": -0.4694178220276868,
     "moisture_flux_850": 209.1242943163594,
     "moisture_flux_925": 89.3546044082583,
-    "theta_e_deficit": 25.903071674784528,
-    "inversion_925": -0.3000000000000007,
+    "theta_e_deficit": 25.546452888016063,
+    "inversion_925": -0.155555555555555,
     "deep_layer_shear": 25.299999999999997,
     "bulk_richardson": 0.0,
     "jet_speed_300": 52.3,
@@ -203,7 +203,7 @@
     "nwp_showers_fraction": 0.0,
     "et0_fao_evapotranspiration": 0.0,
     "soil_temperature_0_to_7cm": 25.8,
-    "soil_air_temp_diff": 4.0,
+    "soil_air_temp_diff": 4.144444444444446,
     "sunshine_duration": 0.0,
     "sunshine_accum_3h": 3600.0,
     "wind_speed_100m": 4.8,
@@ -275,8 +275,8 @@
     "ensemble_models_rain": 0.0,
     "ensemble_surprise_rain": null,
     "nwp_isolated_rain": null,
-    "forecast_temp_bias": -2.1000000000000014,
-    "forecast_humidity_bias": 6.0,
+    "forecast_temp_bias": -1.6000000000000014,
+    "forecast_humidity_bias": 5.0,
     "aemet_prob_precip": 0.0,
     "aemet_prob_storm": 0.0,
     "aemet_precip_today": 0.0,
@@ -299,8 +299,8 @@
     "orographic_forcing": 0.0,
     "frontal_passage": 0.0,
     "convective_composite": 0.05053757883535256,
-    "thermal_buildup": 0.014133712996877537,
-    "low_level_convergence": 1.1173584905660379,
+    "thermal_buildup": 0.014408788189617654,
+    "low_level_convergence": 1.128469601677149,
     "dry_intrusion_700": 0.31,
     "soil_moisture_0_to_7cm": 0.108,
     "soil_moisture_7_to_28cm": 0.142,
@@ -312,7 +312,7 @@
     "cloud_cover_high": 0.0,
     "cloud_low_fraction": 0.0,
     "wet_bulb_temperature_2m": 15.7,
-    "wet_bulb_depression": 6.100000000000001,
+    "wet_bulb_depression": 5.955555555555556,
     "direct_radiation": 0.0,
     "diffuse_radiation": 0.0,
     "diffuse_fraction": 0.0,
@@ -321,12 +321,12 @@
     "visibility": 39420.0,
     "freezing_level_height": 4720.0
   },
-  "pressure_change_3h": 0.7283018867924511,
+  "pressure_change_3h": 0.7949685534592845,
   "top_drivers": [
     {
       "group": "Models globals",
       "icon": "🌐",
-      "contribution": -0.597,
+      "contribution": -0.598,
       "direction": "sec"
     },
     {
@@ -338,7 +338,7 @@
     {
       "group": "Pluja confirmada",
       "icon": "🌧️",
-      "contribution": -0.109,
+      "contribution": -0.108,
       "direction": "sec"
     },
     {
@@ -350,7 +350,7 @@
     {
       "group": "Humitat",
       "icon": "💧",
-      "contribution": -0.032,
+      "contribution": -0.031,
       "direction": "sec"
     },
     {
@@ -367,9 +367,9 @@
     "skipped": 8,
     "source": "meteocardedeu",
     "lookup_hours": 3,
-    "station_rows": 1184,
-    "station_first_ts": "2026-06-11T23:03:00",
-    "station_last_ts": "2026-06-12T23:01:00",
+    "station_rows": 1186,
+    "station_first_ts": "2026-06-11T23:12:00",
+    "station_last_ts": "2026-06-12T23:11:00",
     "pending_total": 8,
     "accuracy": 100.0
   }
