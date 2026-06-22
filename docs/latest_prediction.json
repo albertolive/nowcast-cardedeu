@@ -4,7 +4,7 @@
   "will_rain": false,
   "rain_category": "sec",
   "confidence": "Molt Baixa",
-  "timestamp": "2026-06-22T08:44:52.784228+00:00",
+  "timestamp": "2026-06-22T08:54:39.214673+00:00",
   "conditions": {
     "temperature": null,
     "humidity": null,
@@ -62,7 +62,7 @@
     "max_dbz_20km": 0.0,
     "coverage_20km": 0.0,
     "echoes_found": false,
-    "available": false
+    "available": true
   },
   "bias": {
     "temp": 31.2,
