@@ -1,4 +1,14 @@
 {
+  "smc_forecast_20260624_06": {
+    "timestamp": 1782274837.424464,
+    "data": {
+      "smc_prob_precip_1h": 0,
+      "smc_prob_precip_6h": 0,
+      "smc_precip_intensity": 0,
+      "smc_temp_forecast": 25.4,
+      "smc_weather_symbol": 1
+    }
+  },
   "lightning_features_20260624_04": {
     "timestamp": 1782273673.1197112,
     "data": {
@@ -2647,16 +2657,6 @@
       "lightning_max_current_ka": 0.0,
       "lightning_approaching": false,
       "lightning_has_activity": false
-    }
-  },
-  "smc_forecast_20260619_16": {
-    "timestamp": 1781877673.3787677,
-    "data": {
-      "smc_prob_precip_1h": 0,
-      "smc_prob_precip_6h": 0,
-      "smc_precip_intensity": 0,
-      "smc_temp_forecast": 29.5,
-      "smc_weather_symbol": 1
     }
   }
 }
