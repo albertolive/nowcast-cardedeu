@@ -5913,7 +5913,7 @@
 {"actual_rain":false,"timestamp":"2026-06-26T17:31:33.787874+00:00","probability_pct":6.2,"actual_rain_mm":0.0,"rain_category":"sec","correct":true,"verified":true}
 {"actual_rain":false,"timestamp":"2026-06-26T17:41:38.752468+00:00","probability_pct":6.2,"actual_rain_mm":0.0,"rain_category":"sec","correct":true,"verified":true}
 {"actual_rain":false,"timestamp":"2026-06-26T17:51:33.916274+00:00","probability_pct":6.2,"actual_rain_mm":0.0,"rain_category":"sec","correct":true,"verified":true}
-{"actual_rain":null,"timestamp":"2026-06-26T18:02:14.859905+00:00","probability_pct":6.2,"actual_rain_mm":null,"rain_category":"sec","correct":null,"verified":false}
+{"actual_rain":false,"timestamp":"2026-06-26T18:02:14.859905+00:00","probability_pct":6.2,"actual_rain_mm":0.0,"rain_category":"sec","correct":true,"verified":true}
 {"actual_rain":null,"timestamp":"2026-06-26T18:11:35.267268+00:00","probability_pct":6.2,"actual_rain_mm":null,"rain_category":"sec","correct":null,"verified":false}
 {"actual_rain":null,"timestamp":"2026-06-26T18:21:40.295900+00:00","probability_pct":6.2,"actual_rain_mm":null,"rain_category":"sec","correct":null,"verified":false}
 {"actual_rain":null,"timestamp":"2026-06-26T18:32:02.714020+00:00","probability_pct":6.2,"actual_rain_mm":null,"rain_category":"sec","correct":null,"verified":false}
@@ -5921,3 +5921,4 @@
 {"actual_rain":null,"timestamp":"2026-06-26T18:51:31.348657+00:00","probability_pct":6.2,"actual_rain_mm":null,"rain_category":"sec","correct":null,"verified":false}
 {"actual_rain":null,"timestamp":"2026-06-26T19:02:20.627359+00:00","probability_pct":6.2,"actual_rain_mm":null,"rain_category":"sec","correct":null,"verified":false}
 {"actual_rain":null,"timestamp":"2026-06-26T19:11:55.522225+00:00","probability_pct":6.2,"actual_rain_mm":null,"rain_category":"sec","correct":null,"verified":false}
+{"actual_rain":null,"timestamp":"2026-06-26T19:21:34.996912+00:00","probability_pct":6.2,"actual_rain_mm":null,"rain_category":"sec","correct":null,"verified":false}
