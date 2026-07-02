@@ -4,13 +4,13 @@
   "will_rain": false,
   "rain_category": "sec",
   "confidence": "Molt Baixa",
-  "timestamp": "2026-07-02T03:01:27.318453+00:00",
+  "timestamp": "2026-07-02T03:10:44.414885+00:00",
   "conditions": {
     "temperature": "21.3",
-    "humidity": 85,
+    "humidity": 84,
     "pressure": "1019.8",
     "wind_speed": "0.0",
-    "wind_dir": "250",
+    "wind_dir": "5",
     "rain_today": "0.0",
     "solar_radiation": 0
   },
@@ -40,9 +40,9 @@
   },
   "sentinel": {
     "station": "Granollers",
-    "temp": 23.0,
-    "humidity": 80.0,
-    "precip": 0.0,
+    "temp": null,
+    "humidity": null,
+    "precip": null,
     "raining": 0
   },
   "ensemble": {
@@ -66,7 +66,7 @@
   },
   "bias": {
     "temp": -1.3000000000000007,
-    "humidity": 7.0
+    "humidity": 8.0
   },
   "wind_regime": {
     "level": "850hPa",
@@ -261,12 +261,12 @@
     "radar_quadrant_coverage_W": 0.019,
     "radar_echo_bearing_sin": null,
     "radar_echo_bearing_cos": null,
-    "sentinel_temp_diff": -1.6999999999999993,
-    "sentinel_humidity_diff": -5.0,
-    "sentinel_precip": 0.0,
+    "sentinel_temp_diff": null,
+    "sentinel_humidity_diff": null,
+    "sentinel_precip": null,
     "sentinel_raining": 0.0,
-    "local_rain_xema": 0.0,
-    "local_rain_xema_3h": 0.0,
+    "local_rain_xema": null,
+    "local_rain_xema_3h": null,
     "ensemble_rain_agreement": 0.0,
     "ensemble_precip_spread": 0.0,
     "ensemble_temp_spread": 0.4866980583482947,
@@ -276,7 +276,7 @@
     "ensemble_surprise_rain": null,
     "nwp_isolated_rain": null,
     "forecast_temp_bias": -1.3000000000000007,
-    "forecast_humidity_bias": 7.0,
+    "forecast_humidity_bias": 8.0,
     "aemet_prob_precip": 0.0,
     "aemet_prob_storm": 0.0,
     "aemet_precip_today": 0.0,
@@ -326,7 +326,7 @@
     {
       "group": "Models globals",
       "icon": "🌐",
-      "contribution": -0.58,
+      "contribution": -0.581,
       "direction": "sec"
     },
     {
@@ -338,7 +338,7 @@
     {
       "group": "Acord entre models",
       "icon": "🤝",
-      "contribution": -0.162,
+      "contribution": -0.163,
       "direction": "sec"
     },
     {
@@ -361,14 +361,16 @@
     }
   ],
   "verification": {
-    "verified_count": 0,
-    "correct_count": 0,
+    "verified_count": 3,
+    "correct_count": 3,
     "wrong_count": 0,
-    "skipped": 0,
-    "source": "none",
+    "skipped": 8,
+    "source": "meteocardedeu",
     "lookup_hours": 3,
-    "station_rows": 0,
-    "mc_error": null,
-    "pending_total": 10
+    "station_rows": 1107,
+    "station_first_ts": "2026-07-01T05:11:00",
+    "station_last_ts": "2026-07-02T04:43:00",
+    "pending_total": 8,
+    "accuracy": 100.0
   }
 }
