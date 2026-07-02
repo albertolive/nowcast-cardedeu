@@ -4,7 +4,7 @@
   "will_rain": false,
   "rain_category": "sec",
   "confidence": "Molt Baixa",
-  "timestamp": "2026-07-02T05:00:47.855732+00:00",
+  "timestamp": "2026-07-02T05:10:34.170392+00:00",
   "conditions": {
     "temperature": "20.3",
     "humidity": 86,
@@ -12,7 +12,7 @@
     "wind_speed": "0.0",
     "wind_dir": "62",
     "rain_today": "0.0",
-    "solar_radiation": 28
+    "solar_radiation": 33
   },
   "radar": {
     "dbz": 0.0,
@@ -114,11 +114,11 @@
     "month_sin": -0.4999999999999997,
     "month_cos": -0.8660254037844388,
     "hours_since_sunrise": 0.6383988219364332,
-    "pressure_msl": 1019.9,
-    "pressure_change_1h": 0.04074074074071632,
-    "pressure_change_3h": 0.0473684210526244,
-    "pressure_change_6h": -0.3513513513514681,
-    "pressure_accel_3h": 0.014775828459960394,
+    "pressure_msl": 1019.9111111111112,
+    "pressure_change_1h": 0.051851851851893116,
+    "pressure_change_3h": 0.058479532163801196,
+    "pressure_change_6h": -0.3402402402402913,
+    "pressure_accel_3h": 0.02588693957113719,
     "temperature_2m": 20.3,
     "relative_humidity_2m": 86.0,
     "dew_point": 17.87736585527013,
@@ -235,7 +235,7 @@
     "soil_moisture_28_to_100cm": 0.147,
     "soil_saturation_ratio": 0.870748299319728,
     "tcwv_monthly_anomaly": 0.9295774647887324,
-    "shortwave_radiation": 26.0,
+    "shortwave_radiation": 25.88888888888889,
     "radar_dbz": 0.0,
     "radar_rain_rate": 0.0,
     "radar_has_echo": 0.0,
@@ -321,7 +321,7 @@
     "visibility": 21060.0,
     "freezing_level_height": 4830.0
   },
-  "pressure_change_3h": 0.0473684210526244,
+  "pressure_change_3h": 0.058479532163801196,
   "top_drivers": [
     {
       "group": "Models globals",
@@ -367,9 +367,9 @@
     "skipped": 8,
     "source": "meteocardedeu",
     "lookup_hours": 3,
-    "station_rows": 1107,
-    "station_first_ts": "2026-07-01T07:01:00",
-    "station_last_ts": "2026-07-02T07:00:00",
+    "station_rows": 1108,
+    "station_first_ts": "2026-07-01T07:11:00",
+    "station_last_ts": "2026-07-02T07:10:00",
     "pending_total": 8,
     "accuracy": 100.0
   }
