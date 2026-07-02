@@ -4,14 +4,14 @@
   "will_rain": false,
   "rain_category": "sec",
   "confidence": "Molt Baixa",
-  "timestamp": "2026-07-02T02:52:59.199058+00:00",
+  "timestamp": "2026-07-02T03:01:27.318453+00:00",
   "conditions": {
-    "temperature": 21.3,
+    "temperature": "21.3",
     "humidity": 85,
-    "pressure": 1019.8,
-    "wind_speed": 0.0,
+    "pressure": "1019.8",
+    "wind_speed": "0.0",
     "wind_dir": "250",
-    "rain_today": 0,
+    "rain_today": "0.0",
     "solar_radiation": 0
   },
   "radar": {
@@ -24,7 +24,7 @@
     "nearest_echo_compass": "SSE",
     "max_dbz_20km": 56.5,
     "coverage_20km": 0.0108,
-    "upwind_nearest_echo_km": 10.0,
+    "upwind_nearest_echo_km": 8.5,
     "storm_velocity_kmh": 0.0,
     "storm_eta_min": null,
     "quadrants": {
@@ -40,9 +40,9 @@
   },
   "sentinel": {
     "station": "Granollers",
-    "temp": null,
-    "humidity": null,
-    "precip": null,
+    "temp": 23.0,
+    "humidity": 80.0,
+    "precip": 0.0,
     "raining": 0
   },
   "ensemble": {
@@ -79,26 +79,26 @@
     "wind_dir_change_3h": -32.0
   },
   "pressure_levels": {
-    "temp_925": 20.3,
-    "rh_925": 56,
-    "wind_925_speed_kmh": 15.8,
-    "wind_925_dir": 263,
-    "wind_850_dir": 281,
-    "wind_850_speed_kmh": 9.3,
-    "temp_850": 14.7,
+    "temp_925": 20.0,
+    "rh_925": 63,
+    "wind_925_speed_kmh": 13.7,
+    "wind_925_dir": 268,
+    "wind_850_dir": 261,
+    "wind_850_speed_kmh": 9.2,
+    "temp_850": 14.5,
     "rh_850": 80,
     "rh_700": 2,
-    "temp_700": 7.9,
+    "temp_700": 8.1,
     "temp_500": -5.8,
-    "wind_300_speed_kmh": 58.9,
-    "wind_300_dir": 356,
-    "gph_300": 9675.81,
-    "vt_index": 20.5,
-    "tt_index": 37.58395538793723,
-    "li_index": 2.122621190729814
+    "wind_300_speed_kmh": 56.7,
+    "wind_300_dir": 354,
+    "gph_300": 9672.58,
+    "vt_index": 20.3,
+    "tt_index": 37.189330365369784,
+    "li_index": 2.3200680764493535
   },
   "sst": {
-    "sst_med": 25.4
+    "sst_med": 25.3
   },
   "rain_gate_open": true,
   "station_available": true,
@@ -245,7 +245,7 @@
     "radar_nearest_echo_km": 7.2,
     "radar_max_dbz_20km": 56.5,
     "radar_coverage_20km": 0.0108,
-    "radar_upwind_nearest_echo_km": 10.0,
+    "radar_upwind_nearest_echo_km": 8.5,
     "radar_upwind_max_dbz": 56.5,
     "radar_storm_velocity_kmh": 0.0,
     "radar_storm_velocity_ns": 0.0,
@@ -261,15 +261,15 @@
     "radar_quadrant_coverage_W": 0.019,
     "radar_echo_bearing_sin": null,
     "radar_echo_bearing_cos": null,
-    "sentinel_temp_diff": null,
-    "sentinel_humidity_diff": null,
-    "sentinel_precip": null,
+    "sentinel_temp_diff": -1.6999999999999993,
+    "sentinel_humidity_diff": -5.0,
+    "sentinel_precip": 0.0,
     "sentinel_raining": 0.0,
-    "local_rain_xema": null,
-    "local_rain_xema_3h": null,
+    "local_rain_xema": 0.0,
+    "local_rain_xema_3h": 0.0,
     "ensemble_rain_agreement": 0.0,
     "ensemble_precip_spread": 0.0,
-    "ensemble_temp_spread": 0.9959292143521047,
+    "ensemble_temp_spread": 0.4866980583482947,
     "ensemble_max_precip": 0.0,
     "ensemble_min_precip": 0.0,
     "ensemble_models_rain": 0.0,
@@ -306,7 +306,7 @@
     "soil_moisture_7_to_28cm": 0.142,
     "soil_moisture_change_24h": null,
     "convective_inhibition": 75.0,
-    "sst_med": 25.4,
+    "sst_med": 25.3,
     "cloud_cover_low": 36.0,
     "cloud_cover_mid": 21.0,
     "cloud_cover_high": 2.0,
@@ -338,7 +338,7 @@
     {
       "group": "Acord entre models",
       "icon": "🤝",
-      "contribution": -0.163,
+      "contribution": -0.162,
       "direction": "sec"
     },
     {
@@ -359,5 +359,16 @@
       "contribution": -2.288,
       "direction": "sec"
     }
-  ]
+  ],
+  "verification": {
+    "verified_count": 0,
+    "correct_count": 0,
+    "wrong_count": 0,
+    "skipped": 0,
+    "source": "none",
+    "lookup_hours": 3,
+    "station_rows": 0,
+    "mc_error": null,
+    "pending_total": 10
+  }
 }
