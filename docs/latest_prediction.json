@@ -4,7 +4,7 @@
   "will_rain": false,
   "rain_category": "sec",
   "confidence": "Molt Baixa",
-  "timestamp": "2026-07-06T22:01:42.944503+00:00",
+  "timestamp": "2026-07-06T22:11:13.343320+00:00",
   "conditions": {
     "temperature": "24.3",
     "humidity": 70,
@@ -40,8 +40,8 @@
   },
   "sentinel": {
     "station": "Granollers",
-    "temp": 26.5,
-    "humidity": 64.0,
+    "temp": null,
+    "humidity": null,
     "precip": null,
     "raining": 0
   },
@@ -261,8 +261,8 @@
     "radar_quadrant_coverage_W": 0.019,
     "radar_echo_bearing_sin": null,
     "radar_echo_bearing_cos": null,
-    "sentinel_temp_diff": -2.1999999999999993,
-    "sentinel_humidity_diff": -6.0,
+    "sentinel_temp_diff": null,
+    "sentinel_humidity_diff": null,
     "sentinel_precip": null,
     "sentinel_raining": 0.0,
     "local_rain_xema": null,
@@ -332,13 +332,13 @@
     {
       "group": "Models globals",
       "icon": "🌐",
-      "contribution": -0.942,
+      "contribution": -0.945,
       "direction": "sec"
     },
     {
       "group": "Pluja confirmada",
       "icon": "🌧️",
-      "contribution": -0.658,
+      "contribution": -0.661,
       "direction": "sec"
     },
     {
@@ -367,9 +367,9 @@
     "skipped": 8,
     "source": "meteocardedeu",
     "lookup_hours": 3,
-    "station_rows": 1204,
-    "station_first_ts": "2026-07-06T00:03:00",
-    "station_last_ts": "2026-07-07T00:01:00",
+    "station_rows": 1202,
+    "station_first_ts": "2026-07-06T00:12:00",
+    "station_last_ts": "2026-07-07T00:11:00",
     "pending_total": 8,
     "accuracy": 100.0
   }
