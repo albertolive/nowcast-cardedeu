@@ -1,6 +1,6 @@
 {
-  "lightning_features_20260713_19": {
-    "timestamp": 1783969308.7827075,
+  "lightning_features_20260713_20": {
+    "timestamp": 1783972913.2656825,
     "data": {
       "lightning_count_30km": 0,
       "lightning_count_15km": 0,
@@ -16,7 +16,7 @@
     }
   },
   "xema_35_2026-07-13": {
-    "timestamp": 1783970500.3982224,
+    "timestamp": 1783972934.9311724,
     "data": [
       {
         "station_code": "C6",
@@ -247,13 +247,19 @@
         "estat": ""
       },
       {
-        "station_code": "C7",
-        "datetime": "2026-07-13T00:00:00+00:00",
+        "station_code": "C6",
+        "datetime": "2026-07-13T19:00:00+00:00",
         "value": 0,
         "estat": ""
       },
       {
         "station_code": "C7",
+        "datetime": "2026-07-13T00:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "C7",
         "datetime": "2026-07-13T00:30:00+00:00",
         "value": 0,
         "estat": ""
@@ -469,6 +475,18 @@
         "estat": ""
       },
       {
+        "station_code": "C7",
+        "datetime": "2026-07-13T18:30:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "C7",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "C8",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -693,6 +711,12 @@
       {
         "station_code": "C8",
         "datetime": "2026-07-13T18:30:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "C8",
+        "datetime": "2026-07-13T19:00:00+00:00",
         "value": 0,
         "estat": ""
       },
@@ -925,6 +949,12 @@
         "estat": ""
       },
       {
+        "station_code": "C9",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "CC",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -1149,6 +1179,12 @@
       {
         "station_code": "CC",
         "datetime": "2026-07-13T18:30:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "CC",
+        "datetime": "2026-07-13T19:00:00+00:00",
         "value": 0,
         "estat": ""
       },
@@ -1381,6 +1417,12 @@
         "estat": ""
       },
       {
+        "station_code": "CD",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "CE",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -1605,6 +1647,12 @@
       {
         "station_code": "CE",
         "datetime": "2026-07-13T18:30:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "CE",
+        "datetime": "2026-07-13T19:00:00+00:00",
         "value": 0,
         "estat": ""
       },
@@ -1837,6 +1885,12 @@
         "estat": ""
       },
       {
+        "station_code": "CG",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "CI",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -2061,6 +2115,12 @@
       {
         "station_code": "CI",
         "datetime": "2026-07-13T18:30:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "CI",
+        "datetime": "2026-07-13T19:00:00+00:00",
         "value": 0,
         "estat": ""
       },
@@ -2293,6 +2353,12 @@
         "estat": ""
       },
       {
+        "station_code": "CJ",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "CL",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -2517,6 +2583,12 @@
       {
         "station_code": "CL",
         "datetime": "2026-07-13T18:30:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "CL",
+        "datetime": "2026-07-13T19:00:00+00:00",
         "value": 0,
         "estat": ""
       },
@@ -2749,6 +2821,12 @@
         "estat": ""
       },
       {
+        "station_code": "CP",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "CQ",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -2973,6 +3051,12 @@
       {
         "station_code": "CQ",
         "datetime": "2026-07-13T18:30:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "CQ",
+        "datetime": "2026-07-13T19:00:00+00:00",
         "value": 0,
         "estat": ""
       },
@@ -3205,6 +3289,12 @@
         "estat": ""
       },
       {
+        "station_code": "CR",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "CT",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -3429,6 +3519,12 @@
       {
         "station_code": "CT",
         "datetime": "2026-07-13T18:30:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "CT",
+        "datetime": "2026-07-13T19:00:00+00:00",
         "value": 0,
         "estat": ""
       },
@@ -3661,6 +3757,12 @@
         "estat": ""
       },
       {
+        "station_code": "CW",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "CY",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -3885,6 +3987,12 @@
       {
         "station_code": "CY",
         "datetime": "2026-07-13T18:30:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "CY",
+        "datetime": "2026-07-13T19:00:00+00:00",
         "value": 0,
         "estat": ""
       },
@@ -4117,6 +4225,12 @@
         "estat": ""
       },
       {
+        "station_code": "D1",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "D2",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -4341,6 +4455,12 @@
       {
         "station_code": "D2",
         "datetime": "2026-07-13T18:30:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "D2",
+        "datetime": "2026-07-13T19:00:00+00:00",
         "value": 0,
         "estat": ""
       },
@@ -4573,6 +4693,12 @@
         "estat": ""
       },
       {
+        "station_code": "D3",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "D4",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -4801,6 +4927,12 @@
         "estat": ""
       },
       {
+        "station_code": "D4",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "D5",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -5029,6 +5161,12 @@
         "estat": ""
       },
       {
+        "station_code": "D5",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "D6",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -5257,6 +5395,12 @@
         "estat": ""
       },
       {
+        "station_code": "D6",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "D7",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -5485,6 +5629,12 @@
         "estat": ""
       },
       {
+        "station_code": "D7",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "D8",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -5713,6 +5863,12 @@
         "estat": ""
       },
       {
+        "station_code": "D8",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "D9",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -5941,6 +6097,12 @@
         "estat": ""
       },
       {
+        "station_code": "D9",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "DB",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -6169,6 +6331,12 @@
         "estat": ""
       },
       {
+        "station_code": "DB",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "DF",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -6397,6 +6565,12 @@
         "estat": ""
       },
       {
+        "station_code": "DF",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "DG",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -6625,6 +6799,12 @@
         "estat": ""
       },
       {
+        "station_code": "DG",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "DI",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -6853,6 +7033,12 @@
         "estat": ""
       },
       {
+        "station_code": "DI",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "DJ",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -7081,6 +7267,12 @@
         "estat": ""
       },
       {
+        "station_code": "DJ",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "DK",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -7309,6 +7501,12 @@
         "estat": ""
       },
       {
+        "station_code": "DK",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "DL",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -7537,6 +7735,12 @@
         "estat": ""
       },
       {
+        "station_code": "DL",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "DN",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -7765,6 +7969,12 @@
         "estat": ""
       },
       {
+        "station_code": "DN",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "DO",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -7993,6 +8203,12 @@
         "estat": ""
       },
       {
+        "station_code": "DO",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "DP",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -8221,6 +8437,12 @@
         "estat": ""
       },
       {
+        "station_code": "DP",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "DQ",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -8449,6 +8671,12 @@
         "estat": ""
       },
       {
+        "station_code": "DQ",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "H1",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -8677,6 +8905,12 @@
         "estat": ""
       },
       {
+        "station_code": "H1",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "J5",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -8905,6 +9139,12 @@
         "estat": ""
       },
       {
+        "station_code": "J5",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "KE",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -9133,6 +9373,12 @@
         "estat": ""
       },
       {
+        "station_code": "KE",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "KP",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -9361,6 +9607,12 @@
         "estat": ""
       },
       {
+        "station_code": "KP",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "KX",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -9589,6 +9841,12 @@
         "estat": ""
       },
       {
+        "station_code": "KX",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "M6",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -9817,6 +10075,12 @@
         "estat": ""
       },
       {
+        "station_code": "M6",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "MQ",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -10045,6 +10309,12 @@
         "estat": ""
       },
       {
+        "station_code": "MQ",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "MR",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -10273,6 +10543,12 @@
         "estat": ""
       },
       {
+        "station_code": "MR",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "MS",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -10501,6 +10777,12 @@
         "estat": ""
       },
       {
+        "station_code": "MS",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "MV",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -10729,6 +11011,12 @@
         "estat": ""
       },
       {
+        "station_code": "MV",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "MW",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -10957,6 +11245,12 @@
         "estat": ""
       },
       {
+        "station_code": "MW",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "U2",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -11185,6 +11479,12 @@
         "estat": ""
       },
       {
+        "station_code": "U2",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "U3",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -11413,6 +11713,12 @@
         "estat": ""
       },
       {
+        "station_code": "U3",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "U4",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -11641,6 +11947,12 @@
         "estat": ""
       },
       {
+        "station_code": "U4",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "U6",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -11869,6 +12181,12 @@
         "estat": ""
       },
       {
+        "station_code": "U6",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "U7",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -12097,6 +12415,12 @@
         "estat": ""
       },
       {
+        "station_code": "U7",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "U9",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -12325,6 +12649,12 @@
         "estat": ""
       },
       {
+        "station_code": "U9",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "UA",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -12553,6 +12883,12 @@
         "estat": ""
       },
       {
+        "station_code": "UA",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "UB",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -12777,6 +13113,12 @@
       {
         "station_code": "UB",
         "datetime": "2026-07-13T18:30:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "UB",
+        "datetime": "2026-07-13T19:00:00+00:00",
         "value": 0,
         "estat": ""
       },
@@ -13009,6 +13351,12 @@
         "estat": ""
       },
       {
+        "station_code": "UE",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "UF",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -13237,6 +13585,12 @@
         "estat": ""
       },
       {
+        "station_code": "UF",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "UH",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -13465,6 +13819,12 @@
         "estat": ""
       },
       {
+        "station_code": "UH",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "UI",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -13693,6 +14053,12 @@
         "estat": ""
       },
       {
+        "station_code": "UI",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "UJ",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -13921,6 +14287,12 @@
         "estat": ""
       },
       {
+        "station_code": "UJ",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "UK",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -14149,6 +14521,12 @@
         "estat": ""
       },
       {
+        "station_code": "UK",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "UM",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -14377,6 +14755,12 @@
         "estat": ""
       },
       {
+        "station_code": "UM",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "UN",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -14605,6 +14989,12 @@
         "estat": ""
       },
       {
+        "station_code": "UN",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "UO",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -14833,6 +15223,12 @@
         "estat": ""
       },
       {
+        "station_code": "UO",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "UP",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -15061,6 +15457,12 @@
         "estat": ""
       },
       {
+        "station_code": "UP",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "UQ",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -15289,6 +15691,12 @@
         "estat": ""
       },
       {
+        "station_code": "UQ",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "US",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -15517,6 +15925,12 @@
         "estat": ""
       },
       {
+        "station_code": "US",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "UU",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -15745,6 +16159,12 @@
         "estat": ""
       },
       {
+        "station_code": "UU",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "UW",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -15973,6 +16393,12 @@
         "estat": ""
       },
       {
+        "station_code": "UW",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "UX",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -16201,6 +16627,12 @@
         "estat": ""
       },
       {
+        "station_code": "UX",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "UY",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -16429,6 +16861,12 @@
         "estat": ""
       },
       {
+        "station_code": "UY",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "V1",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -16657,6 +17095,12 @@
         "estat": ""
       },
       {
+        "station_code": "V1",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "V4",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -16885,6 +17329,12 @@
         "estat": ""
       },
       {
+        "station_code": "V4",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "V5",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -17113,6 +17563,12 @@
         "estat": ""
       },
       {
+        "station_code": "V5",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "V8",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -17341,6 +17797,12 @@
         "estat": ""
       },
       {
+        "station_code": "V8",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "VA",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -17569,6 +18031,12 @@
         "estat": ""
       },
       {
+        "station_code": "VA",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "VB",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -17797,6 +18265,12 @@
         "estat": ""
       },
       {
+        "station_code": "VB",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "VC",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -18025,6 +18499,12 @@
         "estat": ""
       },
       {
+        "station_code": "VC",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "VD",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -18253,6 +18733,12 @@
         "estat": ""
       },
       {
+        "station_code": "VD",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "VH",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -18481,6 +18967,12 @@
         "estat": ""
       },
       {
+        "station_code": "VH",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "VK",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -18709,6 +19201,12 @@
         "estat": ""
       },
       {
+        "station_code": "VK",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "VM",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -18937,6 +19435,12 @@
         "estat": ""
       },
       {
+        "station_code": "VM",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "VO",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -19165,6 +19669,12 @@
         "estat": ""
       },
       {
+        "station_code": "VO",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "VP",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -19393,6 +19903,12 @@
         "estat": ""
       },
       {
+        "station_code": "VP",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "VQ",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -19617,6 +20133,12 @@
       {
         "station_code": "VQ",
         "datetime": "2026-07-13T18:30:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "VQ",
+        "datetime": "2026-07-13T19:00:00+00:00",
         "value": 0,
         "estat": ""
       },
@@ -19849,6 +20371,12 @@
         "estat": ""
       },
       {
+        "station_code": "VS",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "VU",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -20077,6 +20605,12 @@
         "estat": ""
       },
       {
+        "station_code": "VU",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "VV",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -20305,6 +20839,12 @@
         "estat": ""
       },
       {
+        "station_code": "VV",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "VX",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -20533,6 +21073,12 @@
         "estat": ""
       },
       {
+        "station_code": "VX",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "VY",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -20761,6 +21307,12 @@
         "estat": ""
       },
       {
+        "station_code": "VY",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "VZ",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -20985,6 +21537,12 @@
       {
         "station_code": "VZ",
         "datetime": "2026-07-13T18:30:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "VZ",
+        "datetime": "2026-07-13T19:00:00+00:00",
         "value": 0,
         "estat": ""
       },
@@ -21217,6 +21775,12 @@
         "estat": ""
       },
       {
+        "station_code": "W1",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "W4",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -21445,6 +22009,12 @@
         "estat": ""
       },
       {
+        "station_code": "W4",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "W5",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -21673,6 +22243,12 @@
         "estat": ""
       },
       {
+        "station_code": "W5",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "W8",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -21901,6 +22477,12 @@
         "estat": ""
       },
       {
+        "station_code": "W8",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "W9",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -22129,6 +22711,12 @@
         "estat": ""
       },
       {
+        "station_code": "W9",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "WA",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -22357,6 +22945,12 @@
         "estat": ""
       },
       {
+        "station_code": "WA",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "WB",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -22585,6 +23179,12 @@
         "estat": ""
       },
       {
+        "station_code": "WB",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "WC",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -22813,6 +23413,12 @@
         "estat": ""
       },
       {
+        "station_code": "WC",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "WG",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -23041,6 +23647,12 @@
         "estat": ""
       },
       {
+        "station_code": "WG",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "WI",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -23269,6 +23881,12 @@
         "estat": ""
       },
       {
+        "station_code": "WI",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "WJ",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -23497,6 +24115,12 @@
         "estat": ""
       },
       {
+        "station_code": "WJ",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "WK",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -23725,6 +24349,12 @@
         "estat": ""
       },
       {
+        "station_code": "WK",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "WL",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -23953,6 +24583,12 @@
         "estat": ""
       },
       {
+        "station_code": "WL",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "WM",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -24177,6 +24813,12 @@
       {
         "station_code": "WM",
         "datetime": "2026-07-13T18:30:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "WM",
+        "datetime": "2026-07-13T19:00:00+00:00",
         "value": 0,
         "estat": ""
       },
@@ -24631,6 +25273,12 @@
         "estat": ""
       },
       {
+        "station_code": "WO",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "WP",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -24855,6 +25503,12 @@
       {
         "station_code": "WP",
         "datetime": "2026-07-13T18:30:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "WP",
+        "datetime": "2026-07-13T19:00:00+00:00",
         "value": 0,
         "estat": ""
       },
@@ -25087,6 +25741,12 @@
         "estat": ""
       },
       {
+        "station_code": "WQ",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "WR",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -25311,6 +25971,12 @@
       {
         "station_code": "WR",
         "datetime": "2026-07-13T18:30:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "WR",
+        "datetime": "2026-07-13T19:00:00+00:00",
         "value": 0,
         "estat": ""
       },
@@ -25543,6 +26209,12 @@
         "estat": ""
       },
       {
+        "station_code": "WS",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "WT",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -25767,6 +26439,12 @@
       {
         "station_code": "WT",
         "datetime": "2026-07-13T18:30:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "WT",
+        "datetime": "2026-07-13T19:00:00+00:00",
         "value": 0,
         "estat": ""
       },
@@ -25999,6 +26677,12 @@
         "estat": ""
       },
       {
+        "station_code": "WU",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "WV",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -26223,6 +26907,12 @@
       {
         "station_code": "WV",
         "datetime": "2026-07-13T18:30:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "WV",
+        "datetime": "2026-07-13T19:00:00+00:00",
         "value": 0,
         "estat": ""
       },
@@ -26455,6 +27145,12 @@
         "estat": ""
       },
       {
+        "station_code": "WW",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "WX",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -26679,6 +27375,12 @@
       {
         "station_code": "WX",
         "datetime": "2026-07-13T18:30:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "WX",
+        "datetime": "2026-07-13T19:00:00+00:00",
         "value": 0,
         "estat": ""
       },
@@ -26911,6 +27613,12 @@
         "estat": ""
       },
       {
+        "station_code": "WZ",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "X1",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -27135,6 +27843,12 @@
       {
         "station_code": "X1",
         "datetime": "2026-07-13T18:30:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "X1",
+        "datetime": "2026-07-13T19:00:00+00:00",
         "value": 0,
         "estat": ""
       },
@@ -27367,6 +28081,12 @@
         "estat": ""
       },
       {
+        "station_code": "X3",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "X4",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -27591,6 +28311,12 @@
       {
         "station_code": "X4",
         "datetime": "2026-07-13T18:30:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "X4",
+        "datetime": "2026-07-13T19:00:00+00:00",
         "value": 0,
         "estat": ""
       },
@@ -27823,6 +28549,12 @@
         "estat": ""
       },
       {
+        "station_code": "X5",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "X6",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -28051,6 +28783,12 @@
         "estat": ""
       },
       {
+        "station_code": "X6",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "X7",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -28279,6 +29017,12 @@
         "estat": ""
       },
       {
+        "station_code": "X7",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "X8",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -28507,6 +29251,12 @@
         "estat": ""
       },
       {
+        "station_code": "X8",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "X9",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -28735,6 +29485,12 @@
         "estat": ""
       },
       {
+        "station_code": "X9",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "XA",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -28963,6 +29719,12 @@
         "estat": ""
       },
       {
+        "station_code": "XA",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "XB",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -29191,6 +29953,12 @@
         "estat": ""
       },
       {
+        "station_code": "XB",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "XC",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -29419,6 +30187,12 @@
         "estat": ""
       },
       {
+        "station_code": "XC",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "XD",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -29647,6 +30421,12 @@
         "estat": ""
       },
       {
+        "station_code": "XD",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "XE",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -29875,6 +30655,12 @@
         "estat": ""
       },
       {
+        "station_code": "XE",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "XF",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -30103,6 +30889,12 @@
         "estat": ""
       },
       {
+        "station_code": "XF",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "XG",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -30331,6 +31123,12 @@
         "estat": ""
       },
       {
+        "station_code": "XG",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "XH",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -30559,6 +31357,12 @@
         "estat": ""
       },
       {
+        "station_code": "XH",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "XI",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -30787,6 +31591,12 @@
         "estat": ""
       },
       {
+        "station_code": "XI",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "XJ",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -31015,6 +31825,12 @@
         "estat": ""
       },
       {
+        "station_code": "XJ",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "XK",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -31243,6 +32059,12 @@
         "estat": ""
       },
       {
+        "station_code": "XK",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "XL",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -31471,6 +32293,12 @@
         "estat": ""
       },
       {
+        "station_code": "XL",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "XM",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -31699,6 +32527,12 @@
         "estat": ""
       },
       {
+        "station_code": "XM",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "XN",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -31927,6 +32761,12 @@
         "estat": ""
       },
       {
+        "station_code": "XN",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "XO",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -32155,6 +32995,12 @@
         "estat": ""
       },
       {
+        "station_code": "XO",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "XP",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -32383,6 +33229,12 @@
         "estat": ""
       },
       {
+        "station_code": "XP",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "XQ",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -32611,6 +33463,12 @@
         "estat": ""
       },
       {
+        "station_code": "XQ",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "XR",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -32839,6 +33697,12 @@
         "estat": ""
       },
       {
+        "station_code": "XR",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "XS",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -33067,6 +33931,12 @@
         "estat": ""
       },
       {
+        "station_code": "XS",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "XT",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -33295,6 +34165,12 @@
         "estat": ""
       },
       {
+        "station_code": "XT",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "XU",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -33523,6 +34399,12 @@
         "estat": ""
       },
       {
+        "station_code": "XU",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "XV",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -33751,6 +34633,12 @@
         "estat": ""
       },
       {
+        "station_code": "XV",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "XX",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -33979,6 +34867,12 @@
         "estat": ""
       },
       {
+        "station_code": "XX",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "XY",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -34207,6 +35101,12 @@
         "estat": ""
       },
       {
+        "station_code": "XY",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "XZ",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -34435,6 +35335,12 @@
         "estat": ""
       },
       {
+        "station_code": "XZ",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "Y4",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -34663,6 +35569,12 @@
         "estat": ""
       },
       {
+        "station_code": "Y4",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "Y5",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -34891,6 +35803,12 @@
         "estat": ""
       },
       {
+        "station_code": "Y5",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "Y6",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -35119,6 +36037,12 @@
         "estat": ""
       },
       {
+        "station_code": "Y6",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "YA",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -35347,6 +36271,12 @@
         "estat": ""
       },
       {
+        "station_code": "YA",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "YB",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -35575,6 +36505,12 @@
         "estat": ""
       },
       {
+        "station_code": "YB",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "YC",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -35803,6 +36739,12 @@
         "estat": ""
       },
       {
+        "station_code": "YC",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "YD",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -36031,6 +36973,12 @@
         "estat": ""
       },
       {
+        "station_code": "YD",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "YE",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -36255,6 +37203,12 @@
       {
         "station_code": "YE",
         "datetime": "2026-07-13T18:30:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "YE",
+        "datetime": "2026-07-13T19:00:00+00:00",
         "value": 0,
         "estat": ""
       },
@@ -36487,6 +37441,12 @@
         "estat": ""
       },
       {
+        "station_code": "YF",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "YG",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -36715,6 +37675,12 @@
         "estat": ""
       },
       {
+        "station_code": "YG",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "YH",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -36943,6 +37909,12 @@
         "estat": ""
       },
       {
+        "station_code": "YH",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "YJ",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -37171,6 +38143,12 @@
         "estat": ""
       },
       {
+        "station_code": "YJ",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "YK",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -37399,6 +38377,12 @@
         "estat": ""
       },
       {
+        "station_code": "YK",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "YL",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -37627,6 +38611,12 @@
         "estat": ""
       },
       {
+        "station_code": "YL",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "YM",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -37855,6 +38845,12 @@
         "estat": ""
       },
       {
+        "station_code": "YM",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "YN",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -38083,6 +39079,12 @@
         "estat": ""
       },
       {
+        "station_code": "YN",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "YO",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -38311,6 +39313,12 @@
         "estat": ""
       },
       {
+        "station_code": "YO",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "YP",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -38539,6 +39547,12 @@
         "estat": ""
       },
       {
+        "station_code": "YP",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "YQ",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -38767,6 +39781,12 @@
         "estat": ""
       },
       {
+        "station_code": "YQ",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "YR",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -38995,6 +40015,12 @@
         "estat": ""
       },
       {
+        "station_code": "YR",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "YS",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -39223,6 +40249,12 @@
         "estat": ""
       },
       {
+        "station_code": "YS",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "YT",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -39451,6 +40483,12 @@
         "estat": ""
       },
       {
+        "station_code": "YT",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "YU",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -39679,6 +40717,12 @@
         "estat": ""
       },
       {
+        "station_code": "YU",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "YV",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -39903,6 +40947,12 @@
       {
         "station_code": "YV",
         "datetime": "2026-07-13T18:30:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "YV",
+        "datetime": "2026-07-13T19:00:00+00:00",
         "value": 0,
         "estat": ""
       },
@@ -40135,6 +41185,12 @@
         "estat": ""
       },
       {
+        "station_code": "YX",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "YY",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -40363,6 +41419,12 @@
         "estat": ""
       },
       {
+        "station_code": "YY",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "Z1",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -40591,6 +41653,12 @@
         "estat": ""
       },
       {
+        "station_code": "Z1",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "Z2",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -40664,467 +41732,479 @@
       },
       {
         "station_code": "Z2",
-        "datetime": "2026-07-13T06:00:00+00:00",
-        "value": 0,
-        "estat": "V"
-      },
-      {
-        "station_code": "Z2",
-        "datetime": "2026-07-13T06:30:00+00:00",
-        "value": 0,
-        "estat": ""
-      },
-      {
-        "station_code": "Z2",
-        "datetime": "2026-07-13T07:00:00+00:00",
-        "value": 0,
-        "estat": ""
-      },
-      {
-        "station_code": "Z2",
-        "datetime": "2026-07-13T07:30:00+00:00",
-        "value": 0,
-        "estat": ""
-      },
-      {
-        "station_code": "Z2",
-        "datetime": "2026-07-13T08:00:00+00:00",
-        "value": 0,
-        "estat": ""
-      },
-      {
-        "station_code": "Z2",
-        "datetime": "2026-07-13T08:30:00+00:00",
-        "value": 0,
-        "estat": ""
-      },
-      {
-        "station_code": "Z2",
-        "datetime": "2026-07-13T09:00:00+00:00",
-        "value": 0,
-        "estat": ""
-      },
-      {
-        "station_code": "Z2",
-        "datetime": "2026-07-13T09:30:00+00:00",
-        "value": 0,
-        "estat": ""
-      },
-      {
-        "station_code": "Z2",
-        "datetime": "2026-07-13T10:00:00+00:00",
-        "value": 0,
-        "estat": ""
-      },
-      {
-        "station_code": "Z2",
-        "datetime": "2026-07-13T10:30:00+00:00",
-        "value": 0,
-        "estat": ""
-      },
-      {
-        "station_code": "Z2",
-        "datetime": "2026-07-13T11:00:00+00:00",
-        "value": 0,
-        "estat": ""
-      },
-      {
-        "station_code": "Z2",
-        "datetime": "2026-07-13T11:30:00+00:00",
-        "value": 0,
-        "estat": ""
-      },
-      {
-        "station_code": "Z2",
-        "datetime": "2026-07-13T12:00:00+00:00",
-        "value": 0,
-        "estat": ""
-      },
-      {
-        "station_code": "Z2",
-        "datetime": "2026-07-13T12:30:00+00:00",
-        "value": 0,
-        "estat": ""
-      },
-      {
-        "station_code": "Z2",
-        "datetime": "2026-07-13T13:00:00+00:00",
-        "value": 0,
-        "estat": ""
-      },
-      {
-        "station_code": "Z2",
-        "datetime": "2026-07-13T13:30:00+00:00",
-        "value": 0,
-        "estat": ""
-      },
-      {
-        "station_code": "Z2",
-        "datetime": "2026-07-13T14:00:00+00:00",
-        "value": 0,
-        "estat": ""
-      },
-      {
-        "station_code": "Z2",
-        "datetime": "2026-07-13T14:30:00+00:00",
-        "value": 0,
-        "estat": ""
-      },
-      {
-        "station_code": "Z2",
-        "datetime": "2026-07-13T15:00:00+00:00",
-        "value": 0,
-        "estat": ""
-      },
-      {
-        "station_code": "Z2",
-        "datetime": "2026-07-13T15:30:00+00:00",
-        "value": 0,
-        "estat": ""
-      },
-      {
-        "station_code": "Z2",
-        "datetime": "2026-07-13T16:00:00+00:00",
-        "value": 0,
-        "estat": ""
-      },
-      {
-        "station_code": "Z2",
-        "datetime": "2026-07-13T16:30:00+00:00",
-        "value": 0,
-        "estat": ""
-      },
-      {
-        "station_code": "Z2",
-        "datetime": "2026-07-13T17:00:00+00:00",
-        "value": 0,
-        "estat": ""
-      },
-      {
-        "station_code": "Z2",
-        "datetime": "2026-07-13T17:30:00+00:00",
-        "value": 0,
-        "estat": ""
-      },
-      {
-        "station_code": "Z2",
-        "datetime": "2026-07-13T18:00:00+00:00",
-        "value": 0,
-        "estat": ""
-      },
-      {
-        "station_code": "Z2",
-        "datetime": "2026-07-13T18:30:00+00:00",
-        "value": 0,
-        "estat": ""
-      },
-      {
-        "station_code": "Z3",
-        "datetime": "2026-07-13T00:00:00+00:00",
-        "value": 0,
-        "estat": ""
-      },
-      {
-        "station_code": "Z3",
-        "datetime": "2026-07-13T00:30:00+00:00",
-        "value": 0,
-        "estat": ""
-      },
-      {
-        "station_code": "Z3",
-        "datetime": "2026-07-13T01:00:00+00:00",
-        "value": 0,
-        "estat": ""
-      },
-      {
-        "station_code": "Z3",
-        "datetime": "2026-07-13T01:30:00+00:00",
-        "value": 0,
-        "estat": ""
-      },
-      {
-        "station_code": "Z3",
-        "datetime": "2026-07-13T02:00:00+00:00",
-        "value": 0,
-        "estat": ""
-      },
-      {
-        "station_code": "Z3",
-        "datetime": "2026-07-13T02:30:00+00:00",
-        "value": 0,
-        "estat": ""
-      },
-      {
-        "station_code": "Z3",
-        "datetime": "2026-07-13T03:00:00+00:00",
-        "value": 0,
-        "estat": ""
-      },
-      {
-        "station_code": "Z3",
-        "datetime": "2026-07-13T03:30:00+00:00",
-        "value": 0,
-        "estat": ""
-      },
-      {
-        "station_code": "Z3",
-        "datetime": "2026-07-13T04:00:00+00:00",
-        "value": 0,
-        "estat": ""
-      },
-      {
-        "station_code": "Z3",
-        "datetime": "2026-07-13T04:30:00+00:00",
-        "value": 0,
-        "estat": ""
-      },
-      {
-        "station_code": "Z3",
-        "datetime": "2026-07-13T05:00:00+00:00",
-        "value": 0,
-        "estat": ""
-      },
-      {
-        "station_code": "Z3",
-        "datetime": "2026-07-13T05:30:00+00:00",
-        "value": 0,
-        "estat": ""
-      },
-      {
-        "station_code": "Z3",
-        "datetime": "2026-07-13T06:00:00+00:00",
-        "value": 0,
-        "estat": ""
-      },
-      {
-        "station_code": "Z3",
-        "datetime": "2026-07-13T06:30:00+00:00",
-        "value": 0,
-        "estat": ""
-      },
-      {
-        "station_code": "Z3",
-        "datetime": "2026-07-13T07:00:00+00:00",
-        "value": 0,
-        "estat": ""
-      },
-      {
-        "station_code": "Z3",
-        "datetime": "2026-07-13T07:30:00+00:00",
-        "value": 0,
-        "estat": ""
-      },
-      {
-        "station_code": "Z3",
-        "datetime": "2026-07-13T08:00:00+00:00",
-        "value": 0,
-        "estat": ""
-      },
-      {
-        "station_code": "Z3",
-        "datetime": "2026-07-13T08:30:00+00:00",
-        "value": 0,
-        "estat": ""
-      },
-      {
-        "station_code": "Z3",
-        "datetime": "2026-07-13T09:00:00+00:00",
-        "value": 0,
-        "estat": ""
-      },
-      {
-        "station_code": "Z3",
-        "datetime": "2026-07-13T09:30:00+00:00",
-        "value": 0,
-        "estat": ""
-      },
-      {
-        "station_code": "Z3",
-        "datetime": "2026-07-13T10:00:00+00:00",
-        "value": 0,
-        "estat": ""
-      },
-      {
-        "station_code": "Z3",
-        "datetime": "2026-07-13T10:30:00+00:00",
-        "value": 0,
-        "estat": ""
-      },
-      {
-        "station_code": "Z3",
-        "datetime": "2026-07-13T11:00:00+00:00",
-        "value": 0,
-        "estat": ""
-      },
-      {
-        "station_code": "Z3",
-        "datetime": "2026-07-13T11:30:00+00:00",
-        "value": 0,
-        "estat": ""
-      },
-      {
-        "station_code": "Z3",
-        "datetime": "2026-07-13T12:00:00+00:00",
-        "value": 0,
-        "estat": ""
-      },
-      {
-        "station_code": "Z3",
-        "datetime": "2026-07-13T12:30:00+00:00",
-        "value": 0,
-        "estat": ""
-      },
-      {
-        "station_code": "Z3",
-        "datetime": "2026-07-13T13:00:00+00:00",
-        "value": 0,
-        "estat": ""
-      },
-      {
-        "station_code": "Z3",
-        "datetime": "2026-07-13T13:30:00+00:00",
-        "value": 0,
-        "estat": ""
-      },
-      {
-        "station_code": "Z3",
-        "datetime": "2026-07-13T14:00:00+00:00",
-        "value": 0,
-        "estat": ""
-      },
-      {
-        "station_code": "Z3",
-        "datetime": "2026-07-13T14:30:00+00:00",
-        "value": 0,
-        "estat": ""
-      },
-      {
-        "station_code": "Z3",
-        "datetime": "2026-07-13T15:00:00+00:00",
-        "value": 0,
-        "estat": ""
-      },
-      {
-        "station_code": "Z3",
-        "datetime": "2026-07-13T15:30:00+00:00",
-        "value": 0,
-        "estat": ""
-      },
-      {
-        "station_code": "Z3",
-        "datetime": "2026-07-13T16:00:00+00:00",
-        "value": 0,
-        "estat": ""
-      },
-      {
-        "station_code": "Z3",
-        "datetime": "2026-07-13T16:30:00+00:00",
-        "value": 0,
-        "estat": ""
-      },
-      {
-        "station_code": "Z3",
-        "datetime": "2026-07-13T17:00:00+00:00",
-        "value": 0,
-        "estat": ""
-      },
-      {
-        "station_code": "Z3",
-        "datetime": "2026-07-13T17:30:00+00:00",
-        "value": 0,
-        "estat": ""
-      },
-      {
-        "station_code": "Z3",
-        "datetime": "2026-07-13T18:00:00+00:00",
-        "value": 0,
-        "estat": ""
-      },
-      {
-        "station_code": "Z3",
-        "datetime": "2026-07-13T18:30:00+00:00",
-        "value": 0,
-        "estat": ""
-      },
-      {
-        "station_code": "Z5",
-        "datetime": "2026-07-13T00:00:00+00:00",
-        "value": 0,
-        "estat": ""
-      },
-      {
-        "station_code": "Z5",
-        "datetime": "2026-07-13T00:30:00+00:00",
-        "value": 0,
-        "estat": ""
-      },
-      {
-        "station_code": "Z5",
-        "datetime": "2026-07-13T01:00:00+00:00",
-        "value": 0,
-        "estat": ""
-      },
-      {
-        "station_code": "Z5",
-        "datetime": "2026-07-13T01:30:00+00:00",
-        "value": 0,
-        "estat": ""
-      },
-      {
-        "station_code": "Z5",
-        "datetime": "2026-07-13T02:00:00+00:00",
-        "value": 0,
-        "estat": ""
-      },
-      {
-        "station_code": "Z5",
-        "datetime": "2026-07-13T02:30:00+00:00",
-        "value": 0,
-        "estat": ""
-      },
-      {
-        "station_code": "Z5",
-        "datetime": "2026-07-13T03:00:00+00:00",
-        "value": 0,
-        "estat": ""
-      },
-      {
-        "station_code": "Z5",
-        "datetime": "2026-07-13T03:30:00+00:00",
-        "value": 0,
-        "estat": ""
-      },
-      {
-        "station_code": "Z5",
-        "datetime": "2026-07-13T04:00:00+00:00",
-        "value": 0,
-        "estat": ""
-      },
-      {
-        "station_code": "Z5",
-        "datetime": "2026-07-13T04:30:00+00:00",
-        "value": 0,
-        "estat": ""
-      },
-      {
-        "station_code": "Z5",
-        "datetime": "2026-07-13T05:00:00+00:00",
-        "value": 0,
-        "estat": ""
-      },
-      {
-        "station_code": "Z5",
-        "datetime": "2026-07-13T05:30:00+00:00",
-        "value": 0,
-        "estat": ""
-      },
-      {
-        "station_code": "Z5",
         "datetime": "2026-07-13T06:00:00+00:00",
         "value": 0,
         "estat": "V"
       },
       {
+        "station_code": "Z2",
+        "datetime": "2026-07-13T06:30:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "Z2",
+        "datetime": "2026-07-13T07:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "Z2",
+        "datetime": "2026-07-13T07:30:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "Z2",
+        "datetime": "2026-07-13T08:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "Z2",
+        "datetime": "2026-07-13T08:30:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "Z2",
+        "datetime": "2026-07-13T09:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "Z2",
+        "datetime": "2026-07-13T09:30:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "Z2",
+        "datetime": "2026-07-13T10:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "Z2",
+        "datetime": "2026-07-13T10:30:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "Z2",
+        "datetime": "2026-07-13T11:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "Z2",
+        "datetime": "2026-07-13T11:30:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "Z2",
+        "datetime": "2026-07-13T12:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "Z2",
+        "datetime": "2026-07-13T12:30:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "Z2",
+        "datetime": "2026-07-13T13:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "Z2",
+        "datetime": "2026-07-13T13:30:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "Z2",
+        "datetime": "2026-07-13T14:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "Z2",
+        "datetime": "2026-07-13T14:30:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "Z2",
+        "datetime": "2026-07-13T15:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "Z2",
+        "datetime": "2026-07-13T15:30:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "Z2",
+        "datetime": "2026-07-13T16:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "Z2",
+        "datetime": "2026-07-13T16:30:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "Z2",
+        "datetime": "2026-07-13T17:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "Z2",
+        "datetime": "2026-07-13T17:30:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "Z2",
+        "datetime": "2026-07-13T18:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "Z2",
+        "datetime": "2026-07-13T18:30:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "Z2",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "Z3",
+        "datetime": "2026-07-13T00:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "Z3",
+        "datetime": "2026-07-13T00:30:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "Z3",
+        "datetime": "2026-07-13T01:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "Z3",
+        "datetime": "2026-07-13T01:30:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "Z3",
+        "datetime": "2026-07-13T02:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "Z3",
+        "datetime": "2026-07-13T02:30:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "Z3",
+        "datetime": "2026-07-13T03:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "Z3",
+        "datetime": "2026-07-13T03:30:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "Z3",
+        "datetime": "2026-07-13T04:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "Z3",
+        "datetime": "2026-07-13T04:30:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "Z3",
+        "datetime": "2026-07-13T05:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "Z3",
+        "datetime": "2026-07-13T05:30:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "Z3",
+        "datetime": "2026-07-13T06:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "Z3",
+        "datetime": "2026-07-13T06:30:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "Z3",
+        "datetime": "2026-07-13T07:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "Z3",
+        "datetime": "2026-07-13T07:30:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "Z3",
+        "datetime": "2026-07-13T08:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "Z3",
+        "datetime": "2026-07-13T08:30:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "Z3",
+        "datetime": "2026-07-13T09:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "Z3",
+        "datetime": "2026-07-13T09:30:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "Z3",
+        "datetime": "2026-07-13T10:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "Z3",
+        "datetime": "2026-07-13T10:30:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "Z3",
+        "datetime": "2026-07-13T11:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "Z3",
+        "datetime": "2026-07-13T11:30:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "Z3",
+        "datetime": "2026-07-13T12:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "Z3",
+        "datetime": "2026-07-13T12:30:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "Z3",
+        "datetime": "2026-07-13T13:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "Z3",
+        "datetime": "2026-07-13T13:30:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "Z3",
+        "datetime": "2026-07-13T14:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "Z3",
+        "datetime": "2026-07-13T14:30:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "Z3",
+        "datetime": "2026-07-13T15:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "Z3",
+        "datetime": "2026-07-13T15:30:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "Z3",
+        "datetime": "2026-07-13T16:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "Z3",
+        "datetime": "2026-07-13T16:30:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "Z3",
+        "datetime": "2026-07-13T17:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "Z3",
+        "datetime": "2026-07-13T17:30:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "Z3",
+        "datetime": "2026-07-13T18:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "Z3",
+        "datetime": "2026-07-13T18:30:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "Z3",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "Z5",
+        "datetime": "2026-07-13T00:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "Z5",
+        "datetime": "2026-07-13T00:30:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "Z5",
+        "datetime": "2026-07-13T01:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "Z5",
+        "datetime": "2026-07-13T01:30:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "Z5",
+        "datetime": "2026-07-13T02:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "Z5",
+        "datetime": "2026-07-13T02:30:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "Z5",
+        "datetime": "2026-07-13T03:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "Z5",
+        "datetime": "2026-07-13T03:30:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "Z5",
+        "datetime": "2026-07-13T04:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "Z5",
+        "datetime": "2026-07-13T04:30:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "Z5",
+        "datetime": "2026-07-13T05:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "Z5",
+        "datetime": "2026-07-13T05:30:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "Z5",
+        "datetime": "2026-07-13T06:00:00+00:00",
+        "value": 0,
+        "estat": "V"
+      },
+      {
         "station_code": "Z5",
         "datetime": "2026-07-13T06:30:00+00:00",
         "value": 0,
@@ -41271,6 +42351,12 @@
       {
         "station_code": "Z5",
         "datetime": "2026-07-13T18:30:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "Z5",
+        "datetime": "2026-07-13T19:00:00+00:00",
         "value": 0,
         "estat": ""
       },
@@ -41503,6 +42589,12 @@
         "estat": ""
       },
       {
+        "station_code": "Z6",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "Z7",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -41731,6 +42823,12 @@
         "estat": ""
       },
       {
+        "station_code": "Z7",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "Z9",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -41959,6 +43057,12 @@
         "estat": ""
       },
       {
+        "station_code": "Z9",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "ZB",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -42187,6 +43291,12 @@
         "estat": ""
       },
       {
+        "station_code": "ZB",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "ZC",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -42415,6 +43525,12 @@
         "estat": ""
       },
       {
+        "station_code": "ZC",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
         "station_code": "ZE",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 0,
@@ -42639,13 +43755,19 @@
       {
         "station_code": "ZE",
         "datetime": "2026-07-13T18:30:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "ZE",
+        "datetime": "2026-07-13T19:00:00+00:00",
         "value": 0,
         "estat": ""
       }
     ]
   },
   "xema_33_2026-07-13": {
-    "timestamp": 1783970495.6852632,
+    "timestamp": 1783972930.1733975,
     "data": [
       {
         "station_code": "C6",
@@ -42876,6 +43998,12 @@
         "estat": ""
       },
       {
+        "station_code": "C6",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 61,
+        "estat": ""
+      },
+      {
         "station_code": "C7",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 37,
@@ -43095,6 +44223,18 @@
         "station_code": "C7",
         "datetime": "2026-07-13T18:00:00+00:00",
         "value": 49,
+        "estat": ""
+      },
+      {
+        "station_code": "C7",
+        "datetime": "2026-07-13T18:30:00+00:00",
+        "value": 56,
+        "estat": ""
+      },
+      {
+        "station_code": "C7",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 61,
         "estat": ""
       },
       {
@@ -43326,6 +44466,12 @@
         "estat": ""
       },
       {
+        "station_code": "C8",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 66,
+        "estat": ""
+      },
+      {
         "station_code": "C9",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 92,
@@ -43554,6 +44700,12 @@
         "estat": ""
       },
       {
+        "station_code": "C9",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 76,
+        "estat": ""
+      },
+      {
         "station_code": "CC",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 63,
@@ -43779,6 +44931,12 @@
         "station_code": "CC",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 33,
+        "estat": ""
+      },
+      {
+        "station_code": "CC",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 41,
         "estat": ""
       },
       {
@@ -44010,6 +45168,12 @@
         "estat": ""
       },
       {
+        "station_code": "CD",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 32,
+        "estat": ""
+      },
+      {
         "station_code": "CE",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 56,
@@ -44235,6 +45399,12 @@
         "station_code": "CE",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 70,
+        "estat": ""
+      },
+      {
+        "station_code": "CE",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 74,
         "estat": ""
       },
       {
@@ -44466,6 +45636,12 @@
         "estat": ""
       },
       {
+        "station_code": "CG",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 76,
+        "estat": ""
+      },
+      {
         "station_code": "CI",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 83,
@@ -44691,6 +45867,12 @@
         "station_code": "CI",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 71,
+        "estat": ""
+      },
+      {
+        "station_code": "CI",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 77,
         "estat": ""
       },
       {
@@ -44922,6 +46104,12 @@
         "estat": ""
       },
       {
+        "station_code": "CJ",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 35,
+        "estat": ""
+      },
+      {
         "station_code": "CL",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 52,
@@ -45150,6 +46338,12 @@
         "estat": ""
       },
       {
+        "station_code": "CL",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 62,
+        "estat": ""
+      },
+      {
         "station_code": "CP",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 28,
@@ -45378,6 +46572,12 @@
         "estat": ""
       },
       {
+        "station_code": "CP",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 39,
+        "estat": ""
+      },
+      {
         "station_code": "CQ",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 39,
@@ -45603,6 +46803,12 @@
         "station_code": "CQ",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 42,
+        "estat": ""
+      },
+      {
+        "station_code": "CQ",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 46,
         "estat": ""
       },
       {
@@ -45834,6 +47040,12 @@
         "estat": ""
       },
       {
+        "station_code": "CR",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 42,
+        "estat": ""
+      },
+      {
         "station_code": "CT",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 66,
@@ -46059,6 +47271,12 @@
         "station_code": "CT",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 50,
+        "estat": ""
+      },
+      {
+        "station_code": "CT",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 54,
         "estat": ""
       },
       {
@@ -46290,6 +47508,12 @@
         "estat": ""
       },
       {
+        "station_code": "CW",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 88,
+        "estat": ""
+      },
+      {
         "station_code": "CY",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 41,
@@ -46515,6 +47739,12 @@
         "station_code": "CY",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 56,
+        "estat": ""
+      },
+      {
+        "station_code": "CY",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 63,
         "estat": ""
       },
       {
@@ -46746,6 +47976,12 @@
         "estat": ""
       },
       {
+        "station_code": "D1",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 34,
+        "estat": ""
+      },
+      {
         "station_code": "D2",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 38,
@@ -46974,6 +48210,12 @@
         "estat": ""
       },
       {
+        "station_code": "D2",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 80,
+        "estat": ""
+      },
+      {
         "station_code": "D3",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 56,
@@ -47198,6 +48440,12 @@
       {
         "station_code": "D3",
         "datetime": "2026-07-13T18:30:00+00:00",
+        "value": 82,
+        "estat": ""
+      },
+      {
+        "station_code": "D3",
+        "datetime": "2026-07-13T19:00:00+00:00",
         "value": 82,
         "estat": ""
       },
@@ -47430,6 +48678,12 @@
         "estat": ""
       },
       {
+        "station_code": "D4",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 78,
+        "estat": ""
+      },
+      {
         "station_code": "D5",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 48,
@@ -47655,6 +48909,12 @@
         "station_code": "D5",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 86,
+        "estat": ""
+      },
+      {
+        "station_code": "D5",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 88,
         "estat": ""
       },
       {
@@ -47886,6 +49146,12 @@
         "estat": ""
       },
       {
+        "station_code": "D6",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 96,
+        "estat": ""
+      },
+      {
         "station_code": "D7",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 63,
@@ -48111,6 +49377,12 @@
         "station_code": "D7",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 65,
+        "estat": ""
+      },
+      {
+        "station_code": "D7",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 64,
         "estat": ""
       },
       {
@@ -48342,6 +49614,12 @@
         "estat": ""
       },
       {
+        "station_code": "D8",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 68,
+        "estat": ""
+      },
+      {
         "station_code": "D9",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 55,
@@ -48567,6 +49845,12 @@
         "station_code": "D9",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 84,
+        "estat": ""
+      },
+      {
+        "station_code": "D9",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 85,
         "estat": ""
       },
       {
@@ -48798,6 +50082,12 @@
         "estat": ""
       },
       {
+        "station_code": "DB",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 86,
+        "estat": ""
+      },
+      {
         "station_code": "DF",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 70,
@@ -49023,6 +50313,12 @@
         "station_code": "DF",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 81,
+        "estat": ""
+      },
+      {
+        "station_code": "DF",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 88,
         "estat": ""
       },
       {
@@ -49254,6 +50550,12 @@
         "estat": ""
       },
       {
+        "station_code": "DG",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 61,
+        "estat": ""
+      },
+      {
         "station_code": "DI",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 54,
@@ -49478,6 +50780,12 @@
       {
         "station_code": "DI",
         "datetime": "2026-07-13T18:30:00+00:00",
+        "value": 83,
+        "estat": ""
+      },
+      {
+        "station_code": "DI",
+        "datetime": "2026-07-13T19:00:00+00:00",
         "value": 83,
         "estat": ""
       },
@@ -49710,6 +51018,12 @@
         "estat": ""
       },
       {
+        "station_code": "DJ",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 82,
+        "estat": ""
+      },
+      {
         "station_code": "DK",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 55,
@@ -49934,6 +51248,12 @@
       {
         "station_code": "DK",
         "datetime": "2026-07-13T18:30:00+00:00",
+        "value": 100,
+        "estat": ""
+      },
+      {
+        "station_code": "DK",
+        "datetime": "2026-07-13T19:00:00+00:00",
         "value": 100,
         "estat": ""
       },
@@ -50166,6 +51486,12 @@
         "estat": ""
       },
       {
+        "station_code": "DL",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 91,
+        "estat": ""
+      },
+      {
         "station_code": "DN",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 71,
@@ -50391,6 +51717,12 @@
         "station_code": "DN",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 65,
+        "estat": ""
+      },
+      {
+        "station_code": "DN",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 70,
         "estat": ""
       },
       {
@@ -50622,6 +51954,12 @@
         "estat": ""
       },
       {
+        "station_code": "DO",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 96,
+        "estat": ""
+      },
+      {
         "station_code": "DP",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 68,
@@ -50847,6 +52185,12 @@
         "station_code": "DP",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 29,
+        "estat": ""
+      },
+      {
+        "station_code": "DP",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 34,
         "estat": ""
       },
       {
@@ -51078,6 +52422,12 @@
         "estat": ""
       },
       {
+        "station_code": "DQ",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 87,
+        "estat": ""
+      },
+      {
         "station_code": "H1",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 55,
@@ -51303,6 +52653,12 @@
         "station_code": "H1",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 70,
+        "estat": ""
+      },
+      {
+        "station_code": "H1",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 74,
         "estat": ""
       },
       {
@@ -51534,6 +52890,12 @@
         "estat": ""
       },
       {
+        "station_code": "J5",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 80,
+        "estat": ""
+      },
+      {
         "station_code": "KP",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 90,
@@ -51759,6 +53121,12 @@
         "station_code": "KP",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 82,
+        "estat": ""
+      },
+      {
+        "station_code": "KP",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 85,
         "estat": ""
       },
       {
@@ -51990,6 +53358,12 @@
         "estat": ""
       },
       {
+        "station_code": "MQ",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 49,
+        "estat": ""
+      },
+      {
         "station_code": "MR",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 62,
@@ -52218,6 +53592,12 @@
         "estat": ""
       },
       {
+        "station_code": "MR",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 79,
+        "estat": ""
+      },
+      {
         "station_code": "MS",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 57,
@@ -52443,6 +53823,12 @@
         "station_code": "MS",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 38,
+        "estat": ""
+      },
+      {
+        "station_code": "MS",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 41,
         "estat": ""
       },
       {
@@ -52674,6 +54060,12 @@
         "estat": ""
       },
       {
+        "station_code": "MV",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 50,
+        "estat": ""
+      },
+      {
         "station_code": "U2",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 100,
@@ -52898,6 +54290,12 @@
       {
         "station_code": "U2",
         "datetime": "2026-07-13T18:30:00+00:00",
+        "value": 100,
+        "estat": ""
+      },
+      {
+        "station_code": "U2",
+        "datetime": "2026-07-13T19:00:00+00:00",
         "value": 100,
         "estat": ""
       },
@@ -53130,6 +54528,12 @@
         "estat": ""
       },
       {
+        "station_code": "U3",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 83,
+        "estat": ""
+      },
+      {
         "station_code": "U4",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 50,
@@ -53355,6 +54759,12 @@
         "station_code": "U4",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 50,
+        "estat": ""
+      },
+      {
+        "station_code": "U4",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 61,
         "estat": ""
       },
       {
@@ -53586,6 +54996,12 @@
         "estat": ""
       },
       {
+        "station_code": "U6",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 86,
+        "estat": ""
+      },
+      {
         "station_code": "U7",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 81,
@@ -53811,6 +55227,12 @@
         "station_code": "U7",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 66,
+        "estat": ""
+      },
+      {
+        "station_code": "U7",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 67,
         "estat": ""
       },
       {
@@ -54042,6 +55464,12 @@
         "estat": ""
       },
       {
+        "station_code": "U9",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 83,
+        "estat": ""
+      },
+      {
         "station_code": "UA",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 83,
@@ -54267,6 +55695,12 @@
         "station_code": "UA",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 84,
+        "estat": ""
+      },
+      {
+        "station_code": "UA",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 86,
         "estat": ""
       },
       {
@@ -54498,6 +55932,12 @@
         "estat": ""
       },
       {
+        "station_code": "UB",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 91,
+        "estat": ""
+      },
+      {
         "station_code": "UE",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 100,
@@ -54722,6 +56162,12 @@
       {
         "station_code": "UE",
         "datetime": "2026-07-13T18:30:00+00:00",
+        "value": 97,
+        "estat": ""
+      },
+      {
+        "station_code": "UE",
+        "datetime": "2026-07-13T19:00:00+00:00",
         "value": 97,
         "estat": ""
       },
@@ -54954,6 +56400,12 @@
         "estat": ""
       },
       {
+        "station_code": "UF",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 89,
+        "estat": ""
+      },
+      {
         "station_code": "UH",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 58,
@@ -55179,6 +56631,12 @@
         "station_code": "UH",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 85,
+        "estat": ""
+      },
+      {
+        "station_code": "UH",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 87,
         "estat": ""
       },
       {
@@ -55410,6 +56868,12 @@
         "estat": ""
       },
       {
+        "station_code": "UI",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 47,
+        "estat": ""
+      },
+      {
         "station_code": "UJ",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 46,
@@ -55635,6 +57099,12 @@
         "station_code": "UJ",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 78,
+        "estat": ""
+      },
+      {
+        "station_code": "UJ",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 84,
         "estat": ""
       },
       {
@@ -55866,6 +57336,12 @@
         "estat": ""
       },
       {
+        "station_code": "UK",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 87,
+        "estat": ""
+      },
+      {
         "station_code": "UM",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 58,
@@ -56091,6 +57567,12 @@
         "station_code": "UM",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 71,
+        "estat": ""
+      },
+      {
+        "station_code": "UM",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 77,
         "estat": ""
       },
       {
@@ -56322,6 +57804,12 @@
         "estat": ""
       },
       {
+        "station_code": "UN",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 88,
+        "estat": ""
+      },
+      {
         "station_code": "UO",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 72,
@@ -56550,6 +58038,12 @@
         "estat": ""
       },
       {
+        "station_code": "UO",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 81,
+        "estat": ""
+      },
+      {
         "station_code": "UP",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 44,
@@ -56774,6 +58268,12 @@
       {
         "station_code": "UP",
         "datetime": "2026-07-13T18:30:00+00:00",
+        "value": 100,
+        "estat": ""
+      },
+      {
+        "station_code": "UP",
+        "datetime": "2026-07-13T19:00:00+00:00",
         "value": 100,
         "estat": ""
       },
@@ -57006,6 +58506,12 @@
         "estat": ""
       },
       {
+        "station_code": "UQ",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 93,
+        "estat": ""
+      },
+      {
         "station_code": "US",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 85,
@@ -57234,6 +58740,12 @@
         "estat": ""
       },
       {
+        "station_code": "US",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 84,
+        "estat": ""
+      },
+      {
         "station_code": "UU",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 91,
@@ -57462,6 +58974,12 @@
         "estat": ""
       },
       {
+        "station_code": "UU",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 90,
+        "estat": ""
+      },
+      {
         "station_code": "UW",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 89,
@@ -57687,6 +59205,12 @@
         "station_code": "UW",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 79,
+        "estat": ""
+      },
+      {
+        "station_code": "UW",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 80,
         "estat": ""
       },
       {
@@ -57918,6 +59442,12 @@
         "estat": ""
       },
       {
+        "station_code": "UX",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 79,
+        "estat": ""
+      },
+      {
         "station_code": "UY",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 49,
@@ -58143,6 +59673,12 @@
         "station_code": "UY",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 43,
+        "estat": ""
+      },
+      {
+        "station_code": "UY",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 51,
         "estat": ""
       },
       {
@@ -58374,6 +59910,12 @@
         "estat": ""
       },
       {
+        "station_code": "V1",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 54,
+        "estat": ""
+      },
+      {
         "station_code": "V4",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 60,
@@ -58599,6 +60141,12 @@
         "station_code": "V4",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 32,
+        "estat": ""
+      },
+      {
+        "station_code": "V4",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 37,
         "estat": ""
       },
       {
@@ -58830,6 +60378,12 @@
         "estat": ""
       },
       {
+        "station_code": "V5",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 40,
+        "estat": ""
+      },
+      {
         "station_code": "V8",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 50,
@@ -59055,6 +60609,12 @@
         "station_code": "V8",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 45,
+        "estat": ""
+      },
+      {
+        "station_code": "V8",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 53,
         "estat": ""
       },
       {
@@ -59286,6 +60846,12 @@
         "estat": ""
       },
       {
+        "station_code": "VA",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 73,
+        "estat": ""
+      },
+      {
         "station_code": "VB",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 75,
@@ -59511,6 +61077,12 @@
         "station_code": "VB",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 70,
+        "estat": ""
+      },
+      {
+        "station_code": "VB",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 69,
         "estat": ""
       },
       {
@@ -59742,6 +61314,12 @@
         "estat": ""
       },
       {
+        "station_code": "VC",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 60,
+        "estat": ""
+      },
+      {
         "station_code": "VD",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 39,
@@ -59967,6 +61545,12 @@
         "station_code": "VD",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 52,
+        "estat": ""
+      },
+      {
+        "station_code": "VD",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 59,
         "estat": ""
       },
       {
@@ -60198,6 +61782,12 @@
         "estat": ""
       },
       {
+        "station_code": "VH",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 53,
+        "estat": ""
+      },
+      {
         "station_code": "VK",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 52,
@@ -60426,6 +62016,12 @@
         "estat": ""
       },
       {
+        "station_code": "VK",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 55,
+        "estat": ""
+      },
+      {
         "station_code": "VM",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 45,
@@ -60651,6 +62247,12 @@
         "station_code": "VM",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 37,
+        "estat": ""
+      },
+      {
+        "station_code": "VM",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 47,
         "estat": ""
       },
       {
@@ -60882,6 +62484,12 @@
         "estat": ""
       },
       {
+        "station_code": "VO",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 33,
+        "estat": ""
+      },
+      {
         "station_code": "VP",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 46,
@@ -61107,6 +62715,12 @@
         "station_code": "VP",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 52,
+        "estat": ""
+      },
+      {
+        "station_code": "VP",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 62,
         "estat": ""
       },
       {
@@ -61338,6 +62952,12 @@
         "estat": ""
       },
       {
+        "station_code": "VQ",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 81,
+        "estat": ""
+      },
+      {
         "station_code": "VS",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 37,
@@ -61566,6 +63186,12 @@
         "estat": ""
       },
       {
+        "station_code": "VS",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 50,
+        "estat": ""
+      },
+      {
         "station_code": "VU",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 30,
@@ -61791,6 +63417,12 @@
         "station_code": "VU",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 70,
+        "estat": ""
+      },
+      {
+        "station_code": "VU",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 75,
         "estat": ""
       },
       {
@@ -62022,6 +63654,12 @@
         "estat": ""
       },
       {
+        "station_code": "VV",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 82,
+        "estat": ""
+      },
+      {
         "station_code": "VX",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 37,
@@ -62250,6 +63888,12 @@
         "estat": ""
       },
       {
+        "station_code": "VX",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 97,
+        "estat": ""
+      },
+      {
         "station_code": "VY",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 64,
@@ -62475,6 +64119,12 @@
         "station_code": "VY",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 83,
+        "estat": ""
+      },
+      {
+        "station_code": "VY",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 84,
         "estat": ""
       },
       {
@@ -62706,6 +64356,12 @@
         "estat": ""
       },
       {
+        "station_code": "VZ",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 80,
+        "estat": ""
+      },
+      {
         "station_code": "W1",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 100,
@@ -62930,6 +64586,12 @@
       {
         "station_code": "W1",
         "datetime": "2026-07-13T18:30:00+00:00",
+        "value": 100,
+        "estat": ""
+      },
+      {
+        "station_code": "W1",
+        "datetime": "2026-07-13T19:00:00+00:00",
         "value": 100,
         "estat": ""
       },
@@ -63162,6 +64824,12 @@
         "estat": ""
       },
       {
+        "station_code": "W4",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 82,
+        "estat": ""
+      },
+      {
         "station_code": "W5",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 46,
@@ -63387,6 +65055,12 @@
         "station_code": "W5",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 30,
+        "estat": ""
+      },
+      {
+        "station_code": "W5",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 35,
         "estat": ""
       },
       {
@@ -63618,6 +65292,12 @@
         "estat": ""
       },
       {
+        "station_code": "W8",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 89,
+        "estat": ""
+      },
+      {
         "station_code": "W9",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 84,
@@ -63843,6 +65523,12 @@
         "station_code": "W9",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 66,
+        "estat": ""
+      },
+      {
+        "station_code": "W9",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 69,
         "estat": ""
       },
       {
@@ -64074,6 +65760,12 @@
         "estat": ""
       },
       {
+        "station_code": "WA",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 53,
+        "estat": ""
+      },
+      {
         "station_code": "WB",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 55,
@@ -64299,6 +65991,12 @@
         "station_code": "WB",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 50,
+        "estat": ""
+      },
+      {
+        "station_code": "WB",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 52,
         "estat": ""
       },
       {
@@ -64530,6 +66228,12 @@
         "estat": ""
       },
       {
+        "station_code": "WC",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 54,
+        "estat": ""
+      },
+      {
         "station_code": "WG",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 44,
@@ -64754,6 +66458,12 @@
       {
         "station_code": "WG",
         "datetime": "2026-07-13T18:30:00+00:00",
+        "value": 49,
+        "estat": ""
+      },
+      {
+        "station_code": "WG",
+        "datetime": "2026-07-13T19:00:00+00:00",
         "value": 49,
         "estat": ""
       },
@@ -64986,6 +66696,12 @@
         "estat": ""
       },
       {
+        "station_code": "WI",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 70,
+        "estat": ""
+      },
+      {
         "station_code": "WJ",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 71,
@@ -65211,6 +66927,12 @@
         "station_code": "WJ",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 65,
+        "estat": ""
+      },
+      {
+        "station_code": "WJ",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 68,
         "estat": ""
       },
       {
@@ -65442,6 +67164,12 @@
         "estat": ""
       },
       {
+        "station_code": "WK",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 64,
+        "estat": ""
+      },
+      {
         "station_code": "WL",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 44,
@@ -65670,6 +67398,12 @@
         "estat": ""
       },
       {
+        "station_code": "WL",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 73,
+        "estat": ""
+      },
+      {
         "station_code": "WM",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 32,
@@ -65894,6 +67628,12 @@
       {
         "station_code": "WM",
         "datetime": "2026-07-13T18:30:00+00:00",
+        "value": 37,
+        "estat": ""
+      },
+      {
+        "station_code": "WM",
+        "datetime": "2026-07-13T19:00:00+00:00",
         "value": 37,
         "estat": ""
       },
@@ -66348,6 +68088,12 @@
         "estat": ""
       },
       {
+        "station_code": "WO",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 81,
+        "estat": ""
+      },
+      {
         "station_code": "WP",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 64,
@@ -66576,6 +68322,12 @@
         "estat": ""
       },
       {
+        "station_code": "WP",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 81,
+        "estat": ""
+      },
+      {
         "station_code": "WQ",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 51,
@@ -66801,6 +68553,12 @@
         "station_code": "WQ",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 50,
+        "estat": ""
+      },
+      {
+        "station_code": "WQ",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 54,
         "estat": ""
       },
       {
@@ -67032,6 +68790,12 @@
         "estat": ""
       },
       {
+        "station_code": "WR",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 75,
+        "estat": ""
+      },
+      {
         "station_code": "WS",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 50,
@@ -67257,6 +69021,12 @@
         "station_code": "WS",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 74,
+        "estat": ""
+      },
+      {
+        "station_code": "WS",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 86,
         "estat": ""
       },
       {
@@ -67488,6 +69258,12 @@
         "estat": ""
       },
       {
+        "station_code": "WT",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 95,
+        "estat": ""
+      },
+      {
         "station_code": "WU",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 36,
@@ -67713,6 +69489,12 @@
         "station_code": "WU",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 86,
+        "estat": ""
+      },
+      {
+        "station_code": "WU",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 87,
         "estat": ""
       },
       {
@@ -67944,6 +69726,12 @@
         "estat": ""
       },
       {
+        "station_code": "WV",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 40,
+        "estat": ""
+      },
+      {
         "station_code": "WW",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 51,
@@ -68172,6 +69960,12 @@
         "estat": ""
       },
       {
+        "station_code": "WW",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 57,
+        "estat": ""
+      },
+      {
         "station_code": "WX",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 46,
@@ -68397,6 +70191,12 @@
         "station_code": "WX",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 44,
+        "estat": ""
+      },
+      {
+        "station_code": "WX",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 49,
         "estat": ""
       },
       {
@@ -68628,6 +70428,12 @@
         "estat": ""
       },
       {
+        "station_code": "WZ",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 86,
+        "estat": ""
+      },
+      {
         "station_code": "X1",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 55,
@@ -68852,6 +70658,12 @@
       {
         "station_code": "X1",
         "datetime": "2026-07-13T18:30:00+00:00",
+        "value": 73,
+        "estat": ""
+      },
+      {
+        "station_code": "X1",
+        "datetime": "2026-07-13T19:00:00+00:00",
         "value": 73,
         "estat": ""
       },
@@ -69081,6 +70893,12 @@
         "station_code": "X3",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 34,
+        "estat": ""
+      },
+      {
+        "station_code": "X3",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 40,
         "estat": ""
       },
       {
@@ -69312,6 +71130,12 @@
         "estat": ""
       },
       {
+        "station_code": "X4",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 84,
+        "estat": ""
+      },
+      {
         "station_code": "X5",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 43,
@@ -69537,6 +71361,12 @@
         "station_code": "X5",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 89,
+        "estat": ""
+      },
+      {
+        "station_code": "X5",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 88,
         "estat": ""
       },
       {
@@ -69768,6 +71598,12 @@
         "estat": ""
       },
       {
+        "station_code": "X6",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 45,
+        "estat": ""
+      },
+      {
         "station_code": "X7",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 65,
@@ -69993,6 +71829,12 @@
         "station_code": "X7",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 50,
+        "estat": ""
+      },
+      {
+        "station_code": "X7",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 59,
         "estat": ""
       },
       {
@@ -70224,6 +72066,12 @@
         "estat": ""
       },
       {
+        "station_code": "X8",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 89,
+        "estat": ""
+      },
+      {
         "station_code": "X9",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 50,
@@ -70452,6 +72300,12 @@
         "estat": ""
       },
       {
+        "station_code": "X9",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 79,
+        "estat": ""
+      },
+      {
         "station_code": "XA",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 47,
@@ -70680,6 +72534,12 @@
         "estat": ""
       },
       {
+        "station_code": "XA",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 80,
+        "estat": ""
+      },
+      {
         "station_code": "XB",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 50,
@@ -70905,6 +72765,12 @@
         "station_code": "XB",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 77,
+        "estat": ""
+      },
+      {
+        "station_code": "XB",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 79,
         "estat": ""
       },
       {
@@ -71136,6 +73002,12 @@
         "estat": ""
       },
       {
+        "station_code": "XC",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 82,
+        "estat": ""
+      },
+      {
         "station_code": "XD",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 59,
@@ -71364,6 +73236,12 @@
         "estat": ""
       },
       {
+        "station_code": "XD",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 48,
+        "estat": ""
+      },
+      {
         "station_code": "XE",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 57,
@@ -71589,6 +73467,12 @@
         "station_code": "XE",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 90,
+        "estat": ""
+      },
+      {
+        "station_code": "XE",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 87,
         "estat": ""
       },
       {
@@ -71820,6 +73704,12 @@
         "estat": ""
       },
       {
+        "station_code": "XF",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 95,
+        "estat": ""
+      },
+      {
         "station_code": "XG",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 57,
@@ -72048,6 +73938,12 @@
         "estat": ""
       },
       {
+        "station_code": "XG",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 82,
+        "estat": ""
+      },
+      {
         "station_code": "XH",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 57,
@@ -72273,6 +74169,12 @@
         "station_code": "XH",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 47,
+        "estat": ""
+      },
+      {
+        "station_code": "XH",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 52,
         "estat": ""
       },
       {
@@ -72504,6 +74406,12 @@
         "estat": ""
       },
       {
+        "station_code": "XI",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 53,
+        "estat": ""
+      },
+      {
         "station_code": "XJ",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 91,
@@ -72729,6 +74637,12 @@
         "station_code": "XJ",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 61,
+        "estat": ""
+      },
+      {
+        "station_code": "XJ",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 73,
         "estat": ""
       },
       {
@@ -72960,6 +74874,12 @@
         "estat": ""
       },
       {
+        "station_code": "XK",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 50,
+        "estat": ""
+      },
+      {
         "station_code": "XL",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 70,
@@ -73188,6 +75108,12 @@
         "estat": ""
       },
       {
+        "station_code": "XL",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 83,
+        "estat": ""
+      },
+      {
         "station_code": "XM",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 50,
@@ -73413,6 +75339,12 @@
         "station_code": "XM",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 37,
+        "estat": ""
+      },
+      {
+        "station_code": "XM",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 40,
         "estat": ""
       },
       {
@@ -73644,6 +75576,12 @@
         "estat": ""
       },
       {
+        "station_code": "XN",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 59,
+        "estat": ""
+      },
+      {
         "station_code": "XO",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 57,
@@ -73869,6 +75807,12 @@
         "station_code": "XO",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 56,
+        "estat": ""
+      },
+      {
+        "station_code": "XO",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 65,
         "estat": ""
       },
       {
@@ -74100,6 +76044,12 @@
         "estat": ""
       },
       {
+        "station_code": "XP",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 78,
+        "estat": ""
+      },
+      {
         "station_code": "XQ",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 36,
@@ -74325,6 +76275,12 @@
         "station_code": "XQ",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 35,
+        "estat": ""
+      },
+      {
+        "station_code": "XQ",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 38,
         "estat": ""
       },
       {
@@ -74556,6 +76512,12 @@
         "estat": ""
       },
       {
+        "station_code": "XR",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 74,
+        "estat": ""
+      },
+      {
         "station_code": "XS",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 48,
@@ -74781,6 +76743,12 @@
         "station_code": "XS",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 75,
+        "estat": ""
+      },
+      {
+        "station_code": "XS",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 79,
         "estat": ""
       },
       {
@@ -75012,6 +76980,12 @@
         "estat": ""
       },
       {
+        "station_code": "XT",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 35,
+        "estat": ""
+      },
+      {
         "station_code": "XU",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 62,
@@ -75237,6 +77211,12 @@
         "station_code": "XU",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 81,
+        "estat": ""
+      },
+      {
+        "station_code": "XU",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 83,
         "estat": ""
       },
       {
@@ -75468,6 +77448,12 @@
         "estat": ""
       },
       {
+        "station_code": "XV",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 79,
+        "estat": ""
+      },
+      {
         "station_code": "XX",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 49,
@@ -75696,6 +77682,12 @@
         "estat": ""
       },
       {
+        "station_code": "XX",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 64,
+        "estat": ""
+      },
+      {
         "station_code": "XY",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 74,
@@ -75921,6 +77913,12 @@
         "station_code": "XY",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 54,
+        "estat": ""
+      },
+      {
+        "station_code": "XY",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 59,
         "estat": ""
       },
       {
@@ -76148,6 +78146,12 @@
       {
         "station_code": "XZ",
         "datetime": "2026-07-13T18:30:00+00:00",
+        "value": 100,
+        "estat": ""
+      },
+      {
+        "station_code": "XZ",
+        "datetime": "2026-07-13T19:00:00+00:00",
         "value": 100,
         "estat": ""
       },
@@ -76380,6 +78384,12 @@
         "estat": ""
       },
       {
+        "station_code": "Y4",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 36,
+        "estat": ""
+      },
+      {
         "station_code": "Y5",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 88,
@@ -76608,6 +78618,12 @@
         "estat": ""
       },
       {
+        "station_code": "Y5",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 99,
+        "estat": ""
+      },
+      {
         "station_code": "Y6",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 78,
@@ -76833,6 +78849,12 @@
         "station_code": "Y6",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 67,
+        "estat": ""
+      },
+      {
+        "station_code": "Y6",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 71,
         "estat": ""
       },
       {
@@ -77064,6 +79086,12 @@
         "estat": ""
       },
       {
+        "station_code": "YA",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 37,
+        "estat": ""
+      },
+      {
         "station_code": "YB",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 77,
@@ -77289,6 +79317,12 @@
         "station_code": "YB",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 65,
+        "estat": ""
+      },
+      {
+        "station_code": "YB",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 66,
         "estat": ""
       },
       {
@@ -77520,6 +79554,12 @@
         "estat": ""
       },
       {
+        "station_code": "YC",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 43,
+        "estat": ""
+      },
+      {
         "station_code": "YD",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 50,
@@ -77745,6 +79785,12 @@
         "station_code": "YD",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 37,
+        "estat": ""
+      },
+      {
+        "station_code": "YD",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 47,
         "estat": ""
       },
       {
@@ -77976,6 +80022,12 @@
         "estat": ""
       },
       {
+        "station_code": "YE",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 52,
+        "estat": ""
+      },
+      {
         "station_code": "YF",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 70,
@@ -78171,6 +80223,12 @@
         "station_code": "YF",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 90,
+        "estat": ""
+      },
+      {
+        "station_code": "YF",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 92,
         "estat": ""
       },
       {
@@ -78402,6 +80460,12 @@
         "estat": ""
       },
       {
+        "station_code": "YG",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 31,
+        "estat": ""
+      },
+      {
         "station_code": "YH",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 40,
@@ -78630,6 +80694,12 @@
         "estat": ""
       },
       {
+        "station_code": "YH",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 67,
+        "estat": ""
+      },
+      {
         "station_code": "YJ",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 49,
@@ -78855,6 +80925,12 @@
         "station_code": "YJ",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 31,
+        "estat": ""
+      },
+      {
+        "station_code": "YJ",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 47,
         "estat": ""
       },
       {
@@ -79086,6 +81162,12 @@
         "estat": ""
       },
       {
+        "station_code": "YK",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 86,
+        "estat": ""
+      },
+      {
         "station_code": "YL",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 67,
@@ -79314,6 +81396,12 @@
         "estat": ""
       },
       {
+        "station_code": "YL",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 81,
+        "estat": ""
+      },
+      {
         "station_code": "YM",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 51,
@@ -79539,6 +81627,12 @@
         "station_code": "YM",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 86,
+        "estat": ""
+      },
+      {
+        "station_code": "YM",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 88,
         "estat": ""
       },
       {
@@ -79770,6 +81864,12 @@
         "estat": ""
       },
       {
+        "station_code": "YN",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 67,
+        "estat": ""
+      },
+      {
         "station_code": "YO",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 70,
@@ -79995,6 +82095,12 @@
         "station_code": "YO",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 72,
+        "estat": ""
+      },
+      {
+        "station_code": "YO",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 74,
         "estat": ""
       },
       {
@@ -80226,6 +82332,12 @@
         "estat": ""
       },
       {
+        "station_code": "YP",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 92,
+        "estat": ""
+      },
+      {
         "station_code": "YQ",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 67,
@@ -80454,6 +82566,12 @@
         "estat": ""
       },
       {
+        "station_code": "YQ",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 86,
+        "estat": ""
+      },
+      {
         "station_code": "YR",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 53,
@@ -80678,6 +82796,12 @@
       {
         "station_code": "YR",
         "datetime": "2026-07-13T18:30:00+00:00",
+        "value": 88,
+        "estat": ""
+      },
+      {
+        "station_code": "YR",
+        "datetime": "2026-07-13T19:00:00+00:00",
         "value": 88,
         "estat": ""
       },
@@ -80910,6 +83034,12 @@
         "estat": ""
       },
       {
+        "station_code": "YS",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 90,
+        "estat": ""
+      },
+      {
         "station_code": "YT",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 30,
@@ -81135,6 +83265,12 @@
         "station_code": "YT",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 35,
+        "estat": ""
+      },
+      {
+        "station_code": "YT",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 41,
         "estat": ""
       },
       {
@@ -81366,6 +83502,12 @@
         "estat": ""
       },
       {
+        "station_code": "YU",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 60,
+        "estat": ""
+      },
+      {
         "station_code": "YV",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 36,
@@ -81590,6 +83732,12 @@
       {
         "station_code": "YV",
         "datetime": "2026-07-13T18:30:00+00:00",
+        "value": 100,
+        "estat": ""
+      },
+      {
+        "station_code": "YV",
+        "datetime": "2026-07-13T19:00:00+00:00",
         "value": 100,
         "estat": ""
       },
@@ -81822,6 +83970,12 @@
         "estat": ""
       },
       {
+        "station_code": "YX",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 84,
+        "estat": ""
+      },
+      {
         "station_code": "YY",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 64,
@@ -82047,6 +84201,12 @@
         "station_code": "YY",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 88,
+        "estat": ""
+      },
+      {
+        "station_code": "YY",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 89,
         "estat": ""
       },
       {
@@ -82278,6 +84438,12 @@
         "estat": ""
       },
       {
+        "station_code": "Z1",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 45,
+        "estat": ""
+      },
+      {
         "station_code": "Z2",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 40,
@@ -82506,6 +84672,12 @@
         "estat": ""
       },
       {
+        "station_code": "Z2",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 56,
+        "estat": ""
+      },
+      {
         "station_code": "Z3",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 29,
@@ -82731,6 +84903,12 @@
         "station_code": "Z3",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 40,
+        "estat": ""
+      },
+      {
+        "station_code": "Z3",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 46,
         "estat": ""
       },
       {
@@ -82959,6 +85137,12 @@
         "station_code": "Z5",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 41,
+        "estat": ""
+      },
+      {
+        "station_code": "Z5",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 45,
         "estat": ""
       },
       {
@@ -83190,6 +85374,12 @@
         "estat": ""
       },
       {
+        "station_code": "Z6",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 64,
+        "estat": ""
+      },
+      {
         "station_code": "Z7",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 39,
@@ -83415,6 +85605,12 @@
         "station_code": "Z7",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 47,
+        "estat": ""
+      },
+      {
+        "station_code": "Z7",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 50,
         "estat": ""
       },
       {
@@ -83646,6 +85842,12 @@
         "estat": ""
       },
       {
+        "station_code": "Z9",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 40,
+        "estat": ""
+      },
+      {
         "station_code": "ZB",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 34,
@@ -83870,6 +86072,12 @@
       {
         "station_code": "ZB",
         "datetime": "2026-07-13T18:30:00+00:00",
+        "value": 43,
+        "estat": ""
+      },
+      {
+        "station_code": "ZB",
+        "datetime": "2026-07-13T19:00:00+00:00",
         "value": 43,
         "estat": ""
       },
@@ -84102,6 +86310,12 @@
         "estat": ""
       },
       {
+        "station_code": "ZC",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 58,
+        "estat": ""
+      },
+      {
         "station_code": "ZD",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 35,
@@ -84327,6 +86541,12 @@
         "station_code": "ZD",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 61,
+        "estat": ""
+      },
+      {
+        "station_code": "ZD",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 54,
         "estat": ""
       },
       {
@@ -84556,11 +86776,17 @@
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 46,
         "estat": ""
+      },
+      {
+        "station_code": "ZE",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 53,
+        "estat": ""
       }
     ]
   },
   "xema_32_2026-07-13": {
-    "timestamp": 1783970491.2519734,
+    "timestamp": 1783972925.7311344,
     "data": [
       {
         "station_code": "C6",
@@ -84791,6 +87017,12 @@
         "estat": ""
       },
       {
+        "station_code": "C6",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 29,
+        "estat": ""
+      },
+      {
         "station_code": "C7",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 25,
@@ -85010,6 +87242,18 @@
         "station_code": "C7",
         "datetime": "2026-07-13T18:00:00+00:00",
         "value": 32,
+        "estat": ""
+      },
+      {
+        "station_code": "C7",
+        "datetime": "2026-07-13T18:30:00+00:00",
+        "value": 30.4,
+        "estat": ""
+      },
+      {
+        "station_code": "C7",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 29.1,
         "estat": ""
       },
       {
@@ -85241,6 +87485,12 @@
         "estat": ""
       },
       {
+        "station_code": "C8",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 27.8,
+        "estat": ""
+      },
+      {
         "station_code": "C9",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 23.9,
@@ -85469,6 +87719,12 @@
         "estat": ""
       },
       {
+        "station_code": "C9",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 27.2,
+        "estat": ""
+      },
+      {
         "station_code": "CC",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 18.9,
@@ -85694,6 +87950,12 @@
         "station_code": "CC",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 30.8,
+        "estat": ""
+      },
+      {
+        "station_code": "CC",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 29.3,
         "estat": ""
       },
       {
@@ -85925,6 +88187,12 @@
         "estat": ""
       },
       {
+        "station_code": "CD",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 29.4,
+        "estat": ""
+      },
+      {
         "station_code": "CE",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 23.4,
@@ -86153,6 +88421,12 @@
         "estat": ""
       },
       {
+        "station_code": "CE",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 26.5,
+        "estat": ""
+      },
+      {
         "station_code": "CG",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 19,
@@ -86378,6 +88652,12 @@
         "station_code": "CG",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 21.5,
+        "estat": ""
+      },
+      {
+        "station_code": "CG",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 20.8,
         "estat": ""
       },
       {
@@ -86609,6 +88889,12 @@
         "estat": ""
       },
       {
+        "station_code": "CI",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 24.5,
+        "estat": ""
+      },
+      {
         "station_code": "CJ",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 19.6,
@@ -86834,6 +89120,12 @@
         "station_code": "CJ",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 32.7,
+        "estat": ""
+      },
+      {
+        "station_code": "CJ",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 30.8,
         "estat": ""
       },
       {
@@ -87065,6 +89357,12 @@
         "estat": ""
       },
       {
+        "station_code": "CL",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 28.2,
+        "estat": ""
+      },
+      {
         "station_code": "CP",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 25.7,
@@ -87290,6 +89588,12 @@
         "station_code": "CP",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 31.2,
+        "estat": ""
+      },
+      {
+        "station_code": "CP",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 29.9,
         "estat": ""
       },
       {
@@ -87521,6 +89825,12 @@
         "estat": ""
       },
       {
+        "station_code": "CQ",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 28.7,
+        "estat": ""
+      },
+      {
         "station_code": "CR",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 20.6,
@@ -87746,6 +90056,12 @@
         "station_code": "CR",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 29.4,
+        "estat": ""
+      },
+      {
+        "station_code": "CR",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 27.1,
         "estat": ""
       },
       {
@@ -87977,6 +90293,12 @@
         "estat": ""
       },
       {
+        "station_code": "CT",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 24.4,
+        "estat": ""
+      },
+      {
         "station_code": "CW",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 24.7,
@@ -88202,6 +90524,12 @@
         "station_code": "CW",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 25.9,
+        "estat": ""
+      },
+      {
+        "station_code": "CW",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 24.6,
         "estat": ""
       },
       {
@@ -88433,6 +90761,12 @@
         "estat": ""
       },
       {
+        "station_code": "CY",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 26.7,
+        "estat": ""
+      },
+      {
         "station_code": "D1",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 26.2,
@@ -88658,6 +90992,12 @@
         "station_code": "D1",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 29.2,
+        "estat": ""
+      },
+      {
+        "station_code": "D1",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 29.9,
         "estat": ""
       },
       {
@@ -88889,6 +91229,12 @@
         "estat": ""
       },
       {
+        "station_code": "D2",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 26,
+        "estat": ""
+      },
+      {
         "station_code": "D3",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 22.7,
@@ -89114,6 +91460,12 @@
         "station_code": "D3",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 26,
+        "estat": ""
+      },
+      {
+        "station_code": "D3",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 25.7,
         "estat": ""
       },
       {
@@ -89345,6 +91697,12 @@
         "estat": ""
       },
       {
+        "station_code": "D4",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 27,
+        "estat": ""
+      },
+      {
         "station_code": "D5",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 23.6,
@@ -89570,6 +91928,12 @@
         "station_code": "D5",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 25,
+        "estat": ""
+      },
+      {
+        "station_code": "D5",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 24.8,
         "estat": ""
       },
       {
@@ -89801,6 +92165,12 @@
         "estat": ""
       },
       {
+        "station_code": "D6",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 24,
+        "estat": ""
+      },
+      {
         "station_code": "D7",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 26.5,
@@ -90026,6 +92396,12 @@
         "station_code": "D7",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 28.8,
+        "estat": ""
+      },
+      {
+        "station_code": "D7",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 28.4,
         "estat": ""
       },
       {
@@ -90257,6 +92633,12 @@
         "estat": ""
       },
       {
+        "station_code": "D8",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 26.8,
+        "estat": ""
+      },
+      {
         "station_code": "D9",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 25.3,
@@ -90482,6 +92864,12 @@
         "station_code": "D9",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 27.2,
+        "estat": ""
+      },
+      {
+        "station_code": "D9",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 27.1,
         "estat": ""
       },
       {
@@ -90713,6 +93101,12 @@
         "estat": ""
       },
       {
+        "station_code": "DB",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 26.5,
+        "estat": ""
+      },
+      {
         "station_code": "DF",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 19.5,
@@ -90938,6 +93332,12 @@
         "station_code": "DF",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 27.4,
+        "estat": ""
+      },
+      {
+        "station_code": "DF",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 26.4,
         "estat": ""
       },
       {
@@ -91169,6 +93569,12 @@
         "estat": ""
       },
       {
+        "station_code": "DG",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 17.1,
+        "estat": ""
+      },
+      {
         "station_code": "DI",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 23.2,
@@ -91394,6 +93800,12 @@
         "station_code": "DI",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 25.2,
+        "estat": ""
+      },
+      {
+        "station_code": "DI",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 24.9,
         "estat": ""
       },
       {
@@ -91625,6 +94037,12 @@
         "estat": ""
       },
       {
+        "station_code": "DJ",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 25.9,
+        "estat": ""
+      },
+      {
         "station_code": "DK",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 25.5,
@@ -91850,6 +94268,12 @@
         "station_code": "DK",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 26.9,
+        "estat": ""
+      },
+      {
+        "station_code": "DK",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 26.7,
         "estat": ""
       },
       {
@@ -92081,6 +94505,12 @@
         "estat": ""
       },
       {
+        "station_code": "DL",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 27.1,
+        "estat": ""
+      },
+      {
         "station_code": "DN",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 20.5,
@@ -92309,6 +94739,12 @@
         "estat": ""
       },
       {
+        "station_code": "DN",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 28.7,
+        "estat": ""
+      },
+      {
         "station_code": "DO",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 20.2,
@@ -92534,6 +94970,12 @@
         "station_code": "DO",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 26.2,
+        "estat": ""
+      },
+      {
+        "station_code": "DO",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 25.9,
         "estat": ""
       },
       {
@@ -92765,6 +95207,12 @@
         "estat": ""
       },
       {
+        "station_code": "DP",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 27,
+        "estat": ""
+      },
+      {
         "station_code": "DQ",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 23.7,
@@ -92990,6 +95438,12 @@
         "station_code": "DQ",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 25.7,
+        "estat": ""
+      },
+      {
+        "station_code": "DQ",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 25.3,
         "estat": ""
       },
       {
@@ -93221,6 +95675,12 @@
         "estat": ""
       },
       {
+        "station_code": "H1",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 26.9,
+        "estat": ""
+      },
+      {
         "station_code": "J5",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 22.5,
@@ -93446,6 +95906,12 @@
         "station_code": "J5",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 27.2,
+        "estat": ""
+      },
+      {
+        "station_code": "J5",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 25.9,
         "estat": ""
       },
       {
@@ -93677,6 +96143,12 @@
         "estat": ""
       },
       {
+        "station_code": "KP",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 26.5,
+        "estat": ""
+      },
+      {
         "station_code": "MQ",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 18.6,
@@ -93905,6 +96377,12 @@
         "estat": ""
       },
       {
+        "station_code": "MQ",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 29.9,
+        "estat": ""
+      },
+      {
         "station_code": "MR",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 23.7,
@@ -94130,6 +96608,12 @@
         "station_code": "MR",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 24.9,
+        "estat": ""
+      },
+      {
+        "station_code": "MR",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 24.8,
         "estat": ""
       },
       {
@@ -94361,6 +96845,12 @@
         "estat": ""
       },
       {
+        "station_code": "MS",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 26.4,
+        "estat": ""
+      },
+      {
         "station_code": "MV",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 14.4,
@@ -94586,6 +97076,12 @@
         "station_code": "MV",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 27.2,
+        "estat": ""
+      },
+      {
+        "station_code": "MV",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 25,
         "estat": ""
       },
       {
@@ -94817,6 +97313,12 @@
         "estat": ""
       },
       {
+        "station_code": "U2",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 25.4,
+        "estat": ""
+      },
+      {
         "station_code": "U3",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 23.3,
@@ -95042,6 +97544,12 @@
         "station_code": "U3",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 26.3,
+        "estat": ""
+      },
+      {
+        "station_code": "U3",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 26,
         "estat": ""
       },
       {
@@ -95273,6 +97781,12 @@
         "estat": ""
       },
       {
+        "station_code": "U4",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 27.7,
+        "estat": ""
+      },
+      {
         "station_code": "U6",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 24.5,
@@ -95498,6 +98012,12 @@
         "station_code": "U6",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 26.9,
+        "estat": ""
+      },
+      {
+        "station_code": "U6",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 26.8,
         "estat": ""
       },
       {
@@ -95729,6 +98249,12 @@
         "estat": ""
       },
       {
+        "station_code": "U7",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 29,
+        "estat": ""
+      },
+      {
         "station_code": "U9",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 26,
@@ -95954,6 +98480,12 @@
         "station_code": "U9",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 28.3,
+        "estat": ""
+      },
+      {
+        "station_code": "U9",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 27.7,
         "estat": ""
       },
       {
@@ -96185,6 +98717,12 @@
         "estat": ""
       },
       {
+        "station_code": "UA",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 26.8,
+        "estat": ""
+      },
+      {
         "station_code": "UB",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 19.3,
@@ -96410,6 +98948,12 @@
         "station_code": "UB",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 26.4,
+        "estat": ""
+      },
+      {
+        "station_code": "UB",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 25.9,
         "estat": ""
       },
       {
@@ -96641,6 +99185,12 @@
         "estat": ""
       },
       {
+        "station_code": "UE",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 25.7,
+        "estat": ""
+      },
+      {
         "station_code": "UF",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 22.3,
@@ -96866,6 +99416,12 @@
         "station_code": "UF",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 23.3,
+        "estat": ""
+      },
+      {
+        "station_code": "UF",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 23,
         "estat": ""
       },
       {
@@ -97097,6 +99653,12 @@
         "estat": ""
       },
       {
+        "station_code": "UH",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 23.6,
+        "estat": ""
+      },
+      {
         "station_code": "UI",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 18.9,
@@ -97322,6 +99884,12 @@
         "station_code": "UI",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 23,
+        "estat": ""
+      },
+      {
+        "station_code": "UI",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 22.6,
         "estat": ""
       },
       {
@@ -97553,6 +100121,12 @@
         "estat": ""
       },
       {
+        "station_code": "UJ",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 24,
+        "estat": ""
+      },
+      {
         "station_code": "UK",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 25.3,
@@ -97778,6 +100352,12 @@
         "station_code": "UK",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 26.3,
+        "estat": ""
+      },
+      {
+        "station_code": "UK",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 25.8,
         "estat": ""
       },
       {
@@ -98009,6 +100589,12 @@
         "estat": ""
       },
       {
+        "station_code": "UM",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 25.7,
+        "estat": ""
+      },
+      {
         "station_code": "UN",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 16.6,
@@ -98234,6 +100820,12 @@
         "station_code": "UN",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 25.9,
+        "estat": ""
+      },
+      {
+        "station_code": "UN",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 25.1,
         "estat": ""
       },
       {
@@ -98465,6 +101057,12 @@
         "estat": ""
       },
       {
+        "station_code": "UO",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 26.7,
+        "estat": ""
+      },
+      {
         "station_code": "UP",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 23.6,
@@ -98690,6 +101288,12 @@
         "station_code": "UP",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 25.8,
+        "estat": ""
+      },
+      {
+        "station_code": "UP",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 25.5,
         "estat": ""
       },
       {
@@ -98921,6 +101525,12 @@
         "estat": ""
       },
       {
+        "station_code": "UQ",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 23.4,
+        "estat": ""
+      },
+      {
         "station_code": "US",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 26,
@@ -99146,6 +101756,12 @@
         "station_code": "US",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 28.6,
+        "estat": ""
+      },
+      {
+        "station_code": "US",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 27.8,
         "estat": ""
       },
       {
@@ -99377,6 +101993,12 @@
         "estat": ""
       },
       {
+        "station_code": "UU",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 27.1,
+        "estat": ""
+      },
+      {
         "station_code": "UW",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 25.9,
@@ -99602,6 +102224,12 @@
         "station_code": "UW",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 29.1,
+        "estat": ""
+      },
+      {
+        "station_code": "UW",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 28.8,
         "estat": ""
       },
       {
@@ -99833,6 +102461,12 @@
         "estat": ""
       },
       {
+        "station_code": "UX",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 27,
+        "estat": ""
+      },
+      {
         "station_code": "UY",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 24.5,
@@ -100058,6 +102692,12 @@
         "station_code": "UY",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 31.3,
+        "estat": ""
+      },
+      {
+        "station_code": "UY",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 29.1,
         "estat": ""
       },
       {
@@ -100289,6 +102929,12 @@
         "estat": ""
       },
       {
+        "station_code": "V1",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 30.3,
+        "estat": ""
+      },
+      {
         "station_code": "V4",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 18.3,
@@ -100514,6 +103160,12 @@
         "station_code": "V4",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 30.8,
+        "estat": ""
+      },
+      {
+        "station_code": "V4",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 29.3,
         "estat": ""
       },
       {
@@ -100745,6 +103397,12 @@
         "estat": ""
       },
       {
+        "station_code": "V5",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 28.5,
+        "estat": ""
+      },
+      {
         "station_code": "V8",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 24.1,
@@ -100970,6 +103628,12 @@
         "station_code": "V8",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 32.4,
+        "estat": ""
+      },
+      {
+        "station_code": "V8",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 30.4,
         "estat": ""
       },
       {
@@ -101201,6 +103865,12 @@
         "estat": ""
       },
       {
+        "station_code": "VA",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 26.6,
+        "estat": ""
+      },
+      {
         "station_code": "VB",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 26.1,
@@ -101426,6 +104096,12 @@
         "station_code": "VB",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 28.4,
+        "estat": ""
+      },
+      {
+        "station_code": "VB",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 28.3,
         "estat": ""
       },
       {
@@ -101657,6 +104333,12 @@
         "estat": ""
       },
       {
+        "station_code": "VC",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 29.1,
+        "estat": ""
+      },
+      {
         "station_code": "VD",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 24.5,
@@ -101882,6 +104564,12 @@
         "station_code": "VD",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 31.5,
+        "estat": ""
+      },
+      {
+        "station_code": "VD",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 29.6,
         "estat": ""
       },
       {
@@ -102113,6 +104801,12 @@
         "estat": ""
       },
       {
+        "station_code": "VH",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 30.1,
+        "estat": ""
+      },
+      {
         "station_code": "VK",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 24.8,
@@ -102338,6 +105032,12 @@
         "station_code": "VK",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 31.7,
+        "estat": ""
+      },
+      {
+        "station_code": "VK",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 29.6,
         "estat": ""
       },
       {
@@ -102569,6 +105269,12 @@
         "estat": ""
       },
       {
+        "station_code": "VM",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 31.5,
+        "estat": ""
+      },
+      {
         "station_code": "VO",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 21.2,
@@ -102794,6 +105500,12 @@
         "station_code": "VO",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 30.6,
+        "estat": ""
+      },
+      {
+        "station_code": "VO",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 28.9,
         "estat": ""
       },
       {
@@ -103025,6 +105737,12 @@
         "estat": ""
       },
       {
+        "station_code": "VP",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 28.2,
+        "estat": ""
+      },
+      {
         "station_code": "VQ",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 24.7,
@@ -103250,6 +105968,12 @@
         "station_code": "VQ",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 26.9,
+        "estat": ""
+      },
+      {
+        "station_code": "VQ",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 26.8,
         "estat": ""
       },
       {
@@ -103481,6 +106205,12 @@
         "estat": ""
       },
       {
+        "station_code": "VS",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 17.8,
+        "estat": ""
+      },
+      {
         "station_code": "VU",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 26,
@@ -103706,6 +106436,12 @@
         "station_code": "VU",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 27.1,
+        "estat": ""
+      },
+      {
+        "station_code": "VU",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 26,
         "estat": ""
       },
       {
@@ -103937,6 +106673,12 @@
         "estat": ""
       },
       {
+        "station_code": "VV",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 24.8,
+        "estat": ""
+      },
+      {
         "station_code": "VX",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 21.8,
@@ -104162,6 +106904,12 @@
         "station_code": "VX",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 22.6,
+        "estat": ""
+      },
+      {
+        "station_code": "VX",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 21.7,
         "estat": ""
       },
       {
@@ -104393,6 +107141,12 @@
         "estat": ""
       },
       {
+        "station_code": "VY",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 25.7,
+        "estat": ""
+      },
+      {
         "station_code": "VZ",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 19.3,
@@ -104618,6 +107372,12 @@
         "station_code": "VZ",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 27.4,
+        "estat": ""
+      },
+      {
+        "station_code": "VZ",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 26.6,
         "estat": ""
       },
       {
@@ -104849,6 +107609,12 @@
         "estat": ""
       },
       {
+        "station_code": "W1",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 25.5,
+        "estat": ""
+      },
+      {
         "station_code": "W4",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 22.6,
@@ -105074,6 +107840,12 @@
         "station_code": "W4",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 26.1,
+        "estat": ""
+      },
+      {
+        "station_code": "W4",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 25.7,
         "estat": ""
       },
       {
@@ -105305,6 +108077,12 @@
         "estat": ""
       },
       {
+        "station_code": "W5",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 30.4,
+        "estat": ""
+      },
+      {
         "station_code": "W8",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 23.8,
@@ -105530,6 +108308,12 @@
         "station_code": "W8",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 25.8,
+        "estat": ""
+      },
+      {
+        "station_code": "W8",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 24.9,
         "estat": ""
       },
       {
@@ -105761,6 +108545,12 @@
         "estat": ""
       },
       {
+        "station_code": "W9",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 27.1,
+        "estat": ""
+      },
+      {
         "station_code": "WA",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 22.9,
@@ -105986,6 +108776,12 @@
         "station_code": "WA",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 33.4,
+        "estat": ""
+      },
+      {
+        "station_code": "WA",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 30.9,
         "estat": ""
       },
       {
@@ -106217,6 +109013,12 @@
         "estat": ""
       },
       {
+        "station_code": "WB",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 29.8,
+        "estat": ""
+      },
+      {
         "station_code": "WC",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 24.2,
@@ -106442,6 +109244,12 @@
         "station_code": "WC",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 31.7,
+        "estat": ""
+      },
+      {
+        "station_code": "WC",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 30.1,
         "estat": ""
       },
       {
@@ -106673,6 +109481,12 @@
         "estat": ""
       },
       {
+        "station_code": "WG",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 30.4,
+        "estat": ""
+      },
+      {
         "station_code": "WI",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 23.9,
@@ -106898,6 +109712,12 @@
         "station_code": "WI",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 27.6,
+        "estat": ""
+      },
+      {
+        "station_code": "WI",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 26.5,
         "estat": ""
       },
       {
@@ -107129,6 +109949,12 @@
         "estat": ""
       },
       {
+        "station_code": "WJ",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 27.4,
+        "estat": ""
+      },
+      {
         "station_code": "WK",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 26.8,
@@ -107354,6 +110180,12 @@
         "station_code": "WK",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 31.4,
+        "estat": ""
+      },
+      {
+        "station_code": "WK",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 28.5,
         "estat": ""
       },
       {
@@ -107585,6 +110417,12 @@
         "estat": ""
       },
       {
+        "station_code": "WL",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 26.8,
+        "estat": ""
+      },
+      {
         "station_code": "WM",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 22.6,
@@ -107810,6 +110648,12 @@
         "station_code": "WM",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 26.7,
+        "estat": ""
+      },
+      {
+        "station_code": "WM",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 26.3,
         "estat": ""
       },
       {
@@ -108263,6 +111107,12 @@
         "estat": ""
       },
       {
+        "station_code": "WO",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 26.3,
+        "estat": ""
+      },
+      {
         "station_code": "WP",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 22.5,
@@ -108488,6 +111338,12 @@
         "station_code": "WP",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 26.3,
+        "estat": ""
+      },
+      {
+        "station_code": "WP",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 26,
         "estat": ""
       },
       {
@@ -108719,6 +111575,12 @@
         "estat": ""
       },
       {
+        "station_code": "WQ",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 22.2,
+        "estat": ""
+      },
+      {
         "station_code": "WR",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 25.3,
@@ -108943,6 +111805,12 @@
       {
         "station_code": "WR",
         "datetime": "2026-07-13T18:30:00+00:00",
+        "value": 26.6,
+        "estat": ""
+      },
+      {
+        "station_code": "WR",
+        "datetime": "2026-07-13T19:00:00+00:00",
         "value": 26.6,
         "estat": ""
       },
@@ -109175,6 +112043,12 @@
         "estat": ""
       },
       {
+        "station_code": "WS",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 22.9,
+        "estat": ""
+      },
+      {
         "station_code": "WT",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 21.5,
@@ -109403,6 +112277,12 @@
         "estat": ""
       },
       {
+        "station_code": "WT",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 26.5,
+        "estat": ""
+      },
+      {
         "station_code": "WU",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 27.4,
@@ -109628,6 +112508,12 @@
         "station_code": "WU",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 26.5,
+        "estat": ""
+      },
+      {
+        "station_code": "WU",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 26.4,
         "estat": ""
       },
       {
@@ -109859,6 +112745,12 @@
         "estat": ""
       },
       {
+        "station_code": "WV",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 27.1,
+        "estat": ""
+      },
+      {
         "station_code": "WW",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 21.3,
@@ -110084,6 +112976,12 @@
         "station_code": "WW",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 31.6,
+        "estat": ""
+      },
+      {
+        "station_code": "WW",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 30.1,
         "estat": ""
       },
       {
@@ -110315,6 +113213,12 @@
         "estat": ""
       },
       {
+        "station_code": "WX",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 29.5,
+        "estat": ""
+      },
+      {
         "station_code": "WZ",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 23.8,
@@ -110540,6 +113444,12 @@
         "station_code": "WZ",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 27.2,
+        "estat": ""
+      },
+      {
+        "station_code": "WZ",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 26.9,
         "estat": ""
       },
       {
@@ -110771,6 +113681,12 @@
         "estat": ""
       },
       {
+        "station_code": "X1",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 25.5,
+        "estat": ""
+      },
+      {
         "station_code": "X3",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 24.7,
@@ -110999,6 +113915,12 @@
         "estat": ""
       },
       {
+        "station_code": "X3",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 31.1,
+        "estat": ""
+      },
+      {
         "station_code": "X4",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 27.6,
@@ -111224,6 +114146,12 @@
         "station_code": "X4",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 27.3,
+        "estat": ""
+      },
+      {
+        "station_code": "X4",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 27,
         "estat": ""
       },
       {
@@ -111455,6 +114383,12 @@
         "estat": ""
       },
       {
+        "station_code": "X5",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 21.9,
+        "estat": ""
+      },
+      {
         "station_code": "X6",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 23.4,
@@ -111680,6 +114614,12 @@
         "station_code": "X6",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 32.9,
+        "estat": ""
+      },
+      {
+        "station_code": "X6",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 31.3,
         "estat": ""
       },
       {
@@ -111911,6 +114851,12 @@
         "estat": ""
       },
       {
+        "station_code": "X7",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 29.7,
+        "estat": ""
+      },
+      {
         "station_code": "X8",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 26.9,
@@ -112136,6 +115082,12 @@
         "station_code": "X8",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 27,
+        "estat": ""
+      },
+      {
+        "station_code": "X8",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 26.7,
         "estat": ""
       },
       {
@@ -112367,6 +115319,12 @@
         "estat": ""
       },
       {
+        "station_code": "X9",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 26.4,
+        "estat": ""
+      },
+      {
         "station_code": "XA",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 21.8,
@@ -112592,6 +115550,12 @@
         "station_code": "XA",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 25.5,
+        "estat": ""
+      },
+      {
+        "station_code": "XA",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 24.2,
         "estat": ""
       },
       {
@@ -112823,6 +115787,12 @@
         "estat": ""
       },
       {
+        "station_code": "XB",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 25.3,
+        "estat": ""
+      },
+      {
         "station_code": "XC",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 23.6,
@@ -113048,6 +116018,12 @@
         "station_code": "XC",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 27.1,
+        "estat": ""
+      },
+      {
+        "station_code": "XC",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 26.6,
         "estat": ""
       },
       {
@@ -113279,6 +116255,12 @@
         "estat": ""
       },
       {
+        "station_code": "XD",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 25.8,
+        "estat": ""
+      },
+      {
         "station_code": "XE",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 25.6,
@@ -113503,6 +116485,12 @@
       {
         "station_code": "XE",
         "datetime": "2026-07-13T18:30:00+00:00",
+        "value": 27.2,
+        "estat": ""
+      },
+      {
+        "station_code": "XE",
+        "datetime": "2026-07-13T19:00:00+00:00",
         "value": 27.2,
         "estat": ""
       },
@@ -113735,6 +116723,12 @@
         "estat": ""
       },
       {
+        "station_code": "XF",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 25.8,
+        "estat": ""
+      },
+      {
         "station_code": "XG",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 24.4,
@@ -113960,6 +116954,12 @@
         "station_code": "XG",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 27.3,
+        "estat": ""
+      },
+      {
+        "station_code": "XG",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 26.9,
         "estat": ""
       },
       {
@@ -114191,6 +117191,12 @@
         "estat": ""
       },
       {
+        "station_code": "XH",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 26.1,
+        "estat": ""
+      },
+      {
         "station_code": "XI",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 25.5,
@@ -114416,6 +117422,12 @@
         "station_code": "XI",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 31.6,
+        "estat": ""
+      },
+      {
+        "station_code": "XI",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 30.2,
         "estat": ""
       },
       {
@@ -114647,6 +117659,12 @@
         "estat": ""
       },
       {
+        "station_code": "XJ",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 27.7,
+        "estat": ""
+      },
+      {
         "station_code": "XK",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 17,
@@ -114872,6 +117890,12 @@
         "station_code": "XK",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 24.4,
+        "estat": ""
+      },
+      {
+        "station_code": "XK",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 22.5,
         "estat": ""
       },
       {
@@ -115103,6 +118127,12 @@
         "estat": ""
       },
       {
+        "station_code": "XL",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 26.9,
+        "estat": ""
+      },
+      {
         "station_code": "XM",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 24.5,
@@ -115328,6 +118358,12 @@
         "station_code": "XM",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 33.3,
+        "estat": ""
+      },
+      {
+        "station_code": "XM",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 31.1,
         "estat": ""
       },
       {
@@ -115559,6 +118595,12 @@
         "estat": ""
       },
       {
+        "station_code": "XN",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 29.7,
+        "estat": ""
+      },
+      {
         "station_code": "XO",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 19.4,
@@ -115787,6 +118829,12 @@
         "estat": ""
       },
       {
+        "station_code": "XO",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 28.5,
+        "estat": ""
+      },
+      {
         "station_code": "XP",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 23.6,
@@ -116012,6 +119060,12 @@
         "station_code": "XP",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 27.2,
+        "estat": ""
+      },
+      {
+        "station_code": "XP",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 26.4,
         "estat": ""
       },
       {
@@ -116243,6 +119297,12 @@
         "estat": ""
       },
       {
+        "station_code": "XQ",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 31.3,
+        "estat": ""
+      },
+      {
         "station_code": "XR",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 20.1,
@@ -116468,6 +119528,12 @@
         "station_code": "XR",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 22.4,
+        "estat": ""
+      },
+      {
+        "station_code": "XR",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 22.5,
         "estat": ""
       },
       {
@@ -116699,6 +119765,12 @@
         "estat": ""
       },
       {
+        "station_code": "XS",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 26.4,
+        "estat": ""
+      },
+      {
         "station_code": "XT",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 20.5,
@@ -116924,6 +119996,12 @@
         "station_code": "XT",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 31.7,
+        "estat": ""
+      },
+      {
+        "station_code": "XT",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 29.2,
         "estat": ""
       },
       {
@@ -117155,6 +120233,12 @@
         "estat": ""
       },
       {
+        "station_code": "XU",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 26.3,
+        "estat": ""
+      },
+      {
         "station_code": "XV",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 22.5,
@@ -117383,6 +120467,12 @@
         "estat": ""
       },
       {
+        "station_code": "XV",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 26.6,
+        "estat": ""
+      },
+      {
         "station_code": "XX",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 24.3,
@@ -117608,6 +120698,12 @@
         "station_code": "XX",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 30.3,
+        "estat": ""
+      },
+      {
+        "station_code": "XX",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 28.7,
         "estat": ""
       },
       {
@@ -117839,6 +120935,12 @@
         "estat": ""
       },
       {
+        "station_code": "XY",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 30.2,
+        "estat": ""
+      },
+      {
         "station_code": "XZ",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 20.6,
@@ -118064,6 +121166,12 @@
         "station_code": "XZ",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 25.4,
+        "estat": ""
+      },
+      {
+        "station_code": "XZ",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 25,
         "estat": ""
       },
       {
@@ -118295,6 +121403,12 @@
         "estat": ""
       },
       {
+        "station_code": "Y4",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 26.9,
+        "estat": ""
+      },
+      {
         "station_code": "Y5",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 21.8,
@@ -118520,6 +121634,12 @@
         "station_code": "Y5",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 25.7,
+        "estat": ""
+      },
+      {
+        "station_code": "Y5",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 25,
         "estat": ""
       },
       {
@@ -118751,6 +121871,12 @@
         "estat": ""
       },
       {
+        "station_code": "Y6",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 25.8,
+        "estat": ""
+      },
+      {
         "station_code": "YA",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 16.9,
@@ -118979,6 +122105,12 @@
         "estat": ""
       },
       {
+        "station_code": "YA",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 26.5,
+        "estat": ""
+      },
+      {
         "station_code": "YB",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 18,
@@ -119204,6 +122336,12 @@
         "station_code": "YB",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 28.1,
+        "estat": ""
+      },
+      {
+        "station_code": "YB",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 26.6,
         "estat": ""
       },
       {
@@ -119435,6 +122573,12 @@
         "estat": ""
       },
       {
+        "station_code": "YC",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 30.2,
+        "estat": ""
+      },
+      {
         "station_code": "YD",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 25.6,
@@ -119660,6 +122804,12 @@
         "station_code": "YD",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 32.1,
+        "estat": ""
+      },
+      {
+        "station_code": "YD",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 30.5,
         "estat": ""
       },
       {
@@ -119891,6 +123041,12 @@
         "estat": ""
       },
       {
+        "station_code": "YE",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 30.5,
+        "estat": ""
+      },
+      {
         "station_code": "YF",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 26.5,
@@ -120086,6 +123242,12 @@
         "station_code": "YF",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 27.1,
+        "estat": ""
+      },
+      {
+        "station_code": "YF",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 26.9,
         "estat": ""
       },
       {
@@ -120317,6 +123479,12 @@
         "estat": ""
       },
       {
+        "station_code": "YG",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 28.7,
+        "estat": ""
+      },
+      {
         "station_code": "YH",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 22.2,
@@ -120542,6 +123710,12 @@
         "station_code": "YH",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 28.2,
+        "estat": ""
+      },
+      {
+        "station_code": "YH",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 26.5,
         "estat": ""
       },
       {
@@ -120773,6 +123947,12 @@
         "estat": ""
       },
       {
+        "station_code": "YJ",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 32.2,
+        "estat": ""
+      },
+      {
         "station_code": "YK",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 25.7,
@@ -120998,6 +124178,12 @@
         "station_code": "YK",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 26.6,
+        "estat": ""
+      },
+      {
+        "station_code": "YK",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 25.8,
         "estat": ""
       },
       {
@@ -121229,6 +124415,12 @@
         "estat": ""
       },
       {
+        "station_code": "YL",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 26.2,
+        "estat": ""
+      },
+      {
         "station_code": "YM",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 23.9,
@@ -121454,6 +124646,12 @@
         "station_code": "YM",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 25.8,
+        "estat": ""
+      },
+      {
+        "station_code": "YM",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 25.5,
         "estat": ""
       },
       {
@@ -121685,6 +124883,12 @@
         "estat": ""
       },
       {
+        "station_code": "YN",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 22.6,
+        "estat": ""
+      },
+      {
         "station_code": "YO",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 21.8,
@@ -121910,6 +125114,12 @@
         "station_code": "YO",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 27.6,
+        "estat": ""
+      },
+      {
+        "station_code": "YO",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 27.1,
         "estat": ""
       },
       {
@@ -122141,6 +125351,12 @@
         "estat": ""
       },
       {
+        "station_code": "YP",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 25.8,
+        "estat": ""
+      },
+      {
         "station_code": "YQ",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 26.6,
@@ -122366,6 +125582,12 @@
         "station_code": "YQ",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 27,
+        "estat": ""
+      },
+      {
+        "station_code": "YQ",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 26.9,
         "estat": ""
       },
       {
@@ -122597,6 +125819,12 @@
         "estat": ""
       },
       {
+        "station_code": "YR",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 26.7,
+        "estat": ""
+      },
+      {
         "station_code": "YS",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 21.4,
@@ -122822,6 +126050,12 @@
         "station_code": "YS",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 26.6,
+        "estat": ""
+      },
+      {
+        "station_code": "YS",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 25.9,
         "estat": ""
       },
       {
@@ -123053,6 +126287,12 @@
         "estat": ""
       },
       {
+        "station_code": "YT",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 20.7,
+        "estat": ""
+      },
+      {
         "station_code": "YU",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 21.1,
@@ -123278,6 +126518,12 @@
         "station_code": "YU",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 26.4,
+        "estat": ""
+      },
+      {
+        "station_code": "YU",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 25.4,
         "estat": ""
       },
       {
@@ -123509,6 +126755,12 @@
         "estat": ""
       },
       {
+        "station_code": "YV",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 25.9,
+        "estat": ""
+      },
+      {
         "station_code": "YX",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 22.9,
@@ -123734,6 +126986,12 @@
         "station_code": "YX",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 25.9,
+        "estat": ""
+      },
+      {
+        "station_code": "YX",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 25.2,
         "estat": ""
       },
       {
@@ -123965,6 +127223,12 @@
         "estat": ""
       },
       {
+        "station_code": "YY",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 26.6,
+        "estat": ""
+      },
+      {
         "station_code": "Z1",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 16,
@@ -124190,6 +127454,12 @@
         "station_code": "Z1",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 19,
+        "estat": ""
+      },
+      {
+        "station_code": "Z1",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 18.6,
         "estat": ""
       },
       {
@@ -124421,6 +127691,12 @@
         "estat": ""
       },
       {
+        "station_code": "Z2",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 15.9,
+        "estat": ""
+      },
+      {
         "station_code": "Z3",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 15.7,
@@ -124649,6 +127925,12 @@
         "estat": ""
       },
       {
+        "station_code": "Z3",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 18.2,
+        "estat": ""
+      },
+      {
         "station_code": "Z5",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 14.7,
@@ -124874,6 +128156,12 @@
         "station_code": "Z5",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 18,
+        "estat": ""
+      },
+      {
+        "station_code": "Z5",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 17.5,
         "estat": ""
       },
       {
@@ -125105,6 +128393,12 @@
         "estat": ""
       },
       {
+        "station_code": "Z6",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 17,
+        "estat": ""
+      },
+      {
         "station_code": "Z7",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 13.2,
@@ -125330,6 +128624,12 @@
         "station_code": "Z7",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 16.7,
+        "estat": ""
+      },
+      {
+        "station_code": "Z7",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 16.5,
         "estat": ""
       },
       {
@@ -125561,6 +128861,12 @@
         "estat": ""
       },
       {
+        "station_code": "Z9",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 20.1,
+        "estat": ""
+      },
+      {
         "station_code": "ZB",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 14.1,
@@ -125786,6 +129092,12 @@
         "station_code": "ZB",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 18,
+        "estat": ""
+      },
+      {
+        "station_code": "ZB",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 17.3,
         "estat": ""
       },
       {
@@ -126017,6 +129329,12 @@
         "estat": ""
       },
       {
+        "station_code": "ZC",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 15.9,
+        "estat": ""
+      },
+      {
         "station_code": "ZD",
         "datetime": "2026-07-13T00:00:00+00:00",
         "value": 13.9,
@@ -126242,6 +129560,12 @@
         "station_code": "ZD",
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 15.8,
+        "estat": ""
+      },
+      {
+        "station_code": "ZD",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 16.1,
         "estat": ""
       },
       {
@@ -126471,8 +129795,30 @@
         "datetime": "2026-07-13T18:30:00+00:00",
         "value": 18.6,
         "estat": ""
+      },
+      {
+        "station_code": "ZE",
+        "datetime": "2026-07-13T19:00:00+00:00",
+        "value": 17.4,
+        "estat": ""
       }
     ]
+  },
+  "lightning_features_20260713_19": {
+    "timestamp": 1783969308.7827075,
+    "data": {
+      "lightning_count_30km": 0,
+      "lightning_count_15km": 0,
+      "lightning_count_15km_1h": 0,
+      "lightning_count_30km_1h": 0,
+      "lightning_nearest_km": 60,
+      "lightning_nearest_bearing": null,
+      "lightning_nearest_compass": null,
+      "lightning_cloud_ground": 0,
+      "lightning_max_current_ka": 0.0,
+      "lightning_approaching": false,
+      "lightning_has_activity": false
+    }
   },
   "lightning_features_20260713_18": {
     "timestamp": 1783965703.5952482,
@@ -607916,15 +611262,5 @@
   "xdde_2026-07-08_12": {
     "timestamp": 1783512054.1021743,
     "data": []
-  },
-  "smc_forecast_20260708_13": {
-    "timestamp": 1783508467.148198,
-    "data": {
-      "smc_prob_precip_1h": 0,
-      "smc_prob_precip_6h": 0,
-      "smc_precip_intensity": 0,
-      "smc_temp_forecast": 36.5,
-      "smc_weather_symbol": 1
-    }
   }
 }
