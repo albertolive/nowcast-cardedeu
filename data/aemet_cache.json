@@ -1,19 +1,19 @@
 {
   "radar": {
-    "cached_at": 1784119826.244214,
+    "cached_at": 1784121035.23389,
     "data": {
       "aemet_radar_dbz": 0.0,
       "aemet_radar_has_echo": false,
-      "aemet_radar_nearest_echo_km": 45.1,
-      "aemet_radar_nearest_echo_compass": "N",
+      "aemet_radar_nearest_echo_km": 41.7,
+      "aemet_radar_nearest_echo_compass": "ESE",
       "aemet_radar_max_dbz_20km": 0.0,
-      "aemet_radar_coverage_20km": 0.0054,
+      "aemet_radar_coverage_20km": 0.0023,
       "aemet_radar_echoes_found": true,
       "aemet_radar_available": true
     }
   },
   "forecast": {
-    "cached_at": 1784117434.576255,
+    "cached_at": 1784121036.485838,
     "data": {
       "aemet_prob_precip": 50,
       "aemet_prob_storm": 50,
