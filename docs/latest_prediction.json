@@ -4,13 +4,13 @@
   "will_rain": false,
   "rain_category": "sec",
   "confidence": "Molt Baixa",
-  "timestamp": "2026-07-18T02:02:17.244965+00:00",
+  "timestamp": "2026-07-18T02:11:33.169842+00:00",
   "conditions": {
-    "temperature": "25.1",
+    "temperature": "25.0",
     "humidity": 85,
-    "pressure": "1015.1",
+    "pressure": "1015.2",
     "wind_speed": "0.0",
-    "wind_dir": "203",
+    "wind_dir": "209",
     "rain_today": "0.0",
     "solar_radiation": 0
   },
@@ -65,7 +65,7 @@
     "available": true
   },
   "bias": {
-    "temp": -3.0,
+    "temp": -2.8999999999999986,
     "humidity": -4.0
   },
   "wind_regime": {
@@ -114,11 +114,11 @@
     "month_sin": -0.4999999999999997,
     "month_cos": -0.8660254037844388,
     "hours_since_sunrise": 0.0,
-    "pressure_msl": 1015.1,
-    "pressure_change_1h": 0.3823529411765776,
-    "pressure_change_3h": 0.7553191489362234,
-    "pressure_change_6h": 0.2842105263158601,
-    "pressure_accel_3h": 0.899035726476427,
+    "pressure_msl": 1015.1555555555556,
+    "pressure_change_1h": 0.4379084967321205,
+    "pressure_change_3h": 0.8108747044917664,
+    "pressure_change_6h": 0.339766081871403,
+    "pressure_accel_3h": 0.95459128203197,
     "temperature_2m": 25.1,
     "relative_humidity_2m": 85.0,
     "dew_point": 22.39393626041615,
@@ -127,11 +127,11 @@
     "humidity_change_3h": 1.234042553191486,
     "vapour_pressure_deficit": 0.5,
     "vpd_change_3h": 0.3,
-    "wind_speed_10m": 0.0,
-    "wind_u": 0.0,
-    "wind_v": 0.0,
-    "wind_speed_change_1h": -0.8156862745098039,
-    "wind_speed_change_3h": -5.9659574468085115,
+    "wind_speed_10m": 0.17777777777777778,
+    "wind_u": 0.08618837693268212,
+    "wind_v": 0.1554879479358926,
+    "wind_speed_change_1h": -0.6379084967320261,
+    "wind_speed_change_3h": -5.788179669030733,
     "is_sea_breeze": 0.0,
     "llevantada_strength": 0.0,
     "llevantada_moisture": 0.0,
@@ -169,8 +169,8 @@
     "deep_layer_shear": 78.0,
     "bulk_richardson": 0.19395134779750164,
     "jet_speed_300": 95.4,
-    "wind_shear_speed": 17.4,
-    "wind_shear_dir": -29.0,
+    "wind_shear_speed": 17.22222222222222,
+    "wind_shear_dir": -35.0,
     "precipitation": 0.0,
     "rain_accum_3h": 0.0,
     "rain_accum_6h": 0.0,
@@ -207,8 +207,8 @@
     "sunshine_duration": 0.0,
     "sunshine_accum_3h": 0.0,
     "wind_speed_100m": 7.6,
-    "boundary_layer_shear": 7.6,
-    "wind_dir_shear_100m": -126.0,
+    "boundary_layer_shear": 7.422222222222222,
+    "wind_dir_shear_100m": -132.0,
     "snowfall": 0.0,
     "nwp_lifted_index": -4.3,
     "gph_850": 1544.0,
@@ -275,7 +275,7 @@
     "ensemble_models_rain": 0.0,
     "ensemble_surprise_rain": null,
     "nwp_isolated_rain": null,
-    "forecast_temp_bias": -3.0,
+    "forecast_temp_bias": -2.8999999999999986,
     "forecast_humidity_bias": -4.0,
     "aemet_prob_precip": 0.0,
     "aemet_prob_storm": 0.0,
@@ -300,7 +300,7 @@
     "frontal_passage": 0.0,
     "convective_composite": 0.47491631038121296,
     "thermal_buildup": 0.0004932481923254446,
-    "low_level_convergence": 0.6582978723404255,
+    "low_level_convergence": 0.6405200945626476,
     "dry_intrusion_700": 0.0,
     "soil_moisture_0_to_7cm": 0.104,
     "soil_moisture_7_to_28cm": 0.136,
@@ -321,12 +321,12 @@
     "visibility": 35220.0,
     "freezing_level_height": 4640.0
   },
-  "pressure_change_3h": 0.7553191489362234,
+  "pressure_change_3h": 0.8108747044917664,
   "top_drivers": [
     {
       "group": "Núvols",
       "icon": "☁️",
-      "contribution": -1.381,
+      "contribution": -1.383,
       "direction": "sec"
     },
     {
@@ -338,19 +338,19 @@
     {
       "group": "Pluja confirmada",
       "icon": "🌧️",
-      "contribution": -0.7,
+      "contribution": -0.701,
       "direction": "sec"
     },
     {
       "group": "Acord entre models",
       "icon": "🤝",
-      "contribution": -0.437,
+      "contribution": -0.436,
       "direction": "sec"
     },
     {
       "group": "Radiació solar",
       "icon": "☀️",
-      "contribution": -0.108,
+      "contribution": -0.107,
       "direction": "sec"
     },
     {
@@ -367,9 +367,9 @@
     "skipped": 8,
     "source": "meteocardedeu",
     "lookup_hours": 3,
-    "station_rows": 638,
-    "station_first_ts": "2026-07-17T04:04:00",
-    "station_last_ts": "2026-07-18T04:01:00",
+    "station_rows": 642,
+    "station_first_ts": "2026-07-17T04:13:00",
+    "station_last_ts": "2026-07-18T04:11:00",
     "pending_total": 8,
     "accuracy": 100.0
   }
