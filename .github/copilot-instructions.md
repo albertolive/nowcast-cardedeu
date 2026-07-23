@@ -111,7 +111,7 @@ GitHub Actions (`.github/workflows/nowcast.yml`):
 - **retrain**: Daily 3:00 Barcelona → download + build + train + git commit model
 
 Secrets: `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID`, `METEOCAT_API_KEY`, `AEMET_API_KEY`
-`AI_GITHUB_TOKEN` uses the automatic `GITHUB_TOKEN` (no extra secret needed). Optional: `AI_OPENROUTER_KEY` for fallback to OpenRouter free models.
+AI narrative provider: at least one of `OPENROUTER_API_KEY` (recommended), `GEMINI_API_KEY`, `GROQ_API_KEY`. Model/cascade is managed centrally in [albertolive/ai-gateway](https://github.com/albertolive/ai-gateway)'s `models.json` (`general` cascade), fetched live by `src/ai/enricher.py` — GitHub Models (`models.inference.ai.azure.com`) was retired 2026-07-30 and is no longer used.
 
 **Meteocat API endpoints (all working):**
 - XEMA (sentinel stations): `/xema/v1/variables/mesurades/{var}/{YYYY}/{MM}/{DD}`

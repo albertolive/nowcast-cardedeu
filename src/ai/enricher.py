@@ -1,7 +1,8 @@
 """
 Enriquiment amb IA: genera narratives en català a partir de dades meteorològiques.
-Dual-provider: GitHub Models (gpt-4o-mini, gratuït a GitHub Actions) com a primari,
-OpenRouter (models gratuïts) com a fallback.
+Proveïdor/model gestionats centralment al cascade "general" d'
+albertolive/ai-gateway (models.json), llegit en calent a cada crida.
+GitHub Models (retirat 30/07/2026) ja no s'usa.
 Patró adaptat de gencat-cultural-agenda/src/ai/enricher.ts.
 
 Dissenyat per a ús de baixa freqüència (1 crida/dia al resum diari,
@@ -19,16 +20,21 @@ import config
 
 logger = logging.getLogger(__name__)
 
-# ── Models gratuïts d'OpenRouter (fallback), ordenats per capacitat ──
-_OPENROUTER_MODELS = [
-    "openai/gpt-oss-120b:free",
-    "nvidia/nemotron-3-nano-30b-a3b:free",
-    "meta-llama/llama-3.3-70b-instruct:free",
-    "mistralai/mistral-small-3.1-24b-instruct:free",
-    "google/gemma-3-27b-it:free",
-]
+_GATEWAY_CONFIG_URL = "https://raw.githubusercontent.com/albertolive/ai-gateway/main/models.json"
 
 _exhausted: set[str] = set()
+
+
+def _fetch_gateway_cascade(cascade: str = "general") -> tuple[dict, list[dict]]:
+    """Llegeix providers + cascade d'ai-gateway/models.json (font compartida amb tot el fleet)."""
+    try:
+        resp = requests.get(_GATEWAY_CONFIG_URL, timeout=10)
+        resp.raise_for_status()
+        cfg = resp.json()
+        return cfg["providers"], cfg["cascades"].get(cascade, [])
+    except Exception as e:
+        logger.warning(f"No s'ha pogut llegir ai-gateway/models.json ({e})")
+        return {}, []
 
 
 def _is_rate_limit_error(e: Exception) -> bool:
@@ -67,36 +73,31 @@ def _call_api(url: str, api_key: str, model: str, messages: list[dict],
 
 def _build_provider_chain() -> list[dict]:
     """
-    Construeix la cadena de proveïdors ordenada per capacitat:
-    1. GitHub Models gpt-4o-mini (GITHUB_TOKEN, gratuït a Actions)
-    2. OpenRouter models gratuïts (si AI_OPENROUTER_KEY configurat)
+    Construeix la cadena de proveïdors des del cascade "general" d'ai-gateway,
+    filtrant als que tenen la clau configurada (OPENROUTER_API_KEY /
+    GEMINI_API_KEY / GROQ_API_KEY). Buida si cap secret està configurat o el
+    fetch falla — generate_daily_narrative/generate_accuracy_narrative
+    retornen None en aquest cas, mai exception.
     """
+    providers, cascade = _fetch_gateway_cascade("general")
     chain = []
-
-    # Primari: GitHub Models (gpt-4o-mini via GITHUB_TOKEN automàtic)
-    if config.AI_GITHUB_TOKEN:
+    for entry in cascade:
+        p = providers.get(entry["provider"])
+        if not p:
+            continue
+        key = os.environ.get(p["key_env"], "")
+        if not key:
+            continue
         chain.append({
-            "provider": "github",
-            "url": config.AI_GITHUB_BASE_URL,
-            "key": config.AI_GITHUB_TOKEN,
-            "model": config.AI_GITHUB_MODEL,
-            "extra_headers": {},
+            "provider": entry["provider"],
+            "url": f"{p['url'].rstrip('/')}/chat/completions",
+            "key": key,
+            "model": entry["model"],
+            "extra_headers": {
+                "HTTP-Referer": "https://github.com/nowcast-cardedeu",
+                "X-Title": "Nowcast Cardedeu",
+            } if entry["provider"] == "openrouter" else {},
         })
-
-    # Fallback: OpenRouter models gratuïts
-    if config.AI_OPENROUTER_KEY:
-        for model in _OPENROUTER_MODELS:
-            chain.append({
-                "provider": "openrouter",
-                "url": config.AI_OPENROUTER_BASE_URL,
-                "key": config.AI_OPENROUTER_KEY,
-                "model": model,
-                "extra_headers": {
-                    "HTTP-Referer": "https://github.com/nowcast-cardedeu",
-                    "X-Title": "Nowcast Cardedeu",
-                },
-            })
-
     return chain
 
 

@@ -122,7 +122,7 @@ El workflow `.github/workflows/nowcast.yml`:
 - **Informe d'accuracy** setmanal (dilluns 8:00) via Telegram
 - **Re-entrenament** automàtic diari a les 3:00 (amb feedback loop + calibratge isotònic)
 - Execució manual amb selector d'acció (predict / daily_summary / accuracy_report / retrain)
-- Configura els secrets al repositori: `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID`, `METEOCAT_API_KEY`, `AEMET_API_KEY`, `AI_GITHUB_TOKEN` (usa automàticament `GITHUB_TOKEN`, sense configuració extra) i `AI_OPENROUTER_KEY` (opcional).
+- Configura els secrets al repositori: `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID`, `METEOCAT_API_KEY`, `AEMET_API_KEY`, i almenys un proveïdor d'IA — `OPENROUTER_API_KEY` (recomanat), `GEMINI_API_KEY` i/o `GROQ_API_KEY` (opcionals). El model/cascade es gestiona centralment a [albertolive/ai-gateway](https://github.com/albertolive/ai-gateway), no aquí.
 
 ### 8. Dashboard a Vercel
 

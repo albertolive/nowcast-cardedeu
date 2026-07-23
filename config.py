@@ -179,16 +179,13 @@ REGIME_PRESSURE_DROP_3H = -2.0   # hPa caiguda en 3h per alerta de pressió
 TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "")
 TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID", "")
 
-# ── IA (GitHub Models + OpenRouter fallback) ──
+# ── IA (cascade gestionada a albertolive/ai-gateway) ──
 # Només usat al resum diari (1 crida/dia) i informe d'accuracy (1 crida/setmana).
 # Mai al camí crític d'alertes de pluja.
-# Primari: GitHub Models (gpt-4o-mini via GITHUB_TOKEN, gratuït a GitHub Actions).
-# Fallback: OpenRouter (models gratuïts, requereix AI_API_KEY opcional).
-AI_GITHUB_TOKEN = os.environ.get("AI_GITHUB_TOKEN", os.environ.get("GITHUB_TOKEN", ""))
-AI_GITHUB_MODEL = os.environ.get("AI_GITHUB_MODEL", "gpt-4o-mini")
-AI_GITHUB_BASE_URL = "https://models.inference.ai.azure.com/chat/completions"
-AI_OPENROUTER_KEY = os.environ.get("AI_OPENROUTER_KEY", "")  # Opcional, fallback
-AI_OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1/chat/completions"
+# GitHub Models retirat 30/07/2026 — substituït pel cascade "general" d'
+# ai-gateway/models.json (llegit en calent per src/ai/enricher.py). Proveïdor i
+# model es gestionen centralment allà, no aquí; configura els secrets dels
+# proveïdors que vulguis fer servir (OPENROUTER_API_KEY / GEMINI_API_KEY / GROQ_API_KEY).
 AI_MAX_RETRIES = int(os.environ.get("AI_MAX_RETRIES", "2"))
 AI_RETRY_BASE_DELAY_MS = int(os.environ.get("AI_RETRY_BASE_DELAY_MS", "5000"))
 
