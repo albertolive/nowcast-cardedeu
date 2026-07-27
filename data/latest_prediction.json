@@ -4,7 +4,7 @@
   "will_rain": false,
   "rain_category": "sec",
   "confidence": "Molt Baixa",
-  "timestamp": "2026-07-27T10:42:02.122362+00:00",
+  "timestamp": "2026-07-27T10:51:57.361741+00:00",
   "conditions": {
     "temperature": "28.6",
     "humidity": 56,
@@ -367,8 +367,8 @@
     "skipped": 8,
     "source": "meteocardedeu",
     "lookup_hours": 3,
-    "station_rows": 1070,
-    "station_first_ts": "2026-07-26T12:43:00",
+    "station_rows": 1062,
+    "station_first_ts": "2026-07-26T12:52:00",
     "station_last_ts": "2026-07-27T11:53:00",
     "pending_total": 8,
     "accuracy": 100.0
