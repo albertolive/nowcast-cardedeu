@@ -4,7 +4,7 @@
   "will_rain": false,
   "rain_category": "sec",
   "confidence": "Molt Baixa",
-  "timestamp": "2026-07-27T10:22:04.930381+00:00",
+  "timestamp": "2026-07-27T10:32:13.270713+00:00",
   "conditions": {
     "temperature": "28.6",
     "humidity": 56,
@@ -65,7 +65,7 @@
     "available": true
   },
   "bias": {
-    "temp": 0.3999999999999986,
+    "temp": 1.0999999999999979,
     "humidity": -4.0
   },
   "wind_regime": {
@@ -275,7 +275,7 @@
     "ensemble_models_rain": 1.0,
     "ensemble_surprise_rain": null,
     "nwp_isolated_rain": null,
-    "forecast_temp_bias": 0.3999999999999986,
+    "forecast_temp_bias": 1.0999999999999979,
     "forecast_humidity_bias": -4.0,
     "aemet_prob_precip": 0.0,
     "aemet_prob_storm": 0.0,
@@ -367,8 +367,8 @@
     "skipped": 8,
     "source": "meteocardedeu",
     "lookup_hours": 3,
-    "station_rows": 1083,
-    "station_first_ts": "2026-07-26T12:23:00",
+    "station_rows": 1077,
+    "station_first_ts": "2026-07-26T12:33:00",
     "station_last_ts": "2026-07-27T11:53:00",
     "pending_total": 8,
     "accuracy": 100.0
