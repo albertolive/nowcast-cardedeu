@@ -1,8 +1,8 @@
 {
   "current_state": "clear",
-  "last_alert_time": 1785762635.0014994,
+  "last_alert_time": 1785852067.5882618,
   "last_alert_type": "regime_change",
-  "last_probability": 0.0078,
+  "last_probability": 0.0042,
   "consecutive_high": 0,
   "consecutive_low": 1,
   "last_wind_regime": {
@@ -13,8 +13,8 @@
     "is_garbi": false,
     "is_ponent": true,
     "llevantada_strength": 0.0,
-    "wind_dir_change_3h": -9.0
+    "wind_dir_change_3h": -29.0
   },
-  "last_regime_alert_time": 1785762635.0014994,
-  "last_regime_alert_type": "garbi_inestable"
+  "last_regime_alert_time": 1785852067.5882618,
+  "last_regime_alert_type": "backing_wind"
 }
