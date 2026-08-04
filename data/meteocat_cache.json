@@ -1,6 +1,6 @@
 {
-  "lightning_features_20260804_04": {
-    "timestamp": 1785816053.048902,
+  "lightning_features_20260804_05": {
+    "timestamp": 1785819657.244398,
     "data": {
       "lightning_count_30km": 0,
       "lightning_count_15km": 0,
@@ -15,8 +15,8 @@
       "lightning_has_activity": false
     }
   },
-  "xdde_2026-08-04_04": {
-    "timestamp": 1785816052.3494534,
+  "xdde_2026-08-04_05": {
+    "timestamp": 1785819656.7439785,
     "data": []
   },
   "xema_35_2026-08-04": {
@@ -29979,6 +29979,26 @@
         "estat": ""
       }
     ]
+  },
+  "lightning_features_20260804_04": {
+    "timestamp": 1785816053.048902,
+    "data": {
+      "lightning_count_30km": 0,
+      "lightning_count_15km": 0,
+      "lightning_count_15km_1h": 0,
+      "lightning_count_30km_1h": 0,
+      "lightning_nearest_km": 60,
+      "lightning_nearest_bearing": null,
+      "lightning_nearest_compass": null,
+      "lightning_cloud_ground": 0,
+      "lightning_max_current_ka": 0.0,
+      "lightning_approaching": false,
+      "lightning_has_activity": false
+    }
+  },
+  "xdde_2026-08-04_04": {
+    "timestamp": 1785816052.3494534,
+    "data": []
   },
   "lightning_features_20260804_03": {
     "timestamp": 1785812454.6552372,
@@ -510501,26 +510521,6 @@
   },
   "lightning_features_20260801_04": {
     "timestamp": 1785556834.2440927,
-    "data": {
-      "lightning_count_30km": 0,
-      "lightning_count_15km": 0,
-      "lightning_count_15km_1h": 0,
-      "lightning_count_30km_1h": 0,
-      "lightning_nearest_km": 60,
-      "lightning_nearest_bearing": null,
-      "lightning_nearest_compass": null,
-      "lightning_cloud_ground": 0,
-      "lightning_max_current_ka": 0.0,
-      "lightning_approaching": false,
-      "lightning_has_activity": false
-    }
-  },
-  "xdde_2026-08-01_04": {
-    "timestamp": 1785556833.7263017,
-    "data": []
-  },
-  "lightning_features_20260801_03": {
-    "timestamp": 1785553227.7892811,
     "data": {
       "lightning_count_30km": 0,
       "lightning_count_15km": 0,
