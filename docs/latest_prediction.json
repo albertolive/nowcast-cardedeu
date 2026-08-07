@@ -4,7 +4,7 @@
   "will_rain": false,
   "rain_category": "sec",
   "confidence": "Molt Baixa",
-  "timestamp": "2026-08-07T06:01:31.676790+00:00",
+  "timestamp": "2026-08-07T06:11:29.451119+00:00",
   "conditions": {
     "temperature": "19.8",
     "humidity": 93,
@@ -206,9 +206,9 @@
     "soil_air_temp_diff": 3.741666666666667,
     "sunshine_duration": 0.0,
     "sunshine_accum_3h": 0.0,
-    "wind_speed_100m": 5.2,
-    "boundary_layer_shear": 5.2,
-    "wind_dir_shear_100m": -72.0,
+    "wind_speed_100m": 3.3,
+    "boundary_layer_shear": 3.3,
+    "wind_dir_shear_100m": -76.0,
     "snowfall": 0.0,
     "nwp_lifted_index": 2.8,
     "gph_850": 1569.0,
@@ -326,7 +326,7 @@
     {
       "group": "Núvols",
       "icon": "☁️",
-      "contribution": -1.734,
+      "contribution": -1.729,
       "direction": "sec"
     },
     {
@@ -338,19 +338,19 @@
     {
       "group": "Acord entre models",
       "icon": "🤝",
-      "contribution": -0.605,
+      "contribution": -0.6,
       "direction": "sec"
     },
     {
       "group": "Pluja confirmada",
       "icon": "🌧️",
-      "contribution": -0.392,
+      "contribution": -0.391,
       "direction": "sec"
     },
     {
       "group": "Inestabilitat",
       "icon": "⚡",
-      "contribution": -0.235,
+      "contribution": -0.241,
       "direction": "sec"
     },
     {
@@ -367,8 +367,8 @@
     "skipped": 11,
     "source": "meteocardedeu",
     "lookup_hours": 48,
-    "station_rows": 1835,
-    "station_first_ts": "2026-08-05T08:03:00",
+    "station_rows": 1829,
+    "station_first_ts": "2026-08-05T08:12:00",
     "station_last_ts": "2026-08-07T07:23:00",
     "pending_total": 11,
     "accuracy": 100.0
