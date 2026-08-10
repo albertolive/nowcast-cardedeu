@@ -1,4 +1,12 @@
 {
+  "meteocat_rate_limit_cooldown": {
+    "timestamp": 1786389052.8931031,
+    "data": true
+  },
+  "meteocat_rate_limit_cooldown_smc": {
+    "timestamp": 1786389052.8931031,
+    "data": true
+  },
   "lightning_features_20260810_19": {
     "timestamp": 1786388445.4745986,
     "data": {
@@ -30,10 +38,6 @@
       "lightning_approaching": false,
       "lightning_has_activity": false
     }
-  },
-  "meteocat_rate_limit_cooldown": {
-    "timestamp": 1786384861.849576,
-    "data": true
   },
   "meteocat_rate_limit_cooldown_xdde": {
     "timestamp": 1786384861.849576,
@@ -319519,9 +319523,5 @@
       "lightning_approaching": false,
       "lightning_has_activity": false
     }
-  },
-  "xdde_2026-08-05_18": {
-    "timestamp": 1785952854.029494,
-    "data": []
   }
 }
