@@ -1,38 +1,38 @@
 {
-  "cv_auc_mean": 0.9496326476979959,
-  "cv_auc_std": 0.02383859162098418,
-  "cv_f1_mean": 0.655071923295876,
-  "cv_f1_std": 0.08183448795861827,
-  "final_auc": 0.9834026833943196,
+  "cv_auc_mean": 0.9481226109967817,
+  "cv_auc_std": 0.02793326626071902,
+  "cv_f1_mean": 0.6373401959757857,
+  "cv_f1_std": 0.119039333144041,
+  "final_auc": 0.9789612088551873,
   "final_report": {
     "0": {
-      "precision": 0.9981978734907191,
-      "recall": 0.9651507231224952,
-      "f1-score": 0.9813961729270021,
-      "support": 11478.0
+      "precision": 0.9965844078217061,
+      "recall": 0.9943767572633552,
+      "f1-score": 0.9954793585806891,
+      "support": 11737.0
     },
     "1": {
-      "precision": 0.2079207920792079,
-      "recall": 0.84,
-      "f1-score": 0.3333333333333333,
-      "support": 125.0
+      "precision": 0.45901639344262296,
+      "recall": 0.5833333333333334,
+      "f1-score": 0.5137614678899083,
+      "support": 96.0
     },
-    "accuracy": 0.9638024648797725,
+    "accuracy": 0.9910420011831319,
     "macro avg": {
-      "precision": 0.6030593327849635,
-      "recall": 0.9025753615612475,
-      "f1-score": 0.6573647531301677,
-      "support": 11603.0
+      "precision": 0.7278004006321646,
+      "recall": 0.7888550452983443,
+      "f1-score": 0.7546204132352987,
+      "support": 11833.0
     },
     "weighted avg": {
-      "precision": 0.9896841584880095,
-      "recall": 0.9638024648797725,
-      "f1-score": 0.97441454274953,
-      "support": 11603.0
+      "precision": 0.9922231698110248,
+      "recall": 0.9910420011831319,
+      "f1-score": 0.9915712272947672,
+      "support": 11833.0
     }
   },
-  "n_samples": 116023,
-  "n_positive": 9492,
+  "n_samples": 118321,
+  "n_positive": 9513,
   "n_features": 211,
   "feature_names": [
     "hour_sin",
@@ -248,7 +248,7 @@
     "freezing_level_height"
   ],
   "calibrated": true,
-  "optimal_threshold": 0.33969465648854963,
-  "calibration_oof_f1_uncalibrated": 0.5961570874768245,
-  "calibration_oof_f1_calibrated": 0.6758384506376949
+  "optimal_threshold": 0.3537005163511187,
+  "calibration_oof_f1_uncalibrated": 0.6109952448485859,
+  "calibration_oof_f1_calibrated": 0.6861810755616066
 }
