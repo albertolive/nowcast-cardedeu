@@ -1,5 +1,7 @@
 __pycache__/
 *.pyc
+*.lock
+*.tmp
 .env
 data/raw/
 data/meteocat_cache/

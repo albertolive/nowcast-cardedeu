@@ -67,3 +67,18 @@ A new run should appear within seconds at
 - **Independent backstop:** `.github/workflows/watchdog.yml` runs hourly,
   checks `latest_prediction.json` is < 30 min old, and alerts via Telegram
   if not. Catches silent failure of *this* Worker.
+
+## Meteocat quota protection
+
+The prediction job still runs every 10 minutes. Meteocat requests are separate
+from that cadence: successful responses are cached per endpoint, and a single
+HTTP 429 activates a shared 60-minute breaker for XEMA, municipal Predicció and
+XDDE. The local JSON cache uses an advisory lock and atomic replacement, and a
+bounded stale fallback is used only where the caller has an explicit safe age:
+120 minutes for XEMA, 360 for municipal forecast and 180 for lightning.
+
+This protects a runner from hammering the API, but it is not a provider-quota
+guarantee. The breaker survives between runs only when the prediction job
+successfully commits and pushes the cache; GitHub/network/provider behavior
+still requires monitoring after deployment. No offline test can prove the
+SMC account's live quota.

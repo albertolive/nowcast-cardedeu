@@ -1,21 +1,16 @@
 """
-Cache amb TTL per a crides a l'API Meteocat.
-Quotes separades per servei (mensuals, reset dia 1 a 00:00 UTC):
-  - XEMA: 750 crides/mes
-  - XDDE: 250 crides/mes
-  - Predicció: 100 crides/mes
-  - Referència: 2000 crides/mes
-  - Quota (consum-actual): 300 crides/mes
+Persistent TTL cache for Meteocat API calls.
 
-Persistence: single JSON file (data/meteocat_cache.json) committed to git,
-so cache survives across GitHub Actions runs. Same pattern as aemet_cache.py.
-
-Endpoint de consum: GET /quotes/v1/consum-actual
+The cache is committed by the GitHub Actions prediction job so it survives
+between runners. Local writes are protected with an advisory lock and an
+atomic replace: a killed process can leave an old cache, never half JSON.
 """
 import json
 import logging
 import os
+import tempfile
 import time
+from contextlib import contextmanager
 
 import requests
 
@@ -26,19 +21,42 @@ import config
 logger = logging.getLogger(__name__)
 
 CACHE_FILE = os.path.join(config.PROJECT_ROOT, "data", "meteocat_cache.json")
-# Max entries before pruning old ones (keep cache file manageable)
 _MAX_ENTRIES = 200
+RATE_LIMIT_KEY = "meteocat_rate_limit_cooldown"
+XEMA_RATE_LIMIT_KEY = "xema_rate_limit_cooldown"  # backwards-compatible alias
+
+try:
+    import fcntl
+except ImportError:  # pragma: no cover - Windows fallback
+    fcntl = None
+
+
+@contextmanager
+def _cache_lock():
+    """Serialize local read-modify-write operations for this cache file."""
+    lock_path = f"{CACHE_FILE}.lock"
+    os.makedirs(os.path.dirname(lock_path) or ".", exist_ok=True)
+    handle = open(lock_path, "a+")
+    try:
+        if fcntl is not None:
+            fcntl.flock(handle.fileno(), fcntl.LOCK_EX)
+        yield
+    finally:
+        if fcntl is not None:
+            fcntl.flock(handle.fileno(), fcntl.LOCK_UN)
+        handle.close()
 
 
 def fetch_quota() -> dict:
-    """
-    Check current API quota consumption.
-    Returns dict mapping plan name → {max, used, remaining}.
-    """
+    """Check current API quota consumption."""
     if not config.METEOCAT_API_KEY:
         return {}
+    from src.data._http import create_session
+    if is_meteocat_rate_limited("quota"):
+        return {}
     try:
-        r = requests.get(
+        session = create_session(retry_429=False)
+        r = session.get(
             f"{config.METEOCAT_BASE_URL}/quotes/v1/consum-actual",
             headers={"X-Api-Key": config.METEOCAT_API_KEY},
             timeout=10,
@@ -54,66 +72,151 @@ def fetch_quota() -> dict:
             }
         return result
     except Exception as e:
-        logger.warning(f"Could not fetch quota: {e}")
+        if (getattr(getattr(e, "response", None), "status_code", None) == 429
+                or getattr(locals().get("r", None), "status_code", None) == 429):
+            mark_meteocat_rate_limited("quota")
+        logger.warning("Could not fetch quota: %s", e)
         return {}
 
 
 def get_remaining(plan_name: str) -> int:
     """Get remaining calls for a specific plan. Returns -1 if unknown."""
     quota = fetch_quota()
-    if plan_name in quota:
-        return quota[plan_name]["remaining"]
-    return -1
+    return quota[plan_name]["remaining"] if plan_name in quota else -1
+
+
+def _quarantine_corrupt_cache() -> None:
+    """Move malformed JSON aside so it cannot be silently overwritten."""
+    if not os.path.exists(CACHE_FILE):
+        return
+    quarantined = f"{CACHE_FILE}.corrupt.{os.getpid()}.{time.time_ns()}"
+    try:
+        os.replace(CACHE_FILE, quarantined)
+        logger.error("Meteocat cache was malformed; quarantined as %s", quarantined)
+    except OSError as exc:
+        logger.error("Meteocat cache was malformed and could not be quarantined: %s", exc)
 
 
 def _load_cache() -> dict:
-    """Load entire cache from single JSON file."""
+    """Load cache safely; atomic writers mean readers never see partial JSON."""
     if not os.path.exists(CACHE_FILE):
         return {}
     try:
-        with open(CACHE_FILE) as f:
-            return json.load(f)
-    except (json.JSONDecodeError, OSError):
+        with open(CACHE_FILE, encoding="utf-8") as f:
+            value = json.load(f)
+        if not isinstance(value, dict):
+            raise ValueError("cache root is not an object")
+        return value
+    except (json.JSONDecodeError, OSError, ValueError) as exc:
+        logger.error("Could not load Meteocat cache %s: %s", CACHE_FILE, exc)
+        _quarantine_corrupt_cache()
         return {}
 
 
+def _pruned_cache(cache: dict) -> dict:
+    if len(cache) <= _MAX_ENTRIES:
+        return cache
+    sorted_keys = sorted(
+        cache,
+        key=lambda k: cache[k].get("timestamp", 0) if isinstance(cache[k], dict) else 0,
+        reverse=True,
+    )
+    return {k: cache[k] for k in sorted_keys[:_MAX_ENTRIES]}
+
+
 def _save_cache(cache: dict) -> None:
-    """Write cache to disk. Prune old entries if over limit."""
-    if len(cache) > _MAX_ENTRIES:
-        # Keep most recent entries
-        sorted_keys = sorted(cache.keys(),
-                             key=lambda k: cache[k].get("timestamp", 0),
-                             reverse=True)
-        cache = {k: cache[k] for k in sorted_keys[:_MAX_ENTRIES]}
-    os.makedirs(os.path.dirname(CACHE_FILE), exist_ok=True)
+    """Atomically replace the cache file; caller owns any read-modify lock."""
+    cache = _pruned_cache(cache)
+    directory = os.path.dirname(CACHE_FILE) or "."
+    os.makedirs(directory, exist_ok=True)
+    temp_path = None
     try:
-        with open(CACHE_FILE, "w") as f:
+        fd, temp_path = tempfile.mkstemp(
+            prefix=f".{os.path.basename(CACHE_FILE)}.", suffix=".tmp", dir=directory
+        )
+        with os.fdopen(fd, "w", encoding="utf-8") as f:
             json.dump(cache, f, indent=2, ensure_ascii=False)
-    except OSError as e:
-        logger.debug(f"Cache write failed: {e}")
+            f.flush()
+            os.fsync(f.fileno())
+        os.replace(temp_path, CACHE_FILE)
+        temp_path = None
+    except (OSError, TypeError, ValueError) as exc:
+        logger.error("Meteocat cache write failed: %s", exc)
+    finally:
+        if temp_path:
+            try:
+                os.unlink(temp_path)
+            except OSError:
+                pass
+
+
+def _cache_entry(cache_key: str):
+    return _load_cache().get(cache_key)
+
+
+def _entry_age_minutes(entry) -> float | None:
+    try:
+        age = (time.time() - float(entry["timestamp"])) / 60
+        return age if age >= 0 else 0.0
+    except (KeyError, TypeError, ValueError):
+        return None
 
 
 def get_cached(cache_key: str, ttl_minutes: int):
-    """
-    Return cached value if it exists and is within TTL, else None.
-    """
-    cache = _load_cache()
-    entry = cache.get(cache_key)
-    if not entry:
+    """Return cached value if it exists and is within TTL, else None."""
+    entry = _cache_entry(cache_key)
+    if not isinstance(entry, dict):
         return None
-    try:
-        age_minutes = (time.time() - entry["timestamp"]) / 60
-        if age_minutes <= ttl_minutes:
-            logger.debug(f"Cache hit: {cache_key} (age={age_minutes:.0f}m)")
-            return entry["data"]
-        logger.debug(f"Cache expired: {cache_key} (age={age_minutes:.0f}m > {ttl_minutes}m)")
-    except (KeyError, TypeError):
-        pass
+    age_minutes = _entry_age_minutes(entry)
+    if age_minutes is not None and age_minutes <= ttl_minutes:
+        logger.debug("Cache hit: %s (age=%.0fm)", cache_key, age_minutes)
+        return entry.get("data")
+    if age_minutes is not None:
+        logger.debug("Cache expired: %s (age=%.0fm > %sm)", cache_key, age_minutes, ttl_minutes)
     return None
 
 
-def set_cached(cache_key: str, data):
-    """Store a value in the cache with current timestamp."""
-    cache = _load_cache()
-    cache[cache_key] = {"timestamp": time.time(), "data": data}
-    _save_cache(cache)
+def get_stale_cached(cache_key: str, max_age_minutes: int):
+    """Return a cached value within an explicit bounded stale-fallback age."""
+    entry = _cache_entry(cache_key)
+    if not isinstance(entry, dict):
+        return None
+    age_minutes = _entry_age_minutes(entry)
+    if age_minutes is not None and age_minutes <= max_age_minutes:
+        logger.debug("Stale fallback hit: %s (age=%.0fm)", cache_key, age_minutes)
+        return entry.get("data")
+    return None
+
+
+def set_cached(cache_key: str, data) -> None:
+    """Store a value using a locked read-modify-write and atomic replacement."""
+    with _cache_lock():
+        cache = _load_cache()
+        cache[cache_key] = {"timestamp": time.time(), "data": data}
+        _save_cache(cache)
+
+
+def is_meteocat_rate_limited(service: str | None = None) -> bool:
+    """Return whether a shared or legacy service breaker is active."""
+    ttl = getattr(config, "METEOCAT_429_COOLDOWN_MIN", 60)
+    if get_cached(RATE_LIMIT_KEY, ttl) is not None:
+        return True
+    if service == "xema" and get_cached(XEMA_RATE_LIMIT_KEY, ttl) is not None:
+        return True
+    service_key = f"{RATE_LIMIT_KEY}_{service}" if service else None
+    return bool(service_key and get_cached(service_key, ttl) is not None)
+
+
+def mark_meteocat_rate_limited(service: str | None = None) -> None:
+    """Persist one shared breaker plus compatible service-specific markers."""
+    now = time.time()
+    keys = [RATE_LIMIT_KEY]
+    if service:
+        keys.append(f"{RATE_LIMIT_KEY}_{service}")
+    if service == "xema":
+        keys.append(XEMA_RATE_LIMIT_KEY)
+    with _cache_lock():
+        cache = _load_cache()
+        for key in keys:
+            cache[key] = {"timestamp": now, "data": True}
+        _save_cache(cache)

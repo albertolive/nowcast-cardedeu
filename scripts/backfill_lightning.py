@@ -35,7 +35,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-SESSION = create_session()
+SESSION = create_session(retry_429=False)
 CACHE_PATH = os.path.join(config.DATA_PROCESSED_DIR, "lightning_cache.parquet")
 DATASET_PATH = os.path.join(config.DATA_PROCESSED_DIR, "training_dataset.parquet")
 HOURS_BACK = 3.0
@@ -63,6 +63,8 @@ def fetch_xdde_day(target_date: date) -> list[dict]:
             if r.status_code == 404:
                 continue
             if r.status_code == 429:
+                from src.data.meteocat_cache import mark_meteocat_rate_limited
+                mark_meteocat_rate_limited("xdde")
                 raise QuotaExhaustedError(f"XDDE quota exhausted (429) at {target_date} {hour:02d}h")
             r.raise_for_status()
             data = r.json()
@@ -168,7 +170,10 @@ def main():
         sys.exit(1)
 
     # Check XDDE quota before running
-    from src.data.meteocat_cache import get_remaining
+    from src.data.meteocat_cache import get_remaining, is_meteocat_rate_limited
+    if is_meteocat_rate_limited("xdde"):
+        logger.warning("Meteocat cooldown active; skipping XDDE backfill")
+        return
     remaining_quota = get_remaining("XDDE_250")
     if remaining_quota == 0:
         logger.warning("XDDE quota exhausted (0 remaining). Skipping backfill until next month.")

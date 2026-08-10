@@ -467,3 +467,109 @@ class TestXemaSentinelFallback:
         assert "key_0" not in cache
         assert "key_1" not in cache
         assert "key_6" in cache
+
+class TestXemaRateLimitCooldown:
+    """HTTP 429 must stop the next prediction from hammering XEMA."""
+
+    def test_429_persists_cooldown_for_other_variables(self, tmp_path, monkeypatch):
+        from datetime import date
+        from src.data import meteocat_cache
+        import src.data.meteocat as meteocat_mod
+        from src.data.meteocat import fetch_variable_all_stations
+
+        monkeypatch.setattr(meteocat_cache, "CACHE_FILE", str(tmp_path / "cache.json"))
+        monkeypatch.setattr(config, "METEOCAT_API_KEY", "test-key")
+        calls = []
+
+        class FakeResponse:
+            status_code = 429
+            def raise_for_status(self):
+                import requests
+                error = requests.HTTPError("rate limited")
+                error.response = self
+                raise error
+
+        def mock_get(*args, **kwargs):
+            calls.append(args[0])
+            return FakeResponse()
+
+        monkeypatch.setattr(meteocat_mod.SESSION, "get", mock_get)
+        day = date(2026, 3, 24)
+        assert fetch_variable_all_stations(32, day).empty
+        assert len(calls) == 1
+        # Different variable: the persistent breaker prevents another HTTP request.
+        assert fetch_variable_all_stations(33, day).empty
+        assert len(calls) == 1
+
+    def test_expired_cooldown_allows_a_new_request(self, tmp_path, monkeypatch):
+        from datetime import date
+        from src.data import meteocat_cache
+        import src.data.meteocat as meteocat_mod
+        from src.data.meteocat import fetch_variable_all_stations
+
+        monkeypatch.setattr(meteocat_cache, "CACHE_FILE", str(tmp_path / "cache.json"))
+        monkeypatch.setattr(config, "METEOCAT_API_KEY", "test-key")
+        import time
+        meteocat_cache.set_cached("xema_rate_limit_cooldown", True)
+        cache = meteocat_cache._load_cache()
+        cache["xema_rate_limit_cooldown"]["timestamp"] = time.time() - 61 * 60
+        meteocat_cache._save_cache(cache)
+        calls = []
+
+        class FakeResponse:
+            status_code = 200
+            def raise_for_status(self): pass
+            def json(self): return []
+
+        monkeypatch.setattr(meteocat_mod.SESSION, "get", lambda *a, **k: (calls.append(a[0]) or FakeResponse()))
+        assert fetch_variable_all_stations(32, date(2026, 3, 24)).empty
+        assert len(calls) == 1
+
+    def test_non_429_error_does_not_start_cooldown(self, tmp_path, monkeypatch):
+        from datetime import date
+        from src.data import meteocat_cache
+        import src.data.meteocat as meteocat_mod
+        from src.data.meteocat import fetch_variable_all_stations
+
+        monkeypatch.setattr(meteocat_cache, "CACHE_FILE", str(tmp_path / "cache.json"))
+        monkeypatch.setattr(config, "METEOCAT_API_KEY", "test-key")
+
+        class FakeResponse:
+            status_code = 500
+            def raise_for_status(self):
+                import requests
+                error = requests.HTTPError("server error")
+                error.response = self
+                raise error
+
+        monkeypatch.setattr(meteocat_mod.SESSION, "get", lambda *a, **k: FakeResponse())
+        assert fetch_variable_all_stations(32, date(2026, 3, 24)).empty
+        assert meteocat_cache.get_cached(
+            "xema_rate_limit_cooldown", config.METEOCAT_XEMA_429_COOLDOWN_MIN
+        ) is None
+
+    def test_cooldown_reuses_bounded_stale_data(self, tmp_path, monkeypatch):
+        from datetime import date
+        import time
+        from src.data import meteocat_cache
+        import src.data.meteocat as meteocat_mod
+        from src.data.meteocat import fetch_variable_all_stations
+
+        monkeypatch.setattr(meteocat_cache, "CACHE_FILE", str(tmp_path / "cache.json"))
+        monkeypatch.setattr(config, "METEOCAT_API_KEY", "test-key")
+        rows = [{
+            "station_code": "YM", "datetime": "2026-03-24T12:00:00",
+            "value": 18.5, "estat": "",
+        }]
+        meteocat_cache.set_cached("xema_32_2026-03-24", rows)
+        meteocat_cache.set_cached("xema_rate_limit_cooldown", True)
+        cache = meteocat_cache._load_cache()
+        cache["xema_32_2026-03-24"]["timestamp"] = time.time() - 90 * 60
+        meteocat_cache._save_cache(cache)
+        monkeypatch.setattr(meteocat_mod.SESSION, "get", lambda *a, **k: (_ for _ in ()).throw(AssertionError("HTTP must be skipped")))
+
+        result = fetch_variable_all_stations(32, date(2026, 3, 24))
+        assert len(result) == 1
+        assert result.iloc[0]["value"] == 18.5
+        assert isinstance(result.iloc[0]["datetime"], pd.Timestamp)
+        assert result.attrs["xema_stale"] is True
