@@ -1,6 +1,6 @@
 {
   "radar": {
-    "cached_at": 1786441848.158362,
+    "cached_at": 1786443057.831206,
     "data": {
       "aemet_radar_dbz": 0.0,
       "aemet_radar_has_echo": false,
@@ -13,10 +13,10 @@
     }
   },
   "forecast": {
-    "cached_at": 1786438262.025125,
+    "cached_at": 1786443062.406914,
     "data": {
-      "aemet_prob_precip": 100,
-      "aemet_prob_storm": 75,
+      "aemet_prob_precip": 95,
+      "aemet_prob_storm": 80,
       "aemet_precip_today": 0
     }
   }
