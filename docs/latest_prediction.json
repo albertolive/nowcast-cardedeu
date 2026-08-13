@@ -4,11 +4,11 @@
   "will_rain": false,
   "rain_category": "sec",
   "confidence": "Molt Baixa",
-  "timestamp": "2026-08-13T01:10:36.800647+00:00",
+  "timestamp": "2026-08-13T01:20:33.736642+00:00",
   "conditions": {
     "temperature": "24.6",
     "humidity": 84,
-    "pressure": "1019.8",
+    "pressure": "1019.7",
     "wind_speed": "0.0",
     "wind_dir": "251",
     "rain_today": "0.0",
@@ -269,7 +269,7 @@
     "local_rain_xema_3h": null,
     "ensemble_rain_agreement": 0.0,
     "ensemble_precip_spread": 0.0,
-    "ensemble_temp_spread": 0.7314369419163903,
+    "ensemble_temp_spread": 0.7790218225441446,
     "ensemble_max_precip": 0.0,
     "ensemble_min_precip": 0.0,
     "ensemble_models_rain": 0.0,
@@ -332,7 +332,7 @@
     {
       "group": "Acord entre models",
       "icon": "🤝",
-      "contribution": -0.763,
+      "contribution": -0.764,
       "direction": "sec"
     },
     {
@@ -350,7 +350,7 @@
     {
       "group": "Temperatura",
       "icon": "🌡️",
-      "contribution": -0.287,
+      "contribution": -0.286,
       "direction": "sec"
     },
     {
@@ -367,9 +367,9 @@
     "skipped": 20,
     "source": "meteocardedeu",
     "lookup_hours": 48,
-    "station_rows": 2126,
-    "station_first_ts": "2026-08-11T03:11:00",
-    "station_last_ts": "2026-08-13T03:10:00",
+    "station_rows": 2124,
+    "station_first_ts": "2026-08-11T03:21:00",
+    "station_last_ts": "2026-08-13T03:20:00",
     "pending_total": 20,
     "accuracy": 100.0
   }
