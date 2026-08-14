@@ -48,12 +48,14 @@ class TestMeteocatCacheDurability:
         assert len(quarantined) == 1
         assert quarantined[0].read_text(encoding="utf-8") == '{"broken":'
 
-    def test_shared_breaker_blocks_all_services(self, monkeypatch, tmp_path):
+    def test_breaker_is_per_service(self, monkeypatch, tmp_path):
         cache = _use_tmp_cache(monkeypatch, tmp_path)
         cache.mark_meteocat_rate_limited("xema")
-        assert all(cache.is_meteocat_rate_limited(service) for service in ("xema", "smc", "xdde"))
+        assert cache.is_meteocat_rate_limited("xema")
+        assert not cache.is_meteocat_rate_limited("smc")
+        assert not cache.is_meteocat_rate_limited("xdde")
 
-    def test_quota_429_persists_shared_breaker(self, monkeypatch, tmp_path):
+    def test_quota_429_only_blocks_quota(self, monkeypatch, tmp_path):
         cache = _use_tmp_cache(monkeypatch, tmp_path)
         monkeypatch.setattr(config, "METEOCAT_API_KEY", "test-key")
         import src.data._http as http
@@ -73,7 +75,8 @@ class TestMeteocatCacheDurability:
 
         monkeypatch.setattr(http, "create_session", lambda **kwargs: FakeSession())
         assert module.fetch_quota() == {}
-        assert cache.is_meteocat_rate_limited("smc")
+        assert cache.is_meteocat_rate_limited("quota")
+        assert not cache.is_meteocat_rate_limited("smc")
 
 
 class TestMeteocatTransportPolicy:
@@ -89,7 +92,7 @@ class TestMeteocatTransportPolicy:
 
 
 class TestMeteocatEndpointBreakers:
-    def test_smc_first_429_persists_shared_breaker(self, monkeypatch, tmp_path):
+    def test_smc_429_only_blocks_smc(self, monkeypatch, tmp_path):
         cache = _use_tmp_cache(monkeypatch, tmp_path)
         monkeypatch.setattr(config, "METEOCAT_API_KEY", "test-key")
         import src.data.meteocat_prediccio as smc
@@ -101,11 +104,12 @@ class TestMeteocatEndpointBreakers:
         monkeypatch.setattr(smc.SESSION, "get", get)
         assert smc.fetch_smc_hourly_df().empty
         assert len(calls) == 1
-        assert cache.is_meteocat_rate_limited("xdde")
+        assert cache.is_meteocat_rate_limited("smc")
+        assert not cache.is_meteocat_rate_limited("xdde")
         assert smc.fetch_smc_hourly_df().empty
         assert len(calls) == 1
 
-    def test_xdde_first_429_persists_shared_breaker(self, monkeypatch, tmp_path):
+    def test_xdde_429_only_blocks_xdde(self, monkeypatch, tmp_path):
         cache = _use_tmp_cache(monkeypatch, tmp_path)
         monkeypatch.setattr(config, "METEOCAT_API_KEY", "test-key")
         import src.data.meteocat_xdde as xdde
@@ -117,23 +121,31 @@ class TestMeteocatEndpointBreakers:
         monkeypatch.setattr(xdde.SESSION, "get", get)
         assert xdde._fetch_lightning_hour(date(2026, 3, 24), 12) == []
         assert len(calls) == 1
-        assert cache.is_meteocat_rate_limited("smc")
+        assert cache.is_meteocat_rate_limited("xdde")
+        assert not cache.is_meteocat_rate_limited("smc")
         assert xdde._fetch_lightning_hour(date(2026, 3, 24), 13) == []
         assert len(calls) == 1
 
-    def test_shared_breaker_skips_smc_and_xdde_http(self, monkeypatch, tmp_path):
+    def test_xema_breaker_does_not_block_smc_and_xdde_http(self, monkeypatch, tmp_path):
         cache = _use_tmp_cache(monkeypatch, tmp_path)
         cache.mark_meteocat_rate_limited("xema")
         monkeypatch.setattr(config, "METEOCAT_API_KEY", "test-key")
         import src.data.meteocat_prediccio as smc
         import src.data.meteocat_xdde as xdde
-        def unexpected_http(*args, **kwargs):
-            raise AssertionError("HTTP must not run while shared breaker is active")
-        monkeypatch.setattr(smc.SESSION, "get", unexpected_http)
-        monkeypatch.setattr(xdde.SESSION, "get", unexpected_http)
+        calls = []
+        class OkResponse:
+            status_code = 200
+            def raise_for_status(self): pass
+            def json(self): return []
+        def record_http(*args, **kwargs):
+            calls.append(args[0])
+            return OkResponse()
+        monkeypatch.setattr(smc.SESSION, "get", record_http)
+        monkeypatch.setattr(xdde.SESSION, "get", record_http)
         assert isinstance(smc.fetch_municipal_hourly_forecast(), dict)
         assert smc.fetch_smc_hourly_df().empty
         assert xdde._fetch_lightning_hour(date(2026, 3, 24), 12) == []
+        assert len(calls) >= 3, "SMC and XDDE must still run HTTP while only XEMA is limited"
 
     def test_smc_dataframe_cache_roundtrip_restores_datetime(self, monkeypatch, tmp_path):
         cache = _use_tmp_cache(monkeypatch, tmp_path)
@@ -150,7 +162,7 @@ class TestMeteocatEndpointBreakers:
         assert isinstance(result.iloc[0]["datetime"], pd.Timestamp)
         assert result.iloc[0]["smc_prob_precip_1h"] == 40.0
 
-    def test_timeout_does_not_mark_shared_breaker(self, monkeypatch, tmp_path):
+    def test_timeout_does_not_mark_breaker(self, monkeypatch, tmp_path):
         cache = _use_tmp_cache(monkeypatch, tmp_path)
         monkeypatch.setattr(config, "METEOCAT_API_KEY", "test-key")
         import requests
@@ -158,4 +170,4 @@ class TestMeteocatEndpointBreakers:
         monkeypatch.setattr(smc.SESSION, "get", lambda *a, **k: (_ for _ in ()).throw(
             requests.Timeout("offline test")))
         assert smc.fetch_smc_hourly_df().empty
-        assert not cache.is_meteocat_rate_limited()
+        assert not cache.is_meteocat_rate_limited("smc")

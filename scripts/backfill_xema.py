@@ -3,11 +3,11 @@
 Backfill de dades sentinella XEMA (Granollers + ETAP Cardedeu) al training dataset.
 
 Descarrega dades diàries de temperatura, humitat i precipitació de l'API Meteocat XEMA.
-Cada crida a fetch_variable_all_stations retorna TOTES les estacions (~180) per a una
-variable i una data — per tant podem extreure múltiples estacions d'una sola crida.
+Cada crida a fetch_station_all_variables retorna TOTES les variables per a una
+estació i una data (endpoint /estacions/mesurades/{estacio}/{y}/{m}/{d}).
 
-Costos API: 3 crides/dia (temp, humidity, precip). Quota XEMA: 750 crides/mes.
-El script comprova la quota restant abans d'executar.
+Costos API: 2 crides/dia (una per estació: Granollers YM + ETAP Cardedeu KX).
+Quota XEMA: 750 crides/mes. El script comprova la quota restant abans d'executar.
 
 Ús:
     METEOCAT_API_KEY=xxx .venv/bin/python scripts/backfill_xema.py [--max-days N]
@@ -24,7 +24,7 @@ import pandas as pd
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 import config
-from src.data.meteocat import fetch_variable_all_stations
+from src.data.meteocat import fetch_station_all_variables
 
 logging.basicConfig(
     level=logging.INFO,
@@ -40,7 +40,7 @@ def fetch_sentinel_day(target_date: date) -> pd.DataFrame:
     """
     Fetch temp, humidity, precip for sentinel (YM) + local (KX) stations for one day.
     Returns a DataFrame with hourly rows and sentinel feature columns.
-    Uses 3 API calls.
+    Uses 2 API calls (one per station, all variables).
     """
     var_map = {
         config.XEMA_VAR_TEMP: "temp",
@@ -48,23 +48,21 @@ def fetch_sentinel_day(target_date: date) -> pd.DataFrame:
         config.XEMA_VAR_PRECIP: "precip",
     }
 
-    station_codes = {config.SENTINEL_STATION_CODE, config.LOCAL_RAIN_STATION_CODE}
+    stations = {
+        config.SENTINEL_STATION_CODE: "sentinel",
+        config.LOCAL_RAIN_STATION_CODE: "local",
+    }
     all_data = {}
 
-    for var_code, var_name in var_map.items():
-        df = fetch_variable_all_stations(var_code, target_date)
+    for station_code, prefix in stations.items():
+        df = fetch_station_all_variables(station_code, target_date)
         time.sleep(API_DELAY)
 
         if df.empty:
             continue
 
-        # Filter to our stations only
-        df = df[df["station_code"].isin(station_codes)]
-        if df.empty:
-            continue
-
-        for code in station_codes:
-            station_df = df[df["station_code"] == code].copy()
+        for var_code, var_name in var_map.items():
+            station_df = df[df["variable_code"] == var_code].copy()
             if station_df.empty:
                 continue
             station_df = station_df.sort_values("datetime")
@@ -77,7 +75,6 @@ def fetch_sentinel_day(target_date: date) -> pd.DataFrame:
             hourly = hourly.reset_index()
             hourly.columns = ["datetime", "value"]
 
-            prefix = "sentinel" if code == config.SENTINEL_STATION_CODE else "local"
             key = f"{prefix}_{var_name}"
             all_data[key] = hourly.set_index("datetime")["value"]
 
@@ -151,7 +148,7 @@ def _save_cache(cached: pd.DataFrame, new_rows: list) -> pd.DataFrame:
 def main():
     parser = argparse.ArgumentParser(description="Backfill XEMA sentinel data")
     parser.add_argument("--max-days", type=int, default=15,
-                        help="Max days to download per run (default: 15 = 45 API calls)")
+                        help="Max days to download per run (default: 15 = 30 API calls)")
     parser.add_argument("--start-date", type=str, default="2021-04-01",
                         help="Earliest date to backfill (default: 2021-04-01)")
     args = parser.parse_args()
@@ -169,7 +166,7 @@ def main():
     if remaining_quota > 0:
         # Reserve 30 calls for real-time predictions
         available_for_backfill = max(0, remaining_quota - 30)
-        max_days_by_quota = available_for_backfill // 3  # 3 API calls per day
+        max_days_by_quota = available_for_backfill // 2  # 2 API calls per day
         if max_days_by_quota == 0:
             logger.warning(f"XEMA quota too low ({remaining_quota} remaining, need 30 reserve). Skipping.")
             return
@@ -207,7 +204,7 @@ def main():
     # Limit to max_days
     dates_to_fetch = all_dates[:args.max_days]
     logger.info(f"Dates to download: {len(dates_to_fetch)} (of {len(all_dates)} remaining)")
-    logger.info(f"API calls: {len(dates_to_fetch) * 3} (budget: ~350-550/month for backfill)")
+    logger.info(f"API calls: {len(dates_to_fetch) * 2} (budget: ~350-550/month for backfill)")
 
     new_rows = []
     save_every = 25  # Save progress every N days to avoid data loss on interruption

@@ -277,6 +277,8 @@ Converteix intensitat PNG → dBZ → mm/h (Marshall-Palmer). Cada frame ≈ 10 
 ### Estacions sentinella Meteocat
 Utilitza l'estació de **Granollers (YM)** com a sentinella: si plou a Granollers (7 km al SO), és probable que arribi a Cardedeu en pocs minuts. També consulta el **pluviòmetre ETAP Cardedeu (KX)** a 1.5 km del centre. Les features de diferencial (temperatura, humitat) entre Granollers i Cardedeu detecten fronts que travessen la zona.
 
+Es fa servir l'endpoint per estació (`/estacions/mesurades/{estacio}/{YYYY}/{MM}/{DD}`), que retorna totes les variables d'una estació en una sola crida: **2 crides** (YM + KX) en lloc de les 3 anteriors (una per variable sobre ~200 estacions). Ho va recomanar l'SMC l'agost de 2026 per reduir el consum de quota.
+
 ### Coordenades
 - **Cardedeu**: 41.633°N, 2.364°E, 190m alt
 - **Granollers (sentinella)**: 41.608°N, 2.288°E
@@ -288,7 +290,7 @@ Meteocat té quotes mensuals separades per servei (reset dia 1 a 00:00 UTC):
 
 | Servei | Quota | Endpoint |
 |--------|-------|----------|
-| XEMA (estacions) | 750/mes | `/xema/v1/variables/mesurades/{var}/{YYYY}/{MM}/{DD}` |
+| XEMA (estacions) | 750/mes | `/xema/v1/estacions/mesurades/{estacio}/{YYYY}/{MM}/{DD}` (2 crides: YM + KX) |
 | XDDE (llamps) | 250/mes | `/xdde/v1/catalunya/{YYYY}/{MM}/{DD}/{HH}` |
 | Predicció | 100/mes | `/pronostic/v1/municipalHoraria/080462` |
 | Consum actual | 300/mes | `/quotes/v1/consum-actual` |

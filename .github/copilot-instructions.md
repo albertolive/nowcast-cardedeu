@@ -114,7 +114,7 @@ Secrets: `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID`, `METEOCAT_API_KEY`, `AEMET_AP
 AI narrative provider: at least one of `OPENROUTER_API_KEY` (recommended), `GEMINI_API_KEY`, `GROQ_API_KEY`. Model/cascade is managed centrally in [albertolive/ai-gateway](https://github.com/albertolive/ai-gateway)'s `models.json` (`general` cascade), fetched live by `src/ai/enricher.py` — GitHub Models (`models.inference.ai.azure.com`) was retired 2026-07-30 and is no longer used.
 
 **Meteocat API endpoints (all working):**
-- XEMA (sentinel stations): `/xema/v1/variables/mesurades/{var}/{YYYY}/{MM}/{DD}`
+- XEMA (sentinel stations): `/xema/v1/estacions/mesurades/{estacio}/{YYYY}/{MM}/{DD}` (all variables for one station in one call; we query YM + KX only)
 - XDDE (lightning): `/xdde/v1/catalunya/{YYYY}/{MM}/{DD}/{HH}` (lowercase `catalunya`, hour required)
 - Predicció (municipal forecast): `/pronostic/v1/municipalHoraria/080462`
 - Quota check: `/quotes/v1/consum-actual`

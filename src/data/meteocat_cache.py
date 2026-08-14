@@ -22,8 +22,8 @@ logger = logging.getLogger(__name__)
 
 CACHE_FILE = os.path.join(config.PROJECT_ROOT, "data", "meteocat_cache.json")
 _MAX_ENTRIES = 200
-RATE_LIMIT_KEY = "meteocat_rate_limit_cooldown"
-XEMA_RATE_LIMIT_KEY = "xema_rate_limit_cooldown"  # backwards-compatible alias
+RATE_LIMIT_KEY = "meteocat_rate_limit_cooldown"  # per-service key prefix
+XEMA_RATE_LIMIT_KEY = "xema_rate_limit_cooldown"  # legacy alias, honored for old caches
 
 try:
     import fcntl
@@ -196,23 +196,33 @@ def set_cached(cache_key: str, data) -> None:
         _save_cache(cache)
 
 
+def _service_rate_limit_key(service: str) -> str:
+    return f"{RATE_LIMIT_KEY}_{service}"
+
+
 def is_meteocat_rate_limited(service: str | None = None) -> bool:
-    """Return whether a shared or legacy service breaker is active."""
+    """Return whether the breaker for `service` is active.
+
+    Per-service: a 429 on one endpoint (XDDE, SMC, XEMA, quota) only blocks that
+    endpoint, never the others. XEMA also honors the legacy key written by older
+    deployments, so pre-existing caches keep working.
+    """
+    if not service:
+        return False
     ttl = getattr(config, "METEOCAT_429_COOLDOWN_MIN", 60)
-    if get_cached(RATE_LIMIT_KEY, ttl) is not None:
+    if get_cached(_service_rate_limit_key(service), ttl) is not None:
         return True
     if service == "xema" and get_cached(XEMA_RATE_LIMIT_KEY, ttl) is not None:
         return True
-    service_key = f"{RATE_LIMIT_KEY}_{service}" if service else None
-    return bool(service_key and get_cached(service_key, ttl) is not None)
+    return False
 
 
 def mark_meteocat_rate_limited(service: str | None = None) -> None:
-    """Persist one shared breaker plus compatible service-specific markers."""
+    """Persist a per-service breaker; a 429 on one endpoint does not block others."""
+    if not service:
+        return
     now = time.time()
-    keys = [RATE_LIMIT_KEY]
-    if service:
-        keys.append(f"{RATE_LIMIT_KEY}_{service}")
+    keys = [_service_rate_limit_key(service)]
     if service == "xema":
         keys.append(XEMA_RATE_LIMIT_KEY)
     with _cache_lock():

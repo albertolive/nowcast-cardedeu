@@ -27,6 +27,14 @@ OpenData d'AEMET és infraestructura compartida que llença 429 globals sota cà
 
 PREC és el total des de mitjanit, NO pluja per minut. `fetch_series()` el converteix a increments amb `.diff().clip(lower=0)`. Si es toca, recordar que el 2026-03-26 aquest bug va invalidar 52 verificacions (mostrava 17-19mm quan n'havien caigut 0.4). XEMA KX (Meteocat) sí que és per interval.
 
+## La quota XEMA es buida amb l'endpoint per variable
+
+L'endpoint `/variables/mesurades/{var}/{y}/{m}/{d}` retorna **totes les ~200 estacions** per a una sola variable. Amb 3 variables (32/33/35) això són 3 crides per cicle; amb el job cada 10 min i cache de 30 min es cremaven ~144 crides/dia sobre una quota de 750/mes. L'SMC ho va detectar (agost 2026) i va recordar que les estacions publiquen cada 30 min: re-descarregar cada 10 min exporta les mateixes dades.
+
+Fix: `/estacions/mesurades/{estacio}/{y}/{m}/{d}` retorna totes les variables d'una estació en **1 crida** → 2 crides/cicle (YM + KX). Mantenir el TTL de 60 min (== cadència de publicació) i el tallafoc de 429, i no tornar a l'endpoint per variable fora dels tests.
+
+El tallafoc de 429 és **per servei** (xdde/smc/xema/quota), no global. Abans era compartit i un 429 de llamps (XDDE) bloquejava també el XEMA, deixant la sentinella buida en plena finestra de pluja. Si una font surt nul·la amb rain gate obert, mira primer si un altre servei ha marcat el seu propi 429, no si el XEMA en va rebre un.
+
 ## Vercel no es redesplega amb cada predicció
 
 `deploy-dashboard.yml` només desplega amb canvis de frontend (expressament: límit de 100 deploys/dia). El JSON local de Vercel pot tenir setmanes; el dashboard té un fallback a raw.githubusercontent quan el local té >30 min (`app.js`). Si el web mostra valors vells, el primer sospitós és aquest fallback fallant (adblocker, rate limit de GitHub), no el pipeline.

@@ -7,7 +7,7 @@ Primary source: MeteoCardedeu daily history endpoint (minute granularity, no
 API key, same sensor as the live verifier — so backfilled results are 100%
 consistent with normal verification).
 
-Fallback: XEMA KX historical via Meteocat /variables/mesurades/{var}/{Y}/{M}/{D}
+Fallback: XEMA KX historical via Meteocat /estacions/mesurades/KX/{Y}/{M}/{D}
 (30-min granularity, requires METEOCAT_API_KEY, consumes quota).
 
 Safe to re-run; already-verified entries are left alone.
@@ -26,7 +26,7 @@ import pandas as pd
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 import config
 from src.data.meteocardedeu import fetch_daily as fetch_meteocardedeu_daily
-from src.data.meteocat import fetch_variable_all_stations
+from src.data.meteocat import fetch_station_all_variables
 from src.feedback.logger import load_predictions_log, save_predictions_log
 from src.feedback.verify import _parse_log_timestamp
 
@@ -48,10 +48,10 @@ def _fetch_day_xema_kx(date) -> pd.DataFrame:
     XEMA returns 30-min accumulation already, so `value` IS the increment."""
     if not config.METEOCAT_API_KEY:
         return pd.DataFrame()
-    raw = fetch_variable_all_stations(config.XEMA_VAR_PRECIP, date)
+    raw = fetch_station_all_variables(config.LOCAL_RAIN_STATION_CODE, date)
     if raw.empty:
         return pd.DataFrame()
-    kx = raw[raw["station_code"] == config.LOCAL_RAIN_STATION_CODE].copy()
+    kx = raw[raw["variable_code"] == config.XEMA_VAR_PRECIP].copy()
     if kx.empty:
         return pd.DataFrame()
     kx["datetime"] = pd.to_datetime(kx["datetime"]).dt.tz_localize(None)

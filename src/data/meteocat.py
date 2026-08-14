@@ -37,56 +37,63 @@ def _rows_to_dataframe(rows, *, stale: bool = False) -> pd.DataFrame:
     return df
 
 
-def fetch_variable_all_stations(var_code: int, target_date: date) -> pd.DataFrame:
-    """
-    Obté les dades d'una variable per a TOTES les estacions en un dia.
-    Endpoint: /xema/v1/variables/mesurades/{var_code}/{YYYY}/{MM}/{DD}
-    Uses TTL cache to stay within 750 calls/month Meteocat budget.
-    Retorna DataFrame amb columnes: station_code, datetime, value
-    """
-    if not _is_configured():
-        logger.warning("Meteocat API key no configurada")
-        return pd.DataFrame()
+def _parse_xema_response(data) -> list[dict]:
+    """Aplana la resposta JSON de XEMA en files (estació, variable, lectura).
 
+    Tant /variables/mesurades/{var}/{y}/{m}/{d} (totes les estacions, una
+    variable) com /estacions/mesurades/{estacio}/{y}/{m}/{d} (una estació,
+    totes les variables) retornen una llista d'objectes `codi` + `variables`,
+    on cada variable té una llista `lectures`. Aquest parser les unifica.
+    """
+    rows = []
+    for station_data in data:
+        station_code = station_data.get("codi", "")
+        for var_info in station_data.get("variables", []):
+            variable_code = var_info.get("codi")
+            for lecture in var_info.get("lectures", []):
+                rows.append({
+                    "station_code": station_code,
+                    "variable_code": variable_code,
+                    "datetime": pd.to_datetime(lecture["data"]).isoformat(),
+                    "value": lecture.get("valor"),
+                    "estat": lecture.get("estat", "").strip(),
+                })
+    return rows
+
+
+def _fetch_xema(cache_key: str, url: str) -> pd.DataFrame:
+    """Comparteix memòria cau TTL + tallafoc 429 + HTTP + parseig per a XEMA."""
     from src.data.meteocat_cache import (
         get_cached, set_cached, get_stale_cached, is_meteocat_rate_limited,
         mark_meteocat_rate_limited,
     )
-    # A 429 is a service-level signal, not a missing observation. Persist a short
-    # circuit breaker so the next 10-minute prediction does not immediately repeat
-    # the same rejected request for the other variables.
-    cache_key = f"xema_{var_code}_{target_date}"
+    # Un 429 és un senyal de servei, no una observació que falti. Es persisteix un
+    # tallafoc curt perquè la propera predicció (10 min després) no repeteixi la
+    # mateixa petició rebutjada per a les altres variables/estacions.
     if is_meteocat_rate_limited("xema"):
-
         stale = get_stale_cached(cache_key, config.METEOCAT_XEMA_STALE_MAX_MIN)
         if stale is not None:
             logger.warning(
-                "XEMA cooldown active — reusing %s-minute-old data for variable %s",
-                config.METEOCAT_XEMA_STALE_MAX_MIN, var_code,
+                "XEMA cooldown active — reusing %s-minute-old data for %s",
+                config.METEOCAT_XEMA_STALE_MAX_MIN, cache_key,
             )
             return _rows_to_dataframe(stale, stale=True)
-        logger.warning("XEMA cooldown active after HTTP 429 — skipping variable %s", var_code)
+        logger.warning("XEMA cooldown active after HTTP 429 — skipping %s", cache_key)
         return pd.DataFrame()
 
-    # Successful and empty responses are both reused for 60 minutes; predictions
-    # themselves continue to run every 10 minutes.
+    # Respostes buides i amb dades es reutilitzen 60 min; les prediccions segueixen
+    # executant-se cada 10 min.
     cached = get_cached(cache_key, config.METEOCAT_CACHE_TTL_XEMA_EMPTY)
     if cached is not None:
         if not cached:
-            # Empty response cached — don't re-call API until EMPTY TTL expires
-            logger.debug(f"XEMA cache hit (empty): var={var_code}, date={target_date}")
+            logger.debug("XEMA cache hit (empty): %s", cache_key)
             return pd.DataFrame()
-        # Non-empty: check if still fresh at normal TTL
         cached_fresh = get_cached(cache_key, config.METEOCAT_CACHE_TTL_XEMA)
         if cached_fresh is not None:
-            logger.debug(f"XEMA cache hit: var={var_code}, date={target_date}")
+            logger.debug("XEMA cache hit: %s", cache_key)
             return _rows_to_dataframe(cached_fresh)
-        # Stale at normal TTL but within empty TTL — re-fetch from API
+        # Caducat al TTL normal però dins del TTL "empty" — tornar a demanar.
 
-    url = (
-        f"{config.METEOCAT_BASE_URL}/xema/v1/variables/mesurades/"
-        f"{var_code}/{target_date.year}/{target_date.month:02d}/{target_date.day:02d}"
-    )
     r = None
     try:
         r = SESSION.get(url, headers=_headers(), timeout=20)
@@ -98,37 +105,60 @@ def fetch_variable_all_stations(var_code: int, target_date: date) -> pd.DataFram
             mark_meteocat_rate_limited("xema")
             stale = get_stale_cached(cache_key, config.METEOCAT_XEMA_STALE_MAX_MIN)
             logger.warning(
-                "Meteocat XEMA HTTP 429 (%s, %s) — cooldown for %s minutes",
-                var_code, target_date, config.METEOCAT_XEMA_429_COOLDOWN_MIN,
+                "Meteocat XEMA HTTP 429 (%s) — cooldown for %s minutes",
+                cache_key, config.METEOCAT_XEMA_429_COOLDOWN_MIN,
             )
             return _rows_to_dataframe(stale, stale=True) if stale is not None else pd.DataFrame()
-        logger.warning(f"Meteocat API error ({var_code}, {target_date}): {e}")
+        logger.warning("Meteocat API error (%s): %s", cache_key, e)
         return pd.DataFrame()
 
-    data = r.json()
-    rows = []
-    for station_data in data:
-        station_code = station_data.get("codi", "")
-        for var_info in station_data.get("variables", []):
-            for lecture in var_info.get("lectures", []):
-                rows.append({
-                    "station_code": station_code,
-                    "datetime": pd.to_datetime(lecture["data"]).isoformat(),
-                    "value": lecture.get("valor"),
-                    "estat": lecture.get("estat", "").strip(),
-                })
-
+    rows = _parse_xema_response(r.json())
+    # Filtrar lectures invàlides ABANS de desar a la memòria cau, perquè un hit de
+    # cau mai no torni a servir un valor "T" (no disponible).
+    rows = [row for row in rows if row["estat"] != "T"]
+    set_cached(cache_key, rows)
     df = pd.DataFrame(rows)
-    if not df.empty:
-        # Filtrar lectures invàlides
-        df = df[df["estat"] != "T"]  # T = valor no disponible
-        set_cached(cache_key, rows)  # Cache the raw rows (JSON-serializable)
-    else:
-        # Cache empty responses to avoid re-calling API every 10 min
-        set_cached(cache_key, [])
-
-    # Restore datetime type after cache serialization
     return _rows_to_dataframe(df.to_dict("records"))
+
+
+def fetch_variable_all_stations(var_code: int, target_date: date) -> pd.DataFrame:
+    """
+    Obté les dades d'una variable per a TOTES les estacions en un dia.
+    Endpoint: /xema/v1/variables/mesurades/{var_code}/{YYYY}/{MM}/{DD}
+    Retorna DataFrame amb columnes: station_code, variable_code, datetime, value.
+
+    Preferiu fetch_station_all_variables(): descarrega totes les variables d'una
+    estació en una sola crida, que és el que realment necessita el nowcast.
+    """
+    if not _is_configured():
+        logger.warning("Meteocat API key no configurada")
+        return pd.DataFrame()
+    cache_key = f"xema_{var_code}_{target_date}"
+    url = (
+        f"{config.METEOCAT_BASE_URL}/xema/v1/variables/mesurades/"
+        f"{var_code}/{target_date.year}/{target_date.month:02d}/{target_date.day:02d}"
+    )
+    return _fetch_xema(cache_key, url)
+
+
+def fetch_station_all_variables(station_code: str, target_date: date) -> pd.DataFrame:
+    """
+    Obté TOTES les variables d'UNA estació per a un dia concret.
+    Endpoint: /xema/v1/estacions/mesurades/{station_code}/{YYYY}/{MM}/{DD}
+    Retorna DataFrame amb columnes: station_code, variable_code, datetime, value.
+
+    Recomanat per l'SMC (agost 2026): en lloc de 3 crides (una per variable sobre
+    ~200 estacions) fem 2 crides (una per estació, totes les variables).
+    """
+    if not _is_configured():
+        logger.warning("Meteocat API key no configurada")
+        return pd.DataFrame()
+    cache_key = f"xema_station_{station_code}_{target_date}"
+    url = (
+        f"{config.METEOCAT_BASE_URL}/xema/v1/estacions/mesurades/"
+        f"{station_code}/{target_date.year}/{target_date.month:02d}/{target_date.day:02d}"
+    )
+    return _fetch_xema(cache_key, url)
 
 
 def _empty_sentinel() -> dict:
@@ -149,6 +179,21 @@ def fetch_sentinel_latest() -> dict:
         return _empty_sentinel()
 
 
+def _variable_rows(df: pd.DataFrame, var_code: int) -> pd.DataFrame:
+    """Filtra les files d'una variable dins un DataFrame d'estació-dia."""
+    if df is None or df.empty or "variable_code" not in df.columns:
+        return df.iloc[0:0] if df is not None else pd.DataFrame()
+    return df[df["variable_code"] == var_code]
+
+
+def _last_reading(df: pd.DataFrame):
+    """Retorna (valor, timestamp) de l'última lectura d'un DataFrame."""
+    if df is None or df.empty:
+        return None, None
+    row = df.sort_values("datetime").iloc[-1]
+    return float(row["value"]), row["datetime"]
+
+
 def _fetch_sentinel_latest_inner() -> dict:
 
     today = date.today()
@@ -162,62 +207,49 @@ def _fetch_sentinel_latest_inner() -> dict:
         config.XEMA_VAR_PRECIP: "sentinel_precip",
     }
 
-    last_precip_df = None  # Will hold the precipitation data from the loop
-
+    sentinel_today = fetch_station_all_variables(config.SENTINEL_STATION_CODE, today)
+    sentinel_yesterday = None  # lazy: només es demana si avui no té cap variable
     for var_code, key in var_map.items():
-        df = fetch_variable_all_stations(var_code, today)
+        df = sentinel_today
         # Stale rows are useful as an explicit fallback for callers, but must not
         # drive a "plou ara" or front-arrival signal in the live predictor.
         if df.attrs.get("xema_stale"):
             logger.warning("XEMA %s data stale — ignoring it for live sentinel features", key)
             df = pd.DataFrame()
+        value, timestamp = _last_reading(_variable_rows(df, var_code))
         # Fallback a ahir si avui no té dades (retard de publicació XEMA)
-        if df.empty or df[df["station_code"] == config.SENTINEL_STATION_CODE].empty:
+        if value is None:
             logger.info(f"XEMA {key}: sense dades avui ({today}), provant ahir ({yesterday})")
-            df_yesterday = fetch_variable_all_stations(var_code, yesterday)
-            if not df_yesterday.empty and not df_yesterday.attrs.get("xema_stale"):
-                df = df_yesterday
+            if sentinel_yesterday is None:
+                sentinel_yesterday = fetch_station_all_variables(config.SENTINEL_STATION_CODE, yesterday)
+            if not sentinel_yesterday.attrs.get("xema_stale"):
+                value, timestamp = _last_reading(_variable_rows(sentinel_yesterday, var_code))
 
-        if var_code == config.XEMA_VAR_PRECIP:
-            last_precip_df = df  # Save for local rain gauge reuse
-        if df.empty:
+        if value is None:
             logger.warning(f"XEMA {key}: sense dades ni avui ni ahir")
             result[key] = None
             continue
 
-        # Filtrar per l'estació sentinella
-        sentinel = df[df["station_code"] == config.SENTINEL_STATION_CODE]
-        if sentinel.empty:
-            logger.warning(f"XEMA {key}: estació {config.SENTINEL_STATION_CODE} no trobada")
-            result[key] = None
-            continue
+        result[key] = value
+        result[f"{key}_time"] = timestamp.isoformat()
 
-        # Agafar l'última lectura
-        sentinel = sentinel.sort_values("datetime")
-        result[key] = float(sentinel.iloc[-1]["value"])
-        result[f"{key}_time"] = sentinel.iloc[-1]["datetime"].isoformat()
-
-    # També obtenir precipitació del pluviòmetre local (ETAP Cardedeu KX)
-    # Reuse the precipitation data already fetched above (saves 1 API call: 4→3)
-    df_precip = last_precip_df if last_precip_df is not None else fetch_variable_all_stations(config.XEMA_VAR_PRECIP, today)
-    if df_precip.attrs.get("xema_stale"):
+    # Pluviòmetre local (ETAP Cardedeu KX): mateixa estratègia, només precipitació.
+    kx_today = fetch_station_all_variables(config.LOCAL_RAIN_STATION_CODE, today)
+    if kx_today.attrs.get("xema_stale"):
         logger.warning("XEMA local precipitation is stale — ignoring it for live features")
-        df_precip = pd.DataFrame()
-    # Fallback a ahir per al pluviòmetre local
-    if df_precip.empty or (not df_precip.empty and df_precip[df_precip["station_code"] == config.LOCAL_RAIN_STATION_CODE].empty):
-        df_precip_yesterday = fetch_variable_all_stations(config.XEMA_VAR_PRECIP, yesterday)
-        if not df_precip_yesterday.empty and not df_precip_yesterday.attrs.get("xema_stale"):
-            df_precip = df_precip_yesterday
-
-    if not df_precip.empty:
-        local = df_precip[df_precip["station_code"] == config.LOCAL_RAIN_STATION_CODE]
-        if not local.empty:
-            local = local.sort_values("datetime")
-            result["local_rain_xema"] = float(local.iloc[-1]["value"])
-            # Pluja acumulada en les últimes 3h del pluviòmetre XEMA
-            cutoff_3h = local.iloc[-1]["datetime"] - pd.Timedelta("3h")
-            recent = local[local["datetime"] >= cutoff_3h]
-            result["local_rain_xema_3h"] = float(recent["value"].sum())
+        kx_today = pd.DataFrame()
+    local = _variable_rows(kx_today, config.XEMA_VAR_PRECIP)
+    if local.empty:
+        kx_yesterday = fetch_station_all_variables(config.LOCAL_RAIN_STATION_CODE, yesterday)
+        if not kx_yesterday.attrs.get("xema_stale"):
+            local = _variable_rows(kx_yesterday, config.XEMA_VAR_PRECIP)
+    if not local.empty:
+        local = local.sort_values("datetime")
+        result["local_rain_xema"] = float(local.iloc[-1]["value"])
+        # Pluja acumulada en les últimes 3h del pluviòmetre XEMA
+        cutoff_3h = local.iloc[-1]["datetime"] - pd.Timedelta("3h")
+        recent = local[local["datetime"] >= cutoff_3h]
+        result["local_rain_xema_3h"] = float(recent["value"].sum())
 
     return result
 
@@ -227,6 +259,7 @@ def fetch_sentinel_historical(target_date: date) -> dict:
     Obté les dades completes de l'estació sentinella per un dia concret.
     Retorna un dict amb arrays de lectures horàries.
     Útil per construir el dataset d'entrenament.
+    Usa 2 crides (una per estació) en lloc de 3 (una per variable).
     """
     if not _is_configured():
         return {}
@@ -238,26 +271,25 @@ def fetch_sentinel_historical(target_date: date) -> dict:
         config.XEMA_VAR_PRECIP: "sentinel_precip",
     }
 
-    for var_code, key in var_map.items():
-        df = fetch_variable_all_stations(var_code, target_date)
-        if df.empty or df.attrs.get("xema_stale"):
-            logger.warning("XEMA historical data unavailable or stale for %s", target_date)
-            continue
-        sentinel = df[df["station_code"] == config.SENTINEL_STATION_CODE]
-        if not sentinel.empty:
-            sentinel = sentinel.sort_values("datetime")
-            result[key] = sentinel[["datetime", "value"]].rename(
-                columns={"value": key}
-            )
+    sentinel = fetch_station_all_variables(config.SENTINEL_STATION_CODE, target_date)
+    if sentinel.empty or sentinel.attrs.get("xema_stale"):
+        logger.warning("XEMA historical data unavailable or stale for %s", target_date)
+    else:
+        for var_code, key in var_map.items():
+            var_df = _variable_rows(sentinel, var_code)
+            if not var_df.empty:
+                var_df = var_df.sort_values("datetime")
+                result[key] = var_df[["datetime", "value"]].rename(columns={"value": key})
 
-        # Pluviòmetre local
-        if var_code == config.XEMA_VAR_PRECIP:
-            local = df[df["station_code"] == config.LOCAL_RAIN_STATION_CODE]
-            if not local.empty:
-                local = local.sort_values("datetime")
-                result["local_rain_xema"] = local[["datetime", "value"]].rename(
-                    columns={"value": "local_rain_xema"}
-                )
+    # Pluviòmetre local (ETAP Cardedeu KX) — només precipitació
+    local_df = fetch_station_all_variables(config.LOCAL_RAIN_STATION_CODE, target_date)
+    if not (local_df.empty or local_df.attrs.get("xema_stale")):
+        local = _variable_rows(local_df, config.XEMA_VAR_PRECIP)
+        if not local.empty:
+            local = local.sort_values("datetime")
+            result["local_rain_xema"] = local[["datetime", "value"]].rename(
+                columns={"value": "local_rain_xema"}
+            )
 
     return result
 
@@ -314,7 +346,7 @@ def fetch_kx_precipitation_series(hours: int = 3) -> pd.DataFrame:
 
     Retorna DataFrame amb columnes: datetime, PREC
     Compatible amb el format que usa verify.py.
-    Consumeix 1 crida XEMA (variable 35 = precipitació, dia actual).
+    Consumeix 1 crida XEMA (estació KX, totes les variables, dia actual).
     """
     if not _is_configured():
         logger.warning("Meteocat API key no configurada — no es pot usar KX com a fallback")
@@ -322,13 +354,13 @@ def fetch_kx_precipitation_series(hours: int = 3) -> pd.DataFrame:
 
     try:
         today = date.today()
-        df = fetch_variable_all_stations(config.XEMA_VAR_PRECIP, today)
+        df = fetch_station_all_variables(config.LOCAL_RAIN_STATION_CODE, today)
         if df.empty or df.attrs.get("xema_stale"):
             logger.warning("KX fallback: sense dades fresques de precipitació XEMA avui")
             return pd.DataFrame()
 
-        # Filtrar per estació KX
-        kx = df[df["station_code"] == config.LOCAL_RAIN_STATION_CODE].copy()
+        # Filtrar per la variable de precipitació (35)
+        kx = _variable_rows(df, config.XEMA_VAR_PRECIP).copy()
         if kx.empty:
             logger.warning("KX fallback: estació KX no trobada a les dades XEMA")
             return pd.DataFrame()

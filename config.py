@@ -196,14 +196,14 @@ AI_RETRY_BASE_DELAY_MS = int(os.environ.get("AI_RETRY_BASE_DELAY_MS", "5000"))
 # Budget breakdown (rain gate + caching):
 #   XDDE:       ~8 days × 6h × 4 calls = ~192/month (limit 250)
 #   Predicció:  ~8 days × 6h / 3h TTL  = ~16/month  (limit 100)
-#   XEMA:       ~8 days × 6h / 0.5h TTL = ~96/month (limit 750) + backfill ~90
-#   Backfill XEMA: --max-days 3/retrain × 3 vars = ~270/month
+#   XEMA:       ~8 days × 6h / 1h TTL × 2 estacions = ~96/month (limit 750)
+#   Backfill XEMA: --max-days 3/retrain × 2 estacions = ~6 crides/run
 METEOCAT_CACHE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "meteocat_cache")
 METEOCAT_CACHE_TTL_XDDE = 120     # minutes — current hour cache; past hours cached 24h automatically
 METEOCAT_CACHE_TTL_SMC = 90       # minutes — municipal forecast updates every 6h, 90min for fresher data
 METEOCAT_CACHE_TTL_XEMA = 60       # minutes — sentinel data; predictions still run every 10 min
 METEOCAT_CACHE_TTL_XEMA_EMPTY = 60   # minutes — cache empty XEMA responses longer to save quota
-METEOCAT_429_COOLDOWN_MIN = 60       # minutes — shared breaker for every Meteocat service
+METEOCAT_429_COOLDOWN_MIN = 60       # minutes — per-service breaker (a 429 blocks only that endpoint)
 METEOCAT_XEMA_429_COOLDOWN_MIN = METEOCAT_429_COOLDOWN_MIN  # backwards-compatible alias
 METEOCAT_XEMA_STALE_MAX_MIN = 120    # minutes — bounded fallback when XEMA is unavailable
 METEOCAT_SMC_STALE_MAX_MIN = 360     # minutes — municipal forecast changes slowly

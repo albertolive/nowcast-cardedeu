@@ -31,7 +31,7 @@ def _is_429(exc, response=None) -> bool:
 
 
 def _fetch_lightning_hour(target_date: date, hour: int) -> list[dict]:
-    """Fetch one XDDE hour with persistent shared breaker and bounded fallback."""
+    """Fetch one XDDE hour with persistent per-service breaker and bounded fallback."""
     from src.data.meteocat_cache import (
         get_cached, get_stale_cached, is_meteocat_rate_limited,
         mark_meteocat_rate_limited, set_cached,

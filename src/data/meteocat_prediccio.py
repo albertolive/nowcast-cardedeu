@@ -40,7 +40,7 @@ def _is_429(exc, response=None) -> bool:
 
 
 def fetch_municipal_hourly_forecast() -> dict:
-    """Fetch the 72h municipal forecast, with a shared breaker and TTL cache."""
+    """Fetch the 72h municipal forecast, with a per-service breaker and TTL cache."""
     result = _empty_forecast()
     if not _is_configured():
         logger.info("Meteocat Predicció no configurat (sense METEOCAT_API_KEY)")

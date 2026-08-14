@@ -573,3 +573,132 @@ class TestXemaRateLimitCooldown:
         assert result.iloc[0]["value"] == 18.5
         assert isinstance(result.iloc[0]["datetime"], pd.Timestamp)
         assert result.attrs["xema_stale"] is True
+
+
+class TestXemaStationEndpoint:
+    """SMC-recommended per-station endpoint: 1 call = all variables of 1 station."""
+
+    def test_parses_all_variables_for_one_station(self, tmp_path, monkeypatch):
+        from datetime import date
+        from src.data import meteocat_cache
+        import src.data.meteocat as meteocat_mod
+        from src.data.meteocat import fetch_station_all_variables
+
+        monkeypatch.setattr(meteocat_cache, "CACHE_FILE", str(tmp_path / "cache.json"))
+        monkeypatch.setattr(config, "METEOCAT_API_KEY", "test-key")
+
+        payload = [{
+            "codi": "YM",
+            "variables": [
+                {"codi": 32, "lectures": [{"data": "2026-03-24T12:00Z", "valor": 18.5, "estat": "V"}]},
+                {"codi": 33, "lectures": [{"data": "2026-03-24T12:00Z", "valor": 62.0, "estat": "V"}]},
+                {"codi": 35, "lectures": [{"data": "2026-03-24T12:00Z", "valor": 0.0, "estat": "V"}]},
+            ],
+        }]
+
+        class FakeResponse:
+            status_code = 200
+            def raise_for_status(self): pass
+            def json(self): return payload
+
+        monkeypatch.setattr(meteocat_mod.SESSION, "get", lambda *a, **k: FakeResponse())
+        df = fetch_station_all_variables("YM", date(2026, 3, 24))
+        assert len(df) == 3
+        assert set(df["variable_code"]) == {32, 33, 35}
+        assert set(df["station_code"]) == {"YM"}
+
+    def test_filters_unavailable_readings_before_cache(self, tmp_path, monkeypatch):
+        from datetime import date
+        from src.data import meteocat_cache
+        import src.data.meteocat as meteocat_mod
+        from src.data.meteocat import fetch_station_all_variables
+
+        monkeypatch.setattr(meteocat_cache, "CACHE_FILE", str(tmp_path / "cache.json"))
+        monkeypatch.setattr(config, "METEOCAT_API_KEY", "test-key")
+
+        payload = [{
+            "codi": "YM",
+            "variables": [
+                {"codi": 32, "lectures": [
+                    {"data": "2026-03-24T12:00Z", "valor": 18.5, "estat": "V"},
+                    {"data": "2026-03-24T12:30Z", "valor": None, "estat": "T"},
+                ]},
+            ],
+        }]
+
+        calls = []
+        class FakeResponse:
+            status_code = 200
+            def raise_for_status(self): pass
+            def json(self): return payload
+        monkeypatch.setattr(meteocat_mod.SESSION, "get", lambda *a, **k: (calls.append(1) or FakeResponse()))
+
+        df = fetch_station_all_variables("YM", date(2026, 3, 24))
+        assert len(df) == 1
+        assert df.iloc[0]["value"] == 18.5
+
+        # Cache hit: no HTTP, and the "T" row was never cached.
+        df2 = fetch_station_all_variables("YM", date(2026, 3, 24))
+        assert len(df2) == 1
+        assert len(calls) == 1
+
+    def test_uses_per_station_endpoint(self, tmp_path, monkeypatch):
+        from datetime import date
+        from src.data import meteocat_cache
+        import src.data.meteocat as meteocat_mod
+        from src.data.meteocat import fetch_station_all_variables
+
+        monkeypatch.setattr(meteocat_cache, "CACHE_FILE", str(tmp_path / "cache.json"))
+        monkeypatch.setattr(config, "METEOCAT_API_KEY", "test-key")
+
+        class FakeResponse:
+            status_code = 200
+            def raise_for_status(self): pass
+            def json(self): return [{"codi": "YM", "variables": []}]
+
+        seen_urls = []
+        monkeypatch.setattr(meteocat_mod.SESSION, "get",
+                            lambda url, *a, **k: (seen_urls.append(url) or FakeResponse()))
+        fetch_station_all_variables("YM", date(2026, 3, 24))
+        assert any("estacions/mesurades/YM/2026/03/24" in u for u in seen_urls)
+
+
+class TestXemaStationSentinelFlow:
+    """fetch_sentinel_latest should use 2 station calls and still build features."""
+
+    def test_sentinel_latest_uses_two_station_calls(self, monkeypatch):
+        import src.data.meteocat as meteocat_mod
+        from src.data.meteocat import fetch_sentinel_latest
+
+        monkeypatch.setattr(config, "METEOCAT_API_KEY", "test-key")
+
+        def fake_station(station_code, target_date):
+            if station_code == config.SENTINEL_STATION_CODE:
+                return pd.DataFrame({
+                    "station_code": [station_code] * 3,
+                    "variable_code": [32, 33, 35],
+                    "datetime": [pd.to_datetime("2026-03-24T12:00:00")] * 3,
+                    "value": [18.0, 65.0, 0.4],
+                    "estat": ["", "", ""],
+                })
+            return pd.DataFrame({
+                "station_code": [station_code],
+                "variable_code": [35],
+                "datetime": [pd.to_datetime("2026-03-24T12:00:00")],
+                "value": [0.4],
+                "estat": [""],
+            })
+
+        calls = []
+        def recording(station_code, target_date):
+            calls.append(station_code)
+            return fake_station(station_code, target_date)
+        monkeypatch.setattr(meteocat_mod, "fetch_station_all_variables", recording)
+
+        result = fetch_sentinel_latest()
+        assert result["sentinel_temp"] == 18.0
+        assert result["sentinel_humidity"] == 65.0
+        assert result["sentinel_precip"] == 0.4
+        assert result["local_rain_xema"] == 0.4
+        assert len(calls) == 2
+        assert sorted(calls) == [config.LOCAL_RAIN_STATION_CODE, config.SENTINEL_STATION_CODE]
