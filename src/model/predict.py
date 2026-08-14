@@ -335,10 +335,18 @@ def predict_now() -> dict:
     # ── Rain gate: només consultar Meteocat si hi ha senyals de pluja ──
     # Checked BEFORE any Meteocat call to stay within separate quotas:
     #   XDDE: 250/month, Predicció: 100/month, XEMA: 750/month
+    # Un RainViewer congelat (frames idèntics amb timestamps nous) pot mantenir
+    # un eco espacial fantasma (nearest_echo_km petit) i obrir la porta 24/7
+    # cremant les quotes de Meteocat. Quan frames_frozen és cert, l'eco espacial
+    # no és fiable i no ha d'obrir la porta; la resta de senyals (has_echo
+    # puntual, ensemble, AEMET, CAPE) continuen actives.
+    radar_fresh = not radar_data.get("radar_frames_frozen", False)
     rain_signals = (
         ensemble_data.get("ensemble_rain_agreement", 0) >= config.RAIN_GATE_ENSEMBLE_PROB
         or radar_data.get("radar_has_echo", False)
-        or radar_data.get("radar_nearest_echo_km", config.RADAR_SCAN_RADIUS_KM) < config.RAIN_GATE_RADAR_NEARBY_KM
+        or (radar_fresh
+            and radar_data.get("radar_nearest_echo_km", config.RADAR_SCAN_RADIUS_KM)
+            < config.RAIN_GATE_RADAR_NEARBY_KM)
         or _aemet_storm_above_threshold(aemet_data)
         or aemet_radar_data.get("aemet_radar_has_echo", False)
     )
