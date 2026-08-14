@@ -10,10 +10,11 @@ Cada incident greu del projecte ha estat una variant del mateix patró: una font
 - **2026-05-17**: el snapshot de Vercel servia prediccions de dies enrere com a actuals (el deploy només es fa amb canvis de frontend; el fallback a raw.githubusercontent del dashboard ho mitiga).
 - **2026-06-04**: API AEMET en 429 durant ~3h → radar "no disponible" i regles físiques cegues durant una tempesta. Predicció al 10% plovent a bots i barrals.
 - **2026-06-04/05**: RainViewer congelat >12h — frames amb **timestamps nous però contingut MD5 idèntic**. Un eco fantasma de 56 dBZ va mantenir la predicció clavada al 55% tota la nit.
+- **2026-08-14**: RainViewer congelat mantenia `radar_nearest_echo_km` a ~7 km (eco espacial fantasma) i obria el **rain gate 24/7** encara que `radar_has_echo` fos fals → quotes XDDE (250/mes) i Predicció (100/mes) esgotades a mitjan mes. Fix: el gate ignora l'eco espacial quan `radar_frames_frozen` és cert. La porta encara s'obre per ensemble, AEMET i CAPE, així que el consum d'estiu continua si aquests llindars són baixos.
 
 **Regla pràctica**: si els valors de radar no canvien gens entre runs (mateix `nearest_echo_km`, mateix `max_dbz` exacte durant >30 min), sospita de la font, no de la meteorologia. La pluja real fluctua sempre. Comprova hashes dels tiles o l'edat de la cache abans de culpar el model.
 
-Mitigacions existents: `radar_frames_frozen` (rainviewer.py, desactiva les regles físiques de RainViewer), `get_stale()` amb límit d'edat (aemet_cache.py), watchdog amb alerta de "cegues totals" quan fallen les dues fonts de radar alhora.
+Mitigacions existents: `radar_frames_frozen` (rainviewer.py — desactiva les regles físiques de RainViewer i, des de l'agost 2026, també exclou l'eco espacial del rain gate a predict.py), `get_stale()` amb límit d'edat (aemet_cache.py), watchdog amb alerta de "cegues totals" quan fallen les dues fonts de radar alhora.
 
 ## El model ML ignora radar i llamps
 
