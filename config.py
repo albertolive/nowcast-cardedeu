@@ -194,7 +194,7 @@ AI_RETRY_BASE_DELAY_MS = int(os.environ.get("AI_RETRY_BASE_DELAY_MS", "5000"))
 # ALL Meteocat calls are behind the rain gate (only fire when rain is likely).
 # Typical rain days in Cardedeu: ~8/month, ~6 hours rain/event.
 # Budget breakdown (rain gate + caching):
-#   XDDE:       ~8 days × 6h × 4 calls = ~192/month (limit 250)
+#   XDDE:       ~8 days × 6h × 3 calls = ~144/month (limit 250)
 #   Predicció:  ~8 days × 6h / 3h TTL  = ~16/month  (limit 100)
 #   XEMA:       ~8 days × 6h / 1h TTL × 2 estacions = ~96/month (limit 750)
 #   Backfill XEMA: --max-days 3/retrain × 2 estacions = ~6 crides/run

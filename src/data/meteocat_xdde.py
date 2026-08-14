@@ -71,7 +71,7 @@ def _fetch_lightning_hour(target_date: date, hour: int) -> list[dict]:
 
 
 def fetch_lightning_data(target_date: Optional[date] = None, hours: Optional[list[int]] = None) -> list[dict]:
-    """Fetch the last four requested XDDE hours, returning a list on failure."""
+    """Fetch the last three requested XDDE hours, returning a list on failure."""
     if not _is_configured():
         logger.warning("Meteocat API key no configurada per XDDE")
         return []
@@ -79,7 +79,10 @@ def fetch_lightning_data(target_date: Optional[date] = None, hours: Optional[lis
         target_date = date.today()
     if hours is None:
         current_hour = datetime.now(timezone.utc).hour
-        hours = [(current_hour - i) % 24 for i in range(4)]
+        # 3 hores (l'actual + 2 passades) cobreixen el lookback de 3h de
+        # compute_lightning_features. La 4a hora aportava menys de 30 min de
+        # llamps al límit del tall i costava una crida XDDE extra per episodi.
+        hours = [(current_hour - i) % 24 for i in range(3)]
     all_strikes = []
     for h in hours:
         all_strikes.extend(_fetch_lightning_hour(target_date, h))
