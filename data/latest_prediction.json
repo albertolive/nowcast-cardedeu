@@ -4,7 +4,7 @@
   "will_rain": false,
   "rain_category": "sec",
   "confidence": "Molt Baixa",
-  "timestamp": "2026-08-18T13:10:34.744687+00:00",
+  "timestamp": "2026-08-18T13:20:32.956716+00:00",
   "conditions": {
     "temperature": "30.2",
     "humidity": 64,
@@ -46,9 +46,9 @@
     "raining": 0
   },
   "ensemble": {
-    "rain_agreement": 0.0,
-    "precip_spread_mm": 0.0,
-    "models_rain": 0,
+    "rain_agreement": 0.25,
+    "precip_spread_mm": 0.30000000000000004,
+    "models_rain": 1,
     "total_models": 4
   },
   "aemet": {
@@ -106,7 +106,7 @@
   "features_used": 211,
   "threshold": 0.3641188959660297,
   "calibrated": true,
-  "raw_probability": 0.009,
+  "raw_probability": 0.0106,
   "physical_adjustments": [],
   "feature_vector": {
     "hour_sin": 0.258819045102521,
@@ -267,12 +267,12 @@
     "sentinel_raining": 0.0,
     "local_rain_xema": 0.0,
     "local_rain_xema_3h": 0.0,
-    "ensemble_rain_agreement": 0.0,
-    "ensemble_precip_spread": 0.0,
-    "ensemble_temp_spread": 1.1368817000902074,
-    "ensemble_max_precip": 0.0,
+    "ensemble_rain_agreement": 0.25,
+    "ensemble_precip_spread": 0.30000000000000004,
+    "ensemble_temp_spread": 1.0871407452579458,
+    "ensemble_max_precip": 0.30000000000000004,
     "ensemble_min_precip": 0.0,
-    "ensemble_models_rain": 0.0,
+    "ensemble_models_rain": 1.0,
     "ensemble_surprise_rain": null,
     "nwp_isolated_rain": null,
     "forecast_temp_bias": 3.3000000000000007,
@@ -326,31 +326,31 @@
     {
       "group": "Models globals",
       "icon": "🌐",
-      "contribution": -0.755,
+      "contribution": -0.747,
       "direction": "sec"
     },
     {
       "group": "Pluja confirmada",
       "icon": "🌧️",
-      "contribution": -0.728,
-      "direction": "sec"
-    },
-    {
-      "group": "Acord entre models",
-      "icon": "🤝",
-      "contribution": -0.574,
+      "contribution": -0.722,
       "direction": "sec"
     },
     {
       "group": "Radar",
       "icon": "📡",
-      "contribution": -0.487,
+      "contribution": -0.499,
+      "direction": "sec"
+    },
+    {
+      "group": "Acord entre models",
+      "icon": "🤝",
+      "contribution": -0.366,
       "direction": "sec"
     },
     {
       "group": "Vent",
       "icon": "💨",
-      "contribution": 0.381,
+      "contribution": 0.358,
       "direction": "pluja"
     },
     {
@@ -364,12 +364,12 @@
     "verified_count": 0,
     "correct_count": 0,
     "wrong_count": 0,
-    "skipped": 35,
+    "skipped": 36,
     "source": "meteocardedeu",
     "lookup_hours": 48,
-    "station_rows": 1596,
-    "station_first_ts": "2026-08-16T15:12:00",
+    "station_rows": 1590,
+    "station_first_ts": "2026-08-16T15:21:00",
     "station_last_ts": "2026-08-18T11:25:00",
-    "pending_total": 35
+    "pending_total": 36
   }
 }
