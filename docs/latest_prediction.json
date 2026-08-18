@@ -4,7 +4,7 @@
   "will_rain": false,
   "rain_category": "sec",
   "confidence": "Molt Baixa",
-  "timestamp": "2026-08-18T12:20:37.350817+00:00",
+  "timestamp": "2026-08-18T12:30:37.913463+00:00",
   "conditions": {
     "temperature": "30.2",
     "humidity": 64,
@@ -66,7 +66,7 @@
   },
   "bias": {
     "temp": 3.3000000000000007,
-    "humidity": -20.0
+    "humidity": -14.0
   },
   "wind_regime": {
     "level": "850hPa",
@@ -106,7 +106,7 @@
   "features_used": 211,
   "threshold": 0.3641188959660297,
   "calibrated": true,
-  "raw_probability": 0.0096,
+  "raw_probability": 0.0094,
   "physical_adjustments": [],
   "feature_vector": {
     "hour_sin": 0.258819045102521,
@@ -210,7 +210,7 @@
     "boundary_layer_shear": 2.5111111111111093,
     "wind_dir_shear_100m": 65.0,
     "snowfall": 0.0,
-    "nwp_lifted_index": 0.0,
+    "nwp_lifted_index": -2.2,
     "gph_850": 1558.0,
     "gph_850_change_3h": 3.0,
     "rh_500": 21.0,
@@ -276,7 +276,7 @@
     "ensemble_surprise_rain": null,
     "nwp_isolated_rain": null,
     "forecast_temp_bias": 3.3000000000000007,
-    "forecast_humidity_bias": -20.0,
+    "forecast_humidity_bias": -14.0,
     "aemet_prob_precip": 55.0,
     "aemet_prob_storm": 50.0,
     "aemet_precip_today": 0.0,
@@ -324,33 +324,33 @@
   "pressure_change_3h": -0.1552777777776555,
   "top_drivers": [
     {
-      "group": "Pluja confirmada",
-      "icon": "🌧️",
-      "contribution": -0.756,
+      "group": "Models globals",
+      "icon": "🌐",
+      "contribution": -0.758,
       "direction": "sec"
     },
     {
-      "group": "Models globals",
-      "icon": "🌐",
-      "contribution": -0.73,
+      "group": "Pluja confirmada",
+      "icon": "🌧️",
+      "contribution": -0.754,
       "direction": "sec"
     },
     {
       "group": "Acord entre models",
       "icon": "🤝",
-      "contribution": -0.572,
+      "contribution": -0.576,
       "direction": "sec"
     },
     {
       "group": "Radar",
       "icon": "📡",
-      "contribution": -0.482,
+      "contribution": -0.479,
       "direction": "sec"
     },
     {
       "group": "Vent",
       "icon": "💨",
-      "contribution": 0.387,
+      "contribution": 0.386,
       "direction": "pluja"
     },
     {
@@ -364,12 +364,12 @@
     "verified_count": 0,
     "correct_count": 0,
     "wrong_count": 0,
-    "skipped": 30,
+    "skipped": 31,
     "source": "meteocardedeu",
     "lookup_hours": 48,
-    "station_rows": 1629,
-    "station_first_ts": "2026-08-16T14:22:00",
+    "station_rows": 1622,
+    "station_first_ts": "2026-08-16T14:31:00",
     "station_last_ts": "2026-08-18T11:25:00",
-    "pending_total": 30
+    "pending_total": 31
   }
 }
