@@ -4,7 +4,7 @@
   "will_rain": false,
   "rain_category": "sec",
   "confidence": "Molt Baixa",
-  "timestamp": "2026-08-18T09:30:31.317705+00:00",
+  "timestamp": "2026-08-18T09:40:33.539800+00:00",
   "conditions": {
     "temperature": "30.2",
     "humidity": 64,
@@ -40,8 +40,8 @@
   },
   "sentinel": {
     "station": "Granollers",
-    "temp": 26.8,
-    "humidity": 71.0,
+    "temp": 29.1,
+    "humidity": 63.0,
     "precip": 0.0,
     "raining": 0
   },
@@ -106,7 +106,7 @@
   "features_used": 211,
   "threshold": 0.3641188959660297,
   "calibrated": true,
-  "raw_probability": 0.0106,
+  "raw_probability": 0.0105,
   "physical_adjustments": [],
   "feature_vector": {
     "hour_sin": 0.258819045102521,
@@ -261,8 +261,8 @@
     "radar_quadrant_coverage_W": 0.019,
     "radar_echo_bearing_sin": null,
     "radar_echo_bearing_cos": null,
-    "sentinel_temp_diff": 3.3999999999999986,
-    "sentinel_humidity_diff": 7.0,
+    "sentinel_temp_diff": 1.0999999999999979,
+    "sentinel_humidity_diff": -1.0,
     "sentinel_precip": 0.0,
     "sentinel_raining": 0.0,
     "local_rain_xema": 0.0,
@@ -326,13 +326,13 @@
     {
       "group": "Pluja confirmada",
       "icon": "🌧️",
-      "contribution": -0.791,
+      "contribution": -0.79,
       "direction": "sec"
     },
     {
       "group": "Models globals",
       "icon": "🌐",
-      "contribution": -0.73,
+      "contribution": -0.729,
       "direction": "sec"
     },
     {
@@ -367,8 +367,8 @@
     "skipped": 20,
     "source": "meteocardedeu",
     "lookup_hours": 48,
-    "station_rows": 1748,
-    "station_first_ts": "2026-08-16T11:31:00",
+    "station_rows": 1741,
+    "station_first_ts": "2026-08-16T11:41:00",
     "station_last_ts": "2026-08-18T11:25:00",
     "pending_total": 20,
     "accuracy": 100.0
