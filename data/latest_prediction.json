@@ -4,7 +4,7 @@
   "will_rain": false,
   "rain_category": "sec",
   "confidence": "Molt Baixa",
-  "timestamp": "2026-08-18T10:10:35.295137+00:00",
+  "timestamp": "2026-08-18T10:20:39.902167+00:00",
   "conditions": {
     "temperature": "30.2",
     "humidity": 64,
@@ -52,7 +52,7 @@
     "total_models": 4
   },
   "aemet": {
-    "prob_precip": 75,
+    "prob_precip": 55,
     "prob_storm": 50
   },
   "aemet_radar": {
@@ -277,7 +277,7 @@
     "nwp_isolated_rain": null,
     "forecast_temp_bias": 1.0,
     "forecast_humidity_bias": -8.0,
-    "aemet_prob_precip": 75.0,
+    "aemet_prob_precip": 55.0,
     "aemet_prob_storm": 50.0,
     "aemet_precip_today": 0.0,
     "lightning_count_30km": 0.0,
@@ -367,8 +367,8 @@
     "skipped": 20,
     "source": "meteocardedeu",
     "lookup_hours": 48,
-    "station_rows": 1720,
-    "station_first_ts": "2026-08-16T12:12:00",
+    "station_rows": 1715,
+    "station_first_ts": "2026-08-16T12:21:00",
     "station_last_ts": "2026-08-18T11:25:00",
     "pending_total": 20,
     "accuracy": 100.0
