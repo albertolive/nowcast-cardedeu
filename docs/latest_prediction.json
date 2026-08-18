@@ -4,7 +4,7 @@
   "will_rain": false,
   "rain_category": "sec",
   "confidence": "Molt Baixa",
-  "timestamp": "2026-08-18T11:20:37.731217+00:00",
+  "timestamp": "2026-08-18T11:30:47.862235+00:00",
   "conditions": {
     "temperature": "30.2",
     "humidity": 64,
@@ -65,8 +65,8 @@
     "available": true
   },
   "bias": {
-    "temp": 2.400000000000002,
-    "humidity": -15.0
+    "temp": 3.1999999999999993,
+    "humidity": -17.0
   },
   "wind_regime": {
     "level": "850hPa",
@@ -106,7 +106,7 @@
   "features_used": 211,
   "threshold": 0.3641188959660297,
   "calibrated": true,
-  "raw_probability": 0.0113,
+  "raw_probability": 0.0111,
   "physical_adjustments": [],
   "feature_vector": {
     "hour_sin": 0.258819045102521,
@@ -269,14 +269,14 @@
     "local_rain_xema_3h": 0.0,
     "ensemble_rain_agreement": 0.0,
     "ensemble_precip_spread": 0.0,
-    "ensemble_temp_spread": 1.151900603350827,
+    "ensemble_temp_spread": 1.0024968827881706,
     "ensemble_max_precip": 0.0,
     "ensemble_min_precip": 0.0,
     "ensemble_models_rain": 0.0,
     "ensemble_surprise_rain": null,
     "nwp_isolated_rain": null,
-    "forecast_temp_bias": 2.400000000000002,
-    "forecast_humidity_bias": -15.0,
+    "forecast_temp_bias": 3.1999999999999993,
+    "forecast_humidity_bias": -17.0,
     "aemet_prob_precip": 55.0,
     "aemet_prob_storm": 50.0,
     "aemet_precip_today": 0.0,
@@ -338,7 +338,7 @@
     {
       "group": "Acord entre models",
       "icon": "🤝",
-      "contribution": -0.553,
+      "contribution": -0.558,
       "direction": "sec"
     },
     {
@@ -350,7 +350,7 @@
     {
       "group": "Vent",
       "icon": "💨",
-      "contribution": 0.453,
+      "contribution": 0.45,
       "direction": "pluja"
     },
     {
@@ -364,12 +364,12 @@
     "verified_count": 0,
     "correct_count": 0,
     "wrong_count": 0,
-    "skipped": 24,
+    "skipped": 25,
     "source": "meteocardedeu",
     "lookup_hours": 48,
-    "station_rows": 1673,
-    "station_first_ts": "2026-08-16T13:21:00",
+    "station_rows": 1665,
+    "station_first_ts": "2026-08-16T13:31:00",
     "station_last_ts": "2026-08-18T11:25:00",
-    "pending_total": 24
+    "pending_total": 25
   }
 }
