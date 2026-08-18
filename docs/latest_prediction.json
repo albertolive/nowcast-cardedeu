@@ -4,7 +4,7 @@
   "will_rain": false,
   "rain_category": "sec",
   "confidence": "Molt Baixa",
-  "timestamp": "2026-08-18T12:00:42.543313+00:00",
+  "timestamp": "2026-08-18T12:10:32.532297+00:00",
   "conditions": {
     "temperature": "30.2",
     "humidity": 64,
@@ -98,7 +98,7 @@
     "li_index": -0.2588993867113718
   },
   "sst": {
-    "sst_med": 29.8
+    "sst_med": 29.5
   },
   "rain_gate_open": true,
   "station_available": true,
@@ -106,7 +106,7 @@
   "features_used": 211,
   "threshold": 0.3641188959660297,
   "calibrated": true,
-  "raw_probability": 0.0103,
+  "raw_probability": 0.0096,
   "physical_adjustments": [],
   "feature_vector": {
     "hour_sin": 0.258819045102521,
@@ -206,8 +206,8 @@
     "soil_air_temp_diff": -0.9277777777777771,
     "sunshine_duration": 3600.0,
     "sunshine_accum_3h": 10800.0,
-    "wind_speed_100m": 9.0,
-    "boundary_layer_shear": -1.18888888888889,
+    "wind_speed_100m": 12.7,
+    "boundary_layer_shear": 2.5111111111111093,
     "wind_dir_shear_100m": 65.0,
     "snowfall": 0.0,
     "nwp_lifted_index": 0.0,
@@ -306,7 +306,7 @@
     "soil_moisture_7_to_28cm": 0.13,
     "soil_moisture_change_24h": null,
     "convective_inhibition": 0.0,
-    "sst_med": 29.8,
+    "sst_med": 29.5,
     "cloud_cover_low": 58.0,
     "cloud_cover_mid": 0.0,
     "cloud_cover_high": 0.0,
@@ -326,31 +326,31 @@
     {
       "group": "Pluja confirmada",
       "icon": "🌧️",
-      "contribution": -0.762,
+      "contribution": -0.756,
       "direction": "sec"
     },
     {
       "group": "Models globals",
       "icon": "🌐",
-      "contribution": -0.727,
+      "contribution": -0.73,
       "direction": "sec"
     },
     {
       "group": "Acord entre models",
       "icon": "🤝",
-      "contribution": -0.564,
+      "contribution": -0.572,
       "direction": "sec"
     },
     {
       "group": "Radar",
       "icon": "📡",
-      "contribution": -0.477,
+      "contribution": -0.482,
       "direction": "sec"
     },
     {
       "group": "Vent",
       "icon": "💨",
-      "contribution": 0.458,
+      "contribution": 0.387,
       "direction": "pluja"
     },
     {
@@ -364,12 +364,12 @@
     "verified_count": 0,
     "correct_count": 0,
     "wrong_count": 0,
-    "skipped": 28,
+    "skipped": 29,
     "source": "meteocardedeu",
     "lookup_hours": 48,
-    "station_rows": 1643,
-    "station_first_ts": "2026-08-16T14:01:00",
+    "station_rows": 1636,
+    "station_first_ts": "2026-08-16T14:13:00",
     "station_last_ts": "2026-08-18T11:25:00",
-    "pending_total": 28
+    "pending_total": 29
   }
 }
