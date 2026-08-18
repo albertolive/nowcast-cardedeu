@@ -4,7 +4,7 @@
   "will_rain": false,
   "rain_category": "sec",
   "confidence": "Molt Baixa",
-  "timestamp": "2026-08-18T12:40:34.655444+00:00",
+  "timestamp": "2026-08-18T12:50:33.481940+00:00",
   "conditions": {
     "temperature": "30.2",
     "humidity": 64,
@@ -40,8 +40,8 @@
   },
   "sentinel": {
     "station": "Granollers",
-    "temp": 30.9,
-    "humidity": 55.0,
+    "temp": 32.0,
+    "humidity": 56.0,
     "precip": 0.0,
     "raining": 0
   },
@@ -232,8 +232,8 @@
     "blh_change_3h": 1295.0,
     "tcwv_blh_ratio": 2.2053231939163496,
     "terrestrial_radiation": 808.9,
-    "soil_moisture_28_to_100cm": 0.151,
-    "soil_saturation_ratio": 0.7615894039735099,
+    "soil_moisture_28_to_100cm": 0.155,
+    "soil_saturation_ratio": 0.7419354838709677,
     "tcwv_monthly_anomaly": 1.0,
     "shortwave_radiation": 650.0,
     "radar_dbz": 0.0,
@@ -261,8 +261,8 @@
     "radar_quadrant_coverage_W": 0.019,
     "radar_echo_bearing_sin": null,
     "radar_echo_bearing_cos": null,
-    "sentinel_temp_diff": -0.6999999999999993,
-    "sentinel_humidity_diff": -9.0,
+    "sentinel_temp_diff": -1.8000000000000007,
+    "sentinel_humidity_diff": -8.0,
     "sentinel_precip": 0.0,
     "sentinel_raining": 0.0,
     "local_rain_xema": 0.0,
@@ -332,13 +332,13 @@
     {
       "group": "Pluja confirmada",
       "icon": "🌧️",
-      "contribution": -0.754,
+      "contribution": -0.753,
       "direction": "sec"
     },
     {
       "group": "Acord entre models",
       "icon": "🤝",
-      "contribution": -0.576,
+      "contribution": -0.575,
       "direction": "sec"
     },
     {
@@ -364,12 +364,12 @@
     "verified_count": 0,
     "correct_count": 0,
     "wrong_count": 0,
-    "skipped": 32,
+    "skipped": 33,
     "source": "meteocardedeu",
     "lookup_hours": 48,
-    "station_rows": 1614,
-    "station_first_ts": "2026-08-16T14:41:00",
+    "station_rows": 1607,
+    "station_first_ts": "2026-08-16T14:51:00",
     "station_last_ts": "2026-08-18T11:25:00",
-    "pending_total": 32
+    "pending_total": 33
   }
 }
