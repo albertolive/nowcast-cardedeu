@@ -4,7 +4,7 @@
   "will_rain": false,
   "rain_category": "sec",
   "confidence": "Molt Baixa",
-  "timestamp": "2026-08-21T03:21:32.141505+00:00",
+  "timestamp": "2026-08-21T03:31:28.633118+00:00",
   "conditions": {
     "temperature": "21.2",
     "humidity": 90,
@@ -65,7 +65,7 @@
     "available": true
   },
   "bias": {
-    "temp": 0.40000000000000213,
+    "temp": 0.5,
     "humidity": 2.0
   },
   "wind_regime": {
@@ -106,7 +106,7 @@
   "features_used": 211,
   "threshold": 0.3641188959660297,
   "calibrated": true,
-  "raw_probability": 0.0922,
+  "raw_probability": 0.0947,
   "physical_adjustments": [],
   "feature_vector": {
     "hour_sin": 0.9659258262890683,
@@ -206,9 +206,9 @@
     "soil_air_temp_diff": 2.6000000000000014,
     "sunshine_duration": 0.0,
     "sunshine_accum_3h": 0.0,
-    "wind_speed_100m": 13.6,
-    "boundary_layer_shear": 10.559999999999999,
-    "wind_dir_shear_100m": 12.0,
+    "wind_speed_100m": 15.0,
+    "boundary_layer_shear": 11.96,
+    "wind_dir_shear_100m": 25.0,
     "snowfall": 0.0,
     "nwp_lifted_index": -1.9,
     "gph_850": 1480.0,
@@ -275,7 +275,7 @@
     "ensemble_models_rain": 3.0,
     "ensemble_surprise_rain": null,
     "nwp_isolated_rain": null,
-    "forecast_temp_bias": 0.40000000000000213,
+    "forecast_temp_bias": 0.5,
     "forecast_humidity_bias": 2.0,
     "aemet_prob_precip": 0.0,
     "aemet_prob_storm": 0.0,
@@ -332,25 +332,25 @@
     {
       "group": "Núvols",
       "icon": "☁️",
-      "contribution": 0.465,
+      "contribution": 0.466,
       "direction": "pluja"
     },
     {
       "group": "Acord entre models",
       "icon": "🤝",
-      "contribution": 0.454,
+      "contribution": 0.455,
       "direction": "pluja"
     },
     {
       "group": "Aigua precipitable",
       "icon": "🌊",
-      "contribution": 0.402,
+      "contribution": 0.405,
       "direction": "pluja"
     },
     {
       "group": "Inestabilitat",
       "icon": "⚡",
-      "contribution": -0.28,
+      "contribution": -0.279,
       "direction": "sec"
     },
     {
@@ -362,15 +362,15 @@
   ],
   "verification": {
     "verified_count": 1,
-    "correct_count": 0,
+    "correct_count": 1,
     "wrong_count": 0,
     "skipped": 38,
     "source": "meteocardedeu",
     "lookup_hours": 48,
-    "station_rows": 2055,
-    "station_first_ts": "2026-08-19T05:22:00",
+    "station_rows": 2050,
+    "station_first_ts": "2026-08-19T05:32:00",
     "station_last_ts": "2026-08-21T05:15:00",
     "pending_total": 38,
-    "accuracy": 0.0
+    "accuracy": 100.0
   }
 }
