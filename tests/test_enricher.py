@@ -1,7 +1,8 @@
 """
 Tests per al mòdul d'enriquiment AI (src/ai/enricher.py).
-Cobreix: context de narrativa d'accuracy amb/sense pluja, i la cadena de
-proveïdors llegida d'ai-gateway/models.json.
+Cobreix el client del gateway hostatjat: sense token → None, retry sobre
+errors transitoris, i no-insistència després d'una caiguda.
+Les narratives (context accuracy) es testegen a part, són pures.
 """
 import os
 import sys
@@ -12,63 +13,101 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 from src.ai import enricher
 
 
-class TestBuildProviderChain:
-    """La cadena ve del cascade 'general' d'ai-gateway, no de GitHub Models."""
+class _FakeResponse:
+    def __init__(self, status=200, payload=None):
+        self.status_code = status
+        self.ok = status < 400
+        self._payload = payload if payload is not None else {
+            "choices": [{"message": {"content": "Resposta IA"}}]
+        }
 
-    _FAKE_CONFIG = {
-        "providers": {
-            "openrouter": {"url": "https://openrouter.ai/api/v1", "key_env": "OPENROUTER_API_KEY"},
-            "gemini": {"url": "https://generativelanguage.googleapis.com/v1beta/openai", "key_env": "GEMINI_API_KEY"},
-        },
-        "cascades": {
-            "general": [
-                {"provider": "gemini", "model": "gemini-2.0-flash"},
-                {"provider": "openrouter", "model": "openrouter/free"},
-            ]
-        },
-    }
+    def json(self):
+        return self._payload
 
-    class _FakeResponse:
-        def __init__(self, payload):
-            self._payload = payload
+    @property
+    def text(self):
+        return str(self._payload)
 
-        def raise_for_status(self):
-            pass
 
-        def json(self):
-            return self._payload
+@pytest.fixture(autouse=True)
+def _reset_run_state(monkeypatch):
+    """Cada test comença amb el run-state net i sense token real."""
+    enricher._exhausted_run = False
+    monkeypatch.setattr(enricher.config, "GATEWAY_TOKEN", "")
+    yield
+    enricher._exhausted_run = False
 
-    def test_no_keys_configured_gives_empty_chain(self, monkeypatch):
-        monkeypatch.setattr(enricher.requests, "get",
-                            lambda *a, **k: self._FakeResponse(self._FAKE_CONFIG))
-        monkeypatch.delenv("OPENROUTER_API_KEY", raising=False)
-        monkeypatch.delenv("GEMINI_API_KEY", raising=False)
-        assert enricher._build_provider_chain() == []
 
-    def test_only_configured_providers_included(self, monkeypatch):
-        monkeypatch.setattr(enricher.requests, "get",
-                            lambda *a, **k: self._FakeResponse(self._FAKE_CONFIG))
-        monkeypatch.setenv("OPENROUTER_API_KEY", "test-key")
-        monkeypatch.delenv("GEMINI_API_KEY", raising=False)
-        chain = enricher._build_provider_chain()
-        assert len(chain) == 1
-        assert chain[0]["provider"] == "openrouter"
-        assert chain[0]["url"] == "https://openrouter.ai/api/v1/chat/completions"
-        assert chain[0]["key"] == "test-key"
+class TestGatewayClient:
+    def test_no_token_returns_none_without_calling(self, monkeypatch):
+        calls = []
+        monkeypatch.setattr(enricher.requests, "post",
+                            lambda *a, **k: calls.append(1))
+        assert enricher._call_gateway([{"role": "user", "content": "x"}],
+                                      0.3, 100) is None
+        assert calls == []
 
-    def test_fetch_failure_gives_empty_chain(self, monkeypatch):
-        def _raise(*a, **k):
-            raise ConnectionError("network down")
-        monkeypatch.setattr(enricher.requests, "get", _raise)
-        monkeypatch.setenv("OPENROUTER_API_KEY", "test-key")
-        assert enricher._build_provider_chain() == []
+    def test_success_parses_content(self, monkeypatch):
+        monkeypatch.setattr(enricher.config, "GATEWAY_TOKEN", "tok")
+        monkeypatch.setattr(enricher.requests, "post",
+                            lambda *a, **k: _FakeResponse())
+        out = enricher._call_gateway([{"role": "user", "content": "x"}], 0.3, 100)
+        assert out == "Resposta IA"
 
-    def test_no_github_models_reference(self):
-        """Regressió: GitHub Models (retirat 30/07/2026) no ha de reaparèixer."""
+    def test_transient_503_retries_then_succeeds(self, monkeypatch):
+        monkeypatch.setattr(enricher.config, "GATEWAY_TOKEN", "tok")
+        monkeypatch.setattr(enricher.config, "AI_MAX_RETRIES", 2)
+        monkeypatch.setattr(enricher.config, "AI_RETRY_BASE_DELAY_MS", 0)
+        responses = [_FakeResponse(status=503), _FakeResponse()]
+        seen = []
+        monkeypatch.setattr(enricher.requests, "post",
+                            lambda *a, **k: seen.append(1) or responses.pop(0))
+        out = enricher._call_gateway([{"role": "user", "content": "x"}], 0.3, 100)
+        assert out == "Resposta IA"
+        assert len(seen) == 2
+
+    def test_gives_up_after_max_retries(self, monkeypatch):
+        monkeypatch.setattr(enricher.config, "GATEWAY_TOKEN", "tok")
+        monkeypatch.setattr(enricher.config, "AI_MAX_RETRIES", 1)
+        monkeypatch.setattr(enricher.config, "AI_RETRY_BASE_DELAY_MS", 0)
+        monkeypatch.setattr(enricher.requests, "post",
+                            lambda *a, **k: _FakeResponse(status=503))
+        assert enricher._call_gateway([{"role": "user", "content": "x"}], 0.3, 100) is None
+
+
+class TestCallWithFallback:
+    def test_no_token_skips_narrative(self):
+        enricher._exhausted_run = False
+        assert enricher._call_with_retry_and_fallback(
+            [{"role": "user", "content": "x"}]) is None
+
+    def test_gateway_down_disables_rest_of_run(self, monkeypatch):
+        monkeypatch.setattr(enricher.config, "GATEWAY_TOKEN", "tok")
+        enricher._exhausted_run = False
+        monkeypatch.setattr(enricher.requests, "post",
+                            lambda *a, **k: _FakeResponse(status=503))
+        monkeypatch.setattr(enricher.config, "AI_MAX_RETRIES", 0)
+        assert enricher._call_with_retry_and_fallback(
+            [{"role": "user", "content": "x"}]) is None
+        # Second call must short-circuit without hitting the network
+        calls = []
+        monkeypatch.setattr(enricher.requests, "post",
+                            lambda *a, **k: calls.append(1))
+        assert enricher._call_with_retry_and_fallback(
+            [{"role": "user", "content": "x"}]) is None
+        assert calls == []
+
+
+class TestNoLegacyProviders:
+    def test_no_direct_provider_references(self):
+        """Regressió: claus per proveïdor no han de reaparèixer al client."""
         import inspect
         src = inspect.getsource(enricher)
-        assert "models.inference.ai.azure.com" not in src
-        assert "AI_GITHUB_TOKEN" not in src
+        for legacy in ("models.inference.ai.azure.com",
+                       "openrouter.ai/api/v1",
+                       "OPENROUTER_API_KEY",
+                       "_build_provider_chain"):
+            assert legacy not in src, f"legacy reference found: {legacy}"
 
 
 class TestAccuracyNarrativeContext:

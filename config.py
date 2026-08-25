@@ -179,13 +179,18 @@ REGIME_PRESSURE_DROP_3H = -2.0   # hPa caiguda en 3h per alerta de pressió
 TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "")
 TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID", "")
 
-# ── IA (cascade gestionada a albertolive/ai-gateway) ──
+# ── IA (endpoint hostatjat d'albertolive/ai-gateway) ──
 # Només usat al resum diari (1 crida/dia) i informe d'accuracy (1 crida/setmana).
 # Mai al camí crític d'alertes de pluja.
-# GitHub Models retirat 30/07/2026 — substituït pel cascade "general" d'
-# ai-gateway/models.json (llegit en calent per src/ai/enricher.py). Proveïdor i
-# model es gestionen centralment allà, no aquí; configura els secrets dels
-# proveïdors que vulguis fer servir (OPENROUTER_API_KEY / GEMINI_API_KEY / GROQ_API_KEY).
+# El client (src/ai/enricher.py) envia el nom de cascade "general" a l'endpoint
+# hostatjat; proveïdor, model i claus es gestionen al repo ai-gateway. Únic
+# secret necessari aquí: GATEWAY_TOKEN.
+GATEWAY_TOKEN = os.environ.get("GATEWAY_TOKEN", "")
+AI_GATEWAY_URL = os.environ.get(
+    "AI_GATEWAY_URL",
+    "https://ai-gateway-livid-eight.vercel.app/api/chat/completions",
+)
+AI_GATEWAY_CASCADE = os.environ.get("AI_GATEWAY_CASCADE", "general")
 AI_MAX_RETRIES = int(os.environ.get("AI_MAX_RETRIES", "2"))
 AI_RETRY_BASE_DELAY_MS = int(os.environ.get("AI_RETRY_BASE_DELAY_MS", "5000"))
 

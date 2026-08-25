@@ -1,7 +1,10 @@
 """
-Enriquiment amb IA: genera narratives en català a partir de dades meteorològiques.
-Proveïdor/model gestionats centralment al cascade "general" d'
-albertolive/ai-gateway (models.json), llegit en calent a cada crida.
+Enriquiment amb IA via l'endpoint hostatjat d'albertolive/ai-gateway.
+El `model` és un nom de CASCADE ("general"), no un id de proveïdor: el
+gateway el resol a provider/model/clau i fa failover en servidor (models
+AND comptes). Una rotació de models a ai-gateway/models.json arriba aquí
+sense cap canvi — abans es llegia models.json en calent i es duplicava la
+cadena de failover al client, amb claus de proveïdor pròpies.
 GitHub Models (retirat 30/07/2026) ja no s'usa.
 Patró adaptat de gencat-cultural-agenda/src/ai/enricher.ts.
 
@@ -20,134 +23,89 @@ import config
 
 logger = logging.getLogger(__name__)
 
-_GATEWAY_CONFIG_URL = "https://raw.githubusercontent.com/albertolive/ai-gateway/main/models.json"
+# Endpoint hostatjat, compatible OpenAI. Override amb AI_GATEWAY_URL.
+_GATEWAY_URL = os.environ.get(
+    "AI_GATEWAY_URL",
+    "https://ai-gateway-livid-eight.vercel.app/api/chat/completions",
+)
+_CASCADE = os.environ.get("AI_GATEWAY_CASCADE", "general")
 
-_exhausted: set[str] = set()
-
-
-def _fetch_gateway_cascade(cascade: str = "general") -> tuple[dict, list[dict]]:
-    """Llegeix providers + cascade d'ai-gateway/models.json (font compartida amb tot el fleet)."""
-    try:
-        resp = requests.get(_GATEWAY_CONFIG_URL, timeout=10)
-        resp.raise_for_status()
-        cfg = resp.json()
-        return cfg["providers"], cfg["cascades"].get(cascade, [])
-    except Exception as e:
-        logger.warning(f"No s'ha pogut llegir ai-gateway/models.json ({e})")
-        return {}, []
+_exhausted_run = False
 
 
-def _is_rate_limit_error(e: Exception) -> bool:
+def _is_transient_error(e: Exception) -> bool:
+    """429/5xx/timeout valen la pena reintentar; 401/403/400 no."""
     msg = str(e).lower()
-    return any(w in msg for w in ("429", "rate limit", "too many requests", "quota", "capacity"))
+    return any(w in msg for w in ("429", "rate limit", "too many requests", "quota",
+                                  "503", "502", "500", "service unavailable",
+                                  "bad gateway", "timeout", "timed out"))
 
 
-def _is_provider_error(e: Exception) -> bool:
-    msg = str(e).lower()
-    return any(w in msg for w in ("402", "provider returned error", "503", "502", "500",
-                                   "service unavailable", "bad gateway", "internal server error"))
-
-
-def _call_api(url: str, api_key: str, model: str, messages: list[dict],
-              temperature: float, max_tokens: int, extra_headers: dict = None) -> str | None:
-    """Crida genèrica a qualsevol API compatible amb OpenAI."""
+def _call_gateway(messages: list[dict], temperature: float,
+                  max_tokens: int) -> str | None:
+    """Una crida al gateway amb retry exponencial sobre errors transitoris."""
+    if not config.GATEWAY_TOKEN:
+        return None
     headers = {
-        "Authorization": f"Bearer {api_key}",
+        "Authorization": f"Bearer {config.GATEWAY_TOKEN}",
         "Content-Type": "application/json",
     }
-    if extra_headers:
-        headers.update(extra_headers)
-
     payload = {
-        "model": model,
+        "model": _CASCADE,
         "messages": messages,
         "temperature": temperature,
         "max_tokens": max_tokens,
     }
 
-    resp = requests.post(url, headers=headers, json=payload, timeout=30)
-    resp.raise_for_status()
-    data = resp.json()
-    return data.get("choices", [{}])[0].get("message", {}).get("content", "").strip() or None
+    for attempt in range(config.AI_MAX_RETRIES + 1):
+        try:
+            resp = requests.post(_GATEWAY_URL, headers=headers, json=payload,
+                                 timeout=120)
+            if resp.status_code in (429, 500, 502, 503, 504):
+                # Transitori: rellança ConnectionError per al flux de retry.
+                raise ConnectionError(f"HTTP {resp.status_code}: {resp.text[:200]}")
+            if not resp.ok:
+                logger.error(f"Gateway HTTP {resp.status_code}: {resp.text[:200]}")
+                return None
+            data = resp.json()
+            return (data.get("choices", [{}])[0].get("message", {})
+                    .get("content", "").strip() or None)
+        except ConnectionError as e:
+            if attempt < config.AI_MAX_RETRIES:
+                delay = config.AI_RETRY_BASE_DELAY_MS / 1000 * (2 ** attempt)
+                logger.warning(
+                    f"Error transitori del gateway ({e}), reintent "
+                    f"{attempt + 1}/{config.AI_MAX_RETRIES} en {delay:.0f}s...")
+                time.sleep(delay)
+                continue
+            logger.warning(f"Gateway exhaurit despr\u00e9s de {attempt + 1} intents: {e}")
+            return None
+        except Exception as e:
+            logger.warning(f"Crida al gateway ha fallat: {e}")
+            return None
 
-
-def _build_provider_chain() -> list[dict]:
-    """
-    Construeix la cadena de proveïdors des del cascade "general" d'ai-gateway,
-    filtrant als que tenen la clau configurada (OPENROUTER_API_KEY /
-    GEMINI_API_KEY / GROQ_API_KEY). Buida si cap secret està configurat o el
-    fetch falla — generate_daily_narrative/generate_accuracy_narrative
-    retornen None en aquest cas, mai exception.
-    """
-    providers, cascade = _fetch_gateway_cascade("general")
-    chain = []
-    for entry in cascade:
-        p = providers.get(entry["provider"])
-        if not p:
-            continue
-        key = os.environ.get(p["key_env"], "")
-        if not key:
-            continue
-        chain.append({
-            "provider": entry["provider"],
-            "url": f"{p['url'].rstrip('/')}/chat/completions",
-            "key": key,
-            "model": entry["model"],
-            "extra_headers": {
-                "HTTP-Referer": "https://github.com/nowcast-cardedeu",
-                "X-Title": "Nowcast Cardedeu",
-            } if entry["provider"] == "openrouter" else {},
-        })
-    return chain
+    return None
 
 
 def _call_with_retry_and_fallback(messages: list[dict], temperature: float = 0.3,
-                                   max_tokens: int = 500) -> str | None:
+                                  max_tokens: int = 500) -> str | None:
     """
-    Crida l'API amb retry exponencial + fallback entre proveïdors/models.
-    GitHub Models primer, OpenRouter free com a fallback.
+    Manté la signatura històrica. Sense GATEWAY_TOKEN no hi ha IA: les
+    narratives retornen None i els scripts ho gestionen sense excepció.
     """
-    chain = [e for e in _build_provider_chain()
-             if f"{e['provider']}:{e['model']}" not in _exhausted]
-
-    if not chain:
-        logger.info("Cap proveïdor d'IA configurat o tots exhaurits — saltant narrativa")
+    global _exhausted_run
+    if _exhausted_run or not config.GATEWAY_TOKEN:
+        if not config.GATEWAY_TOKEN:
+            logger.info("GATEWAY_TOKEN no configurat — saltant narrativa IA")
+            _exhausted_run = True
         return None
 
-    max_retries = config.AI_MAX_RETRIES
-
-    for entry in chain:
-        model_key = f"{entry['provider']}:{entry['model']}"
-
-        for attempt in range(max_retries + 1):
-            try:
-                result = _call_api(
-                    entry["url"], entry["key"], entry["model"],
-                    messages, temperature, max_tokens, entry.get("extra_headers"),
-                )
-                if result:
-                    logger.info(f"Resposta IA rebuda de {entry['provider']}/{entry['model']}")
-                return result
-            except Exception as e:
-                if _is_provider_error(e):
-                    logger.warning(f"Error de proveïdor amb {model_key}: {e}. Provant següent...")
-                    _exhausted.add(model_key)
-                    break
-                elif _is_rate_limit_error(e):
-                    if attempt < max_retries:
-                        delay = config.AI_RETRY_BASE_DELAY_MS / 1000 * (3 ** attempt)
-                        logger.warning(f"Rate limit a {model_key}, reintent {attempt + 1}/{max_retries} en {delay:.0f}s...")
-                        time.sleep(delay)
-                    else:
-                        logger.warning(f"{model_key} exhaurit després de {max_retries} reintents")
-                        _exhausted.add(model_key)
-                else:
-                    logger.warning(f"Error no recuperable amb {model_key}: {e}")
-                    _exhausted.add(model_key)
-                    break
-
-    logger.warning("Tots els proveïdors d'IA exhaurits en aquesta execució")
-    return None
+    result = _call_gateway(messages, temperature, max_tokens)
+    if result is None:
+        # Gateway caigut: no insisteixis més durant aquesta execució.
+        _exhausted_run = True
+        return None
+    return result
 
 
 def generate_daily_narrative(prediction: dict, hourly_outlook: list[dict],
