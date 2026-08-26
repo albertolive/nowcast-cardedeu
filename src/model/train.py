@@ -32,8 +32,20 @@ def prepare_training_data(df: pd.DataFrame) -> tuple[pd.DataFrame, pd.Series]:
     Prepara X (features) i y (target) per a l'entrenament.
     Elimina files amb NaN al target i gestiona NaN a les features.
     """
-    # Construir target
-    df = build_target_column(df, "precipitation", horizon=1)
+    # Construir el target NOMÉS si no existeix. Les files de feedback arriben
+    # amb will_rain verificat amb l'estació; recalcular-lo des de la columna
+    # 'precipitation' (valor NWP) les reetiquetava: el 2026-08-26 va esborrar
+    # la meitat dels events de pluja verificats (116/222) i va invertir-ne 46
+    # de secs en plujosos — ensenyant al model a desconfiar exactament dels
+    # patrons locals que ha d'aprendre.
+    if "will_rain" not in df.columns:
+        df = build_target_column(df, "precipitation", horizon=1)
+    elif df["will_rain"].isna().any():
+        raise ValueError(
+            "will_rain present però amb NaN: reconstruir-lo parcialment corrompria "
+            "les etiquetes verificades (build_target_column usa rolling sobre el "
+            "df sencer). Passa el dataset amb el target complet o sense ell."
+        )
 
     # Filtrar files on no tenim target (últimes hores sense futur conegut)
     df = df.dropna(subset=["will_rain"])

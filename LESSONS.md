@@ -45,6 +45,30 @@ guard NO l'hauria aturat: el que hauria permès tancar-lo era precisament
 aquest registre. `physical_adjustments` també es persisteix ara al JSONL
 (abans mai: diagnòstic impossible després del fet).
 
+## El retrain sobreescribia les etiquetes verificades amb pseudo-labels NWP
+
+`prepare_training_data` (train.py) reaplicava `build_target_column` sobre el
+dataframe fusionat (dataset històric + prediccions verificades del feedback).
+Aquesta funció recalcula `will_rain` des de la columna `precipitation`, que a
+les files de feedback conté la pluja **prevista pel NWP**, no l'observada.
+
+Mesurat el 2026-08-26 sobre 18.664 files verificades: **116 dels 222 events
+de pluja reetiquetats com a secs** i 46 moments secs com a plujosos. El
+feedback loop portava mesos entrenant contra etiquetes del propi Open-Meteo:
+ensenyava al model a desconfiar exactament dels patrons locals (radar,
+sentinella) que havia d'aprendre, i explica que les features de radar
+seguissin amb guany zero després de mesos de dades acumulades.
+
+Fix: el target només es deriva si la columna `will_rain` no existeix; si hi
+és parcialment NaN, error explícit en lloc d'inventar etiquetes. Test de
+regressió: `tests/test_train_target.py`.
+
+Pendent conegut (no confondre amb aquest bug): el merge concat base+feedback
+**sense reordenar cronològicament** — el bloc de feedback (mar–ago) queda
+després del dataset base que acaba l'agost, així que els folds temporals de
+la CV barregen períodes duplicats i infla `cv_f1_std`. No afecta el model
+final (entrena sobre tot), però sí la interpretació de les mètriques CV.
+
 ## El model ML ignora radar i llamps
 
 El 85.8% del guany està en 4 features NWP d'Open-Meteo; totes les features de radar (31) i llamps (7) tenen guany **zero** perquè els 7 anys d'entrenament tenien NaN allà. Les regles físiques de `_apply_physical_constraints()` (predict.py) existeixen per suplir-ho fins que el feedback loop acumuli prou dades verificades per reentrenar. No esperis que el model "vegi" una tempesta al radar: no la veu.

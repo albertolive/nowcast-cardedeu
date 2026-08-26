@@ -58,6 +58,19 @@ def compute_accuracy(days: int = None) -> dict:
     else:
         f1 = None
 
+    # La zona incerta no puntua com encert/error (disseny), però s'informa:
+    # és on amaguen les falses alarmes de les regles físiques i part de la
+    # pluja real. Sense aquesta línia, el bucle de feedback és cec als casos
+    # difícils (incident 2026-08-26: 3 falses alarmes al 55% sense cap cost).
+    scorable_uncertain = [e for e in uncertain if e.get("actual_rain") is not None]
+    uncertain_rained = sum(1 for e in scorable_uncertain if e["actual_rain"])
+    uncertain_stats = {
+        "total": len(scorable_uncertain),
+        "rained": uncertain_rained,
+        "rain_rate_pct": round(uncertain_rained / len(scorable_uncertain) * 100, 1)
+        if scorable_uncertain else None,
+    }
+
     # Brier score: mesura qualitat probabilística (0=perfecte, 1=pitjor)
     brier_components = [e.get("brier_component") for e in verified
                         if e.get("brier_component") is not None]
@@ -122,6 +135,7 @@ def compute_accuracy(days: int = None) -> dict:
         "f1": round(f1 * 100, 1) if f1 is not None else None,
         "brier_score": round(brier_score, 4) if brier_score is not None else None,
         "confusion": {"tp": tp, "fp": fp, "tn": tn, "fn": fn},
+        "uncertain_band": uncertain_stats,
         "calibration": calibration,
         "by_confidence": by_confidence,
         "daily": dict(sorted(daily.items(), reverse=True)[:7]),
@@ -165,6 +179,13 @@ def format_accuracy_report(metrics: dict) -> str:
         f"  ✅ Sec encertat: {cm['tn']}",
         f"  ❌ Pluja no prevista: {cm['fn']}",
     ])
+
+    ub = metrics.get("uncertain_band")
+    if ub and ub["total"]:
+        lines.append(
+            f"  🔸 Zona incerta: {ub['total']} pred. no puntuades, "
+            f"plou a {ub['rain_rate_pct']}%"
+        )
 
     # Calibration
     if metrics.get("calibration"):
