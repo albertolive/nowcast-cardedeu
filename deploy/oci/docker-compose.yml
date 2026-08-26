@@ -1,0 +1,16 @@
+services:
+  nowcast:
+    build: /opt/nowcast
+    container_name: nowcast
+    restart: unless-stopped
+    env_file: /opt/nowcast-deploy/.env
+    environment:
+      TZ: Europe/Madrid
+      GIT_REPO: albertolive/nowcast-cardedeu
+    ports:
+      - "80:80" # optional local data server; the dashboard reads raw.githubusercontent.com
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
