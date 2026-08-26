@@ -13,6 +13,7 @@ imatges composites del radar professional d'Espanya.
 
 Documentació: https://opendata.aemet.es/dist/index.html
 """
+import hashlib
 import io
 import logging
 from datetime import datetime, timezone
@@ -25,7 +26,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 import config
 from src.data._http import create_session
 from src.data._geo import _bearing_to_compass
-from src.data.aemet_cache import get_cached, get_stale, set_cached, RADAR_TTL, RADAR_STALE_MAX_AGE
+from src.data.aemet_cache import get_cached, get_stale, peek_cached, set_cached, RADAR_TTL, RADAR_STALE_MAX_AGE
 
 logger = logging.getLogger(__name__)
 
@@ -57,6 +58,12 @@ AEMET_COLOR_THRESHOLDS = [
     (200, 255, 0, 100, 0, 80, 55.0),          # Vermell → ~55 dBZ
     (200, 255, 0, 100, 200, 255, 65.0),       # Magenta → ~65 dBZ
 ]
+
+# Descàrregues consecutives amb bytes idèntics abans de considerar el frame
+# sospitosament estàtic. Amb TTL de radar de 15 min i runs cada 10 min, cada
+# descàrrega nova arriba aproximadament cada 20 min: 3 repeticions ≈ 60+ min
+# sense cap canvi a la imatge mentre els frames haurien de refrescar cada 10.
+AEMET_FRAME_STALE_STREAK = 3
 
 
 def _aemet_fetch_url(endpoint: str) -> Optional[str]:
@@ -223,6 +230,18 @@ def fetch_aemet_radar() -> dict:
             logger.warning("Imatge de radar AEMET massa petita")
             return _stale_or_empty()
 
+        # Forense del frame: hash + mida + moment de descàrrega. La font no
+        # publica el seu propi timestamp de captura, així que aquestes
+        # metadades (comitades a git amb la cache a cada run) són l'única
+        # evidència disponible per diagnosticar frames velles disfressades de
+        # fresques. No es guarda la URL: pot incrustar l'api_key d'AEMET.
+        frame_md5 = hashlib.md5(r.content).hexdigest()
+        prev = peek_cached("radar") or {}
+        if prev.get("aemet_radar_frame_md5") == frame_md5:
+            same_streak = (prev.get("aemet_radar_same_frame_streak") or 0) + 1
+        else:
+            same_streak = 0
+
         # Processar la imatge
         try:
             from PIL import Image
@@ -245,6 +264,18 @@ def fetch_aemet_radar() -> dict:
 
         cx, cy = cardedeu_px
         logger.debug(f"  Radar AEMET: Cardedeu al pixel ({cx}, {cy}) d'imatge {w}x{h}")
+
+        result.update({
+            "aemet_radar_frame_md5": frame_md5,
+            "aemet_radar_frame_bytes": len(r.content),
+            "aemet_radar_fetched_at": datetime.now(timezone.utc).isoformat(),
+            "aemet_radar_same_frame_streak": same_streak,
+        })
+        if same_streak >= AEMET_FRAME_STALE_STREAK:
+            logger.warning(
+                f"  Radar AEMET: {same_streak} descàrregues consecutives amb el mateix "
+                f"frame (md5 {frame_md5[:12]}) — sospitosa font congelada"
+            )
 
         # ── Mètriques puntuals (píxel a Cardedeu) ──
         pixel_rgba = arr[cy, cx]
@@ -363,4 +394,8 @@ def _empty_aemet_radar() -> dict:
         "aemet_radar_coverage_20km": 0.0,
         "aemet_radar_echoes_found": False,
         "aemet_radar_available": False,
+        "aemet_radar_frame_md5": None,
+        "aemet_radar_frame_bytes": 0,
+        "aemet_radar_fetched_at": None,
+        "aemet_radar_same_frame_streak": 0,
     }

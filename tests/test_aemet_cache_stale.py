@@ -40,3 +40,16 @@ def test_get_stale_rejects_entry_older_than_max_age(monkeypatch, tmp_path):
 def test_get_stale_returns_none_when_no_cache(monkeypatch, tmp_path):
     monkeypatch.setattr(aemet_cache, "CACHE_FILE", str(tmp_path / "missing.json"))
     assert aemet_cache.get_stale("radar", aemet_cache.RADAR_STALE_MAX_AGE) is None
+
+
+def test_peek_cached_returns_entry_regardless_of_age(monkeypatch, tmp_path):
+    # Forense de frames: comparar el md5 de la descàrrega anterior encara que
+    # l'entrada sigui expirada (sempre ho és, per definició, abans de refrescar)
+    _write_cache(monkeypatch, tmp_path, age_seconds=3 * 3600)
+    peeked = aemet_cache.peek_cached("radar")
+    assert peeked == {"aemet_radar_dbz": 40.0}
+
+
+def test_peek_cached_returns_none_when_no_cache(monkeypatch, tmp_path):
+    monkeypatch.setattr(aemet_cache, "CACHE_FILE", str(tmp_path / "missing.json"))
+    assert aemet_cache.peek_cached("radar") is None

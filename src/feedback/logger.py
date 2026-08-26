@@ -58,6 +58,7 @@ def log_prediction(result: dict) -> None:
         "confidence": result["confidence"],
         "threshold": result.get("threshold"),
         "raw_probability": result.get("raw_probability"),
+        "physical_adjustments": result.get("physical_adjustments", []),
         "rain_gate_open": result.get("rain_gate_open"),
         "station_available": result.get("station_available"),
         "station_raining_now": result.get("station_raining_now"),

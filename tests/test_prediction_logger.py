@@ -239,3 +239,22 @@ class TestLogPrediction:
             line = f.readline()
         assert "Garbí" in line
         assert "d'estació" in line
+
+    def test_physical_adjustments_persisted(self, tmp_path, monkeypatch):
+        """Les regles físiques aplicades han de quedar al JSONL per diagnosticar
+        incidents (fins a l'agost 2026 no es persistien mai: 0/5518 files)."""
+        log_path = str(tmp_path / "predictions.jsonl")
+        monkeypatch.setattr("src.feedback.logger.PREDICTIONS_LOG", log_path)
+
+        result = {
+            "timestamp": "2026-08-26T07:31:00",
+            "probability": 0.55,
+            "probability_pct": 55.0,
+            "will_rain": True,
+            "confidence": "Mitjana",
+            "physical_adjustments": ["Radar AEMET: eco 40 dBZ a 14km"],
+        }
+        log_prediction(result)
+
+        entries = load_predictions_log()
+        assert entries[0]["physical_adjustments"] == ["Radar AEMET: eco 40 dBZ a 14km"]

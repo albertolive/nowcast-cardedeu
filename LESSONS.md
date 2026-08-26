@@ -16,6 +16,35 @@ Cada incident greu del projecte ha estat una variant del mateix patró: una font
 
 Mitigacions existents: `radar_frames_frozen` (rainviewer.py — desactiva les regles físiques de RainViewer i, des de l'agost 2026, també exclou l'eco espacial del rain gate a predict.py), `get_stale()` amb límit d'edat (aemet_cache.py), watchdog amb alerta de "cegues totals" quan fallen les dues fonts de radar alhora.
 
+## El radar AEMET no publica l'edat del frame
+
+El radar C-banda de Barcelona serveix la imatge sense timestamp de captura ni
+hash. Fins a l'agost 2026 el pipeline no podia distingir un frame fresc d'un
+de vell servit com a nou, i la sortida només guardava `cached_at` (l'hora de
+la nostra descàrrega), que no diu res sobre la imatge mateixa.
+
+- **2026-08-26**: frames amb ecos de 40 dBZ intermitents (l'"eco més proper"
+  saltava WNW→SSW→ENE en 40 min) amb 0.0 mm a terra a tot el Vallès. La regla
+  5 va disparar el floor del 55% en ràfegues i la predicció va oscil·lar
+  55% ↔ 0.8% quatre vegades en una hora. Totes les verificacions van donar
+  fals positiu (però al bloc *incert*, doncs sense cost d'accuracy).
+- **Cadència en parelles**: amb `RADAR_TTL` de 15 min i runs cada 10 min,
+  cada descàrrega nova arriba aproximadament cada 20 min i serveix **exactament
+  2 runs consecutius**. Si un valor de radar apareix duplicat en parelles és
+  la cache funcionant normal; si el valor canvia entre descàrregues però no
+  quadra amb la realitat, sospita de la font.
+
+Mitigacions (des de l'agost 2026): cada descàrrega registra md5, mida i hora
+(`aemet_radar_frame_md5` etc., comitades a git dins `aemet_cache.json`) i un
+comptador de frames idèntics consecutius (`aemet_radar_same_frame_streak`).
+Amb ≥3 descàrregues idèntiques (~1h sense cap canvi a la imatge), la regla 5
+s'inhabilita igual que les regles RainViewer amb frames congelats. El md5
+històric permet diagnosticar episodis després del fet amb `git log -p` —
+l'episodi del 26 d'agost va canviar de md5 a cada descàrrega, així que el
+guard NO l'hauria aturat: el que hauria permès tancar-lo era precisament
+aquest registre. `physical_adjustments` també es persisteix ara al JSONL
+(abans mai: diagnòstic impossible després del fet).
+
 ## El model ML ignora radar i llamps
 
 El 85.8% del guany està en 4 features NWP d'Open-Meteo; totes les features de radar (31) i llamps (7) tenen guany **zero** perquè els 7 anys d'entrenament tenien NaN allà. Les regles físiques de `_apply_physical_constraints()` (predict.py) existeixen per suplir-ho fins que el feedback loop acumuli prou dades verificades per reentrenar. No esperis que el model "vegi" una tempesta al radar: no la veu.

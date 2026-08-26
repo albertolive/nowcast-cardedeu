@@ -18,7 +18,7 @@ from src.data.rainviewer import fetch_radar_at_cardedeu
 from src.data.meteocat import fetch_sentinel_latest, compute_sentinel_features
 from src.data.meteocat_xdde import compute_lightning_features
 from src.data.meteocat_prediccio import fetch_municipal_hourly_forecast
-from src.data.aemet_radar import fetch_aemet_radar
+from src.data.aemet_radar import fetch_aemet_radar, AEMET_FRAME_STALE_STREAK
 from src.data.ensemble import fetch_ensemble_agreement, compute_forecast_bias
 from src.data.aemet import fetch_hourly_forecast as fetch_aemet_hourly
 from src.features.engineering import build_features_from_realtime, FEATURE_COLUMNS
@@ -224,11 +224,23 @@ def _apply_physical_constraints(probability: float, radar_data: dict,
     # 5. Radar AEMET C-banda Barcelona: eco fort a prop
     # Font independent del RainViewer; un eco fort a <20km és una tempesta
     # propera que arribarà dins la finestra de predicció de 60min.
+    # Guard propi: si la font serveix el mateix frame exacte (md5) durant
+    # múltiples descàrregues consecutives, l'eco pot ser un fantasma de frame
+    # vell (2026-08-26: ecos de 40 dBZ intermitents, 0 mm a terra en tot el
+    # Vallès). Igual que amb RainViewer congelat, els floors no poden disparar
+    # amb dades potencialment mortes; la font torna quan canviï el md5.
     if aemet_radar_data:
+        a_frozen = (aemet_radar_data.get("aemet_radar_same_frame_streak") or 0) >= AEMET_FRAME_STALE_STREAK
+        if a_frozen and (aemet_radar_data.get("aemet_radar_max_dbz_20km") or 0) >= config.RADAR_MIN_DBZ:
+            logger.warning(
+                "  Radar AEMET amb frame repetit "
+                f"({aemet_radar_data.get('aemet_radar_same_frame_streak')} descàrregues iguals): "
+                "regles físiques d'AEMET radar desactivades"
+            )
         a_nearest = aemet_radar_data.get("aemet_radar_nearest_echo_km")
         a_max_dbz = aemet_radar_data.get("aemet_radar_max_dbz_20km", 0) or 0
         a_cov = aemet_radar_data.get("aemet_radar_coverage_20km", 0) or 0
-        if a_nearest is not None and a_nearest <= 20 and a_max_dbz >= 35:
+        if not a_frozen and a_nearest is not None and a_nearest <= 20 and a_max_dbz >= 35:
             floor = 0.55
             if adjusted < floor:
                 adjustments.append(
@@ -623,6 +635,9 @@ def predict_now() -> dict:
             "coverage_20km": aemet_radar_data.get("aemet_radar_coverage_20km"),
             "echoes_found": aemet_radar_data.get("aemet_radar_echoes_found"),
             "available": aemet_radar_data.get("aemet_radar_available"),
+            "frame_md5": aemet_radar_data.get("aemet_radar_frame_md5"),
+            "same_frame_streak": aemet_radar_data.get("aemet_radar_same_frame_streak"),
+            "fetched_at": aemet_radar_data.get("aemet_radar_fetched_at"),
         },
         "bias": {
             "temp": bias_data.get("forecast_temp_bias"),

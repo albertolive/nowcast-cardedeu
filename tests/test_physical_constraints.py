@@ -158,6 +158,66 @@ class TestFrozenFrames:
         assert prob == pytest.approx(0.50)
 
 
+class TestAemetStaleFrameGuard:
+    """Regla 5 no pot disparar amb un frame AEMET repetit (md5 idèntic).
+
+    Cas real 2026-08-26: ecos de 40 dBZ intermitents del radar AEMET (3 km →
+    17 km en salts de brúixola impossibles) mentre no queia res a tot el
+    Vallès; la predicció va oscil·lar 55% ↔ 0.8% quatre vegades en una hora.
+    """
+
+    @staticmethod
+    def _aemet(streak):
+        return {
+            "aemet_radar_available": True,
+            "aemet_radar_nearest_echo_km": 14.4,
+            "aemet_radar_max_dbz_20km": 40.0,
+            "aemet_radar_coverage_20km": 0.0073,
+            "aemet_radar_same_frame_streak": streak,
+        }
+
+    def test_repeated_frame_disables_aemet_floors(self):
+        from src.data.aemet_radar import AEMET_FRAME_STALE_STREAK
+        prob, adj = _apply_physical_constraints(
+            0.09, _radar(), NO_SENTINEL, self._aemet(AEMET_FRAME_STALE_STREAK), None, None
+        )
+        assert prob == pytest.approx(0.09)
+        assert adj == []
+
+    def test_fresh_frame_still_fires_floor(self):
+        # Mateix eco amb streak baix: el floor ha de manar (com sempre)
+        prob, adj = _apply_physical_constraints(
+            0.09, _radar(), NO_SENTINEL, self._aemet(2), None, None
+        )
+        assert prob == pytest.approx(0.55)
+        assert any("AEMET" in a for a in adj)
+
+    def test_missing_streak_field_fires_floor(self):
+        # Entrades velles de cache sense forense: comportament previ intacte
+        legacy = {
+            "aemet_radar_available": True,
+            "aemet_radar_nearest_echo_km": 14.4,
+            "aemet_radar_max_dbz_20km": 40.0,
+            "aemet_radar_coverage_20km": 0.0073,
+        }
+        prob, adj = _apply_physical_constraints(
+            0.09, _radar(), NO_SENTINEL, legacy, None, None
+        )
+        assert prob == pytest.approx(0.55)
+
+    def test_guard_does_not_block_independent_sources(self):
+        # Consens sinòptic (AEMET previsió + ensemble) és una altra font:
+        # ha de seguir funcionant amb el radar AEMET sospitós
+        from src.data.aemet_radar import AEMET_FRAME_STALE_STREAK
+        prob, adj = _apply_physical_constraints(
+            0.08, _radar(), NO_SENTINEL, self._aemet(AEMET_FRAME_STALE_STREAK),
+            aemet_forecast={"aemet_prob_precip": 100},
+            ensemble={"ensemble_rain_agreement": 1.0, "ensemble_min_precip": 16.4},
+        )
+        assert prob == pytest.approx(0.35)
+        assert any("Consens" in a for a in adj)
+
+
 class TestLightningRules:
     def test_active_cell_within_15km_floors_at_50(self):
         prob, adj = _apply_physical_constraints(

@@ -71,6 +71,16 @@ def get_cached(key: str, ttl: int) -> dict | None:
     return entry.get("data")
 
 
+def peek_cached(key: str) -> dict | None:
+    """Return cached data regardless of TTL (age checks are the caller's job).
+
+    Used for cross-fetch forensics (e.g. comparing radar frame hashes between
+    fetches) where the previous entry is by definition expired.
+    """
+    entry = _load_cache().get(key)
+    return entry.get("data") if entry else None
+
+
 def get_stale(key: str, max_age: int) -> dict | None:
     """Return cached data even if expired, as long as it's younger than max_age.
 
