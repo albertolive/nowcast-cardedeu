@@ -4,7 +4,7 @@
   "will_rain": false,
   "rain_category": "sec",
   "confidence": "Molt Baixa",
-  "timestamp": "2026-08-27T03:21:22.849381+00:00",
+  "timestamp": "2026-08-27T03:31:29.752303+00:00",
   "conditions": {
     "temperature": "23.6",
     "humidity": 77,
@@ -63,12 +63,12 @@
     "coverage_20km": 0.0,
     "echoes_found": false,
     "available": true,
-    "frame_md5": "4bfbdf4288ae97dc1096740f2d8d6dc9",
+    "frame_md5": "0d4cafc2e6f40788778383722f6e54c3",
     "same_frame_streak": 0,
-    "fetched_at": "2026-08-27T03:11:21.993962+00:00"
+    "fetched_at": "2026-08-27T03:31:28.627632+00:00"
   },
   "bias": {
-    "temp": -2.1000000000000014,
+    "temp": -1.7000000000000028,
     "humidity": 5.0
   },
   "wind_regime": {
@@ -209,9 +209,9 @@
     "soil_air_temp_diff": 0.38000000000000256,
     "sunshine_duration": 0.0,
     "sunshine_accum_3h": 0.0,
-    "wind_speed_100m": 7.4,
-    "boundary_layer_shear": 7.08,
-    "wind_dir_shear_100m": 129.0,
+    "wind_speed_100m": 10.7,
+    "boundary_layer_shear": 10.379999999999999,
+    "wind_dir_shear_100m": 143.0,
     "snowfall": 0.0,
     "nwp_lifted_index": -0.3,
     "gph_850": 1507.0,
@@ -278,7 +278,7 @@
     "ensemble_models_rain": 1.0,
     "ensemble_surprise_rain": null,
     "nwp_isolated_rain": null,
-    "forecast_temp_bias": -2.1000000000000014,
+    "forecast_temp_bias": -1.7000000000000028,
     "forecast_humidity_bias": 5.0,
     "aemet_prob_precip": 0.0,
     "aemet_prob_storm": 0.0,
@@ -329,7 +329,7 @@
     {
       "group": "Pluja confirmada",
       "icon": "🌧️",
-      "contribution": -0.939,
+      "contribution": -0.945,
       "direction": "sec"
     },
     {
@@ -341,7 +341,7 @@
     {
       "group": "Núvols",
       "icon": "☁️",
-      "contribution": -0.591,
+      "contribution": -0.59,
       "direction": "sec"
     },
     {
@@ -367,12 +367,12 @@
     "verified_count": 0,
     "correct_count": 0,
     "wrong_count": 0,
-    "skipped": 48,
+    "skipped": 49,
     "source": "meteocardedeu",
     "lookup_hours": 48,
-    "station_rows": 1557,
-    "station_first_ts": "2026-08-25T05:22:00",
+    "station_rows": 1549,
+    "station_first_ts": "2026-08-25T05:32:00",
     "station_last_ts": "2026-08-27T03:22:00",
-    "pending_total": 48
+    "pending_total": 49
   }
 }
