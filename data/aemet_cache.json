@@ -1,18 +1,18 @@
 {
   "radar": {
-    "cached_at": 1787853086.658582,
+    "cached_at": 1787854283.129145,
     "data": {
       "aemet_radar_dbz": 0.0,
       "aemet_radar_has_echo": false,
-      "aemet_radar_nearest_echo_km": 60,
-      "aemet_radar_nearest_echo_compass": null,
-      "aemet_radar_max_dbz_20km": 0.0,
-      "aemet_radar_coverage_20km": 0.0,
-      "aemet_radar_echoes_found": false,
+      "aemet_radar_nearest_echo_km": 11.3,
+      "aemet_radar_nearest_echo_compass": "SW",
+      "aemet_radar_max_dbz_20km": 20.0,
+      "aemet_radar_coverage_20km": 0.0027,
+      "aemet_radar_echoes_found": true,
       "aemet_radar_available": true,
-      "aemet_radar_frame_md5": "5ac960ed8624a1e0bbad7c18034f116d",
-      "aemet_radar_frame_bytes": 17499,
-      "aemet_radar_fetched_at": "2026-08-27T17:51:26.642889+00:00",
+      "aemet_radar_frame_md5": "615da106629fad80f2a0ccaff143c3da",
+      "aemet_radar_frame_bytes": 18125,
+      "aemet_radar_fetched_at": "2026-08-27T18:11:23.100133+00:00",
       "aemet_radar_same_frame_streak": 0
     }
   },
