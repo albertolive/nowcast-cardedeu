@@ -1,10 +1,10 @@
 {
-  "probability": 0.0004,
+  "probability": 0.0002,
   "probability_pct": 0.0,
   "will_rain": false,
   "rain_category": "sec",
   "confidence": "Molt Baixa",
-  "timestamp": "2026-08-29T12:21:30.376946+00:00",
+  "timestamp": "2026-08-29T12:31:28.569900+00:00",
   "conditions": {
     "temperature": "29.2",
     "humidity": 38,
@@ -68,8 +68,8 @@
     "fetched_at": "2026-08-29T12:21:29.393552+00:00"
   },
   "bias": {
-    "temp": 0.6999999999999993,
-    "humidity": -6.0
+    "temp": 0.3000000000000007,
+    "humidity": -2.0
   },
   "wind_regime": {
     "level": "850hPa",
@@ -109,7 +109,7 @@
   "features_used": 211,
   "threshold": 0.35942492012779553,
   "calibrated": true,
-  "raw_probability": 0.0014,
+  "raw_probability": 0.0013,
   "physical_adjustments": [],
   "feature_vector": {
     "hour_sin": -0.4999999999999997,
@@ -213,7 +213,7 @@
     "boundary_layer_shear": 10.15,
     "wind_dir_shear_100m": 47.0,
     "snowfall": 0.0,
-    "nwp_lifted_index": 6.7,
+    "nwp_lifted_index": 6.5,
     "gph_850": 1559.0,
     "gph_850_change_3h": -5.0,
     "rh_500": 43.0,
@@ -278,8 +278,8 @@
     "ensemble_models_rain": 0.0,
     "ensemble_surprise_rain": null,
     "nwp_isolated_rain": null,
-    "forecast_temp_bias": 0.6999999999999993,
-    "forecast_humidity_bias": -6.0,
+    "forecast_temp_bias": 0.3000000000000007,
+    "forecast_humidity_bias": -2.0,
     "aemet_prob_precip": 0.0,
     "aemet_prob_storm": 0.0,
     "aemet_precip_today": 0.0,
@@ -329,7 +329,7 @@
     {
       "group": "Núvols",
       "icon": "☁️",
-      "contribution": -1.635,
+      "contribution": -1.624,
       "direction": "sec"
     },
     {
@@ -347,7 +347,7 @@
     {
       "group": "Acord entre models",
       "icon": "🤝",
-      "contribution": -0.505,
+      "contribution": -0.504,
       "direction": "sec"
     },
     {
@@ -370,8 +370,8 @@
     "skipped": 54,
     "source": "meteocardedeu",
     "lookup_hours": 48,
-    "station_rows": 569,
-    "station_first_ts": "2026-08-27T14:22:00",
+    "station_rows": 567,
+    "station_first_ts": "2026-08-27T14:32:00",
     "station_last_ts": "2026-08-29T14:15:00",
     "pending_total": 54,
     "accuracy": 100.0
