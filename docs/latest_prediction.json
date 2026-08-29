@@ -1,10 +1,10 @@
 {
-  "probability": 0.0002,
+  "probability": 0.0004,
   "probability_pct": 0.0,
   "will_rain": false,
   "rain_category": "sec",
   "confidence": "Molt Baixa",
-  "timestamp": "2026-08-29T13:51:30.413319+00:00",
+  "timestamp": "2026-08-29T14:01:28.901843+00:00",
   "conditions": {
     "temperature": "29.2",
     "humidity": 38,
@@ -63,9 +63,9 @@
     "coverage_20km": 0.0,
     "echoes_found": false,
     "available": true,
-    "frame_md5": "e36944bd7cbc4fb5f1dacd579840d62f",
+    "frame_md5": "0e1591643709d43d31909b54c88804cc",
     "same_frame_streak": 0,
-    "fetched_at": "2026-08-29T13:41:35.288478+00:00"
+    "fetched_at": "2026-08-29T14:01:27.767051+00:00"
   },
   "bias": {
     "temp": -0.1999999999999993,
@@ -82,23 +82,23 @@
     "wind_dir_change_3h": 7.0
   },
   "pressure_levels": {
-    "temp_925": 20.2,
-    "rh_925": 54,
-    "wind_925_speed_kmh": 29.9,
-    "wind_925_dir": 200,
+    "temp_925": 20.1,
+    "rh_925": 59,
+    "wind_925_speed_kmh": 33.2,
+    "wind_925_dir": 201,
     "wind_850_dir": 289,
-    "wind_850_speed_kmh": 33.7,
-    "temp_850": 15.3,
-    "rh_850": 57,
+    "wind_850_speed_kmh": 37.0,
+    "temp_850": 15.9,
+    "rh_850": 61,
     "rh_700": 11,
-    "temp_700": 8.8,
+    "temp_700": 8.7,
     "temp_500": -7.7,
-    "wind_300_speed_kmh": 59.3,
-    "wind_300_dir": 249,
-    "gph_300": 9648.39,
-    "vt_index": 23.0,
-    "tt_index": 37.528568394456684,
-    "li_index": 2.023930012633074
+    "wind_300_speed_kmh": 68.4,
+    "wind_300_dir": 248,
+    "gph_300": 9646.77,
+    "vt_index": 23.6,
+    "tt_index": 39.685482461132764,
+    "li_index": 0.969395830961937
   },
   "sst": {
     "sst_med": 27.5
@@ -109,7 +109,7 @@
   "features_used": 211,
   "threshold": 0.35942492012779553,
   "calibrated": true,
-  "raw_probability": 0.0013,
+  "raw_probability": 0.0014,
   "physical_adjustments": [],
   "feature_vector": {
     "hour_sin": -0.4999999999999997,
@@ -272,7 +272,7 @@
     "local_rain_xema_3h": null,
     "ensemble_rain_agreement": 0.0,
     "ensemble_precip_spread": 0.0,
-    "ensemble_temp_spread": 0.8954747344286156,
+    "ensemble_temp_spread": 0.7189401922274203,
     "ensemble_max_precip": 0.0,
     "ensemble_min_precip": 0.0,
     "ensemble_models_rain": 0.0,
@@ -335,19 +335,19 @@
     {
       "group": "Pluja confirmada",
       "icon": "🌧️",
-      "contribution": -1.127,
+      "contribution": -1.126,
       "direction": "sec"
     },
     {
       "group": "Models globals",
       "icon": "🌐",
-      "contribution": -0.846,
+      "contribution": -0.843,
       "direction": "sec"
     },
     {
       "group": "Acord entre models",
       "icon": "🤝",
-      "contribution": -0.503,
+      "contribution": -0.498,
       "direction": "sec"
     },
     {
@@ -367,12 +367,12 @@
     "verified_count": 0,
     "correct_count": 0,
     "wrong_count": 0,
-    "skipped": 56,
+    "skipped": 57,
     "source": "meteocardedeu",
     "lookup_hours": 48,
-    "station_rows": 551,
-    "station_first_ts": "2026-08-27T15:52:00",
+    "station_rows": 549,
+    "station_first_ts": "2026-08-27T16:02:00",
     "station_last_ts": "2026-08-29T14:15:00",
-    "pending_total": 56
+    "pending_total": 57
   }
 }
