@@ -4,7 +4,7 @@
   "will_rain": false,
   "rain_category": "sec",
   "confidence": "Molt Baixa",
-  "timestamp": "2026-08-29T12:31:28.569900+00:00",
+  "timestamp": "2026-08-29T12:41:27.937032+00:00",
   "conditions": {
     "temperature": "29.2",
     "humidity": 38,
@@ -63,9 +63,9 @@
     "coverage_20km": 0.0,
     "echoes_found": false,
     "available": true,
-    "frame_md5": "30e667690b5ce965c9be735827072b6b",
+    "frame_md5": "41c1e1768c1e95098214a3130274e169",
     "same_frame_streak": 0,
-    "fetched_at": "2026-08-29T12:21:29.393552+00:00"
+    "fetched_at": "2026-08-29T12:41:27.046625+00:00"
   },
   "bias": {
     "temp": 0.3000000000000007,
@@ -370,8 +370,8 @@
     "skipped": 54,
     "source": "meteocardedeu",
     "lookup_hours": 48,
-    "station_rows": 567,
-    "station_first_ts": "2026-08-27T14:32:00",
+    "station_rows": 565,
+    "station_first_ts": "2026-08-27T14:42:00",
     "station_last_ts": "2026-08-29T14:15:00",
     "pending_total": 54,
     "accuracy": 100.0
