@@ -1,10 +1,10 @@
 {
-  "probability": 0.0004,
+  "probability": 0.0002,
   "probability_pct": 0.0,
   "will_rain": false,
   "rain_category": "sec",
   "confidence": "Molt Baixa",
-  "timestamp": "2026-08-29T13:01:51.582373+00:00",
+  "timestamp": "2026-08-29T13:11:28.087654+00:00",
   "conditions": {
     "temperature": "29.2",
     "humidity": 38,
@@ -109,7 +109,7 @@
   "features_used": 211,
   "threshold": 0.35942492012779553,
   "calibrated": true,
-  "raw_probability": 0.0014,
+  "raw_probability": 0.0013,
   "physical_adjustments": [],
   "feature_vector": {
     "hour_sin": -0.4999999999999997,
@@ -272,7 +272,7 @@
     "local_rain_xema_3h": null,
     "ensemble_rain_agreement": 0.0,
     "ensemble_precip_spread": 0.0,
-    "ensemble_temp_spread": 0.8514693182963197,
+    "ensemble_temp_spread": 0.878564169540279,
     "ensemble_max_precip": 0.0,
     "ensemble_min_precip": 0.0,
     "ensemble_models_rain": 0.0,
@@ -341,13 +341,13 @@
     {
       "group": "Models globals",
       "icon": "🌐",
-      "contribution": -0.844,
+      "contribution": -0.846,
       "direction": "sec"
     },
     {
       "group": "Acord entre models",
       "icon": "🤝",
-      "contribution": -0.497,
+      "contribution": -0.504,
       "direction": "sec"
     },
     {
@@ -370,8 +370,8 @@
     "skipped": 54,
     "source": "meteocardedeu",
     "lookup_hours": 48,
-    "station_rows": 561,
-    "station_first_ts": "2026-08-27T15:02:00",
+    "station_rows": 559,
+    "station_first_ts": "2026-08-27T15:12:00",
     "station_last_ts": "2026-08-29T14:15:00",
     "pending_total": 54,
     "accuracy": 100.0
