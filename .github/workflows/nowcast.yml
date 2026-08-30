@@ -72,11 +72,9 @@ jobs:
     concurrency:
       group: predict-push
       cancel-in-progress: false
-    # DISABLED 2026-08-30: CF Worker every-10-min predict burned 16k min/mo (>5x 3000 limit).
-    # Predictions now run in OCI container (docker-entrypoint.sh, 24/7, free). Keep this job
-    # disabled to guarantee <3000. Re-enable only if OCI dies: set to true manually.
-    # Verification: `python3 /tmp/quota_guard.py --limit 3000` must PASS before re-enable.
-    if: false
+    if: >-
+      github.event_name == 'workflow_dispatch' &&
+      (github.event.inputs.action == 'predict' || github.event.inputs.action == '')
 
     steps:
       - name: Checkout

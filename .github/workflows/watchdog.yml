@@ -89,10 +89,13 @@ jobs:
 
       - name: Check dispatch heartbeat
         id: heartbeat
-        # DISABLED 2026-08-30: predict now runs in OCI container, not CF Worker dispatches.
-        # Counting workflow_dispatch would always be 0 and falsely alert every hour.
-        # Freshness check above already covers OCI liveness (stale >30 min).
-        if: false
+        # The CF Worker fires `predict` via workflow_dispatch every 10 min →
+        # ~8 runs per 80-min window. A missing dispatch leaves NO trace
+        # anywhere in Actions history, and the freshness check above masks a
+        # slow leak (one or two surviving ticks keep the output fresh). So
+        # count dispatch-started runs directly; too few means the trigger
+        # side is broken (Worker cron dead, PAT expired, rate-limited) even
+        # while predictions still look fresh.
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -107,7 +110,7 @@ jobs:
           fi
 
       - name: Telegram alert on dispatch gap
-        if: false && steps.heartbeat.outputs.gap == 'true'
+        if: failure() && steps.heartbeat.outputs.gap == 'true'
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
