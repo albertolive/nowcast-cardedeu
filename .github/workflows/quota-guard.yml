@@ -1,0 +1,55 @@
+name: "💰 Quota Guard (no assumptions)"
+
+on:
+  schedule:
+    - cron: "0 6 * * *" # 08:00 Europe/Madrid daily, before peak
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Install gh
+        run: gh --version
+
+      - name: Check billing usage vs 3000 limit (80% watermark)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          cat > /tmp/quota_guard.py << 'PY'
+          import subprocess, json, datetime, sys
+          def gh(path): return json.loads(subprocess.check_output(["gh","api",path], text=True))
+          def usage(scope):
+              d=gh(f"/{scope}/settings/billing/usage?per_page=100")
+              cur=datetime.datetime.utcnow().strftime("%Y-%m")
+              total=sum(i["quantity"] for i in d["usageItems"] if i["date"].startswith(cur) and i["product"]=="actions" and "Linux" in i["sku"])
+              return total, cur
+          limit=3000
+          watermark=limit*0.8
+          ok=True
+          for scope,label in [("users/albertolive","personal"),("orgs/Esdeveniments","org")]:
+              try:
+                  total,cur=usage(scope)
+                  pct=total/limit*100
+                  print(f"[{label}] {cur}: {total:.0f}/{limit} ({pct:.1f}%) watermark {watermark:.0f} -> {'OK' if total<watermark else 'OVER'}")
+                  if total>=watermark: ok=False
+              except Exception as e:
+                  print(f"ERROR {label}: {e}"); sys.exit(2)
+          sys.exit(0 if ok else 1)
+          PY
+          python3 /tmp/quota_guard.py
+
+      - name: Auto-disable heavy workflows if over watermark
+        if: failure()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "OVER watermark - disabling predict job via workflow disable (already gated with if:false)"
+          gh api -X PUT /repos/${{ github.repository }}/actions/workflows/nowcast.yml/disable 2>&1 || true
+          curl -s -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
+            -d chat_id="${{ secrets.TELEGRAM_CHAT_ID }}" \
+            -d text="🚨 Quota Guard: Actions >80% of 3000. Heavy workflows disabled. Check https://github.com/${{ github.repository }}/actions" || true
