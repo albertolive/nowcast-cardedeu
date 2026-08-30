@@ -27,7 +27,8 @@ const SHARD_CACHE = new Map(); // ym -> rows
 async function fetchShard(ym) {
   if (SHARD_CACHE.has(ym)) return SHARD_CACHE.get(ym);
   // shards live in docs/history/ on Vercel and docs/history/ on raw (docs/ prefix)
-  const bases = ['.', 'https://raw.githubusercontent.com/' + REPO + '/' + BRANCH + '/docs'];
+  // Raw is first: Vercel static history is excluded from deploys (vercel-ignore.sh) so can be stale 920 vs correct 4404 after VM overwrote. Raw 5min cache is always fresh.
+  const bases = ['https://raw.githubusercontent.com/' + REPO + '/' + BRANCH + '/docs', '.'];
   for (const base of bases) {
     try {
       const ctrl = new AbortController();
@@ -37,6 +38,11 @@ async function fetchShard(ym) {
       if (!r.ok) continue;
       const text = await r.text();
       const rows = text.trim().split('\n').filter(Boolean).map(line => JSON.parse(line));
+      // Validate shard not truncated 921 bug: must have >3000 for full months (May 4387, July 4404)
+      if (rows.length > 0 && rows.length < 3000 && ym !== '2026-08') {
+        console.warn(`Shard ${ym} truncated ${rows.length} <3000, trying next base`);
+        continue;
+      }
       SHARD_CACHE.set(ym, rows);
       return rows;
     } catch {}
