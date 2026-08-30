@@ -4,7 +4,7 @@
   "will_rain": false,
   "rain_category": "sec",
   "confidence": "Molt Baixa",
-  "timestamp": "2026-08-30T09:18:39.677137+00:00",
+  "timestamp": "2026-08-30T09:21:27.283169+00:00",
   "conditions": {
     "temperature": "29.4",
     "humidity": 43,
@@ -209,9 +209,9 @@
     "soil_air_temp_diff": -2.9750000000000014,
     "sunshine_duration": 3600.0,
     "sunshine_accum_3h": 10800.0,
-    "wind_speed_100m": 5.9,
-    "boundary_layer_shear": 2.3000000000000003,
-    "wind_dir_shear_100m": -54.0,
+    "wind_speed_100m": 5.4,
+    "boundary_layer_shear": 1.8000000000000003,
+    "wind_dir_shear_100m": -64.0,
     "snowfall": 0.0,
     "nwp_lifted_index": 4.4,
     "gph_850": 1561.0,
@@ -329,32 +329,32 @@
     {
       "group": "Núvols",
       "icon": "☁️",
-      "contribution": -1.691,
+      "contribution": -1.694,
       "direction": "sec"
     },
     {
       "group": "Pluja confirmada",
       "icon": "🌧️",
-      "contribution": -1.009,
+      "contribution": -1.007,
       "direction": "sec"
     },
     {
       "group": "Models globals",
       "icon": "🌐",
-      "contribution": -0.845,
+      "contribution": -0.847,
       "direction": "sec"
     },
     {
       "group": "Acord entre models",
       "icon": "🤝",
-      "contribution": -0.463,
+      "contribution": -0.462,
       "direction": "sec"
     },
     {
-      "group": "Humitat",
-      "icon": "💧",
-      "contribution": -0.394,
-      "direction": "sec"
+      "group": "Capa límit",
+      "icon": "🏔️",
+      "contribution": 0.398,
+      "direction": "pluja"
     },
     {
       "group": "Base (climatologia)",
@@ -364,16 +364,15 @@
     }
   ],
   "verification": {
-    "verified_count": 3,
-    "correct_count": 3,
+    "verified_count": 0,
+    "correct_count": 0,
     "wrong_count": 0,
-    "skipped": 56,
+    "skipped": 57,
     "source": "meteocardedeu",
     "lookup_hours": 48,
     "station_rows": 545,
     "station_first_ts": "2026-08-28T11:22:00",
     "station_last_ts": "2026-08-30T11:14:00",
-    "pending_total": 56,
-    "accuracy": 100.0
+    "pending_total": 57
   }
 }
