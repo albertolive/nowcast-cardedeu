@@ -788,7 +788,8 @@ function initCalendar(history) {
     const month = currentMonth;
     const ym = `${year}-${String(month+1).padStart(2, '0')}`;
     // Lazy-load sharded history for months outside 35d fast path (May -> ...)
-    if (HISTORY_SHARDS.includes(ym) && !SHARD_CACHE.has(ym) && !Object.keys(dayMap).some(k => k.startsWith(ym))) {
+    // Fix: fetch even if dayMap already has some days of this month (e.g. July 25-31 in 5k fast path, but 1-24 only in shard)
+    if (HISTORY_SHARDS.includes(ym) && !SHARD_CACHE.has(ym)) {
       const shardRows = await fetchShard(ym);
       for (const h of shardRows) {
         const day = h.timestamp.slice(0,10);
