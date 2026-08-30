@@ -227,6 +227,8 @@ function renderPrediction(latest, history, fullHistory = history) {
   const fn = scorable.filter(h => h.rain_category === 'sec' && h.actual_rain).length;
   const totalRainEvents = tp + fn;
   const totalRainAlerts = tp + fp;
+  const recallPct = totalRainEvents > 0 ? ((tp / totalRainEvents) * 100).toFixed(0) : '—';
+  const precisionPct = totalRainAlerts > 0 ? ((tp / totalRainAlerts) * 100).toFixed(0) : '—';
 
   // Day-level accuracy: only count scorable predictions (from start)
   const dayBuckets = {};
