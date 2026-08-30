@@ -5,6 +5,7 @@ __pycache__
 *.pyc
 data/raw/
 data/processed/
+!data/processed/feedback_verified.parquet
 data/meteocat_cache/
 oracle-cloud/
 tests/
