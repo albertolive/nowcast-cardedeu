@@ -7,6 +7,7 @@ on:
       - "docs/**"
       - "!docs/latest_prediction.json"
       - "!docs/predictions_log.jsonl"
+      - "!docs/history/**"
       - "vercel.json"
 
 jobs:
@@ -23,7 +24,7 @@ jobs:
       - name: Detectar canvis de frontend
         id: frontend
         run: |
-          changed=$(git diff --name-only HEAD^ HEAD -- docs vercel.json | grep -Ev '^(docs/latest_prediction\.json|docs/predictions_log\.jsonl)$' || true)
+          changed=$(git diff --name-only HEAD^ HEAD -- docs vercel.json | grep -Ev '^(docs/latest_prediction\.json|docs/predictions_log\.jsonl|docs/history/.*\.jsonl)$' || true)
           if [[ -z "$changed" ]]; then
             echo "skip=true" >> $GITHUB_OUTPUT
             echo "Sense canvis de frontend rellevants; saltem deploy."

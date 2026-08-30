@@ -11,7 +11,7 @@ if ! git rev-parse --verify HEAD^ >/dev/null 2>&1; then
 fi
 
 changed_files="$(git diff --name-only HEAD^ HEAD -- docs vercel.json || true)"
-relevant_files="$(printf '%s\n' "$changed_files" | grep -Ev '^(docs/latest_prediction\.json|docs/predictions_log\.jsonl)$' || true)"
+relevant_files="$(printf '%s\n' "$changed_files" | grep -Ev '^(docs/latest_prediction\.json|docs/predictions_log\.jsonl|docs/history/.*\.jsonl)$' || true)"
 
 if [[ -z "$relevant_files" ]]; then
   echo "Sense canvis de frontend rellevants; saltem el deploy."
