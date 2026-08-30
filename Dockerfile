@@ -22,6 +22,7 @@ COPY data/predictions_log.jsonl data/predictions_log.jsonl
 COPY data/latest_prediction.json data/latest_prediction.json
 COPY data/aemet_cache.json data/aemet_cache.json
 COPY data/meteocat_cache.json data/meteocat_cache.json
+COPY data/processed/feedback_verified.parquet data/processed/feedback_verified.parquet
 COPY docs/ docs/
 
 # Entrypoint

@@ -216,13 +216,18 @@ with open('/app/data/predictions_log.jsonl') as f:
             (cd "$REPO_DIR" && git gc --prune=now 2>/dev/null) || true
         fi
         # Long-term history shards: keep docs/predictions_log.jsonl at 5000 for fast Vercel (823K), lazy-load May->... via docs/history/YYYY-MM.jsonl (600K/mo)
-        # Built from feedback_verified.parquet + predictions_log.jsonl, so May 2026 start never trimmed again. Generated daily at 3am or when new month rolls.
-        if [ -n "$GIT_TOKEN" ] && [ -d "$REPO_DIR" ]; then
-            (cd /app && python3 scripts/build_history_shards.py 2>/dev/null || true)
-            mkdir -p "$REPO_DIR/docs/history"
-            cp -f /app/docs/history/*.jsonl "$REPO_DIR/docs/history/" 2>/dev/null || true
-            if ! git -C "$REPO_DIR" diff --quiet -- docs/history/ 2>/dev/null; then
-                (cd "$REPO_DIR" && git add docs/history/ 2>/dev/null || true && git diff --cached --quiet || git commit -m "🗂️ History shards $(date -u +%Y-%m)" && timeout 30 git push origin main 2>/dev/null || true)
+        # Built from feedback_verified.parquet + predictions_log.jsonl, so May 2026 start never trimmed again. Generated when parquet exists and has >3000 rows (ensures full history, not just 921 fallback).
+        if [ -n "$GIT_TOKEN" ] && [ -d "$REPO_DIR" ] && [ -f "/app/data/processed/feedback_verified.parquet" ]; then
+            rows=$(/app/.venv/bin/python -c "import pyarrow.parquet as pq; print(len(pq.read_table('/app/data/processed/feedback_verified.parquet')))" 2>/dev/null || echo 0)
+            if [ "$rows" -gt 3000 ]; then
+                (cd /app && python3 scripts/build_history_shards.py 2>/dev/null || true)
+                mkdir -p "$REPO_DIR/docs/history"
+                cp -f /app/docs/history/*.jsonl "$REPO_DIR/docs/history/" 2>/dev/null || true
+                if ! git -C "$REPO_DIR" diff --quiet -- docs/history/ 2>/dev/null; then
+                    (cd "$REPO_DIR" && git add docs/history/ 2>/dev/null || true && git diff --cached --quiet || git commit -m "🗂️ History shards $(date -u +%Y-%m)" && timeout 30 git push origin main 2>/dev/null || true)
+                fi
+            else
+                echo "⚠️ Skip shards: parquet rows $rows <3000, would generate truncated July 921"
             fi
         fi
     fi
