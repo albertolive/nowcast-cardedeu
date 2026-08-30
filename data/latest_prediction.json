@@ -4,7 +4,7 @@
   "will_rain": false,
   "rain_category": "sec",
   "confidence": "Molt Baixa",
-  "timestamp": "2026-08-30T11:21:28.977537+00:00",
+  "timestamp": "2026-08-30T11:21:10.990254+00:00",
   "conditions": {
     "temperature": "31.8",
     "humidity": 35,
@@ -52,8 +52,8 @@
     "total_models": 4
   },
   "aemet": {
-    "prob_precip": 0,
-    "prob_storm": 0
+    "prob_precip": null,
+    "prob_storm": null
   },
   "aemet_radar": {
     "dbz": 0.0,
@@ -62,10 +62,10 @@
     "max_dbz_20km": 0.0,
     "coverage_20km": 0.0,
     "echoes_found": false,
-    "available": true,
-    "frame_md5": "b45813fded82e75c33bef24f4ea18948",
-    "same_frame_streak": 0,
-    "fetched_at": "2026-08-30T11:21:27.839453+00:00"
+    "available": false,
+    "frame_md5": null,
+    "same_frame_streak": null,
+    "fetched_at": null
   },
   "bias": {
     "temp": -0.40000000000000213,
@@ -280,9 +280,9 @@
     "nwp_isolated_rain": null,
     "forecast_temp_bias": -0.40000000000000213,
     "forecast_humidity_bias": 0.0,
-    "aemet_prob_precip": 0.0,
-    "aemet_prob_storm": 0.0,
-    "aemet_precip_today": 0.0,
+    "aemet_prob_precip": null,
+    "aemet_prob_storm": null,
+    "aemet_precip_today": null,
     "lightning_count_30km": null,
     "lightning_count_15km": null,
     "lightning_nearest_km": null,
