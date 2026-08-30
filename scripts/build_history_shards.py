@@ -27,6 +27,12 @@ def load_parquet():
         print(f"parquet load failed: {e}", file=sys.stderr)
         return None
 
+def rain_cat(pct):
+    if pct is None or pct != pct: return None
+    if pct < 30: return "sec"
+    if pct < 65: return "incert"
+    return "probable"
+
 def write_shards():
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     # Load from parquet (full history since March) + recent jsonl tail for unverified
@@ -39,6 +45,9 @@ def write_shards():
                 if len(ts) < 7: continue
                 ym = ts[:7]
                 obj = {k: row[k] for k in KEEP if k in row and row[k] == row[k]}  # not NaN
+                # parquet has no rain_category (only will_rain/probability_pct), derive for slim
+                if "rain_category" not in obj and "probability_pct" in obj:
+                    obj["rain_category"] = rain_cat(obj["probability_pct"])
                 # normalize timestamp to iso
                 if "timestamp" in obj:
                     obj["timestamp"] = str(obj["timestamp"])

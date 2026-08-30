@@ -198,7 +198,7 @@ function _verificationResult(d) {
   return { text: '❌ Error', cls: 'wrong' };
 }
 
-function renderPrediction(latest, history) {
+function renderPrediction(latest, history, fullHistory = history) {
   const pct = latest.probability_pct;
   const noPct = (100 - pct).toFixed(1);
   const color = getProbColor(pct);
@@ -209,13 +209,14 @@ function renderPrediction(latest, history) {
   const signals = gateOpen ? _gateSignals(latest) : [];
   const trend = _probTrend(history);
 
-  // Verified history stats — fair scoring: exclude uncertain zone (30-65%)
-  const scorable = history.filter(h => {
+  // Verified history stats from start (May 2026) via sharded history - not just 35d fast path. Chart stays 24h.
+  const metricsHistory = fullHistory || history;
+  const scorable = metricsHistory.filter(h => {
     if (!h.verified) return false;
     const vr = _verificationResult(h);
     return vr.cls !== 'uncertain';
   });
-  const pending = history.filter(h => !h.verified).length;
+  const pending = metricsHistory.filter(h => !h.verified).length;
 
   // Rain-event metrics — more honest than overall accuracy (which is dominated
   // by correctly predicting "no rain" on dry days).
@@ -226,10 +227,8 @@ function renderPrediction(latest, history) {
   const fn = scorable.filter(h => h.rain_category === 'sec' && h.actual_rain).length;
   const totalRainEvents = tp + fn;
   const totalRainAlerts = tp + fp;
-  const recallPct = totalRainEvents > 0 ? ((tp / totalRainEvents) * 100).toFixed(0) : '—';
-  const precisionPct = totalRainAlerts > 0 ? ((tp / totalRainAlerts) * 100).toFixed(0) : '—';
 
-  // Day-level accuracy: only count scorable predictions
+  // Day-level accuracy: only count scorable predictions (from start)
   const dayBuckets = {};
   for (const h of scorable) {
     const day = h.timestamp.slice(0, 10);
@@ -1311,14 +1310,25 @@ async function loadAndRender() {
   } catch (e) {
     console.warn('History load failed (using cached):', e.message);
   }
+  // Metrics from start (May 2026) via sharded history - initial load stays 823K fast, full 16861 rows (~2.4M) merged for accurate Encerts from start
+  let fullHistory = history;
+  try {
+    const shardRowsArrays = await Promise.all(HISTORY_SHARDS.map(ym => fetchShard(ym)));
+    const merged = new Map();
+    for (const rows of shardRowsArrays) for (const r of rows) merged.set(r.timestamp, r);
+    for (const r of history) merged.set(r.timestamp, r);
+    fullHistory = Array.from(merged.values()).sort((a,b) => a.timestamp.localeCompare(b.timestamp));
+  } catch (e) {
+    console.warn('Full history shards load failed, using recent:', e.message);
+  }
   const isUpdate = _latestTimestamp && _latestTimestamp !== latest.timestamp;
   _latestTimestamp = latest.timestamp;
-  renderPrediction(latest, history);
+  renderPrediction(latest, history, fullHistory);
   if (isUpdate) {
     const card = document.querySelector('.prediction-card');
     if (card) { card.classList.add('flash'); setTimeout(() => card.classList.remove('flash'), 1500); }
   }
-  return { latest, history };
+  return { latest, history, fullHistory };
 }
 
 // Tooltip toggle: tap to open/close, tap outside to dismiss
