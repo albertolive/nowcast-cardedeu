@@ -72,9 +72,9 @@ jobs:
     concurrency:
       group: predict-push
       cancel-in-progress: false
-    if: >-
-      github.event_name == 'workflow_dispatch' &&
-      (github.event.inputs.action == 'predict' || github.event.inputs.action == '')
+    # DISABLED 2026-08-30: GCP e2-micro nowcast-vm (esdeveniments:us-east1-b 34.139.5.189) runs predict every 10min free. CF Worker dispatches burned 16k min/mo (>5x 3000, gh api billing). Keep disabled until VM dies.
+    # Verification: VM logs `📊 Prediction` + RAW age<10 + `python3 /tmp/quota_guard.py --limit 3000` PASS
+    if: false
 
     steps:
       - name: Checkout

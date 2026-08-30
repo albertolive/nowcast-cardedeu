@@ -87,22 +87,17 @@ jobs:
             exit 1
           fi
 
-      - name: Check dispatch heartbeat
+      - name: Check prediction-commit heartbeat
         id: heartbeat
-        # The CF Worker fires `predict` via workflow_dispatch every 10 min →
-        # ~8 runs per 80-min window. A missing dispatch leaves NO trace
-        # anywhere in Actions history, and the freshness check above masks a
-        # slow leak (one or two surviving ticks keep the output fresh). So
-        # count dispatch-started runs directly; too few means the trigger
-        # side is broken (Worker cron dead, PAT expired, rate-limited) even
-        # while predictions still look fresh.
+        # UPDATED 2026-08-30: GCP e2-micro nowcast-vm (esdeveniments:us-east1-b) runs predict every 10min and pushes data/latest_prediction.json.
+        # Old CF Worker dispatch count would always be 0 and falsely alert. Count commits touching state file instead - same guarantee: missing ticks leave no trace except absence of commits, freshness masks slow leak.
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
           SINCE=$(date -u -d '80 minutes ago' +%Y-%m-%dT%H:%M:%SZ)
-          COUNT=$(gh api "repos/${GITHUB_REPOSITORY}/actions/workflows/nowcast.yml/runs?event=workflow_dispatch&created=%3E%3D${SINCE}&per_page=100" --jq '.total_count')
-          echo "Dispatch-started runs since ${SINCE}: ${COUNT}"
+          COUNT=$(gh api "repos/${GITHUB_REPOSITORY}/commits?sha=main&path=data/latest_prediction.json&since=${SINCE}&per_page=100" --jq 'length')
+          echo "Prediction commits since ${SINCE}: ${COUNT}"
           if [ "${COUNT}" -lt 6 ]; then
             echo "gap=true" >> "$GITHUB_OUTPUT"
             echo "count=${COUNT}" >> "$GITHUB_OUTPUT"
@@ -119,7 +114,7 @@ jobs:
           curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
             -d chat_id="${TELEGRAM_CHAT_ID}" \
             -d parse_mode=HTML \
-            -d text="⚠️ <b>Nowcast DISPATCH GAP</b>: només <b>${COUNT}</b> dispatches en els darrers 80 min (n'esperem ~8, mínim 6).%0AEl cron del Cloudflare Worker o el seu PAT poden haver fallat.%0A<a href='${{ github.server_url }}/${{ github.repository }}/actions/workflows/nowcast.yml'>Veure flux predict</a>"
+            -d text="⚠️ <b>Nowcast GAP</b>: només <b>${COUNT}</b> commits de predicció en 80 min (n'esperem ~8, mínim 6).%0AEl VM GCP nowcast-vm o el seu GIT_TOKEN poden haver fallat.%0A<a href='${{ github.server_url }}/${{ github.repository }}/actions/workflows/nowcast.yml'>Veure flux predict</a>"
 
       - name: Telegram alert on blind radar
         if: failure() && steps.radar.outputs.blind == 'true'
@@ -142,4 +137,4 @@ jobs:
           curl -s -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
             -d chat_id="${TELEGRAM_CHAT_ID}" \
             -d parse_mode=HTML \
-            -d text="⚠️ <b>Nowcast STALE</b>: <code>latest_prediction.json</code> és de fa <b>${AGE_MIN} min</b> (llindar ${STALE_THRESHOLD_MIN} min).%0AEl cron del Cloudflare Worker o el job <code>predict</code> s'ha aturat.%0A<a href='${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}'>Veure logs</a>"
+            -d text="⚠️ <b>Nowcast STALE</b>: <code>latest_prediction.json</code> és de fa <b>${AGE_MIN} min</b> (llindar ${STALE_THRESHOLD_MIN} min).%0AEl VM GCP nowcast-vm o el job <code>predict</code> s'ha aturat.%0A<a href='${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}'>Veure logs</a>"

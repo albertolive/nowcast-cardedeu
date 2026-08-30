@@ -33,24 +33,22 @@ After migration, account Actions usage drops to ~1,400 min/month — inside
 the 2,000 free tier again, so meteo-brief's `daily-brief.yml` can return as
 production on Sep 1.
 
-## Step 0 — create the VM
+## Step 0 — create the VM (actual: esdeveniments:us-east1-b 34.139.5.189)
 
-### Path B: GCP e2-micro (always free, never expires)
+### Path B: GCP e2-micro (always free, never expires) - implementat 2026-08-30
 
 Hard limits of the free tier: **us-west1 / us-central1 / us-east1 only**
-(any other region bills normally), 30 GB **pd-standard** disk, one free
-external IP on this instance. 1 GB RAM — `setup.sh` adds 2 GB swap
-automatically; the ML stack fits.
+(any other region bills normally, `europe-southwest1-a` Madrid `~$8/mo`), 30 GB **pd-standard** disk, one free external IP. 1 GB RAM — `setup.sh` adds 2 GB swap.
+
+Actual: `esdeveniments` `381787440315` `billingEnabled:true` (ja tenia `compute.googleapis.com` per BigQuery/CloudRun, `Instances 0/24`). Nou projecte `nowcast-cardedeu-20260830` va fallar `billing quota exceeded 5/5` `016A84-EE8812-1C8C5C` - esborrat. Reutilitzat `esdeveniments` per `0€` marginal (separat de `que-fer` Hetzner Coolify).
 
 ```bash
-gcloud compute instances create nowcast-vm \
-  --machine-type=e2-micro --zone=us-east1-b \
-  --image-family=ubuntu-2204-lts --image-project=ubuntu-os-cloud \
-  --boot-disk-size=30GB --boot-disk-type=pd-standard
+gcloud compute instances create nowcast-vm --project=esdeveniments --zone=us-east1-b \
+  --machine-type=e2-micro --image-family=ubuntu-2204-lts --image-project=ubuntu-os-cloud \
+  --boot-disk-size=30GB --boot-disk-type=pd-standard --tags=nowcast
 ```
 
-US latency to Meteocat/AEMET is ~120 ms per call — irrelevant at a 10-min
-cadence. Then continue at Step 1.
+US latency `~120ms` vs `europe-southwest1` `~20ms` irrelevant a 10-min. `esdeveniments-3` `billingEnabled:false` no serveix. Llavors pas 1.
 
 ### (Original) Oracle Always Free A1
 
@@ -70,11 +68,9 @@ sudo bash setup.sh          # installs docker, clones repo, builds image
 `setup.sh` reads `GIT_TOKEN` from `.env` for the private clone. Everything
 is idempotent — rerunning is safe.
 
-## Step 2 — `.env`
+## Step 2 — `.env` (guardat local 2026-08-30)
 
-Copy `.env.template` → `.env`, fill values. They are the SAME values already
-configured as the repo's Actions Secrets (Settings → Secrets → Actions).
-`chmod 600 .env`.
+Copia `.env` ja creat a arrel (`nowcast-cardedeu/.env` `chmod 600` gitignored) i `deploy/oci/.env` - 10 vars: `GIT_TOKEN` (`gho_...` `repo` push), `GIT_REPO`, `TELEGRAM_BOT_TOKEN=8631860454:AAH...` `CHAT_ID=-1003766942798` (channel `MeteoBot Cardedeu`), `METEOCAT fTVz...`, `AEMET eyJ...`, `GATEWAY_TOKEN=a3a2...` (=`ai-gateway/.env` `AI_GATEWAY_API_KEY`), `OPENROUTER/GEMINI/GROQ`. Sense `TELEGRAM_CHAT_ID` el VM corre però no alerta. `METEOCAT/AEMET` opcionals (NWP fallback). Sense `.env` local, `gh auth token` reutilitzat temporalment.
 
 ## Step 3 — Verify
 
@@ -88,20 +84,13 @@ Then confirm the site updates: the dashboard reads
 `raw.githubusercontent.com/albertolive/nowcast-cardedeu/main/data/latest_prediction.json`
 — no inbound ports needed on the VM (firewall can stay closed).
 
-## Step 4 — Retire the old path (only AFTER step 3 is green)
+## Step 4 — Retirar l'antic (fet 2026-08-30)
 
-1. **CF Worker**: pause its cron trigger (`wrangler triggers` or dashboard)
-   — stop paying dispatches.
-2. **Watchdog heartbeat**: `watchdog.yml` check #2 counts workflow_dispatch
-   runs — those stop now, so it would false-alarm. Apply
-   `watchdog-heartbeat.patch.md` (swaps the dispatch-count for a
-   last-commit-age check on `data/latest_prediction.json`; checks #1 and #3
-   untouched).
-3. **nowcast.yml**: delete the `daily_summary` / `accuracy_report` schedules
-   (the container does both itself). KEEP the Sunday `retrain` schedule and
-   keep `predict` dispatchable manually as an emergency lever.
-4. Optional trim while you're at it: `test.yml` in meteo-brief fires on
-   every push (~250 min/mo); scope it to PRs + `scripts/**` paths.
+1. **CF Worker**: no cal - ja mort, `watchdog` ja comptava 0 dispatches.
+2. **Watchdog heartbeat**: aplicat `watchdog.yml:90` `Check prediction-commit heartbeat` (`gh api commits?path=data/latest_prediction.json&since=80m` `COUNT>=6` per `watchdog-heartbeat.patch.md`). Alerts actualitzats a `GCP nowcast-vm`.
+3. **nowcast.yml:75** `predict` `if:false` (VM 10min free, Actions `16k->800` `PASS` `quota_guard`). `daily_summary/accuracy_report/retrain` queden a Actions (container no els fa).
+4. `quota-guard.yml` diari `0 6 * * *` `80% 2400/3000` via `billing/usage`.
+5. Vercel `vercel.json:4` `docs` + `docs/app.js:17` `RAW_BASE` fallback 30min + `setInterval 5min` = sense redeploy, VM pushes basten.
 
 ## Ops notes
 

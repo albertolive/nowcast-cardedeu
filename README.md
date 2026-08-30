@@ -115,14 +115,15 @@ export TELEGRAM_BOT_TOKEN="el_teu_token"
 export TELEGRAM_CHAT_ID="el_teu_chat_id"
 ```
 
-### 7. GitHub Actions (automatització)
-El workflow `.github/workflows/nowcast.yml`:
-- **Prediccions** cada 10 minuts (6h-23h) amb notificacions intel·ligents
-- **Resum diari** a les 7:00 via Telegram
-- **Informe d'accuracy** setmanal (dilluns 8:00) via Telegram
-- **Re-entrenament** automàtic diari a les 3:00 (amb feedback loop + calibratge isotònic)
-- Execució manual amb selector d'acció (predict / daily_summary / accuracy_report / retrain)
-- Configura els secrets al repositori: `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID`, `METEOCAT_API_KEY`, `AEMET_API_KEY`, i almenys un proveïdor d'IA — `OPENROUTER_API_KEY` (recomanat), `GEMINI_API_KEY` i/o `GROQ_API_KEY` (opcionals). El model/cascade es gestiona centralment a [albertolive/ai-gateway](https://github.com/albertolive/ai-gateway), no aquí.
+### 7. Runtime 24/7 (GCP) + GitHub Actions (automatització)
+**Prediccions cada 10 min 24/7** corren al **GCP e2-micro** `nowcast-vm` (`esdeveniments:us-east1-b` `34.139.5.189`, always-free, 30GB pd-standard, `deploy/oci/`). El container fa `predict_now.py` + `git push` a `data/latest_prediction.json` i `docs/latest_prediction.json`. `Vercel` llegeix via `raw.githubusercontent.com` sense redeploy (`docs/app.js` fallback 30min).
+
+El workflow `.github/workflows/nowcast.yml` a Actions ara només:
+- **Resum diari** 7:00, **accuracy** dilluns 8:00, **retrain** diumenge 3:00 (amb feedback + calibratge)
+- `predict` **deshabilitat** (`if:false` des 2026-08-30) - duplicate del VM, cremava `16k min/mes` (>5x quota 3000). Es reactiva manualment amb `workflow_dispatch` si el VM cau.
+- Execució manual `predict / daily_summary / accuracy_report / retrain / backfill_verify`
+- Secrets: `TELEGRAM_BOT_TOKEN/-1003766942798`, `METEOCAT_API_KEY`, `AEMET_API_KEY`, `GATEWAY_TOKEN` (via [albertolive/ai-gateway](https://github.com/albertolive/ai-gateway)), `OPENROUTER/GEMINI/GROQ` opcionals. Guardat local a `.env` + `deploy/oci/.env` (`chmod 600`, gitignored).
+- `quota-guard.yml` diari 80% `2400/3000` via `billing/usage` API.
 
 ### 8. Dashboard a Vercel
 
