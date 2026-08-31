@@ -365,7 +365,7 @@ function renderPrediction(latest, history, fullHistory = history) {
     </div>
   `;
 
-  initCalendar(history);
+  initCalendar(fullHistory);
   drawChart(history, latest);
 }
 
