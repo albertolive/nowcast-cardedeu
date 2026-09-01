@@ -12,9 +12,10 @@ import { selectDriverExplanations, GROUP_TOOLTIP } from './driver_logic.js';
 import { verdictText } from './verdict_logic.js';
 
 function getDataBases() {
-  // Local docs/ first (fresh slim JSONL pushed every 10 min by the predict job),
-  // then raw.githubusercontent as fallback (full JSONL).
-  return ['.', RAW_BASE];
+  // raw.githubusercontent first: prediction-only commits never redeploy Vercel
+  // (vercel-ignore.sh), so the local docs/ snapshot is stale by design. Raw
+  // always mirrors the bot's latest push. Local docs/ is fallback only.
+  return [RAW_BASE, '.'];
 }
 
 const DATA_BASES = getDataBases();
