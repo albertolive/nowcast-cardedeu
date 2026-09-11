@@ -2,7 +2,7 @@
   "current_state": "clear",
   "last_alert_time": 1788970819.9537978,
   "last_alert_type": "rain_clearing",
-  "last_probability": 0.0002,
+  "last_probability": 0.0018,
   "consecutive_high": 0,
   "consecutive_low": 1,
   "last_wind_regime": {
@@ -11,7 +11,7 @@
     "is_llevantada": false,
     "is_migjorn": false,
     "is_garbi": true,
-    "is_ponent": false,
+    "is_ponent": true,
     "llevantada_strength": 0.0,
     "wind_dir_change_3h": 5.0
   },
