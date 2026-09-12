@@ -4,7 +4,7 @@
   "will_rain": false,
   "rain_category": "sec",
   "confidence": "Molt Baixa",
-  "timestamp": "2026-09-12T22:50:20.444421+00:00",
+  "timestamp": "2026-09-12T23:00:21.911549+00:00",
   "conditions": {
     "temperature": "19.1",
     "humidity": 78,
@@ -63,9 +63,9 @@
     "coverage_20km": 0.0,
     "echoes_found": false,
     "available": true,
-    "frame_md5": "888fcb09932e2c4a3850157602358ce6",
+    "frame_md5": "8aafffdc19d61ea2d9aa1e79e83392b4",
     "same_frame_streak": 0,
-    "fetched_at": "2026-09-12T22:40:20.103569+00:00"
+    "fetched_at": "2026-09-12T23:00:20.716465+00:00"
   },
   "bias": {
     "temp": 0.09999999999999787,
@@ -82,23 +82,23 @@
     "wind_dir_change_3h": 34.0
   },
   "pressure_levels": {
-    "temp_925": 18.4,
-    "rh_925": 76,
-    "wind_925_speed_kmh": 5.7,
-    "wind_925_dir": 352,
-    "wind_850_dir": 27,
-    "wind_850_speed_kmh": 14.9,
-    "temp_850": 14.5,
-    "rh_850": 58,
+    "temp_925": 19.0,
+    "rh_925": 63,
+    "wind_925_speed_kmh": 9.7,
+    "wind_925_dir": 48,
+    "wind_850_dir": 20,
+    "wind_850_speed_kmh": 10.7,
+    "temp_850": 14.6,
+    "rh_850": 60,
     "rh_700": 8,
-    "temp_700": 6.2,
+    "temp_700": 6.4,
     "temp_500": -7.9,
-    "wind_300_speed_kmh": 59.2,
-    "wind_300_dir": 18,
-    "gph_300": 9667.74,
-    "vt_index": 22.4,
-    "tt_index": 36.63320728470221,
-    "li_index": 2.479226539766449
+    "wind_300_speed_kmh": 51.5,
+    "wind_300_dir": 12,
+    "gph_300": 9666.13,
+    "vt_index": 22.5,
+    "tt_index": 37.320014624887676,
+    "li_index": 2.1479930531783538
   },
   "sst": {
     "sst_med": 26.9
@@ -272,7 +272,7 @@
     "local_rain_xema_3h": null,
     "ensemble_rain_agreement": 0.0,
     "ensemble_precip_spread": 0.0,
-    "ensemble_temp_spread": 0.9565563234854497,
+    "ensemble_temp_spread": 0.8842369591913694,
     "ensemble_max_precip": 0.0,
     "ensemble_min_precip": 0.0,
     "ensemble_models_rain": 0.0,
@@ -329,7 +329,7 @@
     {
       "group": "Pluja confirmada",
       "icon": "🌧️",
-      "contribution": -0.932,
+      "contribution": -0.931,
       "direction": "sec"
     },
     {
@@ -370,8 +370,8 @@
     "skipped": 48,
     "source": "meteocardedeu",
     "lookup_hours": 48,
-    "station_rows": 559,
-    "station_first_ts": "2026-09-11T00:54:00",
+    "station_rows": 557,
+    "station_first_ts": "2026-09-11T01:04:00",
     "station_last_ts": "2026-09-13T00:22:00",
     "pending_total": 48,
     "accuracy": 100.0
