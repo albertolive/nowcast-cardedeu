@@ -4,11 +4,11 @@
   "will_rain": false,
   "rain_category": "sec",
   "confidence": "Molt Baixa",
-  "timestamp": "2026-09-13T23:10:18.260388+00:00",
+  "timestamp": "2026-09-13T23:20:35.145446+00:00",
   "conditions": {
-    "temperature": "19.6",
-    "humidity": 76,
-    "pressure": "1023.6",
+    "temperature": "19.4",
+    "humidity": 77,
+    "pressure": "1023.5",
     "wind_speed": "0.0",
     "wind_dir": "330",
     "rain_today": "0.0",
@@ -63,13 +63,13 @@
     "coverage_20km": 0.0,
     "echoes_found": false,
     "available": true,
-    "frame_md5": "ad983cfe5bc87d7e739979433d6ff847",
+    "frame_md5": "94ebfdb4dec584968ccccf12d6d8eb19",
     "same_frame_streak": 0,
-    "fetched_at": "2026-09-13T23:00:19.994458+00:00"
+    "fetched_at": "2026-09-13T23:20:33.819815+00:00"
   },
   "bias": {
-    "temp": 0.29999999999999716,
-    "humidity": 17.0
+    "temp": 0.5,
+    "humidity": 16.0
   },
   "wind_regime": {
     "level": "850hPa",
@@ -122,10 +122,10 @@
     "pressure_change_3h": 0.20000000000004547,
     "pressure_change_6h": 1.1583333333334167,
     "pressure_accel_3h": -0.06153846153847553,
-    "temperature_2m": 19.6,
+    "temperature_2m": 19.5,
     "relative_humidity_2m": 76.0,
-    "dew_point": 15.24895499443911,
-    "dew_point_depression": 4.351045005560891,
+    "dew_point": 15.152307842388382,
+    "dew_point_depression": 4.347692157611618,
     "humidity_change_1h": 2.1538461538461604,
     "humidity_change_3h": 11.916666666666671,
     "vapour_pressure_deficit": 0.16,
@@ -167,8 +167,8 @@
     "k_index": -0.6321287029318619,
     "moisture_flux_850": 16.072830136128406,
     "moisture_flux_925": 82.49986153228028,
-    "theta_e_deficit": 21.99947640898565,
-    "inversion_925": 1.1999999999999993,
+    "theta_e_deficit": 21.630985009358774,
+    "inversion_925": 1.3000000000000007,
     "deep_layer_shear": 54.199999999999996,
     "bulk_richardson": 0.0,
     "jet_speed_300": 55.8,
@@ -206,7 +206,7 @@
     "nwp_showers_fraction": 0.0,
     "et0_fao_evapotranspiration": 0.0,
     "soil_temperature_0_to_7cm": 22.0,
-    "soil_air_temp_diff": 2.3999999999999986,
+    "soil_air_temp_diff": 2.5,
     "sunshine_duration": 0.0,
     "sunshine_accum_3h": 0.0,
     "wind_speed_100m": 7.2,
@@ -278,8 +278,8 @@
     "ensemble_models_rain": 0.0,
     "ensemble_surprise_rain": null,
     "nwp_isolated_rain": null,
-    "forecast_temp_bias": 0.29999999999999716,
-    "forecast_humidity_bias": 17.0,
+    "forecast_temp_bias": 0.5,
+    "forecast_humidity_bias": 16.0,
     "aemet_prob_precip": 0.0,
     "aemet_prob_storm": 0.0,
     "aemet_precip_today": 0.0,
@@ -302,7 +302,7 @@
     "orographic_forcing": 0.879537956369107,
     "frontal_passage": 0.0,
     "convective_composite": 0.00019871903145332582,
-    "thermal_buildup": 1.2287442166401017e-05,
+    "thermal_buildup": 1.2411871960491155e-05,
     "low_level_convergence": 0.5958333333333335,
     "dry_intrusion_700": 0.48,
     "soil_moisture_0_to_7cm": 0.163,
@@ -315,7 +315,7 @@
     "cloud_cover_high": 0.0,
     "cloud_low_fraction": 0.0,
     "wet_bulb_temperature_2m": 19.0,
-    "wet_bulb_depression": 0.6000000000000014,
+    "wet_bulb_depression": 0.5,
     "direct_radiation": 0.0,
     "diffuse_radiation": 0.0,
     "diffuse_fraction": 0.0,
@@ -329,13 +329,13 @@
     {
       "group": "Pluja confirmada",
       "icon": "🌧️",
-      "contribution": -0.885,
+      "contribution": -0.883,
       "direction": "sec"
     },
     {
       "group": "Models globals",
       "icon": "🌐",
-      "contribution": -0.751,
+      "contribution": -0.75,
       "direction": "sec"
     },
     {
@@ -353,7 +353,7 @@
     {
       "group": "Núvols",
       "icon": "☁️",
-      "contribution": -0.289,
+      "contribution": -0.295,
       "direction": "sec"
     },
     {
@@ -371,8 +371,8 @@
     "source": "meteocardedeu",
     "lookup_hours": 48,
     "station_rows": 555,
-    "station_first_ts": "2026-09-12T01:15:00",
-    "station_last_ts": "2026-09-14T01:04:00",
+    "station_first_ts": "2026-09-12T01:25:00",
+    "station_last_ts": "2026-09-14T01:15:00",
     "pending_total": 48,
     "accuracy": 100.0
   }
