@@ -5,6 +5,9 @@ __pycache__/
 .env
 data/raw/
 data/meteocat_cache/
+# Estat entre runs del radar Meteocat (runtime, no ha d'anar al repo: el VM
+# fa push de data/ cada cicle i això crearia soroll i conflictes)
+data/meteocat_radar_state.json
 *.egg-info/
 venv/
 .venv/
