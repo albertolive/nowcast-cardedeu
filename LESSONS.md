@@ -17,6 +17,25 @@ Cada incident greu del projecte ha estat una variant del mateix patró: una font
 
 Mitigacions existents: `radar_frames_frozen` (rainviewer.py — desactiva les regles físiques de RainViewer i, des de l'agost 2026, també exclou l'eco espacial del rain gate a predict.py), `get_stale()` amb límit d'edat (aemet_cache.py), watchdog amb alerta de "cegues totals" quan fallen les dues fonts de radar alhora.
 
+## El radar de Meteocat és la font local de radar (2026-09-16)
+
+Durant l'episodi del 2026-09-16 (47 dBZ a 1.3 km de Cardedeu) es van comparar les fonts de radar disponibles:
+
+- **RainViewer**: frames congelats un altre cop (mateix mode de fallada que el 2026-06-05). Va servir contingut vell com a actual.
+- **LibreWXR** (api.librewxr.net, API compatible amb RainViewer v2, agregat d'EUMETNET OPERA): estructuralment perfecte (frames de 10 min, nowcast de 60 min, CC-BY) però **no va veure la tempesta**: cap eco ≥35 dBZ a la tile sencera mentre AEMET mesurava 47 dBZ a 1.3 km. A més, dos frames consecutius idèntics. No serveix com a font principal sense un estudi de validació llarg.
+- **Meteocat (SMC)**: composició de la Xarxa de Radars de Catalunya via tiles públiques. Va veure la tempesta correctament (52.5 dBZ a 20 km, cobertura del 52% amb ecos a 2 km) i és **local**, amb cadència de 6 min.
+
+Detalls tècnics de les tiles de Meteocat (tots verificats contra el visor en viu):
+
+- URL: `https://static-m.meteo.cat/tiles/radar/{YYYY}/{MM}/{DD}/{HH}/{MM}/{z}/000/000/{x}/000/000/{y}.png`, amb marques de temps en **UTC**.
+- **L'eix Y és TMS** (origen al sud): `y_url = (2^z − 1) − y_xyz`. Cardedeu és `z=7, x=64, y=80` (no 47). Totes les proves amb y_xyz donaven 404.
+- **Cadència de 6 min** ancorada al minut 00 (00/06/12/.../54); el visor fa servir passos de 6 min. Latència de 6-12 min → cal buscar enrere el darrer frame.
+- Finestra pública d'unes **3 h**; les tiles antigues es purguen.
+- La paleta és **discreta i exacta**: cada color RGB és una classe de 3 dBZ de la llegenda oficial (9 → 66+). No cal calibrar res, a diferència de l'esquema B&W de RainViewer (`R/2−32`).
+- El pixel d'un eco és `alpha>0`; `alpha=0` vol dir "sense precipitació" (no "fora de cobertura").
+
+Implementació: `src/data/meteocat_radar.py` (features anàlogues a `rainviewer.py` perquè siguin comparables, amb guards d'edat i de frames repetits).
+
 ## El radar AEMET no publica l'edat del frame
 
 El radar C-banda de Barcelona serveix la imatge sense timestamp de captura ni

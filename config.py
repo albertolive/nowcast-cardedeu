@@ -165,6 +165,22 @@ RAIN_GATE_LIGHTNING_NEARBY_KM = 30  # Obrir rain gate si llamps dins d'aquest ra
 # d'on arriba la majoria de convecció. A l'est (37km) i nord (44km) l'escaneig
 # queda retallat pel tile — acceptable, el mar i el Montseny aporten menys.
 # Un eco a 50km movent-se a 30km/h = ~100 min d'anticipació (amb vector de moviment).
+# ── Radar Meteocat (SMC): tiles de la Xarxa de Radars de Catalunya ──
+# Composició de radar servida com a tiles Web-Mercator (256px, z7) amb marca
+# de temps a la ruta. Verificat el 2026-09-16 contra tempesta real sobre
+# Cardedeu: dBZ exacte (paleta = llegenda oficial en passos de 3 dBZ), cadència
+# de 6 min, finestra pública ~3h i latència ~6-12 min. Font local (radar de la
+# Vallès a ~20km), independent de RainViewer i d'AEMET.
+METEO_RADAR_TILE_BASE = "https://static-m.meteo.cat/tiles/radar"
+METEO_RADAR_ZOOM = 7                  # z natiu del visor (tiles 256px)
+METEO_RADAR_FRAME_MINUTES = 6         # cadència; graella ancorada al minut 00
+METEO_RADAR_MAX_LOOKBACK_SLOTS = 8    # fins a 48 min enrere buscant el darrer frame
+METEO_RADAR_STALE_MAX_MIN = 30        # frame més vell que això → no disponible
+METEO_RADAR_MAX_PLAUSIBLE_KMH = 120   # deriva de cel·la per sobre d'això = soroll
+METEO_RADAR_STATE_FILE = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)), "data", "meteocat_radar_state.json"
+)
+
 RADAR_SCAN_RADIUS_KM = 60       # km al voltant de Cardedeu per escanejar ecos
 RADAR_PIXEL_SIZE_KM = 0.457     # km per píxel (zoom 8, lat ~41.6°)
 RADAR_MIN_DBZ = 10              # dBZ mínim per considerar un eco com a pluja real (filtra soroll/AP)
