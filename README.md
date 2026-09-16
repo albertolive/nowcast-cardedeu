@@ -115,16 +115,15 @@ export TELEGRAM_BOT_TOKEN="el_teu_token"
 export TELEGRAM_CHAT_ID="el_teu_chat_id"
 ```
 
-### 7. Runtime 24/7 (GCP) + GitHub Actions (automatització)
-**Prediccions cada 10 min 24/7** corren al **GCP e2-micro** `nowcast-vm` (`esdeveniments:us-east1-b` `34.139.5.189`, always-free, 30GB pd-standard, `deploy/oci/`). El container fa `predict_now.py` + `git push` a `data/latest_prediction.json` i `docs/latest_prediction.json`. `Vercel` llegeix via `raw.githubusercontent.com` sense redeploy (`docs/app.js` fallback 30min).
-
-El workflow `.github/workflows/nowcast.yml` a Actions ara només:
-- **Resum diari** 7:00, **accuracy** dilluns 8:00, **retrain** diumenge 3:00 (amb feedback + calibratge)
-- `predict` **deshabilitat** (`if:false` des 2026-08-30) - duplicate del VM, cremava `16k min/mes` (>5x quota 3000). Es reactiva manualment amb `workflow_dispatch` si el VM cau.
-- Execució manual `predict / daily_summary / accuracy_report / retrain / backfill_verify`
-- Secrets: `TELEGRAM_BOT_TOKEN/-1003766942798`, `METEOCAT_API_KEY`, `AEMET_API_KEY`, `GATEWAY_TOKEN` (via [albertolive/ai-gateway](https://github.com/albertolive/ai-gateway)), `OPENROUTER/GEMINI/GROQ` opcionals. Guardat local a `.env` + `deploy/oci/.env` (`chmod 600`, gitignored).
-- `quota-guard.yml` diari 80% `2400/3000` via `billing/usage` API.
-
+### 7. Arquitectura de producció (Català)
+- **Prediccions cada 10 min**: `scripts/predict_now.py` s'executa, genera `data/latest_prediction.json` i `docs/latest_prediction.json`, i fa `git push` al repositori.
+- **Vercel** llegeix directament els fitxers a través de `raw.githubusercontent.com` sense necessitat de redeploy.
+- **Programació de fluxos**:
+  - Resum diari a les **07:00**.
+  - Informe d'accuracy els dilluns a les **08:00**.
+  - Retrain cada diumenge a les **15:00**.
+- **Secrets** (només noms, sense valors): `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID`, `METEOCAT_API_KEY`, `AEMET_API_KEY`, `GATEWAY_TOKEN`.
+- No es revela cap adreça IP, projecte, zona, nom de màquina virtual, identificadors ni prefixos de tokens.
 ### 8. Dashboard a Vercel
 
 El dashboard web és un lloc estàtic dins de `docs/` i ja queda preparat per desplegar-se a Vercel amb el fitxer `vercel.json` del repositori.

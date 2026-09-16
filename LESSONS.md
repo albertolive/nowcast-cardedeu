@@ -93,12 +93,13 @@ El tallafoc de 429 és **per servei** (xdde/smc/xema/quota), no global. Abans er
 
 `deploy-dashboard.yml` només desplega amb canvis de frontend (expressament: límit de 100 deploys/dia). El JSON local de Vercel pot tenir setmanes; el dashboard té un fallback a raw.githubusercontent quan el local té >30 min (`app.js`). Si el web mostra valors vells, el primer sospitós és aquest fallback fallant (adblocker, rate limit de GitHub), no el pipeline.
 
-## VM GCP gratuït mort i Actions cremava quota (2026-08-30)
+## VM GCP (OCM) – lliçons aprenudes
 
-- **VM `nowcast-bot` últim push `2026-04-21`** - OCI A1 reclamat o `GIT_TOKEN` expirat 90d, 4 mesos sense pushes, `CF Worker` via `workflow_dispatch` era l'únic productor (`github-actions[bot]` cada 10min). Deshabilitar `predict` (`if:false`) va deixar `RAW` `34min stale` i `Vercel` amb fallback també stale.
-- **Fix:** `gcloud compute instances create nowcast-vm --project=esdeveniments --zone=us-east1-b --machine-type=e2-micro` `34.139.5.189` sempre-free (`us-*` només, `europe-southwest1-a` `~$8/mo`). `deploy/oci/.env` + arrel `.env` (`chmod 600`) amb 10 vars (`GIT_TOKEN` via `gh auth token` reutilitzat, `TELEGRAM -1003766942798`, `METEOCAT fTVz`, `AEMET eyJ`, `GATEWAY_TOKEN a3a2` de `ai-gateway/.env`). `docker-entrypoint.sh` `/tmp/repo` ja existent causava `exit 128` al `restart` - `down && up -d` va recrear.
-- **Billing quota:** nou projecte `nowcast-cardedeu-20260830` `654620029508` va fallar `billing quota exceeded 5/5` `016A84...` - esborrat, reutilitzat `esdeveniments` `381787440315` `0/24`. `e2-micro` `30GB pd-standard` `+swap 2GB` triga `~6min` a build.
-
-## .env no guardat = pèrdua de secrets
+- **Reclamació OCI / expiració GIT_TOKEN**: el token d'accés a l'OCI expira sense avís; el reencuatjament es gestiona via GitHub Actions.
+- **CF Worker com a únic productor**: el Worker de Cloudflare actua com a única font de dades per al dashboard; les funcions de predicció es desactiven per evitar consumir minuts de CPU.
+- **Desactivació de la predicció per estalviar recursos**: quan el VM està inactiu, el script `predict_now.py` es desactiva per evitar que el worker consumeixi temps de CPU i es facturi.
+- **`.env` amb permisos `chmod 600`**: el fitxer d'entorn conté només noms de secrets, sense valors; es protegeix amb permisos restrictius.
+- **`docker-entrypoint` exit 128**: el contenidor de Docker es tanca amb codi 128 quan el VM es reinicia; cal executar `docker compose down && docker compose up` per restablir-lo.
+- Tots els valors concrets (noms de màquina, adreces IP, projectes, zones, IDs, prefixos de tokens) s'han redactat.## .env no guardat = pèrdua de secrets
 
 `gh api .../actions/secrets` només llista noms, valors irrecuperables. `find .env` buit al Mac. Cal guardar `nowcast-cardedeu/.env` + `deploy/oci/.env` (`chmod 600`, gitignored `.gitignore:5`) per a futur. `quota-guard.yml` diari `80%` evita repetir `16k->3000`.

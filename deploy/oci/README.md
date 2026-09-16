@@ -33,7 +33,7 @@ After migration, account Actions usage drops to ~1,400 min/month — inside
 the 2,000 free tier again, so meteo-brief's `daily-brief.yml` can return as
 production on Sep 1.
 
-## Step 0 — create the VM (actual: esdeveniments:us-east1-b 34.139.5.189)
+## Step 0 — create the VM
 
 ### Path B: GCP e2-micro (always free, never expires) - implementat 2026-08-30
 
@@ -70,7 +70,7 @@ is idempotent — rerunning is safe.
 
 ## Step 2 — `.env` (guardat local 2026-08-30)
 
-Copia `.env` ja creat a arrel (`nowcast-cardedeu/.env` `chmod 600` gitignored) i `deploy/oci/.env` - 10 vars: `GIT_TOKEN` (`gho_...` `repo` push), `GIT_REPO`, `TELEGRAM_BOT_TOKEN=8631860454:AAH...` `CHAT_ID=-1003766942798` (channel `MeteoBot Cardedeu`), `METEOCAT fTVz...`, `AEMET eyJ...`, `GATEWAY_TOKEN=a3a2...` (=`ai-gateway/.env` `AI_GATEWAY_API_KEY`), `OPENROUTER/GEMINI/GROQ`. Sense `TELEGRAM_CHAT_ID` el VM corre però no alerta. `METEOCAT/AEMET` opcionals (NWP fallback). Sense `.env` local, `gh auth token` reutilitzat temporalment.
+Copia `.env` ja creat a arrel (`nowcast-cardedeu/.env` `chmod 600` gitignored) i `deploy/oci/.env` - 10 vars: secrets via environment variables.
 
 ## Step 3 — Verify
 
