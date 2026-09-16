@@ -300,3 +300,84 @@ class TestSynopticConsensus:
         )
         assert prob == pytest.approx(0.08)
         assert adj == []
+
+
+class TestRampedApproachFloors:
+    """Els floors de radar rampen a la zona d'aproximació (2026-09-16).
+
+    Cas real: eco AEMET de 47 dBZ aparegut a 1.3km amb el model al 2% → salt
+    sec 2%→55% d'una run a la següent. El floor rampa a la banda EXTERIOR de
+    cada regla; a la zona de perill (curta) el comportament és idèntic a
+    l'antic — cap retard quan la tempesta ja hi és.
+    """
+
+    @staticmethod
+    def _aemet(km, dbz=40.0):
+        return {
+            "aemet_radar_available": True,
+            "aemet_radar_nearest_echo_km": km,
+            "aemet_radar_max_dbz_20km": dbz,
+            "aemet_radar_coverage_20km": 0.05,
+            "aemet_radar_same_frame_streak": 0,
+        }
+
+    def test_aemet_full_floor_inside_danger_zone(self):
+        # ≤15km: idèntic al comportament previ (cas real d'avui: 1.3km)
+        prob, _ = _apply_physical_constraints(
+            0.02, _radar(), NO_SENTINEL, self._aemet(14.9), None, None)
+        assert prob == pytest.approx(0.55)
+
+    def test_aemet_ramps_in_outer_zone(self):
+        # 15-20km: rampa lineal 0.55→0.30
+        p17, _ = _apply_physical_constraints(
+            0.02, _radar(), NO_SENTINEL, self._aemet(17.5), None, None)
+        assert p17 == pytest.approx(0.30 + 0.25 * (20 - 17.5) / (20 - 15))
+        p19, _ = _apply_physical_constraints(
+            0.02, _radar(), NO_SENTINEL, self._aemet(19.0), None, None)
+        assert p19 == pytest.approx(0.30 + 0.25 * (20 - 19.0) / (20 - 15))
+
+    def test_aemet_edge_of_band_floors_at_edge_value(self):
+        prob, adj = _apply_physical_constraints(
+            0.02, _radar(), NO_SENTINEL, self._aemet(20.0), None, None)
+        assert prob == pytest.approx(0.30)
+        assert any("AEMET" in a for a in adj)
+
+    def test_aemet_ramp_is_monotonic_on_approach(self):
+        # km descendent (tempesta apropant-se) → probabilitat ascendent
+        probs = []
+        for km in (19.5, 18.0, 16.5, 15.0):
+            prob, _ = _apply_physical_constraints(
+                0.02, _radar(), NO_SENTINEL, self._aemet(km), None, None)
+            probs.append(prob)
+        assert probs == sorted(probs)
+
+    def test_rainviewer_upwind_ramps_in_outer_zone(self):
+        # 12-15km: rampa; el cas motivador (7.2km, 56.5dBZ) cau dins la zona
+        # completa i manté el 0.55 (test_strong_upwind_echo_floors_at_55)
+        radar = _radar(radar_nearest_echo_km=13.5, radar_max_dbz_20km=50.0,
+                       radar_upwind_nearest_echo_km=13.5)
+        prob, adj = _apply_physical_constraints(
+            0.10, radar, NO_SENTINEL, AEMET_DOWN, None, None)
+        assert prob == pytest.approx(0.30 + 0.25 * (15 - 13.5) / (15 - 12))
+        assert any("sobrevent" in a for a in adj)
+
+    def test_rainviewer_upwind_full_inside_danger_zone(self):
+        radar = _radar(radar_nearest_echo_km=11.0, radar_max_dbz_20km=56.5,
+                       radar_upwind_nearest_echo_km=11.0)
+        prob, _ = _apply_physical_constraints(
+            0.10, radar, NO_SENTINEL, AEMET_DOWN, None, None)
+        assert prob == pytest.approx(0.55)
+
+    def test_eta_ramps_from_35_to_50(self):
+        for eta, expected in ((15, 0.35), (7.5, 0.425), (0, 0.50)):
+            radar = _radar(radar_storm_approaching=1, radar_storm_eta_min=eta,
+                           radar_max_dbz_20km=30.0)
+            prob, _ = _apply_physical_constraints(
+                0.10, radar, NO_SENTINEL, AEMET_DOWN, None, None)
+            assert prob == pytest.approx(expected), f"eta={eta}"
+
+    def test_ramp_never_lowers_probability(self):
+        prob, adj = _apply_physical_constraints(
+            0.90, _radar(), NO_SENTINEL, self._aemet(17.5), None, None)
+        assert prob == pytest.approx(0.90)
+        assert adj == []

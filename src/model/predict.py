@@ -122,6 +122,21 @@ def _compute_station_raining_now(current: dict | None, station_df) -> bool:
     return False
 
 
+def _approach_floor(full_floor: float, edge_floor: float,
+                    edge_km: float, full_km: float, km: float) -> float:
+    """Floor rampat a la zona d'aproximació d'una regla de radar.
+
+    Dins full_km el floor és complet (com sempre); entre full_km i edge_km
+    rampa linealment fins a edge_floor. Una tempesta que s'acosta puja per
+    esglaons suaus (un per cicle de 10 min) en lloc de saltar 2%→55% d'una
+    run a la següent (2026-09-16), sense retardar mai l'avís a prop.
+    """
+    if km <= full_km:
+        return full_floor
+    t = (edge_km - km) / (edge_km - full_km)
+    return edge_floor + (full_floor - edge_floor) * max(0.0, min(1.0, t))
+
+
 def _apply_physical_constraints(probability: float, radar_data: dict,
                                  sentinel_features: dict,
                                  aemet_radar_data: dict | None = None,
@@ -161,10 +176,11 @@ def _apply_physical_constraints(probability: float, radar_data: dict,
             adjusted = floor
 
     # 2. Eco radar fort molt a prop (< 5km, dBZ > 20)
+    # Floor complet dins 3.5km; rampa 0.35→0.50 a la zona 3.5-5km.
     nearest_km = radar_data.get("radar_nearest_echo_km")
     max_dbz_20km = radar_data.get("radar_max_dbz_20km", 0) or 0
     if not rv_frozen and nearest_km is not None and nearest_km < 5 and max_dbz_20km >= 20:
-        floor = 0.50
+        floor = _approach_floor(0.50, 0.35, 5.0, 3.5, nearest_km)
         if adjusted < floor:
             adjustments.append(f"Eco radar a {nearest_km:.0f}km ({max_dbz_20km:.0f} dBZ)")
             adjusted = floor
@@ -173,10 +189,13 @@ def _apply_physical_constraints(probability: float, radar_data: dict,
     # de distància. No depèn del vector de moviment (sovint surt 0.0 amb
     # cel·les quasi-estacionàries, com el 2026-06-04: 56 dBZ a 7km i pred 10%).
     # Si l'eco és al sector de sobrevent, ve cap aquí: floor més alt.
+    # Floor complet dins 12km (el cas motivador, 7.2km, hi cau); rampa
+    # 0.30→floor a la zona 12-15km.
     if not rv_frozen and nearest_km is not None and nearest_km < 15 and max_dbz_20km >= 45:
         upwind_km = radar_data.get("radar_upwind_nearest_echo_km")
         upwind = upwind_km is not None and upwind_km < 15
-        floor = 0.55 if upwind else 0.45
+        full = 0.55 if upwind else 0.45
+        floor = _approach_floor(full, 0.30, 15.0, 12.0, nearest_km)
         if adjusted < floor:
             adjustments.append(
                 f"Eco fort {max_dbz_20km:.0f} dBZ a {nearest_km:.0f}km"
@@ -185,12 +204,13 @@ def _apply_physical_constraints(probability: float, radar_data: dict,
             adjusted = floor
 
     # 3. Tempesta aproximant-se amb ETA curta i eco fort
-    # Floor 0.50: per sobre del llindar d'alerta (~0.44). Amb 0.40 la regla
-    # era decorativa — detectava la tempesta i no alertava ningú.
+    # Floor 0.50 a l'arribada (per sobre del llindar d'alerta ~0.44). Amb 0.40
+    # la regla era decorativa — detectava la tempesta i no alertava ningú.
+    # Rampa per ETA: 0.35 a 15min → 0.50 a 0min, en lloc d'un salt.
     eta = radar_data.get("radar_storm_eta_min")
     if (not rv_frozen and radar_data.get("radar_storm_approaching") and
             eta is not None and eta <= 15 and max_dbz_20km >= 25):
-        floor = 0.50
+        floor = 0.35 + 0.15 * (1.0 - min(eta, 15) / 15.0)
         if adjusted < floor:
             adjustments.append(f"Tempesta aproximant-se, ETA ~{eta:.0f} min")
             adjusted = floor
@@ -241,7 +261,11 @@ def _apply_physical_constraints(probability: float, radar_data: dict,
         a_max_dbz = aemet_radar_data.get("aemet_radar_max_dbz_20km", 0) or 0
         a_cov = aemet_radar_data.get("aemet_radar_coverage_20km", 0) or 0
         if not a_frozen and a_nearest is not None and a_nearest <= 20 and a_max_dbz >= 35:
-            floor = 0.55
+            # Floor complet dins 15km; rampa 0.30→0.55 a la zona 15-20km
+            # (2026-09-16: eco de 47 dBZ aparegut a 1km amb el model al 2% →
+            # salt sec 2%→55%; com més lluny és l'eco primer detectat, més
+            # suau és la pujada cicle a cicle).
+            floor = _approach_floor(0.55, 0.30, 20.0, 15.0, a_nearest)
             if adjusted < floor:
                 adjustments.append(
                     f"Radar AEMET: eco {a_max_dbz:.0f} dBZ a {a_nearest:.0f}km"
