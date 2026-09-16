@@ -1104,6 +1104,7 @@ footer a:hover { text-decoration: underline; }
 .pred-result.correct { color: var(--accent-green); }
 .pred-result.wrong { color: var(--accent-red); }
 .pred-result.pending { color: var(--accent-yellow); }
+.pred-result.expired { color: var(--accent-yellow); opacity: 0.55; }
 .pred-result.uncertain { color: var(--accent-yellow); opacity: 0.85; }
 
 /* Prediction legend */

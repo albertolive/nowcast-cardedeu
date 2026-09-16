@@ -202,6 +202,7 @@ function _predictionLabel(d) {
 
 /** Fair verification: uncertain zone scored softly with 50% lean boundary */
 function _verificationResult(d) {
+  if (d.expired) return { text: '⏳ Expirat', cls: 'expired' };
   if (!d.verified) return { text: '⏳ Pendent', cls: 'pending' };
   const cat = d.rain_category;
   const pct = d.probability_pct;
