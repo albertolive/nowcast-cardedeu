@@ -43,6 +43,17 @@ def test_app_js_shard_logic():
     assert "fullHistory" in txt, "app.js must merge shards for metrics from May start"
     assert "recallPct" in txt and "precisionPct" in txt, "app.js missing recall/precision definitions"
 
+def test_app_js_history_reads_docs_and_warns_when_stale():
+    txt = APP_JS.read_text()
+    # data/predictions_log.jsonl on raw is only pushed in the nightly verify commit,
+    # so fetchJSONL must read the docs/ copy (pushed every cycle) first, not DATA_BASES.
+    assert "JSONL_BASES" in txt, "app.js missing JSONL_BASES (docs-first base list for history JSONL)"
+    assert "for (const base of JSONL_BASES)" in txt, "fetchJSONL must iterate JSONL_BASES, not DATA_BASES"
+    # Stale fallback must never be shown as live: header badge wired to STALE_SOURCES.
+    assert "STALE_SOURCES" in txt and "updateStaleBanner" in txt, "app.js missing stale-source tracking"
+    html = (ROOT / "docs/index.html").read_text()
+    assert 'id="stale-banner"' in html, "index.html missing stale-banner element"
+
 def test_parquet_has_may():
     # Ensure parquet still has May for future shard builds
     import sys

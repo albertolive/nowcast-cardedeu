@@ -20,6 +20,17 @@ function getDataBases() {
 
 const DATA_BASES = getDataBases();
 
+// History JSONL lives in docs/ (the VM pushes it every cycle). The data/ copy on
+// raw only lands in the nightly verify/trim commit (~01:00 UTC), so raw-first on
+// data/ failed the 30-min freshness gate ~23.5h/day and every visitor silently
+// fell back to the stale Vercel snapshot ("fossil slots" incident, 2026-09-16).
+// Raw docs/ first; the Vercel docs/ snapshot is last-resort fallback only.
+const JSONL_BASES = [`https://raw.githubusercontent.com/${REPO}/${BRANCH}/docs`, '.'];
+
+// Filenames currently served stale by the fallback path -> last timestamp served.
+// Drives the header "stale since" badge so old data is never shown as live.
+const STALE_SOURCES = new Map();
+
 // Sharded history: May 2026 -> ... kept as docs/history/YYYY-MM.jsonl (600K/mo, slim 7 fields) + 35d fast path docs/predictions_log.jsonl (823K).
 // Long-term: initial load stays 823K (~50ms parse), May history lazy-loaded on calendar nav. Full data/predictions_log.jsonl 41M never fetched by browser.
 const HISTORY_SHARDS = (() => {
@@ -88,16 +99,20 @@ async function fetchJSON(filename, { freshnessKey = 'timestamp' } = {}) {
         lastStale = data;
         continue;
       }
+      STALE_SOURCES.delete(filename);
       return data;
     } catch {}
   }
-  if (lastStale) return lastStale; // better stale than nothing
+  if (lastStale) {
+    STALE_SOURCES.set(filename, lastStale?.[freshnessKey] ?? null);
+    return lastStale; // better stale than nothing
+  }
   throw new Error(`No s'ha pogut carregar ${filename}`);
 }
 
 async function fetchJSONL(filename, { freshnessKey = 'timestamp' } = {}) {
   let lastStale = null;
-  for (const base of DATA_BASES) {
+  for (const base of JSONL_BASES) {
     try {
       const ctrl = new AbortController();
       const tid = setTimeout(() => ctrl.abort(), 8000);
@@ -111,11 +126,35 @@ async function fetchJSONL(filename, { freshnessKey = 'timestamp' } = {}) {
         lastStale = rows;
         continue;
       }
+      STALE_SOURCES.delete(filename);
       return rows;
     } catch {}
   }
-  if (lastStale) return lastStale;
+  if (lastStale) {
+    const last = lastStale[lastStale.length - 1];
+    STALE_SOURCES.set(filename, last?.[freshnessKey] ?? null);
+    return lastStale;
+  }
   throw new Error(`No s'ha pogut carregar ${filename}`);
+}
+
+// Show a header badge when any source was served stale by the fallback path, so
+// old verification states are never presented as live. Reuses the freshness
+// ticker cadence (updated by the same 30s interval as the "fa X min" text).
+function updateStaleBanner() {
+  const el = document.getElementById('stale-banner');
+  if (!el) return;
+  const stamps = [...STALE_SOURCES.values()]
+    .map(t => Date.parse(t))
+    .filter(t => Number.isFinite(t));
+  if (stamps.length === 0) {
+    el.hidden = true;
+    el.textContent = '';
+    return;
+  }
+  const oldest = new Date(Math.min(...stamps));
+  el.textContent = `⚠️ Dades en retard — última actualització: ${fmtTime(oldest.toISOString())} (${relativeTime(oldest.toISOString())})`;
+  el.hidden = false;
 }
 
 function fmtTime(iso) {
@@ -1354,6 +1393,7 @@ async function loadAndRender() {
     const card = document.querySelector('.prediction-card');
     if (card) { card.classList.add('flash'); setTimeout(() => card.classList.remove('flash'), 1500); }
   }
+  updateStaleBanner();
   return { latest, history, fullHistory };
 }
 
@@ -1446,6 +1486,7 @@ async function init() {
     setInterval(() => {
       const el = document.getElementById('freshness');
       if (el && _latestTimestamp) el.textContent = relativeTime(_latestTimestamp);
+      updateStaleBanner();
     }, 30000);
   } catch (err) {
     document.getElementById('app').innerHTML = `
