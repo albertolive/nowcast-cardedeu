@@ -15,6 +15,7 @@ import config
 from src.data.meteocardedeu import fetch_series, fetch_latest
 from src.data.open_meteo import fetch_forecast, fetch_pressure_levels, fetch_pressure_levels_hourly, fetch_sst_forecast
 from src.data.rainviewer import fetch_radar_at_cardedeu
+from src.data.meteocat_radar import fetch_meteocat_radar, to_radar_data
 from src.data.meteocat import fetch_sentinel_latest, compute_sentinel_features
 from src.data.meteocat_xdde import compute_lightning_features
 from src.data.meteocat_prediccio import fetch_municipal_hourly_forecast
@@ -313,6 +314,38 @@ def _apply_physical_constraints(probability: float, radar_data: dict,
     return adjusted, adjustments
 
 
+def _select_radar_source(meteocat: dict, rainviewer: dict) -> tuple[dict, str]:
+    """Tria la font de radar primària amb degradació explícita i traçable.
+
+    Ordre de preferència:
+      1. Meteocat fresca i no congelada (xarxa de radars de Catalunya, 6 min,
+         dBZ exacte de la llegenda oficial).
+      2. RainViewer fresca (tiles globals: cal una font que cobreixi qualsevol
+         fallada local, però no és la més precisa aquí).
+      3. Meteocat amb el darrer estat vàlid dins la finestra d'edat.
+      4. RainViewer encara que estigui congelat: pitjor que res, i les regles
+         físiques s'auto-desactiven quan `radar_frames_frozen` és cert.
+
+    Retorna (radar_data en l'esquema `radar_*`, etiqueta de la font triada).
+    """
+    streak = int(meteocat.get("meteocat_radar_same_frame_streak") or 0)
+    mc_ok = (bool(meteocat.get("meteocat_radar_available"))
+             and streak < config.METEO_RADAR_FRAME_STALE_STREAK)
+    if mc_ok:
+        return to_radar_data(meteocat), "meteocat"
+
+    rv = dict(rainviewer)
+    if not rainviewer.get("radar_frames_frozen"):
+        rv["radar_source"] = "rainviewer"
+        return rv, "rainviewer"
+
+    if meteocat.get("meteocat_radar_frame_time"):
+        return to_radar_data(meteocat), "meteocat_stale"
+
+    rv["radar_source"] = "rainviewer_frozen"
+    return rv, "rainviewer_frozen"
+
+
 def predict_now() -> dict:
     """
     Executa una predicció en temps real.
@@ -342,11 +375,22 @@ def predict_now() -> dict:
     logger.info("Obtenint SST Mediterrani (Marine API)...")
     sst_data = fetch_sst_forecast()
 
-    logger.info("Obtenint dades de radar (RainViewer)...")
+    logger.info("Obtenint dades de radar (Meteocat SMC + RainViewer)...")
     # Passar la direcció del vent a 850hPa per escaneig del sector de sobrevent
     wind_from_dir = pressure_data.get("wind_850_dir")
-    radar_data = fetch_radar_at_cardedeu(wind_from_dir=wind_from_dir)
-    logger.info(f"  Radar: dBZ={radar_data['radar_dbz']}, echo={radar_data['radar_has_echo']}, "
+    meteocat_radar_data = fetch_meteocat_radar(wind_from_dir=wind_from_dir)
+    rainviewer_radar_data = fetch_radar_at_cardedeu(wind_from_dir=wind_from_dir)
+    # Estat propi de Meteocat (el triat o no) per a la traçabilitat de la sortida
+    if meteocat_radar_data.get("meteocat_radar_available"):
+        meteoradar_source = "fresh"
+    elif meteocat_radar_data.get("meteocat_radar_frame_time"):
+        meteoradar_source = "stale_fallback"
+    else:
+        meteoradar_source = "unavailable"
+    radar_data, radar_source = _select_radar_source(meteocat_radar_data,
+                                                    rainviewer_radar_data)
+    logger.info(f"  Radar primari [{radar_source}]: dBZ={radar_data['radar_dbz']}, "
+                f"echo={radar_data['radar_has_echo']}, "
                 f"approaching={radar_data['radar_approaching']}")
 
     # ── Radar AEMET Barcelona (complement professional al RainViewer) ──
@@ -611,6 +655,7 @@ def predict_now() -> dict:
             "solar_radiation": current.get("SUN"),
         },
         "radar": {
+            "source": radar_source,
             "dbz": radar_data["radar_dbz"],
             "rain_rate_mmh": radar_data["radar_rain_rate"],
             "has_echo": radar_data["radar_has_echo"],
@@ -633,6 +678,21 @@ def predict_now() -> dict:
                 "coverage_S": radar_data.get("radar_quadrant_coverage_S", 0.0),
                 "coverage_W": radar_data.get("radar_quadrant_coverage_W", 0.0),
             },
+        },
+        "meteocat_radar": {
+            "source": meteoradar_source,
+            "dbz": meteocat_radar_data.get("meteocat_radar_dbz"),
+            "has_echo": meteocat_radar_data.get("meteocat_radar_has_echo"),
+            "nearest_echo_km": meteocat_radar_data.get("meteocat_radar_nearest_echo_km"),
+            "max_dbz_20km": meteocat_radar_data.get("meteocat_radar_max_dbz_20km"),
+            "coverage_20km": meteocat_radar_data.get("meteocat_radar_coverage_20km"),
+            "frame_time": meteocat_radar_data.get("meteocat_radar_frame_time"),
+            "frame_age_min": meteocat_radar_data.get("meteocat_radar_frame_age_min"),
+            "same_frame_streak": meteocat_radar_data.get("meteocat_radar_same_frame_streak"),
+            "storm_drift_kmh": meteocat_radar_data.get("meteocat_radar_storm_drift_kmh"),
+            "storm_bearing": meteocat_radar_data.get("meteocat_radar_storm_bearing"),
+            "storm_eta_min": meteocat_radar_data.get("meteocat_radar_storm_eta_min"),
+            "storm_approaching": meteocat_radar_data.get("meteocat_radar_storm_approaching"),
         },
         "sentinel": {
             "station": config.SENTINEL_STATION_NAME,

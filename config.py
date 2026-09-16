@@ -177,6 +177,7 @@ METEO_RADAR_FRAME_MINUTES = 6         # cadència; graella ancorada al minut 00
 METEO_RADAR_MAX_LOOKBACK_SLOTS = 8    # fins a 48 min enrere buscant el darrer frame
 METEO_RADAR_STALE_MAX_MIN = 30        # frame més vell que això → no disponible
 METEO_RADAR_MAX_PLAUSIBLE_KMH = 120   # deriva de cel·la per sobre d'això = soroll
+METEO_RADAR_FRAME_STALE_STREAK = 3    # frames idèntics seguits → font congelada
 METEO_RADAR_STATE_FILE = os.path.join(
     os.path.dirname(os.path.abspath(__file__)), "data", "meteocat_radar_state.json"
 )

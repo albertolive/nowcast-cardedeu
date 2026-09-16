@@ -324,6 +324,7 @@ def _empty_result() -> dict:
         "meteocat_radar_dbz": 0.0,
         "meteocat_radar_has_echo": False,
         "meteocat_radar_nearest_echo_km": None,
+        "meteocat_radar_nearest_echo_bearing": None,
         "meteocat_radar_nearest_echo_compass": None,
         "meteocat_radar_max_dbz_20km": 0.0,
         "meteocat_radar_coverage_20km": 0.0,
@@ -398,6 +399,7 @@ def fetch_meteocat_radar(wind_from_dir: Optional[float] = None) -> dict:
             "meteocat_radar_dbz": round(dbz_at_pixel, 1),
             "meteocat_radar_has_echo": dbz_at_pixel >= config.RADAR_MIN_DBZ,
             "meteocat_radar_nearest_echo_km": spatial["nearest_echo_km"],
+            "meteocat_radar_nearest_echo_bearing": spatial["nearest_echo_bearing"],
             "meteocat_radar_nearest_echo_compass": (
                 _bearing_to_compass(spatial["nearest_echo_bearing"])
                 if spatial["nearest_echo_bearing"] is not None else None),
@@ -419,6 +421,8 @@ def fetch_meteocat_radar(wind_from_dir: Optional[float] = None) -> dict:
         for name in ("N", "E", "S", "W"):
             result[f"meteocat_radar_quadrant_max_dbz_{name}"] = \
                 spatial["quadrant_max_dbz"].get(name, 0.0)
+            result[f"meteocat_radar_quadrant_coverage_{name}"] = \
+                spatial["quadrant_coverage"].get(name, 0.0)
 
         _save_state({"frame_time": frame_dt.isoformat(), "md5": md5,
                      "same_frame_streak": streak, "last_result": result})
@@ -435,6 +439,63 @@ def fetch_meteocat_radar(wind_from_dir: Optional[float] = None) -> dict:
     except Exception as e:
         logger.warning(f"Error processant radar Meteocat: {e}")
         return _stale_or_empty()
+
+
+def to_radar_data(mc: dict) -> dict:
+    """Adapta el resultat de Meteocat a l'esquema `radar_*` de RainViewer.
+
+    El model i les regles físiques consumeixen claus `radar_*`; aquesta funció
+    permet que Meteocat sigui la font primària sense tocar ni les regles ni el
+    vector de features. Els camps que Meteocat no calcula (radar_frames_with_echo,
+    radar_max_intensity_1h) s'ometen a posta: el vector els deixa com a NaN en
+    lloc d'inventar un valor (el model dona 0% d'importància al radar, així que
+    no afecta la predicció; només es tracta de no mentir a les dades).
+    """
+    from src.data.rainviewer import _dbz_to_rain_rate
+
+    dbz = float(mc.get("meteocat_radar_dbz") or 0.0)
+    speed = mc.get("meteocat_radar_storm_drift_kmh")
+    drift_bearing = mc.get("meteocat_radar_storm_bearing")
+    echo_bearing = mc.get("meteocat_radar_nearest_echo_bearing")
+    streak = int(mc.get("meteocat_radar_same_frame_streak") or 0)
+    approaching = bool(mc.get("meteocat_radar_storm_approaching"))
+
+    ew = ns = np.nan
+    if speed is not None and drift_bearing is not None:
+        ew = float(speed * np.sin(np.radians(drift_bearing)))
+        ns = float(speed * np.cos(np.radians(drift_bearing)))
+
+    out = {
+        "radar_dbz": dbz,
+        "radar_rain_rate": _dbz_to_rain_rate(dbz),
+        "radar_has_echo": bool(mc.get("meteocat_radar_has_echo")),
+        "radar_nearest_echo_km": mc.get("meteocat_radar_nearest_echo_km"),
+        "radar_nearest_echo_compass": mc.get("meteocat_radar_nearest_echo_compass"),
+        "radar_max_dbz_20km": float(mc.get("meteocat_radar_max_dbz_20km") or 0.0),
+        "radar_coverage_20km": float(mc.get("meteocat_radar_coverage_20km") or 0.0),
+        "radar_upwind_nearest_echo_km": mc.get("meteocat_radar_upwind_nearest_echo_km"),
+        "radar_upwind_max_dbz": float(mc.get("meteocat_radar_upwind_max_dbz") or 0.0),
+        "radar_approaching": approaching,
+        "radar_storm_approaching": approaching,
+        "radar_storm_eta_min": mc.get("meteocat_radar_storm_eta_min"),
+        "radar_storm_velocity_kmh": float(speed) if speed is not None else np.nan,
+        "radar_storm_velocity_ew": ew,
+        "radar_storm_velocity_ns": ns,
+        "radar_echo_bearing_cos": (float(np.cos(np.radians(echo_bearing)))
+                                   if echo_bearing is not None else np.nan),
+        "radar_echo_bearing_sin": (float(np.sin(np.radians(echo_bearing)))
+                                   if echo_bearing is not None else np.nan),
+        # Congelació de font: mateix guard que AEMET, però amb el nostre comptador
+        "radar_frames_frozen": streak >= config.METEO_RADAR_FRAME_STALE_STREAK,
+        "radar_source": "meteocat",
+        "radar_source_frame_age_min": mc.get("meteocat_radar_frame_age_min"),
+    }
+    for name in ("N", "E", "S", "W"):
+        out[f"radar_quadrant_max_dbz_{name}"] = \
+            float(mc.get(f"meteocat_radar_quadrant_max_dbz_{name}") or 0.0)
+        out[f"radar_quadrant_coverage_{name}"] = \
+            float(mc.get(f"meteocat_radar_quadrant_coverage_{name}") or 0.0)
+    return out
 
 
 def _stale_or_empty() -> dict:
