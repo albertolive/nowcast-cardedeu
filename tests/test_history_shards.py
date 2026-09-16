@@ -30,8 +30,13 @@ def test_predictions_log_trimmed_but_not_too_much():
     lines = [l for l in PREDICTIONS_LOG.read_text().splitlines() if l.strip()]
     assert 5000 <= len(lines) <= 6000, f"predictions_log should be 5k-6k, got {len(lines)}"
     first = json.loads(lines[0])["timestamp"]
-    # Should be within 35-40 days of now (July 25 for Aug 30)
-    assert first.startswith("2026-07-"), f"first should be July after trim, got {first}"
+    # El trim manté ~35 dies rodants. Assertem l'EDAT, no una data fixa: abans
+    # aquest test exigia "2026-07-" i va quedar obsolet sol quan la finestra es
+    # va moure a l'agost (CI en vermell en cada push de codi).
+    import datetime
+    days_old = (datetime.datetime.now(datetime.timezone.utc)
+                - datetime.datetime.fromisoformat(first)).days
+    assert 28 <= days_old <= 48, f"first row should be ~35 days old, got {days_old} ({first})"
 
 def test_app_js_shard_logic():
     txt = APP_JS.read_text()
