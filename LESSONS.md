@@ -34,7 +34,7 @@ Detalls tècnics de les tiles de Meteocat (tots verificats contra el visor en vi
 - La paleta és **discreta i exacta**: cada color RGB és una classe de 3 dBZ de la llegenda oficial (9 → 66+). No cal calibrar res, a diferència de l'esquema B&W de RainViewer (`R/2−32`).
 - El pixel d'un eco és `alpha>0`; `alpha=0` vol dir "sense precipitació" (no "fora de cobertura").
 
-Implementació: `src/data/meteocat_radar.py` (features anàlogues a `rainviewer.py` perquè siguin comparables, amb guards d'edat i de frames repetits). És la **font primària** des del 2026-09-16 (`_select_radar_source` a `predict.py`): Meteocat fresca → RainViewer fresca → Meteocat amb dades velles → RainViewer congelat. La font triada queda traçada a `radar.source` de la sortida, i RainViewer continua existint com a xarxa de seguretat global.
+Implementació: `src/data/meteocat_radar.py` (features anàlogues a `rainviewer.py` perquè siguin comparables, amb guards d'edat i de frames repetits). És la **font primària** des del 2026-09-16 (`_select_radar_source` a `predict.py`): Meteocat fresca → AEMET fresca → RainViewer fresca → Meteocat amb dades velles → RainViewer congelat. L'ordre AEMET-abans-de-RainViewer és deliberada: el mode de fallada d'AEMET (429 sorollós i cachejat) és més fiable que el congelat silenciós de RainViewer (3 incidents). La font triada queda traçada a `radar.source` de la sortida, i RainViewer continua existint com a xarxa de seguretat global.
 
 ## El radar AEMET no publica l'edat del frame
 
