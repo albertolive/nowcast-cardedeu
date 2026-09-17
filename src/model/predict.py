@@ -340,16 +340,62 @@ def _apply_physical_constraints(probability: float, radar_data: dict,
     return adjusted, adjustments
 
 
-def _select_radar_source(meteocat: dict, rainviewer: dict) -> tuple[dict, str]:
+def _aemet_to_radar_data(aemet: dict) -> dict:
+    """Adapta el radar AEMET a l'esquema `radar_*` per quan és la font primària.
+
+    AEMET (C-band Barcelona, ~40km) no fa tracking de moviment ni sector de
+    sobrevent: aquests camps van com a None/NaN i les regles 2b (sobrevent) i
+    3 (ETA) simplement no dispararan. El seu dBZ és una ESTIMACIÓ de la paleta
+    (no exacte com Meteocat) — els llindars de regla ja el toleren (regla 5
+    fa servir ≥35 dBZ des de l'agost). El guard de frame repetit es mapeja a
+    `radar_frames_frozen` perquè les regles s'auto-desactivin igual.
+    """
+    from src.data.rainviewer import _dbz_to_rain_rate
+
+    dbz = float(aemet.get("aemet_radar_dbz") or 0.0)
+    streak = int(aemet.get("aemet_radar_same_frame_streak") or 0)
+    out = {
+        "radar_dbz": dbz,
+        "radar_rain_rate": _dbz_to_rain_rate(dbz),
+        "radar_has_echo": bool(aemet.get("aemet_radar_has_echo")),
+        "radar_nearest_echo_km": aemet.get("aemet_radar_nearest_echo_km"),
+        "radar_nearest_echo_compass": aemet.get("aemet_radar_nearest_echo_compass"),
+        "radar_max_dbz_20km": float(aemet.get("aemet_radar_max_dbz_20km") or 0.0),
+        "radar_coverage_20km": float(aemet.get("aemet_radar_coverage_20km") or 0.0),
+        # Sense tracking de moviment ni sobrevent a AEMET: honest, no inventat
+        "radar_upwind_nearest_echo_km": None,
+        "radar_upwind_max_dbz": 0.0,
+        "radar_approaching": False,
+        "radar_storm_approaching": False,
+        "radar_storm_eta_min": None,
+        "radar_storm_velocity_kmh": np.nan,
+        "radar_storm_velocity_ew": np.nan,
+        "radar_storm_velocity_ns": np.nan,
+        "radar_echo_bearing_cos": np.nan,
+        "radar_echo_bearing_sin": np.nan,
+        "radar_frames_frozen": streak >= AEMET_FRAME_STALE_STREAK,
+        "radar_source": "aemet",
+        "radar_source_frame_age_min": None,
+    }
+    for name in ("N", "E", "S", "W"):
+        out[f"radar_quadrant_max_dbz_{name}"] = 0.0
+        out[f"radar_quadrant_coverage_{name}"] = 0.0
+    return out
+
+
+def _select_radar_source(meteocat: dict, rainviewer: dict,
+                         aemet: dict | None = None) -> tuple[dict, str]:
     """Tria la font de radar primària amb degradació explícita i traçable.
 
-    Ordre de preferència:
+    Ordre de preferència (pel mode de fallada, no només per proximitat):
       1. Meteocat fresca i no congelada (xarxa de radars de Catalunya, 6 min,
          dBZ exacte de la llegenda oficial).
-      2. RainViewer fresca (tiles globals: cal una font que cobreixi qualsevol
-         fallada local, però no és la més precisa aquí).
-      3. Meteocat amb el darrer estat vàlid dins la finestra d'edat.
-      4. RainViewer encara que estigui congelat: pitjor que res, i les regles
+      2. AEMET fresca (C-band professional; el seu mode de fallada —429— és
+         sorollós i cachejat, mai un congelat silenciós).
+      3. RainViewer fresca (composite global; darrer recurs abans de dades
+         velles perquè el seu mode de fallada és el congelat silenciós).
+      4. Meteocat amb el darrer estat vàlid dins la finestra d'edat.
+      5. RainViewer encara que estigui congelat: pitjor que res, i les regles
          físiques s'auto-desactiven quan `radar_frames_frozen` és cert.
 
     Retorna (radar_data en l'esquema `radar_*`, etiqueta de la font triada).
@@ -359,6 +405,13 @@ def _select_radar_source(meteocat: dict, rainviewer: dict) -> tuple[dict, str]:
              and streak < config.METEO_RADAR_FRAME_STALE_STREAK)
     if mc_ok:
         return to_radar_data(meteocat), "meteocat"
+
+    aemet = aemet or {}
+    aemet_streak = int(aemet.get("aemet_radar_same_frame_streak") or 0)
+    aemet_ok = (bool(aemet.get("aemet_radar_available"))
+                and aemet_streak < AEMET_FRAME_STALE_STREAK)
+    if aemet_ok:
+        return _aemet_to_radar_data(aemet), "aemet"
 
     rv = dict(rainviewer)
     if not rainviewer.get("radar_frames_frozen"):
@@ -401,7 +454,7 @@ def predict_now() -> dict:
     logger.info("Obtenint SST Mediterrani (Marine API)...")
     sst_data = fetch_sst_forecast()
 
-    logger.info("Obtenint dades de radar (Meteocat SMC + RainViewer)...")
+    logger.info("Obtenint dades de radar (Meteocat SMC + RainViewer + AEMET)...")
     # Passar la direcció del vent a 850hPa per escaneig del sector de sobrevent
     wind_from_dir = pressure_data.get("wind_850_dir")
     meteocat_radar_data = fetch_meteocat_radar(wind_from_dir=wind_from_dir)
@@ -413,13 +466,8 @@ def predict_now() -> dict:
         meteoradar_source = "stale_fallback"
     else:
         meteoradar_source = "unavailable"
-    radar_data, radar_source = _select_radar_source(meteocat_radar_data,
-                                                    rainviewer_radar_data)
-    logger.info(f"  Radar primari [{radar_source}]: dBZ={radar_data['radar_dbz']}, "
-                f"echo={radar_data['radar_has_echo']}, "
-                f"approaching={radar_data['radar_approaching']}")
 
-    # ── Radar AEMET Barcelona (complement professional al RainViewer) ──
+    # ── Radar AEMET Barcelona (font de degradació #2 i segona opinió independent) ──
     aemet_radar_data = {"aemet_radar_dbz": 0.0, "aemet_radar_has_echo": False,
                         "aemet_radar_nearest_echo_km": config.RADAR_SCAN_RADIUS_KM,
                         "aemet_radar_max_dbz_20km": 0.0, "aemet_radar_coverage_20km": 0.0,
@@ -429,6 +477,14 @@ def predict_now() -> dict:
         aemet_radar_data = fetch_aemet_radar()
     else:
         logger.info("AEMET radar no configurat (sense AEMET_API_KEY)")
+
+    # Selecció de font primària: Meteocat → AEMET → RainViewer (mode de fallada)
+    radar_data, radar_source = _select_radar_source(meteocat_radar_data,
+                                                    rainviewer_radar_data,
+                                                    aemet_radar_data)
+    logger.info(f"  Radar primari [{radar_source}]: dBZ={radar_data['radar_dbz']}, "
+                f"echo={radar_data['radar_has_echo']}, "
+                f"approaching={radar_data['radar_approaching']}")
 
     # ── AEMET: probabilitats de precipitació i tempesta ──
     aemet_data = {"aemet_prob_precip": np.nan, "aemet_prob_storm": np.nan, "aemet_precip_today": np.nan}
