@@ -102,6 +102,32 @@ def _aemet_storm_above_threshold(aemet_data: dict) -> bool:
         return False
 
 
+def _radar_opens_rain_gate(radar_data: dict) -> bool:
+    """Signal del radar per al rain gate, tolerant a valors no numèrics.
+
+    Els clients de radar poden retornar None/NaN/strings quan la font falla o
+    quan no plou enlloc (2026-09-16: Meteocat sec → nearest_echo_km=None).
+    Comparar None amb un float llença TypeError i mataria la predicció sencera.
+    Un eco del píxel només compta si la font NO està congelada.
+    """
+    if not radar_data:
+        return False
+    if radar_data.get("radar_frames_frozen"):
+        return False
+    if radar_data.get("radar_has_echo"):
+        return True
+    val = radar_data.get("radar_nearest_echo_km")
+    if val is None:
+        return False
+    try:
+        val_num = float(val)
+    except (TypeError, ValueError):
+        return False
+    if not np.isfinite(val_num):
+        return False
+    return 0 <= val_num < config.RAIN_GATE_RADAR_NEARBY_KM
+
+
 def _compute_station_raining_now(current: dict | None, station_df) -> bool:
     """Whether the local Cardedeu station shows rain at this moment.
 
@@ -272,7 +298,7 @@ def _apply_physical_constraints(probability: float, radar_data: dict,
                     f"Radar AEMET: eco {a_max_dbz:.0f} dBZ a {a_nearest:.0f}km"
                 )
                 adjusted = floor
-        elif a_cov >= 0.10 and a_max_dbz >= 30:
+        elif (not a_frozen and a_cov >= 0.10 and a_max_dbz >= 30):
             floor = 0.40
             if adjusted < floor:
                 adjustments.append(
@@ -423,10 +449,7 @@ def predict_now() -> dict:
     radar_fresh = not radar_data.get("radar_frames_frozen", False)
     rain_signals = (
         ensemble_data.get("ensemble_rain_agreement", 0) >= config.RAIN_GATE_ENSEMBLE_PROB
-        or radar_data.get("radar_has_echo", False)
-        or (radar_fresh
-            and radar_data.get("radar_nearest_echo_km", config.RADAR_SCAN_RADIUS_KM)
-            < config.RAIN_GATE_RADAR_NEARBY_KM)
+        or _radar_opens_rain_gate(radar_data)
         or _aemet_storm_above_threshold(aemet_data)
         or aemet_radar_data.get("aemet_radar_has_echo", False)
     )
