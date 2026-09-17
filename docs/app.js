@@ -251,8 +251,8 @@ function _verificationResult(d) {
     const leanedRain = pct >= 50;
     const wasRight = leanedRain === Boolean(d.actual_rain);
     return wasRight
-      ? { text: '🔸 Encert', cls: 'uncertain' }
-      : { text: '🔸 Error', cls: 'uncertain' };
+      ? { text: '🔸 Encert (no puntua)', cls: 'uncertain' }
+      : { text: '🔸 Error (no puntua)', cls: 'uncertain' };
   }
   // Retrocompat: if correct is null (old data verified before rain_category), recompute
   const correct = d.correct != null ? d.correct : (pct < 30 ? !d.actual_rain : d.actual_rain);
