@@ -42,10 +42,19 @@ echo "== runtime dir at $RUN_DIR =="
 mkdir -p "$RUN_DIR"
 cp "$DEPLOY_DIR/docker-compose.yml" "$RUN_DIR/"
 cp "$DEPLOY_DIR/.env" "$RUN_DIR/"
+cp "$DEPLOY_DIR/self-update.sh" "$RUN_DIR/"
 chmod 600 "$RUN_DIR/.env"
+chmod +x "$RUN_DIR/self-update.sh"
 
 echo "== build + start =="
 docker compose -f "$RUN_DIR/docker-compose.yml" up -d --build
+
+echo "== self-update cron =="
+# Cada 15 min: pull + rebuild només si canvia codi (src/scripts/Dockerfile/...),
+# amb gate d'IC verda i rollback si el contenidor no passa el health check.
+CRON_LINE='*/15 * * * * /opt/nowcast-deploy/self-update.sh >> /var/log/nowcast-selfupdate.log 2>&1'
+( crontab -l 2>/dev/null | grep -vF 'self-update.sh' ; echo "$CRON_LINE" ) | crontab -
+echo "cron instal·lat: $CRON_LINE"
 
 echo "== status =="
 sleep 5

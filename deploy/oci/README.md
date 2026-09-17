@@ -63,6 +63,12 @@ SSH in, drop this folder + a `.env` next to it, then:
 
 ```bash
 sudo bash setup.sh          # installs docker, clones repo, builds image
+                            # + installs a 15-min self-update cron (pull + rebuild
+                            #   only on code changes, gated on green CI, with
+                            #   image backup + rollback on failed health check)
+                            # Manual deploy after a code push remains possible:
+                            #   cd /opt/nowcast && git reset --hard origin/main &&
+                            #   cd /opt/nowcast-deploy && docker compose up -d --build
 ```
 
 `setup.sh` reads `GIT_TOKEN` from `.env` for the private clone. Everything
