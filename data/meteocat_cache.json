@@ -20,7 +20,7 @@
     "data": []
   },
   "xema_station_KX_2026-09-18": {
-    "timestamp": 1789734622.239129,
+    "timestamp": 1789738223.9212635,
     "data": [
       {
         "station_code": "KX",
@@ -187,6 +187,20 @@
         "station_code": "KX",
         "variable_code": 35,
         "datetime": "2026-09-18T11:30:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "KX",
+        "variable_code": 35,
+        "datetime": "2026-09-18T12:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "KX",
+        "variable_code": 35,
+        "datetime": "2026-09-18T12:30:00+00:00",
         "value": 0,
         "estat": ""
       },
@@ -360,6 +374,20 @@
       },
       {
         "station_code": "KX",
+        "variable_code": 71,
+        "datetime": "2026-09-18T12:00:00+00:00",
+        "value": 11.9,
+        "estat": ""
+      },
+      {
+        "station_code": "KX",
+        "variable_code": 71,
+        "datetime": "2026-09-18T12:30:00+00:00",
+        "value": 12,
+        "estat": ""
+      },
+      {
+        "station_code": "KX",
         "variable_code": 72,
         "datetime": "2026-09-18T00:00:00+00:00",
         "value": 0,
@@ -525,11 +553,25 @@
         "datetime": "2026-09-18T11:30:00+00:00",
         "value": 0,
         "estat": ""
+      },
+      {
+        "station_code": "KX",
+        "variable_code": 72,
+        "datetime": "2026-09-18T12:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "KX",
+        "variable_code": 72,
+        "datetime": "2026-09-18T12:30:00+00:00",
+        "value": 0,
+        "estat": ""
       }
     ]
   },
   "xema_station_YM_2026-09-18": {
-    "timestamp": 1789734621.6868289,
+    "timestamp": 1789738223.3488786,
     "data": [
       {
         "station_code": "YM",
@@ -697,6 +739,20 @@
         "variable_code": 3,
         "datetime": "2026-09-18T11:30:00+00:00",
         "value": 59,
+        "estat": ""
+      },
+      {
+        "station_code": "YM",
+        "variable_code": 3,
+        "datetime": "2026-09-18T12:00:00+00:00",
+        "value": 58,
+        "estat": ""
+      },
+      {
+        "station_code": "YM",
+        "variable_code": 3,
+        "datetime": "2026-09-18T12:30:00+00:00",
+        "value": 58,
         "estat": ""
       },
       {
@@ -869,6 +925,20 @@
       },
       {
         "station_code": "YM",
+        "variable_code": 32,
+        "datetime": "2026-09-18T12:00:00+00:00",
+        "value": 24.5,
+        "estat": ""
+      },
+      {
+        "station_code": "YM",
+        "variable_code": 32,
+        "datetime": "2026-09-18T12:30:00+00:00",
+        "value": 24.7,
+        "estat": ""
+      },
+      {
+        "station_code": "YM",
         "variable_code": 33,
         "datetime": "2026-09-18T00:00:00+00:00",
         "value": 82,
@@ -1037,6 +1107,20 @@
       },
       {
         "station_code": "YM",
+        "variable_code": 33,
+        "datetime": "2026-09-18T12:00:00+00:00",
+        "value": 54,
+        "estat": ""
+      },
+      {
+        "station_code": "YM",
+        "variable_code": 33,
+        "datetime": "2026-09-18T12:30:00+00:00",
+        "value": 55,
+        "estat": ""
+      },
+      {
+        "station_code": "YM",
         "variable_code": 35,
         "datetime": "2026-09-18T00:00:00+00:00",
         "value": 0,
@@ -1200,6 +1284,20 @@
         "station_code": "YM",
         "variable_code": 35,
         "datetime": "2026-09-18T11:30:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "YM",
+        "variable_code": 35,
+        "datetime": "2026-09-18T12:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "YM",
+        "variable_code": 35,
+        "datetime": "2026-09-18T12:30:00+00:00",
         "value": 0,
         "estat": ""
       },
@@ -1373,6 +1471,20 @@
       },
       {
         "station_code": "YM",
+        "variable_code": 40,
+        "datetime": "2026-09-18T12:00:00+00:00",
+        "value": 25.3,
+        "estat": ""
+      },
+      {
+        "station_code": "YM",
+        "variable_code": 40,
+        "datetime": "2026-09-18T12:30:00+00:00",
+        "value": 25.4,
+        "estat": ""
+      },
+      {
+        "station_code": "YM",
         "variable_code": 42,
         "datetime": "2026-09-18T00:00:00+00:00",
         "value": 17.2,
@@ -1537,6 +1649,20 @@
         "variable_code": 42,
         "datetime": "2026-09-18T11:30:00+00:00",
         "value": 23.3,
+        "estat": ""
+      },
+      {
+        "station_code": "YM",
+        "variable_code": 42,
+        "datetime": "2026-09-18T12:00:00+00:00",
+        "value": 24,
+        "estat": ""
+      },
+      {
+        "station_code": "YM",
+        "variable_code": 42,
+        "datetime": "2026-09-18T12:30:00+00:00",
+        "value": 23.9,
         "estat": ""
       },
       {
@@ -1709,6 +1835,20 @@
       },
       {
         "station_code": "YM",
+        "variable_code": 44,
+        "datetime": "2026-09-18T12:00:00+00:00",
+        "value": 52,
+        "estat": ""
+      },
+      {
+        "station_code": "YM",
+        "variable_code": 44,
+        "datetime": "2026-09-18T12:30:00+00:00",
+        "value": 52,
+        "estat": ""
+      },
+      {
+        "station_code": "YM",
         "variable_code": 71,
         "datetime": "2026-09-18T00:00:00+00:00",
         "value": 12.6,
@@ -1877,6 +2017,20 @@
       },
       {
         "station_code": "YM",
+        "variable_code": 71,
+        "datetime": "2026-09-18T12:00:00+00:00",
+        "value": 13.4,
+        "estat": ""
+      },
+      {
+        "station_code": "YM",
+        "variable_code": 71,
+        "datetime": "2026-09-18T12:30:00+00:00",
+        "value": 13.4,
+        "estat": ""
+      },
+      {
+        "station_code": "YM",
         "variable_code": 72,
         "datetime": "2026-09-18T00:00:00+00:00",
         "value": 0,
@@ -2040,6 +2194,20 @@
         "station_code": "YM",
         "variable_code": 72,
         "datetime": "2026-09-18T11:30:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "YM",
+        "variable_code": 72,
+        "datetime": "2026-09-18T12:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "YM",
+        "variable_code": 72,
+        "datetime": "2026-09-18T12:30:00+00:00",
         "value": 0,
         "estat": ""
       }
