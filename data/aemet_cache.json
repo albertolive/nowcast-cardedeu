@@ -1,6 +1,6 @@
 {
   "radar": {
-    "cached_at": 1790100618.629407,
+    "cached_at": 1790101819.478415,
     "data": {
       "aemet_radar_dbz": 0.0,
       "aemet_radar_has_echo": false,
@@ -10,9 +10,9 @@
       "aemet_radar_coverage_20km": 0.0,
       "aemet_radar_echoes_found": false,
       "aemet_radar_available": true,
-      "aemet_radar_frame_md5": "582b9492fd581260432840ae4060b9e8",
-      "aemet_radar_frame_bytes": 8590,
-      "aemet_radar_fetched_at": "2026-09-22T18:10:18.588905+00:00",
+      "aemet_radar_frame_md5": "5f36c5ff26b7a58adaa539f47b5ec3d9",
+      "aemet_radar_frame_bytes": 8555,
+      "aemet_radar_fetched_at": "2026-09-22T18:30:19.435114+00:00",
       "aemet_radar_same_frame_streak": 0
     }
   },
