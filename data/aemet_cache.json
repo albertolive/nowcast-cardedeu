@@ -1,6 +1,6 @@
 {
   "radar": {
-    "cached_at": 1790168425.091554,
+    "cached_at": 1790169621.159397,
     "data": {
       "aemet_radar_dbz": 0.0,
       "aemet_radar_has_echo": false,
@@ -12,8 +12,8 @@
       "aemet_radar_available": true,
       "aemet_radar_frame_md5": "2fabf1a93a1e827403369a9551c52243",
       "aemet_radar_frame_bytes": 8624,
-      "aemet_radar_fetched_at": "2026-09-23T13:00:25.052917+00:00",
-      "aemet_radar_same_frame_streak": 0
+      "aemet_radar_fetched_at": "2026-09-23T13:20:21.121138+00:00",
+      "aemet_radar_same_frame_streak": 1
     }
   },
   "forecast": {
