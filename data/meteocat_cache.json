@@ -1,6 +1,6 @@
 {
-  "lightning_features_20260924_10": {
-    "timestamp": 1790244022.7538807,
+  "lightning_features_20260924_11": {
+    "timestamp": 1790247615.1557796,
     "data": {
       "lightning_count_30km": 0,
       "lightning_count_15km": 0,
@@ -15,9 +15,451 @@
       "lightning_has_activity": false
     }
   },
-  "meteocat_rate_limit_cooldown_xdde": {
-    "timestamp": 1790244022.6216738,
-    "data": true
+  "xema_station_KX_2026-09-24": {
+    "timestamp": 1790246421.9077036,
+    "data": [
+      {
+        "station_code": "KX",
+        "variable_code": 35,
+        "datetime": "2026-09-24T00:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "KX",
+        "variable_code": 35,
+        "datetime": "2026-09-24T00:30:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "KX",
+        "variable_code": 35,
+        "datetime": "2026-09-24T01:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "KX",
+        "variable_code": 35,
+        "datetime": "2026-09-24T01:30:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "KX",
+        "variable_code": 35,
+        "datetime": "2026-09-24T02:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "KX",
+        "variable_code": 35,
+        "datetime": "2026-09-24T02:30:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "KX",
+        "variable_code": 35,
+        "datetime": "2026-09-24T03:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "KX",
+        "variable_code": 35,
+        "datetime": "2026-09-24T03:30:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "KX",
+        "variable_code": 35,
+        "datetime": "2026-09-24T04:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "KX",
+        "variable_code": 35,
+        "datetime": "2026-09-24T04:30:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "KX",
+        "variable_code": 35,
+        "datetime": "2026-09-24T05:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "KX",
+        "variable_code": 35,
+        "datetime": "2026-09-24T05:30:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "KX",
+        "variable_code": 35,
+        "datetime": "2026-09-24T06:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "KX",
+        "variable_code": 35,
+        "datetime": "2026-09-24T06:30:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "KX",
+        "variable_code": 35,
+        "datetime": "2026-09-24T07:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "KX",
+        "variable_code": 35,
+        "datetime": "2026-09-24T07:30:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "KX",
+        "variable_code": 35,
+        "datetime": "2026-09-24T08:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "KX",
+        "variable_code": 35,
+        "datetime": "2026-09-24T08:30:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "KX",
+        "variable_code": 35,
+        "datetime": "2026-09-24T09:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "KX",
+        "variable_code": 35,
+        "datetime": "2026-09-24T09:30:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "KX",
+        "variable_code": 35,
+        "datetime": "2026-09-24T10:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "KX",
+        "variable_code": 71,
+        "datetime": "2026-09-24T00:00:00+00:00",
+        "value": 11.9,
+        "estat": ""
+      },
+      {
+        "station_code": "KX",
+        "variable_code": 71,
+        "datetime": "2026-09-24T00:30:00+00:00",
+        "value": 11.9,
+        "estat": ""
+      },
+      {
+        "station_code": "KX",
+        "variable_code": 71,
+        "datetime": "2026-09-24T01:00:00+00:00",
+        "value": 11.9,
+        "estat": ""
+      },
+      {
+        "station_code": "KX",
+        "variable_code": 71,
+        "datetime": "2026-09-24T01:30:00+00:00",
+        "value": 12.1,
+        "estat": ""
+      },
+      {
+        "station_code": "KX",
+        "variable_code": 71,
+        "datetime": "2026-09-24T02:00:00+00:00",
+        "value": 12.1,
+        "estat": ""
+      },
+      {
+        "station_code": "KX",
+        "variable_code": 71,
+        "datetime": "2026-09-24T02:30:00+00:00",
+        "value": 11.9,
+        "estat": ""
+      },
+      {
+        "station_code": "KX",
+        "variable_code": 71,
+        "datetime": "2026-09-24T03:00:00+00:00",
+        "value": 11.9,
+        "estat": ""
+      },
+      {
+        "station_code": "KX",
+        "variable_code": 71,
+        "datetime": "2026-09-24T03:30:00+00:00",
+        "value": 12,
+        "estat": ""
+      },
+      {
+        "station_code": "KX",
+        "variable_code": 71,
+        "datetime": "2026-09-24T04:00:00+00:00",
+        "value": 12.1,
+        "estat": ""
+      },
+      {
+        "station_code": "KX",
+        "variable_code": 71,
+        "datetime": "2026-09-24T04:30:00+00:00",
+        "value": 12,
+        "estat": ""
+      },
+      {
+        "station_code": "KX",
+        "variable_code": 71,
+        "datetime": "2026-09-24T05:00:00+00:00",
+        "value": 11.9,
+        "estat": ""
+      },
+      {
+        "station_code": "KX",
+        "variable_code": 71,
+        "datetime": "2026-09-24T05:30:00+00:00",
+        "value": 11.9,
+        "estat": ""
+      },
+      {
+        "station_code": "KX",
+        "variable_code": 71,
+        "datetime": "2026-09-24T06:00:00+00:00",
+        "value": 11.9,
+        "estat": ""
+      },
+      {
+        "station_code": "KX",
+        "variable_code": 71,
+        "datetime": "2026-09-24T06:30:00+00:00",
+        "value": 11.9,
+        "estat": ""
+      },
+      {
+        "station_code": "KX",
+        "variable_code": 71,
+        "datetime": "2026-09-24T07:00:00+00:00",
+        "value": 11.9,
+        "estat": ""
+      },
+      {
+        "station_code": "KX",
+        "variable_code": 71,
+        "datetime": "2026-09-24T07:30:00+00:00",
+        "value": 11.9,
+        "estat": ""
+      },
+      {
+        "station_code": "KX",
+        "variable_code": 71,
+        "datetime": "2026-09-24T08:00:00+00:00",
+        "value": 11.9,
+        "estat": ""
+      },
+      {
+        "station_code": "KX",
+        "variable_code": 71,
+        "datetime": "2026-09-24T08:30:00+00:00",
+        "value": 12.1,
+        "estat": ""
+      },
+      {
+        "station_code": "KX",
+        "variable_code": 71,
+        "datetime": "2026-09-24T09:00:00+00:00",
+        "value": 11.9,
+        "estat": ""
+      },
+      {
+        "station_code": "KX",
+        "variable_code": 71,
+        "datetime": "2026-09-24T09:30:00+00:00",
+        "value": 11.9,
+        "estat": ""
+      },
+      {
+        "station_code": "KX",
+        "variable_code": 71,
+        "datetime": "2026-09-24T10:00:00+00:00",
+        "value": 11.9,
+        "estat": ""
+      },
+      {
+        "station_code": "KX",
+        "variable_code": 72,
+        "datetime": "2026-09-24T00:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "KX",
+        "variable_code": 72,
+        "datetime": "2026-09-24T00:30:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "KX",
+        "variable_code": 72,
+        "datetime": "2026-09-24T01:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "KX",
+        "variable_code": 72,
+        "datetime": "2026-09-24T01:30:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "KX",
+        "variable_code": 72,
+        "datetime": "2026-09-24T02:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "KX",
+        "variable_code": 72,
+        "datetime": "2026-09-24T02:30:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "KX",
+        "variable_code": 72,
+        "datetime": "2026-09-24T03:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "KX",
+        "variable_code": 72,
+        "datetime": "2026-09-24T03:30:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "KX",
+        "variable_code": 72,
+        "datetime": "2026-09-24T04:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "KX",
+        "variable_code": 72,
+        "datetime": "2026-09-24T04:30:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "KX",
+        "variable_code": 72,
+        "datetime": "2026-09-24T05:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "KX",
+        "variable_code": 72,
+        "datetime": "2026-09-24T05:30:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "KX",
+        "variable_code": 72,
+        "datetime": "2026-09-24T06:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "KX",
+        "variable_code": 72,
+        "datetime": "2026-09-24T06:30:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "KX",
+        "variable_code": 72,
+        "datetime": "2026-09-24T07:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "KX",
+        "variable_code": 72,
+        "datetime": "2026-09-24T07:30:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "KX",
+        "variable_code": 72,
+        "datetime": "2026-09-24T08:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "KX",
+        "variable_code": 72,
+        "datetime": "2026-09-24T08:30:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "KX",
+        "variable_code": 72,
+        "datetime": "2026-09-24T09:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "KX",
+        "variable_code": 72,
+        "datetime": "2026-09-24T09:30:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "KX",
+        "variable_code": 72,
+        "datetime": "2026-09-24T10:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      }
+    ]
   },
   "xema_station_YM_2026-09-24": {
     "timestamp": 1790246421.351523,
@@ -1351,451 +1793,25 @@
     "timestamp": 1790246420.4043555,
     "data": true
   },
-  "xema_station_KX_2026-09-24": {
-    "timestamp": 1790246421.9077036,
-    "data": [
-      {
-        "station_code": "KX",
-        "variable_code": 35,
-        "datetime": "2026-09-24T00:00:00+00:00",
-        "value": 0,
-        "estat": ""
-      },
-      {
-        "station_code": "KX",
-        "variable_code": 35,
-        "datetime": "2026-09-24T00:30:00+00:00",
-        "value": 0,
-        "estat": ""
-      },
-      {
-        "station_code": "KX",
-        "variable_code": 35,
-        "datetime": "2026-09-24T01:00:00+00:00",
-        "value": 0,
-        "estat": ""
-      },
-      {
-        "station_code": "KX",
-        "variable_code": 35,
-        "datetime": "2026-09-24T01:30:00+00:00",
-        "value": 0,
-        "estat": ""
-      },
-      {
-        "station_code": "KX",
-        "variable_code": 35,
-        "datetime": "2026-09-24T02:00:00+00:00",
-        "value": 0,
-        "estat": ""
-      },
-      {
-        "station_code": "KX",
-        "variable_code": 35,
-        "datetime": "2026-09-24T02:30:00+00:00",
-        "value": 0,
-        "estat": ""
-      },
-      {
-        "station_code": "KX",
-        "variable_code": 35,
-        "datetime": "2026-09-24T03:00:00+00:00",
-        "value": 0,
-        "estat": ""
-      },
-      {
-        "station_code": "KX",
-        "variable_code": 35,
-        "datetime": "2026-09-24T03:30:00+00:00",
-        "value": 0,
-        "estat": ""
-      },
-      {
-        "station_code": "KX",
-        "variable_code": 35,
-        "datetime": "2026-09-24T04:00:00+00:00",
-        "value": 0,
-        "estat": ""
-      },
-      {
-        "station_code": "KX",
-        "variable_code": 35,
-        "datetime": "2026-09-24T04:30:00+00:00",
-        "value": 0,
-        "estat": ""
-      },
-      {
-        "station_code": "KX",
-        "variable_code": 35,
-        "datetime": "2026-09-24T05:00:00+00:00",
-        "value": 0,
-        "estat": ""
-      },
-      {
-        "station_code": "KX",
-        "variable_code": 35,
-        "datetime": "2026-09-24T05:30:00+00:00",
-        "value": 0,
-        "estat": ""
-      },
-      {
-        "station_code": "KX",
-        "variable_code": 35,
-        "datetime": "2026-09-24T06:00:00+00:00",
-        "value": 0,
-        "estat": ""
-      },
-      {
-        "station_code": "KX",
-        "variable_code": 35,
-        "datetime": "2026-09-24T06:30:00+00:00",
-        "value": 0,
-        "estat": ""
-      },
-      {
-        "station_code": "KX",
-        "variable_code": 35,
-        "datetime": "2026-09-24T07:00:00+00:00",
-        "value": 0,
-        "estat": ""
-      },
-      {
-        "station_code": "KX",
-        "variable_code": 35,
-        "datetime": "2026-09-24T07:30:00+00:00",
-        "value": 0,
-        "estat": ""
-      },
-      {
-        "station_code": "KX",
-        "variable_code": 35,
-        "datetime": "2026-09-24T08:00:00+00:00",
-        "value": 0,
-        "estat": ""
-      },
-      {
-        "station_code": "KX",
-        "variable_code": 35,
-        "datetime": "2026-09-24T08:30:00+00:00",
-        "value": 0,
-        "estat": ""
-      },
-      {
-        "station_code": "KX",
-        "variable_code": 35,
-        "datetime": "2026-09-24T09:00:00+00:00",
-        "value": 0,
-        "estat": ""
-      },
-      {
-        "station_code": "KX",
-        "variable_code": 35,
-        "datetime": "2026-09-24T09:30:00+00:00",
-        "value": 0,
-        "estat": ""
-      },
-      {
-        "station_code": "KX",
-        "variable_code": 35,
-        "datetime": "2026-09-24T10:00:00+00:00",
-        "value": 0,
-        "estat": ""
-      },
-      {
-        "station_code": "KX",
-        "variable_code": 71,
-        "datetime": "2026-09-24T00:00:00+00:00",
-        "value": 11.9,
-        "estat": ""
-      },
-      {
-        "station_code": "KX",
-        "variable_code": 71,
-        "datetime": "2026-09-24T00:30:00+00:00",
-        "value": 11.9,
-        "estat": ""
-      },
-      {
-        "station_code": "KX",
-        "variable_code": 71,
-        "datetime": "2026-09-24T01:00:00+00:00",
-        "value": 11.9,
-        "estat": ""
-      },
-      {
-        "station_code": "KX",
-        "variable_code": 71,
-        "datetime": "2026-09-24T01:30:00+00:00",
-        "value": 12.1,
-        "estat": ""
-      },
-      {
-        "station_code": "KX",
-        "variable_code": 71,
-        "datetime": "2026-09-24T02:00:00+00:00",
-        "value": 12.1,
-        "estat": ""
-      },
-      {
-        "station_code": "KX",
-        "variable_code": 71,
-        "datetime": "2026-09-24T02:30:00+00:00",
-        "value": 11.9,
-        "estat": ""
-      },
-      {
-        "station_code": "KX",
-        "variable_code": 71,
-        "datetime": "2026-09-24T03:00:00+00:00",
-        "value": 11.9,
-        "estat": ""
-      },
-      {
-        "station_code": "KX",
-        "variable_code": 71,
-        "datetime": "2026-09-24T03:30:00+00:00",
-        "value": 12,
-        "estat": ""
-      },
-      {
-        "station_code": "KX",
-        "variable_code": 71,
-        "datetime": "2026-09-24T04:00:00+00:00",
-        "value": 12.1,
-        "estat": ""
-      },
-      {
-        "station_code": "KX",
-        "variable_code": 71,
-        "datetime": "2026-09-24T04:30:00+00:00",
-        "value": 12,
-        "estat": ""
-      },
-      {
-        "station_code": "KX",
-        "variable_code": 71,
-        "datetime": "2026-09-24T05:00:00+00:00",
-        "value": 11.9,
-        "estat": ""
-      },
-      {
-        "station_code": "KX",
-        "variable_code": 71,
-        "datetime": "2026-09-24T05:30:00+00:00",
-        "value": 11.9,
-        "estat": ""
-      },
-      {
-        "station_code": "KX",
-        "variable_code": 71,
-        "datetime": "2026-09-24T06:00:00+00:00",
-        "value": 11.9,
-        "estat": ""
-      },
-      {
-        "station_code": "KX",
-        "variable_code": 71,
-        "datetime": "2026-09-24T06:30:00+00:00",
-        "value": 11.9,
-        "estat": ""
-      },
-      {
-        "station_code": "KX",
-        "variable_code": 71,
-        "datetime": "2026-09-24T07:00:00+00:00",
-        "value": 11.9,
-        "estat": ""
-      },
-      {
-        "station_code": "KX",
-        "variable_code": 71,
-        "datetime": "2026-09-24T07:30:00+00:00",
-        "value": 11.9,
-        "estat": ""
-      },
-      {
-        "station_code": "KX",
-        "variable_code": 71,
-        "datetime": "2026-09-24T08:00:00+00:00",
-        "value": 11.9,
-        "estat": ""
-      },
-      {
-        "station_code": "KX",
-        "variable_code": 71,
-        "datetime": "2026-09-24T08:30:00+00:00",
-        "value": 12.1,
-        "estat": ""
-      },
-      {
-        "station_code": "KX",
-        "variable_code": 71,
-        "datetime": "2026-09-24T09:00:00+00:00",
-        "value": 11.9,
-        "estat": ""
-      },
-      {
-        "station_code": "KX",
-        "variable_code": 71,
-        "datetime": "2026-09-24T09:30:00+00:00",
-        "value": 11.9,
-        "estat": ""
-      },
-      {
-        "station_code": "KX",
-        "variable_code": 71,
-        "datetime": "2026-09-24T10:00:00+00:00",
-        "value": 11.9,
-        "estat": ""
-      },
-      {
-        "station_code": "KX",
-        "variable_code": 72,
-        "datetime": "2026-09-24T00:00:00+00:00",
-        "value": 0,
-        "estat": ""
-      },
-      {
-        "station_code": "KX",
-        "variable_code": 72,
-        "datetime": "2026-09-24T00:30:00+00:00",
-        "value": 0,
-        "estat": ""
-      },
-      {
-        "station_code": "KX",
-        "variable_code": 72,
-        "datetime": "2026-09-24T01:00:00+00:00",
-        "value": 0,
-        "estat": ""
-      },
-      {
-        "station_code": "KX",
-        "variable_code": 72,
-        "datetime": "2026-09-24T01:30:00+00:00",
-        "value": 0,
-        "estat": ""
-      },
-      {
-        "station_code": "KX",
-        "variable_code": 72,
-        "datetime": "2026-09-24T02:00:00+00:00",
-        "value": 0,
-        "estat": ""
-      },
-      {
-        "station_code": "KX",
-        "variable_code": 72,
-        "datetime": "2026-09-24T02:30:00+00:00",
-        "value": 0,
-        "estat": ""
-      },
-      {
-        "station_code": "KX",
-        "variable_code": 72,
-        "datetime": "2026-09-24T03:00:00+00:00",
-        "value": 0,
-        "estat": ""
-      },
-      {
-        "station_code": "KX",
-        "variable_code": 72,
-        "datetime": "2026-09-24T03:30:00+00:00",
-        "value": 0,
-        "estat": ""
-      },
-      {
-        "station_code": "KX",
-        "variable_code": 72,
-        "datetime": "2026-09-24T04:00:00+00:00",
-        "value": 0,
-        "estat": ""
-      },
-      {
-        "station_code": "KX",
-        "variable_code": 72,
-        "datetime": "2026-09-24T04:30:00+00:00",
-        "value": 0,
-        "estat": ""
-      },
-      {
-        "station_code": "KX",
-        "variable_code": 72,
-        "datetime": "2026-09-24T05:00:00+00:00",
-        "value": 0,
-        "estat": ""
-      },
-      {
-        "station_code": "KX",
-        "variable_code": 72,
-        "datetime": "2026-09-24T05:30:00+00:00",
-        "value": 0,
-        "estat": ""
-      },
-      {
-        "station_code": "KX",
-        "variable_code": 72,
-        "datetime": "2026-09-24T06:00:00+00:00",
-        "value": 0,
-        "estat": ""
-      },
-      {
-        "station_code": "KX",
-        "variable_code": 72,
-        "datetime": "2026-09-24T06:30:00+00:00",
-        "value": 0,
-        "estat": ""
-      },
-      {
-        "station_code": "KX",
-        "variable_code": 72,
-        "datetime": "2026-09-24T07:00:00+00:00",
-        "value": 0,
-        "estat": ""
-      },
-      {
-        "station_code": "KX",
-        "variable_code": 72,
-        "datetime": "2026-09-24T07:30:00+00:00",
-        "value": 0,
-        "estat": ""
-      },
-      {
-        "station_code": "KX",
-        "variable_code": 72,
-        "datetime": "2026-09-24T08:00:00+00:00",
-        "value": 0,
-        "estat": ""
-      },
-      {
-        "station_code": "KX",
-        "variable_code": 72,
-        "datetime": "2026-09-24T08:30:00+00:00",
-        "value": 0,
-        "estat": ""
-      },
-      {
-        "station_code": "KX",
-        "variable_code": 72,
-        "datetime": "2026-09-24T09:00:00+00:00",
-        "value": 0,
-        "estat": ""
-      },
-      {
-        "station_code": "KX",
-        "variable_code": 72,
-        "datetime": "2026-09-24T09:30:00+00:00",
-        "value": 0,
-        "estat": ""
-      },
-      {
-        "station_code": "KX",
-        "variable_code": 72,
-        "datetime": "2026-09-24T10:00:00+00:00",
-        "value": 0,
-        "estat": ""
-      }
-    ]
+  "lightning_features_20260924_10": {
+    "timestamp": 1790244022.7538807,
+    "data": {
+      "lightning_count_30km": 0,
+      "lightning_count_15km": 0,
+      "lightning_count_15km_1h": 0,
+      "lightning_count_30km_1h": 0,
+      "lightning_nearest_km": 60,
+      "lightning_nearest_bearing": null,
+      "lightning_nearest_compass": null,
+      "lightning_cloud_ground": 0,
+      "lightning_max_current_ka": 0.0,
+      "lightning_approaching": false,
+      "lightning_has_activity": false
+    }
+  },
+  "meteocat_rate_limit_cooldown_xdde": {
+    "timestamp": 1790244022.6216738,
+    "data": true
   },
   "lightning_features_20260924_09": {
     "timestamp": 1790240417.221364,
@@ -32223,9 +32239,5 @@
       "lightning_approaching": false,
       "lightning_has_activity": false
     }
-  },
-  "xdde_2026-09-17_20": {
-    "timestamp": 1789675222.4983819,
-    "data": []
   }
 }
