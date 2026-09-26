@@ -1,6 +1,6 @@
 {
-  "lightning_features_20260926_18": {
-    "timestamp": 1790445642.2996724,
+  "lightning_features_20260926_19": {
+    "timestamp": 1790449224.0582514,
     "data": {
       "lightning_count_30km": 0,
       "lightning_count_15km": 0,
@@ -14,10 +14,6 @@
       "lightning_approaching": false,
       "lightning_has_activity": false
     }
-  },
-  "meteocat_rate_limit_cooldown_xdde": {
-    "timestamp": 1790445642.1289446,
-    "data": true
   },
   "xema_station_KX_2026-09-26": {
     "timestamp": 1790446226.5467849,
@@ -3055,6 +3051,26 @@
   },
   "meteocat_rate_limit_cooldown_smc": {
     "timestamp": 1790446224.9141572,
+    "data": true
+  },
+  "lightning_features_20260926_18": {
+    "timestamp": 1790445642.2996724,
+    "data": {
+      "lightning_count_30km": 0,
+      "lightning_count_15km": 0,
+      "lightning_count_15km_1h": 0,
+      "lightning_count_30km_1h": 0,
+      "lightning_nearest_km": 60,
+      "lightning_nearest_bearing": null,
+      "lightning_nearest_compass": null,
+      "lightning_cloud_ground": 0,
+      "lightning_max_current_ka": 0.0,
+      "lightning_approaching": false,
+      "lightning_has_activity": false
+    }
+  },
+  "meteocat_rate_limit_cooldown_xdde": {
+    "timestamp": 1790445642.1289446,
     "data": true
   },
   "lightning_features_20260926_17": {
@@ -33734,22 +33750,6 @@
   },
   "lightning_features_20260919_06": {
     "timestamp": 1789797622.6746573,
-    "data": {
-      "lightning_count_30km": 0,
-      "lightning_count_15km": 0,
-      "lightning_count_15km_1h": 0,
-      "lightning_count_30km_1h": 0,
-      "lightning_nearest_km": 60,
-      "lightning_nearest_bearing": null,
-      "lightning_nearest_compass": null,
-      "lightning_cloud_ground": 0,
-      "lightning_max_current_ka": 0.0,
-      "lightning_approaching": false,
-      "lightning_has_activity": false
-    }
-  },
-  "lightning_features_20260919_05": {
-    "timestamp": 1789794015.3270268,
     "data": {
       "lightning_count_30km": 0,
       "lightning_count_15km": 0,
