@@ -20,7 +20,7 @@
     "data": true
   },
   "xema_station_KX_2026-09-30": {
-    "timestamp": 1790754025.7843032,
+    "timestamp": 1790758222.8191483,
     "data": [
       {
         "station_code": "KX",
@@ -129,6 +129,20 @@
       },
       {
         "station_code": "KX",
+        "variable_code": 35,
+        "datetime": "2026-09-30T07:30:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "KX",
+        "variable_code": 35,
+        "datetime": "2026-09-30T08:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "KX",
         "variable_code": 71,
         "datetime": "2026-09-30T00:00:00+00:00",
         "value": 11.9,
@@ -234,6 +248,20 @@
       },
       {
         "station_code": "KX",
+        "variable_code": 71,
+        "datetime": "2026-09-30T07:30:00+00:00",
+        "value": 11.9,
+        "estat": ""
+      },
+      {
+        "station_code": "KX",
+        "variable_code": 71,
+        "datetime": "2026-09-30T08:00:00+00:00",
+        "value": 11.9,
+        "estat": ""
+      },
+      {
+        "station_code": "KX",
         "variable_code": 72,
         "datetime": "2026-09-30T00:00:00+00:00",
         "value": 0,
@@ -334,13 +362,27 @@
         "station_code": "KX",
         "variable_code": 72,
         "datetime": "2026-09-30T07:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "KX",
+        "variable_code": 72,
+        "datetime": "2026-09-30T07:30:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "KX",
+        "variable_code": 72,
+        "datetime": "2026-09-30T08:00:00+00:00",
         "value": 0,
         "estat": ""
       }
     ]
   },
   "xema_station_YM_2026-09-30": {
-    "timestamp": 1790754025.363306,
+    "timestamp": 1790758222.2988257,
     "data": [
       {
         "station_code": "YM",
@@ -445,6 +487,20 @@
         "variable_code": 3,
         "datetime": "2026-09-30T07:00:00+00:00",
         "value": 86,
+        "estat": ""
+      },
+      {
+        "station_code": "YM",
+        "variable_code": 3,
+        "datetime": "2026-09-30T07:30:00+00:00",
+        "value": 83,
+        "estat": ""
+      },
+      {
+        "station_code": "YM",
+        "variable_code": 3,
+        "datetime": "2026-09-30T08:00:00+00:00",
+        "value": 77,
         "estat": ""
       },
       {
@@ -554,6 +610,20 @@
       },
       {
         "station_code": "YM",
+        "variable_code": 32,
+        "datetime": "2026-09-30T07:30:00+00:00",
+        "value": 22.4,
+        "estat": ""
+      },
+      {
+        "station_code": "YM",
+        "variable_code": 32,
+        "datetime": "2026-09-30T08:00:00+00:00",
+        "value": 23.3,
+        "estat": ""
+      },
+      {
+        "station_code": "YM",
         "variable_code": 33,
         "datetime": "2026-09-30T00:00:00+00:00",
         "value": 97,
@@ -659,6 +729,20 @@
       },
       {
         "station_code": "YM",
+        "variable_code": 33,
+        "datetime": "2026-09-30T07:30:00+00:00",
+        "value": 80,
+        "estat": ""
+      },
+      {
+        "station_code": "YM",
+        "variable_code": 33,
+        "datetime": "2026-09-30T08:00:00+00:00",
+        "value": 76,
+        "estat": ""
+      },
+      {
+        "station_code": "YM",
         "variable_code": 35,
         "datetime": "2026-09-30T00:00:00+00:00",
         "value": 0,
@@ -759,6 +843,20 @@
         "station_code": "YM",
         "variable_code": 35,
         "datetime": "2026-09-30T07:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "YM",
+        "variable_code": 35,
+        "datetime": "2026-09-30T07:30:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "YM",
+        "variable_code": 35,
+        "datetime": "2026-09-30T08:00:00+00:00",
         "value": 0,
         "estat": ""
       },
@@ -869,6 +967,20 @@
       },
       {
         "station_code": "YM",
+        "variable_code": 40,
+        "datetime": "2026-09-30T07:30:00+00:00",
+        "value": 23.5,
+        "estat": ""
+      },
+      {
+        "station_code": "YM",
+        "variable_code": 40,
+        "datetime": "2026-09-30T08:00:00+00:00",
+        "value": 23.6,
+        "estat": ""
+      },
+      {
+        "station_code": "YM",
         "variable_code": 42,
         "datetime": "2026-09-30T00:00:00+00:00",
         "value": 19,
@@ -970,6 +1082,20 @@
         "variable_code": 42,
         "datetime": "2026-09-30T07:00:00+00:00",
         "value": 21.1,
+        "estat": ""
+      },
+      {
+        "station_code": "YM",
+        "variable_code": 42,
+        "datetime": "2026-09-30T07:30:00+00:00",
+        "value": 22,
+        "estat": ""
+      },
+      {
+        "station_code": "YM",
+        "variable_code": 42,
+        "datetime": "2026-09-30T08:00:00+00:00",
+        "value": 23.1,
         "estat": ""
       },
       {
@@ -1079,6 +1205,20 @@
       },
       {
         "station_code": "YM",
+        "variable_code": 44,
+        "datetime": "2026-09-30T07:30:00+00:00",
+        "value": 77,
+        "estat": ""
+      },
+      {
+        "station_code": "YM",
+        "variable_code": 44,
+        "datetime": "2026-09-30T08:00:00+00:00",
+        "value": 74,
+        "estat": ""
+      },
+      {
+        "station_code": "YM",
         "variable_code": 71,
         "datetime": "2026-09-30T00:00:00+00:00",
         "value": 12.6,
@@ -1179,6 +1319,20 @@
         "station_code": "YM",
         "variable_code": 71,
         "datetime": "2026-09-30T07:00:00+00:00",
+        "value": 14,
+        "estat": ""
+      },
+      {
+        "station_code": "YM",
+        "variable_code": 71,
+        "datetime": "2026-09-30T07:30:00+00:00",
+        "value": 14,
+        "estat": ""
+      },
+      {
+        "station_code": "YM",
+        "variable_code": 71,
+        "datetime": "2026-09-30T08:00:00+00:00",
         "value": 14,
         "estat": ""
       },
@@ -1286,11 +1440,25 @@
         "datetime": "2026-09-30T07:00:00+00:00",
         "value": 0,
         "estat": ""
+      },
+      {
+        "station_code": "YM",
+        "variable_code": 72,
+        "datetime": "2026-09-30T07:30:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "YM",
+        "variable_code": 72,
+        "datetime": "2026-09-30T08:00:00+00:00",
+        "value": 0,
+        "estat": ""
       }
     ]
   },
   "meteocat_rate_limit_cooldown_smc": {
-    "timestamp": 1790754024.6345968,
+    "timestamp": 1790758221.4628048,
     "data": true
   },
   "lightning_features_20260930_07": {
