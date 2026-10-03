@@ -2,7 +2,7 @@
   "current_state": "rain_alert",
   "last_alert_time": 1791024062.8876839,
   "last_alert_type": "rain_incoming",
-  "last_probability": 0.2386,
+  "last_probability": 0.4,
   "consecutive_high": 0,
   "consecutive_low": 1,
   "last_wind_regime": {
@@ -12,8 +12,8 @@
     "is_migjorn": false,
     "is_garbi": false,
     "is_ponent": false,
-    "llevantada_strength": 16.4,
-    "wind_dir_change_3h": 4.0
+    "llevantada_strength": 19.7,
+    "wind_dir_change_3h": 11.0
   },
   "last_regime_alert_time": 1791007232.5074792,
   "last_regime_alert_type": "garbi_inestable"
