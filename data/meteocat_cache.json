@@ -1,6 +1,6 @@
 {
-  "lightning_features_20261003_03": {
-    "timestamp": 1790996428.183373,
+  "lightning_features_20261003_04": {
+    "timestamp": 1791000026.2873204,
     "data": {
       "lightning_count_30km": 0,
       "lightning_count_15km": 0,
@@ -15,8 +15,8 @@
       "lightning_has_activity": false
     }
   },
-  "xdde_2026-10-03_03": {
-    "timestamp": 1790996428.130272,
+  "xdde_2026-10-03_04": {
+    "timestamp": 1791000026.2355568,
     "data": []
   },
   "xema_station_KX_2026-10-03": {
@@ -620,6 +620,26 @@
   "meteocat_rate_limit_cooldown_smc": {
     "timestamp": 1790996428.7390385,
     "data": true
+  },
+  "lightning_features_20261003_03": {
+    "timestamp": 1790996428.183373,
+    "data": {
+      "lightning_count_30km": 0,
+      "lightning_count_15km": 0,
+      "lightning_count_15km_1h": 0,
+      "lightning_count_30km_1h": 0,
+      "lightning_nearest_km": 60,
+      "lightning_nearest_bearing": null,
+      "lightning_nearest_compass": null,
+      "lightning_cloud_ground": 0,
+      "lightning_max_current_ka": 0.0,
+      "lightning_approaching": false,
+      "lightning_has_activity": false
+    }
+  },
+  "xdde_2026-10-03_03": {
+    "timestamp": 1790996428.130272,
+    "data": []
   },
   "lightning_features_20261003_02": {
     "timestamp": 1790992825.0545442,
@@ -19533,32 +19553,6 @@
       "lightning_max_current_ka": 0.0,
       "lightning_approaching": false,
       "lightning_has_activity": false
-    }
-  },
-  "lightning_features_20260929_09": {
-    "timestamp": 1790672422.7516634,
-    "data": {
-      "lightning_count_30km": 0,
-      "lightning_count_15km": 0,
-      "lightning_count_15km_1h": 0,
-      "lightning_count_30km_1h": 0,
-      "lightning_nearest_km": 60,
-      "lightning_nearest_bearing": null,
-      "lightning_nearest_compass": null,
-      "lightning_cloud_ground": 0,
-      "lightning_max_current_ka": 0.0,
-      "lightning_approaching": false,
-      "lightning_has_activity": false
-    }
-  },
-  "smc_forecast_20260929_10": {
-    "timestamp": 1790668826.7454152,
-    "data": {
-      "smc_prob_precip_1h": 0,
-      "smc_prob_precip_6h": 0,
-      "smc_precip_intensity": 0,
-      "smc_temp_forecast": 23.4,
-      "smc_weather_symbol": 8
     }
   }
 }
