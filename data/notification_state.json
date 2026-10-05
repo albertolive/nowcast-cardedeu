@@ -2,7 +2,7 @@
   "current_state": "clear",
   "last_alert_time": 1791160833.9261458,
   "last_alert_type": "regime_change",
-  "last_probability": 0.0281,
+  "last_probability": 0.55,
   "consecutive_high": 0,
   "consecutive_low": 1,
   "last_wind_regime": {
@@ -12,8 +12,8 @@
     "is_migjorn": false,
     "is_garbi": false,
     "is_ponent": false,
-    "llevantada_strength": 13.0,
-    "wind_dir_change_3h": 12.0
+    "llevantada_strength": 12.1,
+    "wind_dir_change_3h": 15.0
   },
   "last_regime_alert_time": 1791160833.9261458,
   "last_regime_alert_type": "llevantada_onset"
