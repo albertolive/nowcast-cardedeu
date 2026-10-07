@@ -1,20 +1,20 @@
 {
   "current_state": "clear",
-  "last_alert_time": 1791334838.3142297,
-  "last_alert_type": "rain_clearing",
-  "last_probability": 0.0123,
+  "last_alert_time": 1791373828.132512,
+  "last_alert_type": "regime_change",
+  "last_probability": 0.0619,
   "consecutive_high": 0,
   "consecutive_low": 1,
   "last_wind_regime": {
-    "level": "10m",
+    "level": "850hPa",
     "is_tramuntana": false,
     "is_llevantada": false,
-    "is_migjorn": true,
-    "is_garbi": false,
+    "is_migjorn": false,
+    "is_garbi": true,
     "is_ponent": false,
     "llevantada_strength": 0.0,
-    "wind_dir_change_3h": -98.0
+    "wind_dir_change_3h": -10.0
   },
-  "last_regime_alert_time": 1791299436.1411104,
-  "last_regime_alert_type": "backing_wind"
+  "last_regime_alert_time": 1791373828.132512,
+  "last_regime_alert_type": "garbi_inestable"
 }
