@@ -7,11 +7,11 @@
   "consecutive_low": 1,
   "last_wind_regime": {
     "level": "850hPa",
-    "is_tramuntana": false,
+    "is_tramuntana": true,
     "is_llevantada": false,
     "is_migjorn": false,
     "is_garbi": false,
-    "is_ponent": true,
+    "is_ponent": false,
     "llevantada_strength": 0.0,
     "wind_dir_change_3h": 15.0
   },
