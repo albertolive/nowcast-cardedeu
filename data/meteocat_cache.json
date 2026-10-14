@@ -1,6 +1,6 @@
 {
-  "lightning_features_20261013_23": {
-    "timestamp": 1791932436.8691602,
+  "lightning_features_20261014_00": {
+    "timestamp": 1791936037.685046,
     "data": {
       "lightning_count_30km": 0,
       "lightning_count_15km": 0,
@@ -15,8 +15,8 @@
       "lightning_has_activity": false
     }
   },
-  "meteocat_rate_limit_cooldown_smc": {
-    "timestamp": 1791931829.6062236,
+  "meteocat_rate_limit_cooldown_xdde": {
+    "timestamp": 1791936037.548783,
     "data": true
   },
   "xema_station_KX_2026-10-13": {
@@ -3641,6 +3641,26 @@
       }
     ]
   },
+  "lightning_features_20261013_23": {
+    "timestamp": 1791932436.8691602,
+    "data": {
+      "lightning_count_30km": 0,
+      "lightning_count_15km": 0,
+      "lightning_count_15km_1h": 0,
+      "lightning_count_30km_1h": 0,
+      "lightning_nearest_km": 60,
+      "lightning_nearest_bearing": null,
+      "lightning_nearest_compass": null,
+      "lightning_cloud_ground": 0,
+      "lightning_max_current_ka": 0.0,
+      "lightning_approaching": false,
+      "lightning_has_activity": false
+    }
+  },
+  "meteocat_rate_limit_cooldown_smc": {
+    "timestamp": 1791936038.2032475,
+    "data": true
+  },
   "lightning_features_20261013_22": {
     "timestamp": 1791928849.5399222,
     "data": {
@@ -3656,10 +3676,6 @@
       "lightning_approaching": false,
       "lightning_has_activity": false
     }
-  },
-  "meteocat_rate_limit_cooldown_xdde": {
-    "timestamp": 1791928849.4116507,
-    "data": true
   },
   "lightning_features_20261013_21": {
     "timestamp": 1791925242.4212132,
@@ -29800,21 +29816,5 @@
   "xdde_2026-10-07_20": {
     "timestamp": 1791403223.930461,
     "data": []
-  },
-  "lightning_features_20261007_19": {
-    "timestamp": 1791399623.6227915,
-    "data": {
-      "lightning_count_30km": 0,
-      "lightning_count_15km": 0,
-      "lightning_count_15km_1h": 0,
-      "lightning_count_30km_1h": 0,
-      "lightning_nearest_km": 60,
-      "lightning_nearest_bearing": null,
-      "lightning_nearest_compass": null,
-      "lightning_cloud_ground": 0,
-      "lightning_max_current_ka": 0.0,
-      "lightning_approaching": false,
-      "lightning_has_activity": false
-    }
   }
 }
