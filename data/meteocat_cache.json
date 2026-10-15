@@ -1,4 +1,24 @@
 {
+  "lightning_features_20261015_00": {
+    "timestamp": 1792022427.6153705,
+    "data": {
+      "lightning_count_30km": 0,
+      "lightning_count_15km": 0,
+      "lightning_count_15km_1h": 0,
+      "lightning_count_30km_1h": 0,
+      "lightning_nearest_km": 60,
+      "lightning_nearest_bearing": null,
+      "lightning_nearest_compass": null,
+      "lightning_cloud_ground": 0,
+      "lightning_max_current_ka": 0.0,
+      "lightning_approaching": false,
+      "lightning_has_activity": false
+    }
+  },
+  "meteocat_rate_limit_cooldown_xdde": {
+    "timestamp": 1792022427.4491043,
+    "data": true
+  },
   "smc_forecast_20261015_01": {
     "timestamp": 1792018833.1644654,
     "data": {
@@ -26,7 +46,7 @@
     }
   },
   "xema_station_KX_2026-10-14": {
-    "timestamp": 1792018232.589497,
+    "timestamp": 1792022431.9696314,
     "data": [
       {
         "station_code": "KX",
@@ -345,6 +365,20 @@
       },
       {
         "station_code": "KX",
+        "variable_code": 35,
+        "datetime": "2026-10-14T22:30:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "KX",
+        "variable_code": 35,
+        "datetime": "2026-10-14T23:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "KX",
         "variable_code": 71,
         "datetime": "2026-10-14T00:00:00+00:00",
         "value": 12.1,
@@ -660,6 +694,20 @@
       },
       {
         "station_code": "KX",
+        "variable_code": 71,
+        "datetime": "2026-10-14T22:30:00+00:00",
+        "value": 11.9,
+        "estat": ""
+      },
+      {
+        "station_code": "KX",
+        "variable_code": 71,
+        "datetime": "2026-10-14T23:00:00+00:00",
+        "value": 12.1,
+        "estat": ""
+      },
+      {
+        "station_code": "KX",
         "variable_code": 72,
         "datetime": "2026-10-14T00:00:00+00:00",
         "value": 0,
@@ -970,13 +1018,27 @@
         "station_code": "KX",
         "variable_code": 72,
         "datetime": "2026-10-14T22:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "KX",
+        "variable_code": 72,
+        "datetime": "2026-10-14T22:30:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "KX",
+        "variable_code": 72,
+        "datetime": "2026-10-14T23:00:00+00:00",
         "value": 0,
         "estat": ""
       }
     ]
   },
   "xema_station_YM_2026-10-14": {
-    "timestamp": 1792018231.4989648,
+    "timestamp": 1792022430.9287415,
     "data": [
       {
         "station_code": "YM",
@@ -1291,6 +1353,20 @@
         "variable_code": 3,
         "datetime": "2026-10-14T22:00:00+00:00",
         "value": 94,
+        "estat": ""
+      },
+      {
+        "station_code": "YM",
+        "variable_code": 3,
+        "datetime": "2026-10-14T22:30:00+00:00",
+        "value": 95,
+        "estat": ""
+      },
+      {
+        "station_code": "YM",
+        "variable_code": 3,
+        "datetime": "2026-10-14T23:00:00+00:00",
+        "value": 96,
         "estat": ""
       },
       {
@@ -1610,6 +1686,20 @@
       },
       {
         "station_code": "YM",
+        "variable_code": 32,
+        "datetime": "2026-10-14T22:30:00+00:00",
+        "value": 16.7,
+        "estat": ""
+      },
+      {
+        "station_code": "YM",
+        "variable_code": 32,
+        "datetime": "2026-10-14T23:00:00+00:00",
+        "value": 16.7,
+        "estat": ""
+      },
+      {
+        "station_code": "YM",
         "variable_code": 33,
         "datetime": "2026-10-14T00:00:00+00:00",
         "value": 94,
@@ -1925,6 +2015,20 @@
       },
       {
         "station_code": "YM",
+        "variable_code": 33,
+        "datetime": "2026-10-14T22:30:00+00:00",
+        "value": 94,
+        "estat": ""
+      },
+      {
+        "station_code": "YM",
+        "variable_code": 33,
+        "datetime": "2026-10-14T23:00:00+00:00",
+        "value": 93,
+        "estat": ""
+      },
+      {
+        "station_code": "YM",
         "variable_code": 35,
         "datetime": "2026-10-14T00:00:00+00:00",
         "value": 0,
@@ -2235,6 +2339,20 @@
         "station_code": "YM",
         "variable_code": 35,
         "datetime": "2026-10-14T22:00:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "YM",
+        "variable_code": 35,
+        "datetime": "2026-10-14T22:30:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "YM",
+        "variable_code": 35,
+        "datetime": "2026-10-14T23:00:00+00:00",
         "value": 0,
         "estat": ""
       },
@@ -2555,6 +2673,20 @@
       },
       {
         "station_code": "YM",
+        "variable_code": 40,
+        "datetime": "2026-10-14T22:30:00+00:00",
+        "value": 16.9,
+        "estat": ""
+      },
+      {
+        "station_code": "YM",
+        "variable_code": 40,
+        "datetime": "2026-10-14T23:00:00+00:00",
+        "value": 16.9,
+        "estat": ""
+      },
+      {
+        "station_code": "YM",
         "variable_code": 42,
         "datetime": "2026-10-14T00:00:00+00:00",
         "value": 16.8,
@@ -2866,6 +2998,20 @@
         "variable_code": 42,
         "datetime": "2026-10-14T22:00:00+00:00",
         "value": 16.9,
+        "estat": ""
+      },
+      {
+        "station_code": "YM",
+        "variable_code": 42,
+        "datetime": "2026-10-14T22:30:00+00:00",
+        "value": 16.6,
+        "estat": ""
+      },
+      {
+        "station_code": "YM",
+        "variable_code": 42,
+        "datetime": "2026-10-14T23:00:00+00:00",
+        "value": 16.4,
         "estat": ""
       },
       {
@@ -3185,6 +3331,20 @@
       },
       {
         "station_code": "YM",
+        "variable_code": 44,
+        "datetime": "2026-10-14T22:30:00+00:00",
+        "value": 92,
+        "estat": ""
+      },
+      {
+        "station_code": "YM",
+        "variable_code": 44,
+        "datetime": "2026-10-14T23:00:00+00:00",
+        "value": 92,
+        "estat": ""
+      },
+      {
+        "station_code": "YM",
         "variable_code": 71,
         "datetime": "2026-10-14T00:00:00+00:00",
         "value": 12.6,
@@ -3500,6 +3660,20 @@
       },
       {
         "station_code": "YM",
+        "variable_code": 71,
+        "datetime": "2026-10-14T22:30:00+00:00",
+        "value": 12.6,
+        "estat": ""
+      },
+      {
+        "station_code": "YM",
+        "variable_code": 71,
+        "datetime": "2026-10-14T23:00:00+00:00",
+        "value": 12.6,
+        "estat": ""
+      },
+      {
+        "station_code": "YM",
         "variable_code": 72,
         "datetime": "2026-10-14T00:00:00+00:00",
         "value": 0,
@@ -3812,6 +3986,20 @@
         "datetime": "2026-10-14T22:00:00+00:00",
         "value": 0,
         "estat": ""
+      },
+      {
+        "station_code": "YM",
+        "variable_code": 72,
+        "datetime": "2026-10-14T22:30:00+00:00",
+        "value": 0,
+        "estat": ""
+      },
+      {
+        "station_code": "YM",
+        "variable_code": 72,
+        "datetime": "2026-10-14T23:00:00+00:00",
+        "value": 0,
+        "estat": ""
       }
     ]
   },
@@ -3840,10 +4028,6 @@
       "lightning_approaching": false,
       "lightning_has_activity": false
     }
-  },
-  "meteocat_rate_limit_cooldown_xdde": {
-    "timestamp": 1792015233.2723176,
-    "data": true
   },
   "smc_forecast_20261014_23": {
     "timestamp": 1792011641.3844976,
@@ -29944,21 +30128,5 @@
   "xdde_2026-10-08_12": {
     "timestamp": 1791460833.3695104,
     "data": []
-  },
-  "lightning_features_20261008_11": {
-    "timestamp": 1791457223.3051035,
-    "data": {
-      "lightning_count_30km": 0,
-      "lightning_count_15km": 0,
-      "lightning_count_15km_1h": 0,
-      "lightning_count_30km_1h": 0,
-      "lightning_nearest_km": 60,
-      "lightning_nearest_bearing": null,
-      "lightning_nearest_compass": null,
-      "lightning_cloud_ground": 0,
-      "lightning_max_current_ka": 0.0,
-      "lightning_approaching": false,
-      "lightning_has_activity": false
-    }
   }
 }
