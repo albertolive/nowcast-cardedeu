@@ -226,13 +226,13 @@ class TestAemetToRadarData:
     def test_2b_rule_fires_with_aemet_as_primary(self):
         # Quan AEMET és la font primària, les regles 1/2/2b del radar han de
         # disparar amb les seves dades (no només la regla 5). Píxel sec + eco
-        # fort a 7.2km: regla 2b (0.45) i regla 5 (0.55) → max 0.55.
+        # fort a 7.2km: regla 2b (0.35) i regla 5 (0.40) → max 0.40.
         from src.model.predict import _apply_physical_constraints
         aemet = _aemet(aemet_radar_dbz=0.0, aemet_radar_has_echo=False,
                        aemet_radar_nearest_echo_km=7.2, aemet_radar_max_dbz_20km=56.5)
         radar_data = _aemet_to_radar_data(aemet)
         prob, adj = _apply_physical_constraints(
             0.103, radar_data, {}, aemet_radar_data=aemet)
-        assert prob == pytest.approx(0.55)
+        assert prob == pytest.approx(0.40)
         assert any("Eco fort" in a for a in adj)
         assert any("Radar AEMET" in a for a in adj)

@@ -195,19 +195,23 @@ def _apply_physical_constraints(probability: float, radar_data: dict,
         logger.warning("  RainViewer congelat: regles físiques de RainViewer desactivades")
 
     # 1. Radar mostra pluja al píxel de Cardedeu (és un FET, no una predicció)
+    # Calibrat amb 4.992 prediccions verificades (set-oct 2026): ecos febles
+    # (10-29 dBZ, virga o plugim al límit del píxel) plouen a terra el 32% dels
+    # cops → floor 0.45 (zona incerta, sense falses alertes ≥0.65); ecos ≥30 dBZ
+    # (~2.7 mm/h) disparen 0.65 (llindar d'alerta de pluja probable).
     radar_dbz = radar_data.get("radar_dbz", 0) or 0
     if not rv_frozen and radar_data.get("radar_has_echo") and radar_dbz >= 10:
-        floor = 0.75
+        floor = 0.65 if radar_dbz >= 30 else 0.45
         if adjusted < floor:
             adjustments.append(f"Radar detecta pluja a Cardedeu ({radar_dbz:.0f} dBZ)")
             adjusted = floor
 
     # 2. Eco radar fort molt a prop (< 5km, dBZ > 20)
-    # Floor complet dins 3.5km; rampa 0.35→0.50 a la zona 3.5-5km.
+    # Floor complet dins 3.5km; rampa 0.30→0.35 a la zona 3.5-5km (zona incerta).
     nearest_km = radar_data.get("radar_nearest_echo_km")
     max_dbz_20km = radar_data.get("radar_max_dbz_20km", 0) or 0
     if not rv_frozen and nearest_km is not None and nearest_km < 5 and max_dbz_20km >= 20:
-        floor = _approach_floor(0.50, 0.35, 5.0, 3.5, nearest_km)
+        floor = _approach_floor(0.35, 0.30, 5.0, 3.5, nearest_km)
         if adjusted < floor:
             adjustments.append(f"Eco radar a {nearest_km:.0f}km ({max_dbz_20km:.0f} dBZ)")
             adjusted = floor
@@ -217,11 +221,11 @@ def _apply_physical_constraints(probability: float, radar_data: dict,
     # cel·les quasi-estacionàries, com el 2026-06-04: 56 dBZ a 7km i pred 10%).
     # Si l'eco és al sector de sobrevent, ve cap aquí: floor més alt.
     # Floor complet dins 12km (el cas motivador, 7.2km, hi cau); rampa
-    # 0.30→floor a la zona 12-15km.
+    # 0.30→floor a la zona 12-15km (calibrat a 0.40/0.35 amb dades set-oct 2026).
     if not rv_frozen and nearest_km is not None and nearest_km < 15 and max_dbz_20km >= 45:
         upwind_km = radar_data.get("radar_upwind_nearest_echo_km")
         upwind = upwind_km is not None and upwind_km < 15
-        full = 0.55 if upwind else 0.45
+        full = 0.40 if upwind else 0.35
         floor = _approach_floor(full, 0.30, 15.0, 12.0, nearest_km)
         if adjusted < floor:
             adjustments.append(
@@ -231,13 +235,11 @@ def _apply_physical_constraints(probability: float, radar_data: dict,
             adjusted = floor
 
     # 3. Tempesta aproximant-se amb ETA curta i eco fort
-    # Floor 0.50 a l'arribada (per sobre del llindar d'alerta ~0.44). Amb 0.40
-    # la regla era decorativa — detectava la tempesta i no alertava ningú.
-    # Rampa per ETA: 0.35 a 15min → 0.50 a 0min, en lloc d'un salt.
+    # Rampa per ETA dins la zona incerta: 0.30 a 15min → 0.40 a 0min.
     eta = radar_data.get("radar_storm_eta_min")
     if (not rv_frozen and radar_data.get("radar_storm_approaching") and
             eta is not None and eta <= 15 and max_dbz_20km >= 25):
-        floor = 0.35 + 0.15 * (1.0 - min(eta, 15) / 15.0)
+        floor = 0.30 + 0.10 * (1.0 - min(eta, 15) / 15.0)
         if adjusted < floor:
             adjustments.append(f"Tempesta aproximant-se, ETA ~{eta:.0f} min")
             adjusted = floor
@@ -258,12 +260,12 @@ def _apply_physical_constraints(probability: float, radar_data: dict,
         l30_1h = lightning.get("lightning_count_30km_1h") or 0
         l_nearest = lightning.get("lightning_nearest_km")
         if l15_1h >= 2:
-            floor = 0.50
+            floor = 0.40
             if adjusted < floor:
                 adjustments.append(f"{l15_1h} llamps a <15km en l'última hora")
                 adjusted = floor
         elif l30_1h >= 5 and l_nearest is not None and l_nearest <= 20:
-            floor = 0.40
+            floor = 0.32
             if adjusted < floor:
                 adjustments.append(f"{l30_1h} llamps a <30km en l'última hora")
                 adjusted = floor
@@ -288,18 +290,15 @@ def _apply_physical_constraints(probability: float, radar_data: dict,
         a_max_dbz = aemet_radar_data.get("aemet_radar_max_dbz_20km", 0) or 0
         a_cov = aemet_radar_data.get("aemet_radar_coverage_20km", 0) or 0
         if not a_frozen and a_nearest is not None and a_nearest <= 20 and a_max_dbz >= 35:
-            # Floor complet dins 15km; rampa 0.30→0.55 a la zona 15-20km
-            # (2026-09-16: eco de 47 dBZ aparegut a 1km amb el model al 2% →
-            # salt sec 2%→55%; com més lluny és l'eco primer detectat, més
-            # suau és la pujada cicle a cicle).
-            floor = _approach_floor(0.55, 0.30, 20.0, 15.0, a_nearest)
+            # Floor complet dins 15km; rampa 0.30→0.40 a la zona 15-20km
+            floor = _approach_floor(0.40, 0.30, 20.0, 15.0, a_nearest)
             if adjusted < floor:
                 adjustments.append(
                     f"Radar AEMET: eco {a_max_dbz:.0f} dBZ a {a_nearest:.0f}km"
                 )
                 adjusted = floor
         elif (not a_frozen and a_cov >= 0.10 and a_max_dbz >= 30):
-            floor = 0.40
+            floor = 0.35
             if adjusted < floor:
                 adjustments.append(
                     f"Radar AEMET: {a_cov:.0%} cobertura amb {a_max_dbz:.0f} dBZ"
@@ -307,9 +306,10 @@ def _apply_physical_constraints(probability: float, radar_data: dict,
                 adjusted = floor
 
     # 6. L'estació de Cardedeu està plovent ARA (PINT mm/h o PREC recent >0)
-    # Observació directa: la predicció a 60 min mai pot ser "sec" si plou ja aquí.
+    # Observació directa: calibrat al 75% (persistència empírica real 74,6% a
+    # 60 min vista, per sobre del llindar d'alerta 65%).
     if _compute_station_raining_now(current, station_df):
-        floor = 0.80
+        floor = 0.75
         if adjusted < floor:
             adjustments.append("Plou ara mateix a l'estació de Cardedeu")
             adjusted = floor

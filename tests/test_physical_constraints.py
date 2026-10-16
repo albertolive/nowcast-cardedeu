@@ -38,7 +38,18 @@ def _radar(**overrides):
 
 
 class TestStrongEchoNearby:
-    def test_strong_upwind_echo_floors_at_55(self):
+    def test_pixel_echo_splits_weak_vs_convective(self):
+        # 10-29 dBZ al píxel: floor 0.45 (zona incerta); ≥30 dBZ: floor 0.65 (alerta)
+        p_weak, _ = _apply_physical_constraints(
+            0.08, _radar(radar_has_echo=True, radar_dbz=18.0), NO_SENTINEL, AEMET_DOWN, None, None
+        )
+        p_strong, _ = _apply_physical_constraints(
+            0.08, _radar(radar_has_echo=True, radar_dbz=34.0), NO_SENTINEL, AEMET_DOWN, None, None
+        )
+        assert p_weak == pytest.approx(0.45)
+        assert p_strong == pytest.approx(0.65)
+
+    def test_strong_upwind_echo_floors_at_40(self):
         # Cas real 2026-06-04 19:21: 56.5 dBZ a 7.2km a sobrevent, pred 10.3%
         radar = _radar(
             radar_nearest_echo_km=7.2,
@@ -48,15 +59,15 @@ class TestStrongEchoNearby:
         prob, adj = _apply_physical_constraints(
             0.103, radar, NO_SENTINEL, AEMET_DOWN, None, None
         )
-        assert prob == pytest.approx(0.55)
+        assert prob == pytest.approx(0.40)
         assert any("sobrevent" in a for a in adj)
 
-    def test_strong_echo_not_upwind_floors_at_45(self):
+    def test_strong_echo_not_upwind_floors_at_35(self):
         radar = _radar(radar_nearest_echo_km=7.2, radar_max_dbz_20km=56.5)
         prob, adj = _apply_physical_constraints(
             0.103, radar, NO_SENTINEL, AEMET_DOWN, None, None
         )
-        assert prob == pytest.approx(0.45)
+        assert prob == pytest.approx(0.35)
         assert adj
 
     def test_weak_echo_nearby_does_not_trigger(self):
@@ -94,7 +105,7 @@ class TestStrongEchoNearby:
             aemet_forecast={"aemet_prob_precip": 100},
             ensemble={"ensemble_rain_agreement": 1.0, "ensemble_min_precip": 16.4},
         )
-        assert prob == pytest.approx(0.55)
+        assert prob == pytest.approx(0.40)
         assert not any("Consens" in a for a in adj)
 
     def test_floor_does_not_lower_higher_probability(self):
@@ -145,7 +156,7 @@ class TestFrozenFrames:
         prob, adj = _apply_physical_constraints(
             0.09, radar, NO_SENTINEL, aemet_live, None, None
         )
-        assert prob == pytest.approx(0.55)
+        assert prob == pytest.approx(0.40)
         assert any("AEMET" in a for a in adj)
 
     def test_frozen_frames_do_not_affect_lightning_rules(self):
@@ -155,7 +166,7 @@ class TestFrozenFrames:
             lightning={"lightning_count_15km_1h": 3, "lightning_count_30km_1h": 8,
                        "lightning_nearest_km": 9.0},
         )
-        assert prob == pytest.approx(0.50)
+        assert prob == pytest.approx(0.40)
 
 
 class TestAemetStaleFrameGuard:
@@ -189,7 +200,7 @@ class TestAemetStaleFrameGuard:
         prob, adj = _apply_physical_constraints(
             0.09, _radar(), NO_SENTINEL, self._aemet(2), None, None
         )
-        assert prob == pytest.approx(0.55)
+        assert prob == pytest.approx(0.40)
         assert any("AEMET" in a for a in adj)
 
     def test_missing_streak_field_fires_floor(self):
@@ -203,7 +214,7 @@ class TestAemetStaleFrameGuard:
         prob, adj = _apply_physical_constraints(
             0.09, _radar(), NO_SENTINEL, legacy, None, None
         )
-        assert prob == pytest.approx(0.55)
+        assert prob == pytest.approx(0.40)
 
     def test_guard_does_not_block_independent_sources(self):
         # Consens sinòptic (AEMET previsió + ensemble) és una altra font:
@@ -219,22 +230,22 @@ class TestAemetStaleFrameGuard:
 
 
 class TestLightningRules:
-    def test_active_cell_within_15km_floors_at_50(self):
+    def test_active_cell_within_15km_floors_at_40(self):
         prob, adj = _apply_physical_constraints(
             0.10, _radar(), NO_SENTINEL, AEMET_DOWN, None, None,
             lightning={"lightning_count_15km_1h": 3, "lightning_count_30km_1h": 8,
                        "lightning_nearest_km": 9.0},
         )
-        assert prob == pytest.approx(0.50)
+        assert prob == pytest.approx(0.40)
         assert any("llamps" in a for a in adj)
 
-    def test_activity_30km_with_nearby_strikes_floors_at_40(self):
+    def test_activity_30km_with_nearby_strikes_floors_at_32(self):
         prob, adj = _apply_physical_constraints(
             0.10, _radar(), NO_SENTINEL, AEMET_DOWN, None, None,
             lightning={"lightning_count_15km_1h": 0, "lightning_count_30km_1h": 6,
                        "lightning_nearest_km": 18.0},
         )
-        assert prob == pytest.approx(0.40)
+        assert prob == pytest.approx(0.32)
 
     def test_old_storm_3h_window_does_not_trigger(self):
         # Tempesta de fa 2h: comptadors de 3h alts però 1h a zero
@@ -325,16 +336,16 @@ class TestRampedApproachFloors:
         # ≤15km: idèntic al comportament previ (cas real d'avui: 1.3km)
         prob, _ = _apply_physical_constraints(
             0.02, _radar(), NO_SENTINEL, self._aemet(14.9), None, None)
-        assert prob == pytest.approx(0.55)
+        assert prob == pytest.approx(0.40)
 
     def test_aemet_ramps_in_outer_zone(self):
-        # 15-20km: rampa lineal 0.55→0.30
+        # 15-20km: rampa lineal 0.40→0.30
         p17, _ = _apply_physical_constraints(
             0.02, _radar(), NO_SENTINEL, self._aemet(17.5), None, None)
-        assert p17 == pytest.approx(0.30 + 0.25 * (20 - 17.5) / (20 - 15))
+        assert p17 == pytest.approx(0.30 + 0.10 * (20 - 17.5) / (20 - 15))
         p19, _ = _apply_physical_constraints(
             0.02, _radar(), NO_SENTINEL, self._aemet(19.0), None, None)
-        assert p19 == pytest.approx(0.30 + 0.25 * (20 - 19.0) / (20 - 15))
+        assert p19 == pytest.approx(0.30 + 0.10 * (20 - 19.0) / (20 - 15))
 
     def test_aemet_edge_of_band_floors_at_edge_value(self):
         prob, adj = _apply_physical_constraints(
@@ -353,12 +364,12 @@ class TestRampedApproachFloors:
 
     def test_rainviewer_upwind_ramps_in_outer_zone(self):
         # 12-15km: rampa; el cas motivador (7.2km, 56.5dBZ) cau dins la zona
-        # completa i manté el 0.55 (test_strong_upwind_echo_floors_at_55)
+        # completa i manté el 0.40 (test_strong_upwind_echo_floors_at_40)
         radar = _radar(radar_nearest_echo_km=13.5, radar_max_dbz_20km=50.0,
                        radar_upwind_nearest_echo_km=13.5)
         prob, adj = _apply_physical_constraints(
             0.10, radar, NO_SENTINEL, AEMET_DOWN, None, None)
-        assert prob == pytest.approx(0.30 + 0.25 * (15 - 13.5) / (15 - 12))
+        assert prob == pytest.approx(0.30 + 0.10 * (15 - 13.5) / (15 - 12))
         assert any("sobrevent" in a for a in adj)
 
     def test_rainviewer_upwind_full_inside_danger_zone(self):
@@ -366,10 +377,10 @@ class TestRampedApproachFloors:
                        radar_upwind_nearest_echo_km=11.0)
         prob, _ = _apply_physical_constraints(
             0.10, radar, NO_SENTINEL, AEMET_DOWN, None, None)
-        assert prob == pytest.approx(0.55)
+        assert prob == pytest.approx(0.40)
 
-    def test_eta_ramps_from_35_to_50(self):
-        for eta, expected in ((15, 0.35), (7.5, 0.425), (0, 0.50)):
+    def test_eta_ramps_from_30_to_40(self):
+        for eta, expected in ((15, 0.30), (7.5, 0.35), (0, 0.40)):
             radar = _radar(radar_storm_approaching=1, radar_storm_eta_min=eta,
                            radar_max_dbz_20km=30.0)
             prob, _ = _apply_physical_constraints(
