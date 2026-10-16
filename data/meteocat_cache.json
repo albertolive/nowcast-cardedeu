@@ -1,4 +1,20 @@
 {
+  "lightning_features_20261016_01": {
+    "timestamp": 1792112439.523885,
+    "data": {
+      "lightning_count_30km": 0,
+      "lightning_count_15km": 0,
+      "lightning_count_15km_1h": 0,
+      "lightning_count_30km_1h": 0,
+      "lightning_nearest_km": 60,
+      "lightning_nearest_bearing": null,
+      "lightning_nearest_compass": null,
+      "lightning_cloud_ground": 0,
+      "lightning_max_current_ka": 0.0,
+      "lightning_approaching": false,
+      "lightning_has_activity": false
+    }
+  },
   "xema_station_KX_2026-10-16": {
     "timestamp": 1792111402.0557778,
     "data": [
@@ -30774,22 +30790,6 @@
   },
   "lightning_features_20261009_17": {
     "timestamp": 1791565222.604685,
-    "data": {
-      "lightning_count_30km": 0,
-      "lightning_count_15km": 0,
-      "lightning_count_15km_1h": 0,
-      "lightning_count_30km_1h": 0,
-      "lightning_nearest_km": 60,
-      "lightning_nearest_bearing": null,
-      "lightning_nearest_compass": null,
-      "lightning_cloud_ground": 0,
-      "lightning_max_current_ka": 0.0,
-      "lightning_approaching": false,
-      "lightning_has_activity": false
-    }
-  },
-  "lightning_features_20261009_16": {
-    "timestamp": 1791561625.5736578,
     "data": {
       "lightning_count_30km": 0,
       "lightning_count_15km": 0,
