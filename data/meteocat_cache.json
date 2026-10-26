@@ -1,4 +1,34 @@
 {
+  "smc_forecast_20261026_06": {
+    "timestamp": 1792990837.932409,
+    "data": {
+      "smc_prob_precip_1h": 0,
+      "smc_prob_precip_6h": 0,
+      "smc_precip_intensity": 0,
+      "smc_temp_forecast": 12.5,
+      "smc_weather_symbol": 2
+    }
+  },
+  "lightning_features_20261026_05": {
+    "timestamp": 1792990836.1544619,
+    "data": {
+      "lightning_count_30km": 0,
+      "lightning_count_15km": 0,
+      "lightning_count_15km_1h": 0,
+      "lightning_count_30km_1h": 0,
+      "lightning_nearest_km": 60,
+      "lightning_nearest_bearing": null,
+      "lightning_nearest_compass": null,
+      "lightning_cloud_ground": 0,
+      "lightning_max_current_ka": 0.0,
+      "lightning_approaching": false,
+      "lightning_has_activity": false
+    }
+  },
+  "meteocat_rate_limit_cooldown_xdde": {
+    "timestamp": 1792990836.0389569,
+    "data": true
+  },
   "smc_forecast_20261026_05": {
     "timestamp": 1792988433.5660255,
     "data": {
@@ -722,10 +752,6 @@
       "lightning_approaching": false,
       "lightning_has_activity": false
     }
-  },
-  "meteocat_rate_limit_cooldown_xdde": {
-    "timestamp": 1792983638.0585093,
-    "data": true
   },
   "lightning_features_20261026_02": {
     "timestamp": 1792980035.1692917,
@@ -24884,31 +24910,5 @@
         "estat": ""
       }
     ]
-  },
-  "lightning_features_20261022_00": {
-    "timestamp": 1792627247.814487,
-    "data": {
-      "lightning_count_30km": 0,
-      "lightning_count_15km": 0,
-      "lightning_count_15km_1h": 0,
-      "lightning_count_30km_1h": 0,
-      "lightning_nearest_km": 60,
-      "lightning_nearest_bearing": null,
-      "lightning_nearest_compass": null,
-      "lightning_cloud_ground": 0,
-      "lightning_max_current_ka": 0.0,
-      "lightning_approaching": false,
-      "lightning_has_activity": false
-    }
-  },
-  "smc_forecast_20261022_01": {
-    "timestamp": 1792623637.7577794,
-    "data": {
-      "smc_prob_precip_1h": 0,
-      "smc_prob_precip_6h": 0,
-      "smc_precip_intensity": 0,
-      "smc_temp_forecast": 13.2,
-      "smc_weather_symbol": 5
-    }
   }
 }
