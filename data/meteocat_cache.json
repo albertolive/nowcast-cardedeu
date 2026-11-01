@@ -1,23 +1,13 @@
 {
-  "lightning_features_20261101_04": {
-    "timestamp": 1793505646.25145,
+  "smc_forecast_20261101_05": {
+    "timestamp": 1793506846.1235697,
     "data": {
-      "lightning_count_30km": 0,
-      "lightning_count_15km": 0,
-      "lightning_count_15km_1h": 0,
-      "lightning_count_30km_1h": 0,
-      "lightning_nearest_km": 60,
-      "lightning_nearest_bearing": null,
-      "lightning_nearest_compass": null,
-      "lightning_cloud_ground": 0,
-      "lightning_max_current_ka": 0.0,
-      "lightning_approaching": false,
-      "lightning_has_activity": false
+      "smc_prob_precip_1h": 0,
+      "smc_prob_precip_6h": 0,
+      "smc_precip_intensity": 0,
+      "smc_temp_forecast": 11.6,
+      "smc_weather_symbol": 3
     }
-  },
-  "xdde_2026-11-01_04": {
-    "timestamp": 1793505646.1825504,
-    "data": []
   },
   "xema_station_KX_2026-11-01": {
     "timestamp": 1793505648.898248,
@@ -616,6 +606,26 @@
         "estat": ""
       }
     ]
+  },
+  "lightning_features_20261101_04": {
+    "timestamp": 1793505646.25145,
+    "data": {
+      "lightning_count_30km": 0,
+      "lightning_count_15km": 0,
+      "lightning_count_15km_1h": 0,
+      "lightning_count_30km_1h": 0,
+      "lightning_nearest_km": 60,
+      "lightning_nearest_bearing": null,
+      "lightning_nearest_compass": null,
+      "lightning_cloud_ground": 0,
+      "lightning_max_current_ka": 0.0,
+      "lightning_approaching": false,
+      "lightning_has_activity": false
+    }
+  },
+  "xdde_2026-11-01_04": {
+    "timestamp": 1793505646.1825504,
+    "data": []
   },
   "lightning_features_20261101_03": {
     "timestamp": 1793502045.8103244,
@@ -24448,22 +24458,6 @@
       "smc_precip_intensity": 0,
       "smc_temp_forecast": 13.9,
       "smc_weather_symbol": 2
-    }
-  },
-  "lightning_features_20261027_04": {
-    "timestamp": 1793073634.7946396,
-    "data": {
-      "lightning_count_30km": 0,
-      "lightning_count_15km": 0,
-      "lightning_count_15km_1h": 0,
-      "lightning_count_30km_1h": 0,
-      "lightning_nearest_km": 60,
-      "lightning_nearest_bearing": null,
-      "lightning_nearest_compass": null,
-      "lightning_cloud_ground": 0,
-      "lightning_max_current_ka": 0.0,
-      "lightning_approaching": false,
-      "lightning_has_activity": false
     }
   }
 }
