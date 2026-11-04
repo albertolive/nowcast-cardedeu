@@ -1,6 +1,6 @@
 {
-  "lightning_features_20261104_02": {
-    "timestamp": 1793757641.4729064,
+  "lightning_features_20261104_03": {
+    "timestamp": 1793761246.8919306,
     "data": {
       "lightning_count_30km": 0,
       "lightning_count_15km": 0,
@@ -15,8 +15,8 @@
       "lightning_has_activity": false
     }
   },
-  "xdde_2026-11-04_02": {
-    "timestamp": 1793757641.4079995,
+  "xdde_2026-11-04_03": {
+    "timestamp": 1793761246.8380828,
     "data": []
   },
   "xema_station_KX_2026-11-04": {
@@ -450,8 +450,28 @@
     ]
   },
   "meteocat_rate_limit_cooldown_smc": {
-    "timestamp": 1793757641.824414,
+    "timestamp": 1793761247.619112,
     "data": true
+  },
+  "lightning_features_20261104_02": {
+    "timestamp": 1793757641.4729064,
+    "data": {
+      "lightning_count_30km": 0,
+      "lightning_count_15km": 0,
+      "lightning_count_15km_1h": 0,
+      "lightning_count_30km_1h": 0,
+      "lightning_nearest_km": 60,
+      "lightning_nearest_bearing": null,
+      "lightning_nearest_compass": null,
+      "lightning_cloud_ground": 0,
+      "lightning_max_current_ka": 0.0,
+      "lightning_approaching": false,
+      "lightning_has_activity": false
+    }
+  },
+  "xdde_2026-11-04_02": {
+    "timestamp": 1793757641.4079995,
+    "data": []
   },
   "lightning_features_20261104_01": {
     "timestamp": 1793754039.2542503,
@@ -15211,26 +15231,6 @@
   },
   "xdde_2026-11-01_02": {
     "timestamp": 1793498441.1912904,
-    "data": []
-  },
-  "lightning_features_20261101_01": {
-    "timestamp": 1793494843.391007,
-    "data": {
-      "lightning_count_30km": 0,
-      "lightning_count_15km": 0,
-      "lightning_count_15km_1h": 0,
-      "lightning_count_30km_1h": 0,
-      "lightning_nearest_km": 60,
-      "lightning_nearest_bearing": null,
-      "lightning_nearest_compass": null,
-      "lightning_cloud_ground": 0,
-      "lightning_max_current_ka": 0.0,
-      "lightning_approaching": false,
-      "lightning_has_activity": false
-    }
-  },
-  "xdde_2026-11-01_01": {
-    "timestamp": 1793494843.3173835,
     "data": []
   }
 }
