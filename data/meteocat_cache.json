@@ -1,6 +1,6 @@
 {
-  "lightning_features_20261117_19": {
-    "timestamp": 1794942637.2792912,
+  "lightning_features_20261117_20": {
+    "timestamp": 1794945640.1933448,
     "data": {
       "lightning_count_30km": 0,
       "lightning_count_15km": 0,
@@ -14,14 +14,6 @@
       "lightning_approaching": false,
       "lightning_has_activity": false
     }
-  },
-  "meteocat_rate_limit_cooldown_xdde": {
-    "timestamp": 1794942637.1395056,
-    "data": true
-  },
-  "meteocat_rate_limit_cooldown_smc": {
-    "timestamp": 1794941454.6684825,
-    "data": true
   },
   "xema_station_KX_2026-11-17": {
     "timestamp": 1794944439.711135,
@@ -3308,6 +3300,30 @@
         "estat": ""
       }
     ]
+  },
+  "lightning_features_20261117_19": {
+    "timestamp": 1794942637.2792912,
+    "data": {
+      "lightning_count_30km": 0,
+      "lightning_count_15km": 0,
+      "lightning_count_15km_1h": 0,
+      "lightning_count_30km_1h": 0,
+      "lightning_nearest_km": 60,
+      "lightning_nearest_bearing": null,
+      "lightning_nearest_compass": null,
+      "lightning_cloud_ground": 0,
+      "lightning_max_current_ka": 0.0,
+      "lightning_approaching": false,
+      "lightning_has_activity": false
+    }
+  },
+  "meteocat_rate_limit_cooldown_xdde": {
+    "timestamp": 1794942637.1395056,
+    "data": true
+  },
+  "meteocat_rate_limit_cooldown_smc": {
+    "timestamp": 1794945640.8166862,
+    "data": true
   },
   "lightning_features_20261117_18": {
     "timestamp": 1794938440.462848,
@@ -30424,22 +30440,6 @@
   },
   "lightning_features_20261111_02": {
     "timestamp": 1794362438.3250542,
-    "data": {
-      "lightning_count_30km": 0,
-      "lightning_count_15km": 0,
-      "lightning_count_15km_1h": 0,
-      "lightning_count_30km_1h": 0,
-      "lightning_nearest_km": 60,
-      "lightning_nearest_bearing": null,
-      "lightning_nearest_compass": null,
-      "lightning_cloud_ground": 0,
-      "lightning_max_current_ka": 0.0,
-      "lightning_approaching": false,
-      "lightning_has_activity": false
-    }
-  },
-  "lightning_features_20261111_01": {
-    "timestamp": 1794359438.630382,
     "data": {
       "lightning_count_30km": 0,
       "lightning_count_15km": 0,
