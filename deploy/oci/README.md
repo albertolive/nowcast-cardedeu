@@ -106,5 +106,9 @@ Then confirm the site updates: the dashboard reads
 - **Idle reclaim**: OCI may reclaim Always-Free instances below ~20%
   utilization for 30+ days. The 10-min loop + data server normally counts
   as activity; if you ever see a reclaim notice, add a trivial load cron.
-- Model artifacts: retrains commit to `models/` from Actions; the container
-  hot-reloads them from origin every cycle — no model sync needed.
+- The container copies `models/shadow/` with the active model on its next cycle.
+  Look for `shadow_model_id` and `shadow_probability` in the next issued
+  `data/latest_prediction.json`. Only the root model drives Telegram.
+- Sunday training uploads `models/shadow-next/` as a workflow artifact. It does
+  not replace either model. The daily `Rain warning trial` workflow publishes
+  `data/rain_warning_trial.json` and stops updating it after ten observable onsets.

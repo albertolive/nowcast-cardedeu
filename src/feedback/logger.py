@@ -88,6 +88,9 @@ def log_prediction(result: dict) -> None:
         "actual_rain_mm": None,
         "correct": None,
     }
+    if "shadow_probability" in result:
+        entry["shadow_probability"] = result["shadow_probability"]
+        entry["shadow_model_id"] = result["shadow_model_id"]
 
     os.makedirs(os.path.dirname(PREDICTIONS_LOG), exist_ok=True)
     with open(PREDICTIONS_LOG, "a") as f:

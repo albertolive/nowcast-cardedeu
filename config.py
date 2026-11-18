@@ -96,6 +96,13 @@ OPEN_METEO_FORECAST_MODELS = [
 # ── Paràmetres del model ML ──
 RAIN_THRESHOLD_MM = 0.2          # mm en 60 min per considerar "pluja"
 PREDICTION_HORIZON_MIN = 60      # Predicció a 60 minuts vista
+FEEDBACK_MAX_AGE_DAYS = 2        # Nightly verification, with one day of slack
+FEEDBACK_MIN_INPUT_COVERAGE = 0.99  # Allow isolated unpublished runs, not a missing batch
+FEEDBACK_UTC_FROM = "2026-05-10T00:00:00Z"  # First full UTC day after the May 9 timestamp migration
+WARNING_TRIAL_MODEL_ID = "d71cadb0e3d2a3678505c1b48519b2ae3e9de778bd7753c352d5d8a0532d7eb7"
+WARNING_TRIAL_NOT_BEFORE = "2026-11-18T19:50:00+00:00"
+WARNING_TRIAL_EPISODES = 10
+WARNING_TRIAL_LEAD_MIN = 10
 
 # ── Visualització: llindars per a la categoria de pluja mostrada ──
 # Separat del llindar intern F1-optimal (0.36) que alimenta el feedback loop.

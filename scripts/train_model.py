@@ -1,19 +1,24 @@
 #!/usr/bin/env python3
 """
 Script 3: Entrena el model XGBoost.
-Llegeix el dataset processat, entrena amb validació creuada temporal
-i desa el model + mètriques.
+Amb --shadow, llegeix els parquets ja preparats i desa el candidat a models/shadow-next/.
 """
+import argparse
 import logging
 import os
 import sys
+from datetime import datetime, timezone
 
 import pandas as pd
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 import config
-from src.model.train import prepare_training_data, train_model, save_model, get_feature_importance
-from src.feedback.export import export_verified_for_training, FEEDBACK_TRAINING_PATH
+from src.features.engineering import FEATURE_COLUMNS
+from src.feedback.export import FEEDBACK_TRAINING_PATH
+from src.model.train import (
+    get_feature_importance, prepare_training_data, save_model, save_shadow_model,
+    train_model, train_shadow_model,
+)
 
 logging.basicConfig(
     level=logging.INFO,
@@ -22,7 +27,28 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-def main():
+def main(argv=None):
+    parser = argparse.ArgumentParser(
+        description="Entrena el model de pluja de Cardedeu.",
+        epilog="Exemples:\n  python scripts/train_model.py --shadow\n"
+               "  python scripts/train_model.py --shadow --before 2026-11-01T00:00:00Z",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    parser.add_argument("--shadow", action="store_true", help="Desa el candidat a models/shadow-next/ sense modificar els models en ús.")
+    parser.add_argument("--before", metavar="ISO8601", help="Límit exclusiu de les etiquetes, amb fus horari (per defecte: ara).")
+    args = parser.parse_args(argv)
+    if args.before is not None and not args.shadow:
+        parser.error("--before requereix --shadow.")
+    if args.shadow:
+        try:
+            cutoff = datetime.fromisoformat(args.before) if args.before is not None else datetime.now(timezone.utc)
+            if cutoff.tzinfo is None:
+                raise ValueError
+        except ValueError:
+            parser.error("--before requereix una data amb fus horari, p. ex. 2026-11-01T00:00:00Z.")
+        if not os.path.isfile(FEEDBACK_TRAINING_PATH):
+            parser.error(f"Falta {FEEDBACK_TRAINING_PATH}. Executa primer scripts/repair_feedback.py.")
+
     dataset_path = os.path.join(config.DATA_PROCESSED_DIR, "training_dataset.parquet")
     if not os.path.exists(dataset_path):
         logger.error("Primer executa scripts/build_dataset.py!")
@@ -32,16 +58,21 @@ def main():
     df = pd.read_parquet(dataset_path)
     logger.info(f"Dataset base: {len(df)} mostres")
 
-    # ── Incorporar prediccions verificades (feedback loop) ──
-    n_feedback = export_verified_for_training()
-    if n_feedback > 0 and os.path.exists(FEEDBACK_TRAINING_PATH):
+    if args.shadow:
+        model, metrics, calibrator = train_shadow_model(df, pd.read_parquet(FEEDBACK_TRAINING_PATH), cutoff)
+        save_shadow_model(model, metrics, calibrator)
+        logger.info("Candidat desat a models/shadow-next/ (tall %s, AUC %.4f, F1 %.4f, Brier %.4f).",
+                    metrics["training_cutoff"], metrics["holdout_auc"], metrics["holdout_f1"], metrics["holdout_brier"])
+        return
+
+    # La reparació/exportació del parquet és un pas separat, mai un efecte de l'entrenament.
+    if os.path.isfile(FEEDBACK_TRAINING_PATH):
         feedback_df = pd.read_parquet(FEEDBACK_TRAINING_PATH)
-        # Només afegir les columnes que existeixen al dataset base
-        common_cols = [c for c in df.columns if c in feedback_df.columns]
-        if "will_rain" in common_cols and len(common_cols) > 2:
-            feedback_subset = feedback_df[common_cols]
-            df = pd.concat([df, feedback_subset], ignore_index=True)
-            logger.info(f"  + {n_feedback} prediccions verificades afegides (feedback loop)")
+        features, labels = prepare_training_data(feedback_df)
+        has_predictors = features.notna().any(axis=1)
+        df = pd.concat([df, features.loc[has_predictors, FEATURE_COLUMNS].assign(will_rain=labels[has_predictors])],
+                       ignore_index=True)
+        logger.info("  + %d prediccions verificades amb predictors", has_predictors.sum())
     logger.info(f"Dataset total: {len(df)} mostres")
 
     logger.info("Preparant dades d'entrenament...")

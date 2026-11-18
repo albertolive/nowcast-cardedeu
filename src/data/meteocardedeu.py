@@ -86,7 +86,7 @@ def fetch_history_list() -> list[dict]:
     return data["files"]
 
 
-def fetch_daily(date) -> pd.DataFrame:
+def fetch_daily(date, *, preserve_missing: bool = False) -> pd.DataFrame:
     """
     Retorna un DataFrame amb dades minut-a-minut d'una data concreta.
     Usa l'endpoint /api/history/daily.php paginat (500 files per pàgina).
@@ -98,6 +98,7 @@ def fetch_daily(date) -> pd.DataFrame:
       - PREC convertit de running total a increment per lectura
         (.diff().clip(lower=0).fillna(0)) per poder fer .sum() en finestres.
 
+    Amb preserve_missing, els intervals sense dues lectures vàlides queden com a NaN.
     Retorna DataFrame buit si la data no té dades o hi ha error.
     """
     # Normalitzar a YYYY-MM-DD
@@ -115,7 +116,7 @@ def fetch_daily(date) -> pd.DataFrame:
             data = r.json()
             if not data.get("ok"):
                 logger.warning(f"MeteoCardedeu daily {date_str} page={page} error: {data}")
-                break
+                return pd.DataFrame()
             rows = data.get("rows", [])
             if not rows:
                 break
@@ -143,7 +144,8 @@ def fetch_daily(date) -> pd.DataFrame:
     # però mantenim el .clip(lower=0) per seguretat (lectures fora d'ordre, etc.).
     if "PREC" in df.columns:
         df["PREC"] = pd.to_numeric(df["PREC"], errors="coerce")
-        df["PREC"] = df["PREC"].diff().clip(lower=0).fillna(0)
+        increments = df["PREC"].diff()
+        df["PREC"] = increments.where(increments >= 0) if preserve_missing else increments.clip(lower=0).fillna(0)
 
     return df
 

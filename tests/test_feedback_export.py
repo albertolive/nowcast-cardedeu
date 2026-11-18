@@ -24,14 +24,14 @@ def _write_jsonl(path: str, entries: list[dict]) -> None:
 
 def _make_entry(ts: str, prob: float, actual_rain: bool, verified: bool = True) -> dict:
     return {
-        "timestamp": ts,
+        "timestamp": ts if pd.Timestamp(ts).tzinfo is not None else ts + "Z",
         "probability_pct": prob,
         "rain_category": "probable" if prob >= 50 else "sec",
         "verified": verified,
         "actual_rain": actual_rain,
         "actual_rain_mm": 1.2 if actual_rain else 0.0,
         "correct": True,
-        "features": {"f1": 1.0, "f2": 2.0},
+        "features": {"radar_dbz": 12.5, "temperature_2m": 0.0},
     }
 
 
@@ -147,3 +147,39 @@ def test_dedup_keeps_latest_version(tmp_paths):
     assert len(df) == 1
     # latest version wins
     assert bool(df.iloc[0]["actual_rain"]) is False
+
+
+def test_slim_reverification_keeps_issued_readings(tmp_paths):
+    log, path = tmp_paths
+    entry = _make_entry("2026-11-14T20:50:44+01:00", 75, False)
+    entry.update(probability=0.7543, brier_component=round(0.7543**2, 6))
+    _write_jsonl(log, [entry])
+    export_mod.export_verified_for_training()
+    entry.pop("features")
+    entry.pop("brier_component")
+    entry.pop("probability")
+    entry.update(timestamp="2026-11-14T19:50:44+00:00", actual_rain=True, actual_rain_mm=3.6)
+    _write_jsonl(log, [entry])
+    assert export_mod.export_verified_for_training() == 1
+    row = pd.read_parquet(path).iloc[0]
+    assert (row["radar_dbz"], row["temperature_2m"]) == (12.5, 0)
+    assert (row["will_rain"], row["actual_rain_mm"]) == (1, 3.6)
+    assert row["brier_component"] == round((0.7543 - 1)**2, 6)
+
+
+def test_corrupt_previous_export_is_not_replaced(tmp_paths):
+    log, path = tmp_paths
+    path.write_bytes(b"not a parquet")
+    _write_jsonl(log, [_make_entry("2026-11-14T19:50:44Z", 75, True)])
+    with pytest.raises(ValueError):
+        export_mod.export_verified_for_training()
+    assert path.read_bytes() == b"not a parquet"
+
+
+def test_missing_offset_does_not_match_a_utc_reading(tmp_paths):
+    log, path = tmp_paths
+    entry = _make_entry("2026-11-14T19:50:44Z", 75, True)
+    _write_jsonl(log, [dict(entry, timestamp="2026-11-14T19:50:44")])
+    with pytest.raises(ValueError, match="no offset"):
+        export_mod.export_verified_for_training()
+    assert not path.exists()

@@ -83,11 +83,17 @@ Fix: el target només es deriva si la columna `will_rain` no existeix; si hi
 és parcialment NaN, error explícit en lloc d'inventar etiquetes. Test de
 regressió: `tests/test_train_target.py`.
 
-Pendent conegut (no confondre amb aquest bug): el merge concat base+feedback
-**sense reordenar cronològicament** — el bloc de feedback (mar–ago) queda
-després del dataset base que acaba l'agost, així que els folds temporals de
-la CV barregen períodes duplicats i infla `cv_f1_std`. No afecta el model
-final (entrena sobre tot), però sí la interpretació de les mètriques CV.
+L'entrenament antic concatenava l'històric i les verificacions sense ordenar-los per hora d'emissió. Els períodes se superposaven i les mètriques de validació no eren fiables. L'entrenament del candidat separa les mostres per data i deixa una hora de marge perquè la pluja que etiqueta una mostra no entri al període següent.
+
+## El registre del web havia esborrat les dades d'entrenament (novembre de 2026)
+
+El registre compacte conservava el resultat del pluviòmetre però no les lectures que havien servit per fer la predicció. Quan una verificació nova tenia la mateixa hora que una fila del parquet, l'exportador en conservava l'última versió sencera. A l'entrenament del 15 de novembre, cap de les 524 files amb pluja del tram final de validació tenia dades meteorològiques.
+
+La reparació va recuperar les lectures de 15.391 de les 15.394 files buides. Per a les dades de l'abril sense fus horari vam comprovar l'hora original i la probabilitat publicada, sense suposar que fossin hores UTC. Queden tres verificacions sense lectures, totes de temps sec.
+
+Una correcció del pluviòmetre pot canviar l'etiqueta sense esborrar les lectures originals. L'entrenament setmanal s'atura si menys del 99 % de les verificacions noves o recents tenen lectures. Les que no en tenen queden fora de l'entrenament.
+
+La XEMA desava les hores en UTC, però l'històric les encreuava amb les hores locals d'Open-Meteo. En una mostra del 27 d'agost de 2025, el model podia veure la pluja de dues hores més tard. El candidat només fa servir les sis variables de la XEMA quan provenen d'una predicció emesa. També deixa fora de l'entrenament les verificacions anteriors al 10 de maig de 2026, el primer dia sencer després del canvi a UTC. Les lectures continuen a l'historial.
 
 ## El model ML ignora radar i llamps
 

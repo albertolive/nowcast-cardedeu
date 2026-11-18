@@ -1,0 +1,71 @@
+name: Rain warning trial
+
+on:
+  schedule:
+    - cron: "23 4 * * *"
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/warning-trial.yml"
+      - "models/shadow/metrics.json"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: warning-trial-report
+  cancel-in-progress: false
+
+jobs:
+  report:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      REPORT: data/rain_warning_trial.json
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Check whether the ten onsets have been scored
+        id: trial
+        run: |
+          model=$(jq -er '.model_id' models/shadow/metrics.json)
+          if [[ -f "$REPORT" ]] && jq -e --arg model "$model" '.status == "review_ready" and .model_id == $model' "$REPORT" >/dev/null; then
+            echo 'done=true' >> "$GITHUB_OUTPUT"
+            echo "Final report: [$REPORT]($GITHUB_SERVER_URL/$GITHUB_REPOSITORY/blob/main/$REPORT)" >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - uses: actions/setup-python@v5
+        if: steps.trial.outputs.done != 'true'
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Read issued forecasts and completed local gauge days
+        if: steps.trial.outputs.done != 'true'
+        run: |
+          python -m pip install -q pandas numpy requests
+          since=$(python -c 'from datetime import datetime,timedelta; import config; print((datetime.fromisoformat(config.WARNING_TRIAL_NOT_BEFORE)-timedelta(days=1)).isoformat())')
+          git fetch --no-tags --shallow-since="$since" origin main:refs/remotes/origin/main
+          python scripts/monitor_rain_warnings.py --ref origin/main --fetch-station --out "$RUNNER_TEMP/trial.json"
+
+      - name: Publish progress without touching forecasts or Telegram
+        if: steps.trial.outputs.done != 'true' && !cancelled()
+        run: |
+          test -s "$RUNNER_TEMP/trial.json"
+          cp "$RUNNER_TEMP/trial.json" "$REPORT"
+          jq -er '"\(.status): \(.observable_onsets)/\(.goal) observable onsets. Last shadow issue: \(.last_shadow_issue // "none")."' "$REPORT" >> "$GITHUB_STEP_SUMMARY"
+          echo "[Full report]($GITHUB_SERVER_URL/$GITHUB_REPOSITORY/blob/main/$REPORT)" >> "$GITHUB_STEP_SUMMARY"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -- "$REPORT"
+          git diff --cached --quiet && exit 0
+          git commit -m "Update rain warning trial report"
+          for attempt in 1 2 3; do
+            echo "Publishing trial report (attempt $attempt)"
+            git pull --rebase origin main && git push origin HEAD:main && exit 0
+          done
+          exit 1
