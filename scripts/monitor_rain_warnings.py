@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import argparse
-from bisect import bisect_left
 from collections import Counter
 from datetime import datetime, time, timedelta
 import json
@@ -62,22 +61,10 @@ def false_warnings(gauge, episodes, watched, alerts, start, end):
         for when, wet in alerts[name]:
             if wet or not start <= when < end or not ev.inside(exposure, when, when):
                 continue
-            # A boundary tip may fall on either side of the forecast window.
-            stop = when + ev.HOUR
-            first = bisect_left(tips, when, key=lambda tip: tip[1])
-            possible = 0.
-            certain = 0.
-            for i in range(first, len(tips)):
-                lower, upper, amount = tips[i]
-                if lower >= stop:
-                    break
-                if upper > when:
-                    possible += amount
-                    if lower >= when and upper <= stop:
-                        certain += amount
-            if round(possible, 6) < config.RAIN_THRESHOLD_MM:
+            possible, certain = ev.window_rain(tips, when)
+            if possible < config.RAIN_THRESHOLD_MM:
                 false.append(ev.iso(when))
-            elif round(certain, 6) < config.RAIN_THRESHOLD_MM:
+            elif certain < config.RAIN_THRESHOLD_MM:
                 ambiguous.append(ev.iso(when))
         result[name] = dict(false_warnings=len(false), false_warning_times=false,
                             uncertain_windows=ambiguous,

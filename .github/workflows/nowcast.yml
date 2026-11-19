@@ -321,9 +321,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          # Covers the 35-day verification log at the ten-minute cadence.
-          fetch-depth: 6000
+
+      - name: Fetch forecasts issued in the 35-day repair window
+        run: git fetch --no-tags --shallow-since="$(date -u -d '36 days ago' +%F)" origin main
 
       - name: Setup Python
         uses: actions/setup-python@v5

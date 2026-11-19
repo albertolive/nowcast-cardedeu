@@ -179,6 +179,10 @@ def test_reverification_without_correct_keeps_previous_value(tmp_paths):
     export_mod.export_verified_for_training()
     rows = pd.read_parquet(path).set_index("datetime")["correct"]
     assert list(rows) == [True, False]
+    flipped = dict(compact, actual_rain=False)
+    _write_jsonl(log, [flipped])
+    export_mod.export_verified_for_training()
+    assert pd.isna(pd.read_parquet(path).set_index("datetime")["correct"].iloc[0])
 
 
 def test_corrupt_previous_export_is_not_replaced(tmp_paths):

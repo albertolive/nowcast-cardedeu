@@ -116,6 +116,9 @@ def test_partial_local_gauge_day_is_refetched_and_missing_readings_stay_unknown(
     full.drop(index=[50, 51]).to_csv(path, index=False)
     list(ev.station_days(t(0), t(60), tmp_path, True))
     assert fetch.call_count == 2
+    full[["datetime"]].to_csv(path, index=False)  # damaged: no PREC column
+    list(ev.station_days(t(0), t(60), tmp_path, True))
+    assert fetch.call_count == 3
 
 
 def test_daily_archive_refuses_partial_pages_and_preserves_missing_intervals(monkeypatch):

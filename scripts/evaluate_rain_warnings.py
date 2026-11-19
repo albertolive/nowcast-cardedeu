@@ -8,7 +8,7 @@ Only dry-at-issue alerts strictly before that interval can earn advance credit.
 from __future__ import annotations
 
 import argparse
-from bisect import bisect_right
+from bisect import bisect_left, bisect_right
 from collections import Counter
 from collections.abc import Iterable
 from dataclasses import dataclass, field
@@ -73,7 +73,10 @@ def _closed_station_day(path, day):
     tomorrow = midnight + timedelta(days=1)
     if not path.is_file() or datetime.now(MADRID).date() <= day:
         return False
-    frame = pd.read_csv(path, usecols=["datetime", "PREC"])
+    try:
+        frame = pd.read_csv(path, usecols=["datetime", "PREC"])
+    except (OSError, ValueError):
+        return False  # A damaged cache file is fetched again.
     stamps = pd.to_datetime(frame["datetime"], errors="coerce")
     return (len(stamps) > 1 and stamps.notna().all()
             and midnight <= stamps.iloc[0] <= midnight + MAX_STATION_GAP
@@ -283,8 +286,22 @@ def inside(spans, left, right):
     return i >= 0 and right <= spans[i][1]
 
 
+def window_rain(tips, when):
+    """Return (possible, certain) gauge mm in [when, when + 1h); boundary tips are only possible."""
+    stop, possible, certain = when + HOUR, 0., 0.
+    for lower, upper, amount in tips[bisect_left(tips, when, key=lambda tip: tip[1]):]:
+        if lower >= stop:
+            break
+        if upper > when:
+            possible += amount
+            if lower >= when and upper <= stop:
+                certain += amount
+    return round(possible, 6), round(certain, 6)
+
+
 def score(spans, episodes, score_spans, alerts, start, end, *, min_lead=timedelta(0)):
     watched = list(intersects(score_spans, [(start, end)]))
+    tips = [tip for e in episodes for tip in e.tips]
     # Only count false-alert exposure where a full forward horizon has labels.
     exposure = list(intersects(watched, [(a, b - HOUR) for a, b in spans
                                          if b - a > HOUR]))
@@ -329,6 +346,11 @@ def score(spans, episodes, score_spans, alerts, start, end, *, min_lead=timedelt
                                     (wet and t < previous.last_tip + HOUR))
             if upcoming or ongoing:
                 i = i if upcoming and not (wet and ongoing) else i - 1
+                # A trace of rain below the target doesn't make a dry alert correct.
+                if (episodes[i].qualified_at is None and not wet
+                        and window_rain(tips, t)[0] < config.RAIN_THRESHOLD_MM):
+                    upcoming = ongoing = False
+            if upcoming or ongoing:
                 e = episodes[i]
                 if i not in onsets:
                     kind = "unscored_episode"
@@ -406,12 +428,14 @@ def run(args):
     revision = subprocess.check_output(["git", "rev-parse", "--verify", "--end-of-options",
                                         args.ref + "^{commit}"], cwd=ROOT, text=True).strip()
     bundle = load_model(model_dir=args.model_dir)
+    if getattr(bundle[0], "nowcast_model_id", None) != metrics.get("model_id"):
+        raise ValueError("The candidate changed while loading; run again")
     frame, counts = aligned_scores(iter_snapshots(warm, end, ref=revision, repo=ROOT),
                                    bundle, metrics.get("model_id"))
     days = station_days(start - HOUR, end + HOUR, args.station_dir, args.fetch_station)
     station, episodes, files = gauge_episodes(days)
     spans, alerts = replay(frame)
-    report = score(station, episodes, spans, alerts, start, end)
+    report = score(station, episodes, spans, alerts, start, end, min_lead=timedelta(minutes=args.min_lead))
     report.update(start=iso(start), end=iso(end), warmup_start=iso(warm),
                   training_cutoff=iso(cutoff), model_id=metrics.get("model_id"),
                   git_commit=revision, station_day_sha256=files, input_counts=counts,
@@ -422,6 +446,7 @@ def run(args):
                               station_gap_minutes=MAX_STATION_GAP.total_seconds() / 60,
                               issue_gap_minutes=MAX_ISSUE_GAP.total_seconds() / 60,
                               lead="minutes before earliest possible first gauge tip; dry station at issue",
+                              minimum_lead_minutes=args.min_lead,
                               storms="first tip after 60 dry minutes; minimum total mm in rain_threshold_mm; "
                                      "require observed warning window, whole episode and dry tail",
                               onset_comparison="require the same dry prelude and coverage through first "
@@ -448,6 +473,8 @@ def main(argv=None):
     parser.add_argument("--station-dir", type=Path, default=STATION_DIR,
                         help="daily YYYY-MM-DD.csv files: datetime (Madrid wall clock), PREC (interval mm)")
     parser.add_argument("--fetch-station", action="store_true", help="fetch missing public gauge archive days")
+    parser.add_argument("--min-lead", type=float, default=config.WARNING_TRIAL_LEAD_MIN,
+                        help="minutes of lead required for an advance warning (default: same as the trial)")
     parser.add_argument("--out", type=Path, help="save full JSON including per-storm leads and alert times")
     args = parser.parse_args(argv)
     try:

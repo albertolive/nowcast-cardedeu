@@ -56,9 +56,12 @@ def _merge_verified(existing: pd.DataFrame, entries: list[dict]) -> pd.DataFrame
     if "correct" in explicit:
         latest = explicit[~explicit.index.duplicated(keep="last")]
         merged.loc[latest.index, "correct"] = pd.to_numeric(latest["correct"]).astype(float)
+    changed = combined["actual_rain"].groupby(level=0).nunique().gt(1)
+    if "correct" in merged:
+        # A changed outcome without a new correctness flag makes the old flag wrong.
+        merged.loc[changed[changed].index.difference(explicit.index), "correct"] = float("nan")
     if "brier_component" in merged:
         # A compact correction has no Brier field; don't inherit a score for a different outcome.
-        changed = combined["actual_rain"].groupby(level=0).nunique().gt(1)
         corrected = merged.loc[changed]
         if not corrected.empty:
             p = corrected.get("probability", pd.Series(index=corrected.index, dtype=float))

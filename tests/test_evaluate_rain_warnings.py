@@ -180,3 +180,11 @@ def test_cli_refuses_training_overlap_before_accessing_model_or_station(tmp_path
         ev.main(["--start", "2026-11-01", "--end", "2026-11-02",
                  "--model-dir", str(tmp_path), "--fetch-station"])
     assert exc.value.code == 2 and "overlaps training_cutoff" in capsys.readouterr().err
+
+
+def test_dry_alert_before_trace_rain_is_false_not_unscored():
+    trace = ev.Episode(t(100), t(105), t(105), 0.1, True, None, ((t(100), t(105), 0.1),))
+    alerts = dict(issued=[(t(60), False)], shadow=[], persistence=[])
+    r = ev.score([(t(0), t(400))], [trace], [(t(0), t(400))], alerts, t(0), t(400))
+    assert r["comparison"]["issued"]["false_alerts"] == 1
+    assert r["alerts"]["issued"][0]["kind"] == "false"
