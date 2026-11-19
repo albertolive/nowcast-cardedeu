@@ -85,6 +85,8 @@ python scripts/build_dataset.py
 python scripts/train_model.py
 ```
 
+Aquesta última ordre escriu a `models/`. Si ja hi ha un model actiu, afegeix `--shadow` per provar un candidat sense substituir-lo.
+
 ### 3. Fer una predicció
 ```bash
 python scripts/predict_now.py
@@ -121,7 +123,8 @@ export TELEGRAM_CHAT_ID="el_teu_chat_id"
 - **Programació de fluxos**:
   - Resum diari a les **07:00**.
   - Informe d'accuracy els dilluns a les **08:00**.
-  - Retrain cada diumenge a les **15:00**.
+  - Cada diumenge a les **02:00 UTC** es reparen les verificacions. Si les dues últimes quinzenes tenen prou pluja observada, s'entrena un candidat per revisar. No substitueix cap model en ús.
+  - Cada dia a les **04:23 UTC**, **Rain warning trial** actualitza `data/rain_warning_trial.json`.
 - **Secrets** (només noms, sense valors): `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID`, `METEOCAT_API_KEY`, `AEMET_API_KEY`, `GATEWAY_TOKEN`.
 - No es revela cap adreça IP, projecte, zona, nom de màquina virtual, identificadors ni prefixos de tokens.
 ### 8. Dashboard a Vercel
@@ -402,32 +405,27 @@ El model AROME de Meteo-France és el 4t model de l'ensemble, amb resolució de 
 
 > **Lliçó d'afinament:** Amb 210 features, la clau és diversitat dual: `colsample_bytree=0.7 × colsample_bynode=0.7` força cada arbre a veure 70% de features i cada split a veure 70% de les de l'arbre. Això va trencar la dominància de `model_predicts_precip` (54%→30%) i va fer que `nwp_precip_severity` (severitat contínua WMO 0-5) entrés com a #2 feature amb 21% de gain. Cal F1 progressió: 0.7033→0.7061→0.7070 (3 rondes d'afinament).
 
-## Feedback loop (auto-aprenentatge)
+## Verificació de les prediccions i prova del candidat
 
-El sistema verifica automàticament les seves pròpies prediccions i aprèn dels errors:
+Cada deu minuts es desa la predicció amb les dades que el model tenia en aquell moment. Passada una hora, el sistema comprova si el pluviòmetre ha recollit almenys 0,2 mm. Dues prediccions consecutives poden encertar el mateix xàfec: els encerts per predicció no diuen amb quanta antelació ha arribat l'avís.
 
+El fitxer `predictions_log.jsonl` que es publica al repositori és un resum per al web. Cada diumenge, `scripts/repair_feedback.py` encreua les verificacions amb les dades de `data/latest_prediction.json` de l'historial de Git. L'hora d'emissió ha de coincidir exactament. Si falta una predicció original, se'n conserva la verificació a l'historial, però el model no la fa servir per entrenar-se.
+
+El candidat de `models/shadow/` calcula una probabilitat amb les mateixes lectures que el model actiu. Només el model actiu pot enviar un avís a Telegram. L'entrenament setmanal desa un model nou a `models/shadow-next/` i el deixa a GitHub Actions per revisar-lo. No substitueix cap dels dos models en ús.
+
+La prova dels deu episodis comença quan es publica la primera probabilitat del candidat triat. Cada dia, **Rain warning trial** actualitza `data/rain_warning_trial.json` amb les prediccions originals i les lectures dels dies que ja s'han acabat. Si falta la probabilitat del candidat, no es recalcula. L'informe indica quins episodis no es poden valorar.
+
+Comptem els casos en què l'avís hauria arribat amb l'estació encara seca i almenys deu minuts abans de la primera pluja possible. Comparem el model actiu, el candidat i l'avís que només salta quan l'estació ja detecta pluja. Els falsos avisos es compten per setmana amb dades del pluviòmetre. En arribar al desè episodi observable, l'informe queda tancat. El canvi de model és una decisió a part.
+
+Per repetir la prova del novembre, cal un historial de Git que cobreixi el període:
+
+```bash
+python scripts/repair_feedback.py
+python scripts/train_model.py --shadow --before 2026-11-01T00:00:00Z
+python scripts/evaluate_rain_warnings.py --model-dir models/shadow-next --start 2026-11-01 --end 2026-11-18 --fetch-station
 ```
-┌─────────────────┐    +60 min     ┌─────────────────┐    diari      ┌─────────────────┐
-│   Predicció     │──────────▶│  Verificació    │────────────▶│   Re-entrena   │
-│  cada 10 min   │             │ va ploure?     │              │  amb feedback   │
-└────────┬────────┘             └────────┬────────┘              └────────┬────────┘
-         │                       │                              │
-         ▼                       ▼                              │
-  predictions_log.jsonl   ✓/✗ correct?                         │
-                                │                              │
-                                ▼                              │
-                         Informe setmanal  ◄─────────────────┘
-                         (accuracy %, F1)
-                         via Telegram 📊
-```
 
-### Com funciona
-
-1. **Log**: Cada predicció es registra a `predictions_log.jsonl` amb un snapshot complet: probabilitat, condicions, radar, AEMET, sentinella, ensemble, nivells de pressió, règim de vent, bias, i les 199 features del model
-2. **Verificació**: 60-75 min després, el sistema consulta l'estació per veure si realment va ploure
-3. **Classificació**: Cada predicció es marca com TP, FP, TN, o FN
-4. **Informe**: Cada dilluns a les 8:00, reps un report amb accuracy, precisión, recall, F1, i tendència
-5. **Re-entrenament**: El retrain diari incorpora les prediccions verificades com a dades noves, permetent al model aprendre dels seus errors recents
+En aquesta prova retrospectiva sí que es reconstrueixen les probabilitats del candidat. No són avisos que s'hagin enviat. Si falten lectures després de començar a ploure, encara es pot valorar l'avís sempre que el pluviòmetre hagi cobert l'hora anterior i l'inici de la pluja.
 
 ### Mètriques que rebràs
 

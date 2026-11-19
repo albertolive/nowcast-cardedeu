@@ -1,0 +1,56 @@
+{
+  "training_cutoff": "2026-11-01T00:00:00Z",
+  "embargo_minutes": 60,
+  "feedback_without_predictors": 1,
+  "feedback_before_utc_migration": 4205,
+  "history_columns_masked": [
+    "sentinel_temp_diff",
+    "sentinel_humidity_diff",
+    "sentinel_precip",
+    "sentinel_raining",
+    "local_rain_xema",
+    "local_rain_xema_3h"
+  ],
+  "splits": {
+    "train": {
+      "first_issue": "2014-12-31T23:00:00+00:00",
+      "last_issue": "2026-10-03T22:50:23.590097+00:00",
+      "last_label_end": "2026-10-03T23:50:23.590097+00:00",
+      "n_samples": 123494,
+      "n_positive": 9803,
+      "station_rows": 20460,
+      "station_positive": 297
+    },
+    "calibration": {
+      "first_issue": "2026-10-04T00:00:34.400171+00:00",
+      "last_issue": "2026-10-17T22:50:35.775921+00:00",
+      "last_label_end": "2026-10-17T23:50:35.775921+00:00",
+      "n_samples": 2008,
+      "n_positive": 139,
+      "station_rows": 2008,
+      "station_positive": 139
+    },
+    "holdout": {
+      "first_issue": "2026-10-18T00:02:23.826046+00:00",
+      "last_issue": "2026-10-31T22:50:50.338371+00:00",
+      "last_label_end": "2026-10-31T23:50:50.338371+00:00",
+      "n_samples": 2010,
+      "n_positive": 74,
+      "station_rows": 2010,
+      "station_positive": 74
+    }
+  },
+  "calibrated": true,
+  "optimal_threshold": 0.4444444477558136,
+  "holdout_auc": 0.9232745141836051,
+  "holdout_f1": 0.5252525252525253,
+  "holdout_brier": 0.033138927072286606,
+  "holdout_confusion": {
+    "tn": 1864,
+    "fp": 72,
+    "fn": 22,
+    "tp": 52
+  },
+  "best_iteration": 437,
+  "model_id": "d71cadb0e3d2a3678505c1b48519b2ae3e9de778bd7753c352d5d8a0532d7eb7"
+}

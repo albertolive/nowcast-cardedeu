@@ -1,9 +1,12 @@
 """
 Pipeline d'entrenament del model XGBoost per a nowcasting de pluja.
 """
+import hashlib
 import json
 import logging
 import os
+from pathlib import Path
+from tempfile import TemporaryDirectory
 from typing import Optional
 
 import joblib
@@ -12,7 +15,9 @@ import pandas as pd
 import xgboost as xgb
 from sklearn.model_selection import TimeSeriesSplit
 from sklearn.metrics import (
+    brier_score_loss,
     classification_report,
+    confusion_matrix,
     roc_auc_score,
     precision_recall_curve,
     f1_score,
@@ -22,9 +27,13 @@ from sklearn.isotonic import IsotonicRegression
 import sys
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 import config
-from src.features.engineering import FEATURE_COLUMNS, build_features_from_hourly, build_target_column
+from src.features.engineering import FEATURE_COLUMNS, build_target_column
 
 logger = logging.getLogger(__name__)
+
+
+class InsufficientShadowData(ValueError):
+    """No hi ha prou pluja observada per jutjar un candidat; no és una avaria."""
 
 
 def prepare_training_data(df: pd.DataFrame) -> tuple[pd.DataFrame, pd.Series]:
@@ -54,21 +63,10 @@ def prepare_training_data(df: pd.DataFrame) -> tuple[pd.DataFrame, pd.Series]:
     # that includes radar/lightning/sentinel features.
     # Missing columns are added as NaN (XGBoost handles this natively).
     available_features = [c for c in FEATURE_COLUMNS if c in df.columns]
-    missing_features = [c for c in FEATURE_COLUMNS if c not in df.columns]
     logger.info(f"Features disponibles: {len(available_features)}/{len(FEATURE_COLUMNS)}")
 
-    X = df[available_features].copy()
-    # Add any missing FEATURE_COLUMNS as NaN so the model trains on all 112
-    for col in missing_features:
-        X[col] = np.nan
-    # Reorder to match FEATURE_COLUMNS canonical order
-    X = X[[c for c in FEATURE_COLUMNS if c in X.columns]]
+    X = df.reindex(columns=FEATURE_COLUMNS).apply(pd.to_numeric, errors="coerce")
     y = df["will_rain"].copy()
-
-    # Convertir totes les columnes a numèric (algunes poden ser 'object' per valors mixtos)
-    for col in X.columns:
-        if X[col].dtype == "object":
-            X[col] = pd.to_numeric(X[col], errors="coerce")
 
     # Reemplaçar infinits per NaN (XGBoost gestiona NaN natívament)
     X = X.replace([np.inf, -np.inf], np.nan)
@@ -76,21 +74,7 @@ def prepare_training_data(df: pd.DataFrame) -> tuple[pd.DataFrame, pd.Series]:
     return X, y
 
 
-def train_model(
-    X: pd.DataFrame,
-    y: pd.Series,
-    n_splits: int = 5,
-) -> tuple[xgb.XGBClassifier, dict]:
-    """
-    Entrena XGBoost amb validació creuada temporal (TimeSeriesSplit).
-    Inclou calibratge isotònic de les probabilitats i cerca del llindar òptim.
-    Retorna el model entrenat i les mètriques.
-    """
-    n_positive = y.sum()
-    n_negative = len(y) - n_positive
-
-    logger.info(f"Dataset: {len(y)} mostres, {n_positive} pluja ({100*n_positive/len(y):.1f}%)")
-
+def _new_classifier() -> xgb.XGBClassifier:
     # Paràmetres XGBoost optimitzats per nowcasting (208 features)
     # Tuned via 2-round grid search (2026-03-22):
     #   - colsample 0.6→0.5: forces feature diversity — reduces NWP dominance from
@@ -105,7 +89,7 @@ def train_model(
     #   - colsample_bytree 0.5→0.7, colsample_bynode=0.7: combined diversity at tree+split level
     #     Top-3 gain 80%→74%, more features contribute
     #   Result: Cal F1 0.7061→0.7070 (+0.0009)
-    model = xgb.XGBClassifier(
+    return xgb.XGBClassifier(
         n_estimators=1200,
         max_depth=7,
         learning_rate=0.012,
@@ -122,6 +106,17 @@ def train_model(
         early_stopping_rounds=96,
         enable_categorical=False,
     )
+
+
+def train_model(
+    X: pd.DataFrame,
+    y: pd.Series,
+    n_splits: int = 5,
+) -> tuple[xgb.XGBClassifier, dict, IsotonicRegression]:
+    """Entrena el model històric amb validació creuada temporal i calibratge."""
+    n_positive = y.sum()
+    logger.info(f"Dataset: {len(y)} mostres, {n_positive} pluja ({100*n_positive/len(y):.1f}%)")
+    model = _new_classifier()
 
     # Validació creuada temporal — recollir prediccions out-of-fold per calibratge
     tscv = TimeSeriesSplit(n_splits=n_splits)
@@ -222,6 +217,139 @@ def train_model(
     return model, metrics, calibrator
 
 
+def _shadow_splits(
+    history: pd.DataFrame, feedback: pd.DataFrame, before,
+) -> tuple[dict[str, pd.DataFrame], dict]:
+    cutoff = pd.Timestamp(before)
+    if pd.isna(cutoff) or cutoff.tz is None:
+        raise ValueError("La data de tall ha d'incloure el fus horari (p. ex. 2026-11-01T00:00:00Z).")
+    cutoff = cutoff.tz_convert("UTC")
+    horizon = pd.Timedelta(minutes=config.PREDICTION_HORIZON_MIN)
+    window = pd.Timedelta(days=14)
+    holdout_start = cutoff - window
+    calibration_start = holdout_start - window
+
+    required = {"datetime", "verified", "actual_rain", "will_rain"}
+    if missing := required.difference(feedback.columns):
+        raise ValueError(f"Falten columnes al parquet de verificacions: {sorted(missing)}")
+    times = pd.to_datetime(feedback["datetime"], format="ISO8601", utc=True)
+    if times.isna().any():
+        raise ValueError("Hi ha verificacions sense data d'emissió.")
+    before_migration = times < pd.Timestamp(config.FEEDBACK_UTC_FROM)
+    eligible = (times + horizon < cutoff) & ~before_migration
+    pre_utc = int((before_migration & (times + horizon < cutoff)).sum())
+    station = feedback.loc[eligible].copy()
+    station.index = pd.DatetimeIndex(times[eligible])
+    if station.index.has_duplicates:
+        raise ValueError("Hi ha verificacions duplicades per a una mateixa emissió.")
+    if (not station["verified"].isin([True]).all()
+            or not station["actual_rain"].isin([0, 1]).all()
+            or not station["will_rain"].isin([0, 1]).all()
+            or not station["will_rain"].eq(station["actual_rain"]).all()):
+        raise ValueError("El parquet ha de contenir etiquetes binàries verificades amb l'estació.")
+    X, y = prepare_training_data(station)
+    has_predictors = X.notna().any(axis=1)
+    recent = X.index >= calibration_start
+    if not recent.any() or has_predictors[recent].mean() < config.FEEDBACK_MIN_INPUT_COVERAGE:
+        raise ValueError(f"Menys del {config.FEEDBACK_MIN_INPUT_COVERAGE * 100:g} % de les verificacions "
+                         "recents tenen predictors. Repara el parquet.")
+    excluded = int((~has_predictors).sum())
+    logger.info("Verificacions sense cap predictor excloses de l'entrenament: %d", excluded)
+    station = X.loc[has_predictors].assign(will_rain=y[has_predictors]).sort_index()
+
+    # L'històric d'Open-Meteo usa hora local, el parquet verificat usa UTC.
+    # A les dues transicions anuals no podem situar l'hora local 02:00 amb certesa.
+    times = pd.to_datetime(history["datetime"], format="ISO8601")
+    if times.isna().any():
+        raise ValueError("Hi ha files de l'històric sense data.")
+    if times.dt.tz is None:
+        times = times.dt.tz_localize("Europe/Madrid", ambiguous="NaT", nonexistent="NaT")
+    times = times.dt.tz_convert("UTC")
+    eligible = times + horizon < calibration_start
+    base = history.loc[eligible].copy()
+    base.index = pd.DatetimeIndex(times[eligible])
+    if "will_rain" not in base or not base["will_rain"].isin([0, 1]).all():
+        raise ValueError("L'històric processat ha de contenir etiquetes will_rain binàries.")
+    X, y = prepare_training_data(base)
+    # El conjunt històric va creuar hores UTC de XEMA amb hores locals
+    # d'Open-Meteo. Només les lectures emeses en directe tenen una hora fiable.
+    xema = ["sentinel_temp_diff", "sentinel_humidity_diff", "sentinel_precip", "sentinel_raining",
+            "local_rain_xema", "local_rain_xema_3h"]
+    X.loc[:, xema] = np.nan
+    base = X.assign(will_rain=y)
+
+    train_station = station.loc[station.index + horizon < calibration_start]
+    # Si les dues fonts coincideixen exactament, preval l'etiqueta de l'estació.
+    train = pd.concat([base.loc[~base.index.isin(train_station.index)], train_station])
+    splits = {
+        "train": train.sort_index(kind="stable"),
+        "calibration": station.loc[(station.index >= calibration_start)
+                                   & (station.index + horizon < holdout_start)],
+        "holdout": station.loc[station.index >= holdout_start],
+    }
+    stats = {}
+    for name, frame in splits.items():
+        observed = train_station if name == "train" else frame
+        # A deu minuts per emissió, sis positius poden ser una sola finestra
+        # de pluja. Exigim també dades de mitja quinzena, no només una tempesta.
+        n_wet = int(observed.will_rain.sum())
+        if (min(n_wet, len(observed) - n_wet) < 6
+                or observed.index.normalize().nunique() < 7):
+            raise InsufficientShadowData(f"{name}: cobertura insuficient amb predictors i etiquetes d'estació "
+                             f"({len(observed)} files, {n_wet} amb pluja).")
+        stats[name] = {
+            "first_issue": frame.index.min().isoformat(),
+            "last_issue": frame.index.max().isoformat(),
+            "last_label_end": (frame.index.max() + horizon).isoformat(),
+            "n_samples": len(frame),
+            "n_positive": int(frame.will_rain.sum()),
+            "station_rows": len(observed),
+            "station_positive": n_wet,
+        }
+    return splits, {
+        "training_cutoff": cutoff.isoformat().replace("+00:00", "Z"),
+        "embargo_minutes": config.PREDICTION_HORIZON_MIN,
+        "feedback_without_predictors": excluded,
+        "feedback_before_utc_migration": pre_utc,
+        "history_columns_masked": xema,
+        "splits": stats,
+    }
+
+
+def train_shadow_model(
+    history: pd.DataFrame, feedback: pd.DataFrame, before,
+) -> tuple[xgb.XGBClassifier, dict, IsotonicRegression]:
+    """Ajusta el candidat sense fer servir la quinzena final per triar cap paràmetre."""
+    splits, metrics = _shadow_splits(history, feedback, before)
+    train, calibration, holdout = (splits[key] for key in ("train", "calibration", "holdout"))
+    model = _new_classifier()
+    model.fit(train[FEATURE_COLUMNS], train.will_rain,
+              eval_set=[(calibration[FEATURE_COLUMNS], calibration.will_rain)], verbose=False)
+    raw = model.predict_proba(calibration[FEATURE_COLUMNS])[:, 1]
+    calibrator = IsotonicRegression(y_min=0, y_max=1, out_of_bounds="clip").fit(raw, calibration.will_rain)
+    precision, recall, thresholds = precision_recall_curve(calibration.will_rain, calibrator.predict(raw))
+    f1 = 2 * precision[:-1] * recall[:-1] / np.maximum(precision[:-1] + recall[:-1], 1e-12)
+    threshold = float(thresholds[np.argmax(f1)])
+
+    probabilities = calibrator.predict(model.predict_proba(holdout[FEATURE_COLUMNS])[:, 1])
+    labels = holdout.will_rain
+    predictions = probabilities >= threshold
+    tn, fp, fn, tp = confusion_matrix(labels, predictions, labels=[0, 1]).ravel()
+    auc = float(roc_auc_score(labels, probabilities))
+    if not np.isfinite(auc) or auc <= 0.5 or tp == 0:
+        raise ValueError(f"El candidat no distingeix la pluja a la validació: AUC={auc:.4f}, TP={tp}.")
+    metrics.update({
+        "calibrated": True,
+        "optimal_threshold": threshold,
+        "holdout_auc": auc,
+        "holdout_f1": float(f1_score(labels, predictions)),
+        "holdout_brier": float(brier_score_loss(labels, probabilities)),
+        "holdout_confusion": {"tn": int(tn), "fp": int(fp), "fn": int(fn), "tp": int(tp)},
+        "best_iteration": model.best_iteration,
+    })
+    return model, metrics, calibrator
+
+
 def get_feature_importance(model: xgb.XGBClassifier, feature_names: list[str]) -> pd.DataFrame:
     """Retorna les importàncies de les features ordenades."""
     importance = model.feature_importances_
@@ -232,51 +360,109 @@ def get_feature_importance(model: xgb.XGBClassifier, feature_names: list[str]) -
     return fi
 
 
+def _artifact_paths(model_dir):
+    directory = Path(config.MODELS_DIR if model_dir is None else model_dir)
+    paths = (Path(config.MODEL_PATH), Path(config.FEATURE_NAMES_PATH), Path(config.CALIBRATOR_PATH))
+    if model_dir is not None:
+        paths = tuple(directory / path.name for path in paths)
+    return (*paths, directory / "metrics.json")
+
+
+def _model_fingerprint(metrics, contents):
+    identity = hashlib.sha256(json.dumps([metrics["training_cutoff"], metrics["optimal_threshold"]]).encode())
+    for data in contents:
+        identity.update(data)
+    return identity.hexdigest()
+
+
+class _ClippedIsotonic:
+    """Portable monotone interpolation; the live sklearn calibrator is untouched."""
+    def __init__(self, x, y):
+        self.x, self.y = np.asarray(x, dtype=float), np.asarray(y, dtype=float)
+        if (self.x.ndim != 1 or self.x.shape != self.y.shape or not self.x.size
+                or not np.isfinite(self.x).all() or not np.isfinite(self.y).all()
+                or not (np.diff(self.x) > 0).all() or not (np.diff(self.y) >= 0).all()
+                or self.y[0] < 0 or self.y[-1] > 1):
+            raise ValueError("Invalid isotonic knots")
+
+    def predict(self, raw):
+        return np.interp(raw, self.x, self.y)
+
+
 def save_model(model: xgb.XGBClassifier, feature_names: list[str], metrics: dict,
-               calibrator: Optional[IsotonicRegression] = None) -> None:
+               calibrator: Optional[IsotonicRegression] = None, *, model_dir=None) -> None:
     """Desa el model, calibrador, noms de features i mètriques."""
-    os.makedirs(config.MODELS_DIR, exist_ok=True)
+    if "training_cutoff" in metrics and (model_dir is None or calibrator is None):
+        raise ValueError("A shadow model requires an isolated directory and a fitted calibrator")
+    model_path, names_path, cal_path, metrics_path = _artifact_paths(model_dir)
+    metrics_path.parent.mkdir(parents=True, exist_ok=True)
 
-    model.save_model(config.MODEL_PATH)
-    logger.info(f"Model desat a {config.MODEL_PATH}")
-
-    with open(config.FEATURE_NAMES_PATH, "w") as f:
-        json.dump(feature_names, f)
-
-    if calibrator is not None:
-        joblib.dump(calibrator, config.CALIBRATOR_PATH)
-        logger.info(f"Calibrador desat a {config.CALIBRATOR_PATH}")
-
-    metrics_path = os.path.join(config.MODELS_DIR, "metrics.json")
-    with open(metrics_path, "w") as f:
-        json.dump(metrics, f, indent=2, default=str)
-
-    logger.info(f"Mètriques desades a {metrics_path}")
+    model.save_model(model_path)
+    names_path.write_text(json.dumps(feature_names))
+    if "training_cutoff" in metrics:
+        cal_path = cal_path.with_suffix(".json")
+        cal_path.write_text(json.dumps({"x": calibrator.X_thresholds_.tolist(),
+                                        "y": calibrator.y_thresholds_.tolist()}, allow_nan=False))
+        contents = (p.read_bytes() for p in (model_path, names_path, cal_path))
+        metrics = {**metrics, "model_id": _model_fingerprint(metrics, contents)}
+    elif calibrator is not None:
+        joblib.dump(calibrator, cal_path)
+    metrics_path.write_text(json.dumps(metrics, indent=2, default=str, allow_nan=False))
+    logger.info("Model i mètriques desats a %s", metrics_path.parent)
 
 
-def load_model() -> tuple[xgb.XGBClassifier, list[str], Optional[IsotonicRegression], float]:
-    """Carrega el model entrenat, calibrador i llindar òptim."""
-    if not os.path.exists(config.MODEL_PATH):
-        raise FileNotFoundError(f"Model no trobat: {config.MODEL_PATH}")
+def save_shadow_model(model, metrics, calibrator) -> None:
+    """Desa un candidat per revisar sense substituir el que puntua en producció."""
+    root = Path(config.MODELS_DIR)
+    root.mkdir(parents=True, exist_ok=True)
+    target = root / "shadow-next"
+    with TemporaryDirectory(prefix=".shadow-", dir=root) as work:
+        stage, previous = Path(work) / "new", Path(work) / "previous"
+        save_model(model, FEATURE_COLUMNS, metrics, calibrator, model_dir=stage)
+        load_model(model_dir=stage)
+        try:
+            if target.exists():
+                target.rename(previous)
+            stage.rename(target)
+        finally:
+            if previous.exists() and not target.exists():
+                previous.rename(target)
+
+
+def load_model(model_dir=None) -> tuple[xgb.XGBClassifier, list[str], IsotonicRegression | _ClippedIsotonic | None, float]:
+    """Carrega els quatre fitxers del candidat o, per defecte, el model de producció."""
+    model_path, names_path, cal_path, metrics_path = _artifact_paths(model_dir)
+    if not model_path.is_file():
+        raise FileNotFoundError(f"Model no trobat: {model_path}")
 
     model = xgb.XGBClassifier()
-    model.load_model(config.MODEL_PATH)
-
-    with open(config.FEATURE_NAMES_PATH) as f:
-        feature_names = json.load(f)
-
-    # Carregar calibrador (si existeix)
-    calibrator = None
-    if os.path.exists(config.CALIBRATOR_PATH):
-        calibrator = joblib.load(config.CALIBRATOR_PATH)
-
-    # Carregar llindar òptim de metrics.json (si existeix)
-    threshold = config.ALERT_PROBABILITY_THRESHOLD
-    metrics_path = os.path.join(config.MODELS_DIR, "metrics.json")
-    if os.path.exists(metrics_path):
-        with open(metrics_path) as f:
-            metrics = json.load(f)
-        if "optimal_threshold" in metrics:
+    if model_dir is not None and (metrics_path.exists() or Path(model_dir).name == "shadow"):
+        metrics = json.loads(metrics_path.read_text())
+        if "training_cutoff" in metrics or Path(model_dir).name == "shadow":
+            # El desplegament pot canviar els fitxers entre lectures. Deserialitzem
+            # els mateixos bytes que hem verificat, sense tornar a obrir els fitxers.
+            cal_path = cal_path.with_suffix(".json")
+            contents = tuple(p.read_bytes() for p in (model_path, names_path, cal_path))
+            fingerprint = _model_fingerprint(metrics, contents)
+            if metrics.get("model_id") != fingerprint:
+                raise ValueError(f"L'empremta del candidat no coincideix amb els fitxers de {model_dir}.")
+            model.load_model(bytearray(contents[0]))
+            feature_names = json.loads(contents[1])
+            calibrator = _ClippedIsotonic(**json.loads(contents[2]))
             threshold = metrics["optimal_threshold"]
+            if not 0 <= threshold <= 1 or feature_names != model.get_booster().feature_names:
+                raise ValueError(f"Fitxers de model incompatibles: {model_dir}")
+            model.nowcast_model_id = fingerprint
+            return model, feature_names, calibrator, threshold
+    model.load_model(model_path)
+    feature_names = json.loads(names_path.read_text())
+    calibrator = None
+    if cal_path.exists():
+        calibrator = joblib.load(cal_path)
+
+    threshold = config.ALERT_PROBABILITY_THRESHOLD
+    if metrics_path.exists():
+        metrics = json.loads(metrics_path.read_text())
+        threshold = metrics.get("optimal_threshold", threshold)
 
     return model, feature_names, calibrator, threshold

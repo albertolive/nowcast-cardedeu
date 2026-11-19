@@ -4,6 +4,7 @@ __pycache__/
 *.tmp
 .env
 data/raw/
+models/shadow-next/
 data/meteocat_cache/
 # Estat entre runs del radar Meteocat (runtime, no ha d'anar al repo: el VM
 # fa push de data/ cada cicle i això crearia soroll i conflictes)

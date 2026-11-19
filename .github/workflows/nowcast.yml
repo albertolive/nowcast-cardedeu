@@ -9,7 +9,7 @@ on:
       - "tests/**"
       - "requirements.txt"
   schedule:
-    # Re-entrenar setmanalment (diumenge 3:00 Barcelona = 2:00 UTC estiu)
+    # Preparar un candidat per revisar cada diumenge a les 02:00 UTC
     - cron: "0 2 * * 0"
     # Resum diari (07:00 Barcelona = 05:00 UTC estiu / 06:00 UTC hivern; acceptem ±30min jitter)
     - cron: "0 5 * * *"
@@ -303,7 +303,7 @@ jobs:
             -d parse_mode=HTML \
             -d text="🔴 <b>Nowcast FALLADA</b>: Job <code>backfill_verify</code> ha fallat.%0A<a href='${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}'>Veure logs</a>"
 
-  # Re-entrenar el model setmanalment (diumenge a les 3am)
+  # No substituir ni el model actiu ni el candidat de la prova en curs
   retrain:
     needs: test
     runs-on: ubuntu-latest
@@ -316,11 +316,14 @@ jobs:
     if: >-
       github.event.schedule == '0 2 * * 0' ||
       (github.event_name == 'workflow_dispatch' && github.event.inputs.action == 'retrain')
-    timeout-minutes: 30
+    timeout-minutes: 60
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Fetch forecasts issued in the 35-day repair window
+        run: git fetch --no-tags --shallow-since="$(date -u -d '36 days ago' +%F)" origin main
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -331,6 +334,9 @@ jobs:
 
       - name: Install dependencies
         run: python -m pip install -r requirements.txt
+
+      - name: Restore as-issued feedback inputs
+        run: python scripts/repair_feedback.py
 
       - name: Cache raw data (incremental downloads)
         uses: actions/cache@v4
@@ -361,31 +367,13 @@ jobs:
           python scripts/backfill_xema.py --max-days 3 || echo "XEMA backfill skipped (API limit or no key)"
           python scripts/build_dataset.py
 
-      - name: Train model
-        run: python scripts/train_model.py
-
-      - name: Validate model quality
-        run: |
-          python << 'EOF'
-          import json, sys
-          with open('models/metrics.json') as f:
-              m = json.load(f)
-          auc = m.get('cv_auc_mean', 0)
-          f1 = m.get('cv_f1_mean', 0)
-          print(f'AUC={auc:.4f}, F1={f1:.4f}')
-          if auc < 0.70:
-              print(f'ERROR: AUC {auc:.4f} massa baix (mínim 0.70) — model rebutjat')
-              sys.exit(1)
-          print('Model quality OK')
-          EOF
-
-      - name: Commit updated model
+      - name: Commit training data only
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add models/ data/processed/
+          git add data/processed/
           git diff --cached --quiet && exit 0
-          git commit -m "🤖 Retrain model $(date +%Y-%m-%d)"
+          git commit -m "🤖 Update verified training data $(date +%Y-%m-%d)"
           for attempt in 1 2 3; do
             git push && exit 0
             echo "Push failed (attempt $attempt), pulling and retrying..."
@@ -397,6 +385,28 @@ jobs:
           done
           echo "ERROR: Failed to push after 3 attempts"
           exit 1
+
+      - name: Train a candidate for offline review
+        id: candidate
+        run: |
+          set +e
+          python scripts/train_model.py --shadow --before "$(date -u +%FT%TZ)"
+          code=$?
+          if [ "$code" -eq 3 ]; then
+            echo "::notice::No hi ha prou pluja observada per jutjar un candidat aquesta setmana."
+            exit 0
+          fi
+          [ "$code" -eq 0 ] && echo "trained=true" >> "$GITHUB_OUTPUT"
+          exit "$code"
+
+      - name: Save the weekly candidate without deploying it
+        if: steps.candidate.outputs.trained == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: weekly-shadow-candidate
+          path: models/shadow-next/
+          if-no-files-found: error
+          retention-days: 14
 
       - name: Notificar fallada per Telegram
         if: failure()

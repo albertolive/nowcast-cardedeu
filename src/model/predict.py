@@ -425,6 +425,41 @@ def _select_radar_source(meteocat: dict, rainviewer: dict,
     return rv, "rainviewer_frozen"
 
 
+def _score_issued_model(latest, bundle, physical_inputs, *, strict=False):
+    model, feature_names, calibrator, _ = bundle
+    X = latest.reindex(columns=feature_names).apply(pd.to_numeric, errors="coerce").replace([np.inf, -np.inf], np.nan)
+    raw = float(model.predict_proba(X)[0, 1])
+    calibrated = float(calibrator.predict([raw])[0]) if calibrator is not None else raw
+    if strict and not (0 <= raw <= 1 and 0 <= calibrated <= 1):
+        raise ValueError("Probabilitat del candidat no vàlida abans de l'ajust físic.")
+    adjusted, adjustments = _apply_physical_constraints(calibrated, **physical_inputs)
+    return X, raw, adjusted, adjustments
+
+
+def _shadow_score(latest, physical_inputs) -> dict:
+    directory = os.path.join(config.MODELS_DIR, "shadow")
+    if not os.path.exists(directory):
+        return {}
+    try:
+        bundle = load_model(model_dir=directory)
+        model_id = bundle[0].nowcast_model_id
+        if not model_id:
+            raise ValueError("Falta l'identificador del candidat.")
+        # Les regles físiques ja s'han registrat per al model actiu; no les repetim.
+        level = logger.level
+        logger.setLevel(logging.ERROR)
+        try:
+            _, _, probability, _ = _score_issued_model(latest, bundle, physical_inputs, strict=True)
+        finally:
+            logger.setLevel(level)
+        if not 0 <= probability <= 1:
+            raise ValueError("Probabilitat del candidat no vàlida.")
+        return {"shadow_probability": round(probability, 4), "shadow_model_id": model_id}
+    except Exception as exc:
+        logger.warning("No s'ha pogut calcular la probabilitat del candidat: %s", exc)
+        return {}
+
+
 def predict_now() -> dict:
     """
     Executa una predicció en temps real.
@@ -652,33 +687,11 @@ def predict_now() -> dict:
             latest[k] = v
 
     logger.info("Carregant model...")
-    model, feature_names, calibrator, threshold = load_model()
-
-    # Preparar el vector de features (alinear amb les que el model espera)
-    X = pd.DataFrame(columns=feature_names)
-    for col in feature_names:
-        if col in latest.columns:
-            X[col] = latest[col].values
-        else:
-            X[col] = [np.nan]
-
-    X = X.replace([np.inf, -np.inf], np.nan)
-    # Ensure all columns are numeric (None from closed rain gate → object dtype)
-    X = X.apply(pd.to_numeric, errors="coerce")
-
-    # Predicció amb calibratge
-    raw_probability = float(model.predict_proba(X)[:, 1][0])
-    if calibrator is not None:
-        probability = float(calibrator.predict([raw_probability])[0])
-    else:
-        probability = raw_probability
-
-    # Ajustament per restriccions físiques: quan els sensors mostren senyal
-    # clara de pluja (radar, sentinella), el model no pot dir <X% perquè
-    # les features de radar/sentinella tenen 0% d'importància al model actual
-    # (NaN en les 7 anys de dades d'entrenament històriques).
-    probability, physical_adjustments = _apply_physical_constraints(
-        probability, radar_data, sentinel_features,
+    live = load_model()
+    model, feature_names, calibrator, threshold = live
+    physical_inputs = dict(
+        radar_data=radar_data,
+        sentinel_features=sentinel_features,
         aemet_radar_data=aemet_radar_data,
         current=current,
         station_df=station_df,
@@ -686,7 +699,7 @@ def predict_now() -> dict:
         ensemble=ensemble_data,
         lightning=lightning_data,
     )
-
+    X, raw_probability, probability, physical_adjustments = _score_issued_model(latest, live, physical_inputs)
     will_rain = probability >= threshold
 
     # Calcular els factors que més influeixen en la predicció
@@ -892,6 +905,7 @@ def predict_now() -> dict:
         if lightning_nulls:
             logger.warning(f"⚠️ Lightning XDDE: features nul·les amb rain gate obert")
 
+    result.update(_shadow_score(latest, physical_inputs))
     return result
 
 
