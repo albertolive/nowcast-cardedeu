@@ -1,0 +1,23 @@
+{
+  "status": "awaiting_activation",
+  "model_id": "d71cadb0e3d2a3678505c1b48519b2ae3e9de778bd7753c352d5d8a0532d7eb7",
+  "not_before": "2026-11-18T19:50:00Z",
+  "first_issued_at": null,
+  "last_shadow_issue": null,
+  "input_counts": {
+    "before_activation": 70
+  },
+  "git_commit": "80068764c6f8547ea1eb591db3db6754c9cf03b0",
+  "checked_at": "2026-11-19T07:25:27.461016Z",
+  "goal": 10,
+  "minimum_lead_minutes": 10,
+  "observable_onsets": 0,
+  "policy": {
+    "up": 0.65,
+    "down": 0.3,
+    "cooldown_minutes": 30,
+    "horizon_minutes": 60,
+    "threshold_mm": 0.2
+  },
+  "notice": "Only originally issued matching scores. Simulated rain alerts, not Telegram deliveries. Review manually when complete; no promotion."
+}
