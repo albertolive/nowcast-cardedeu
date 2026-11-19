@@ -123,7 +123,7 @@ export TELEGRAM_CHAT_ID="el_teu_chat_id"
 - **Programació de fluxos**:
   - Resum diari a les **07:00**.
   - Informe d'accuracy els dilluns a les **08:00**.
-  - Cada diumenge a les **02:00 UTC** es reparen les verificacions i s'entrena un candidat per revisar. No substitueix cap model en ús.
+  - Cada diumenge a les **02:00 UTC** es reparen les verificacions. Si les dues últimes quinzenes tenen prou pluja observada, s'entrena un candidat per revisar. No substitueix cap model en ús.
   - Cada dia a les **04:23 UTC**, **Rain warning trial** actualitza `data/rain_warning_trial.json`.
 - **Secrets** (només noms, sense valors): `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID`, `METEOCAT_API_KEY`, `AEMET_API_KEY`, `GATEWAY_TOKEN`.
 - No es revela cap adreça IP, projecte, zona, nom de màquina virtual, identificadors ni prefixos de tokens.

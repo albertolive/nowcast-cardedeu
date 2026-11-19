@@ -139,9 +139,8 @@ def test_cli_round_trip_no_archive_no_live_writes_and_failed_run_keeps_candidate
     holdout = feedback.datetime >= (CUTOFF - pd.Timedelta(days=14)).tz_localize(None)
     feedback.loc[holdout, ["precipitation", "radar_dbz"]] = [1.0, 0.0]
     feedback.to_parquet(source, index=False)
-    with pytest.raises(SystemExit) as dry:
+    with pytest.raises(ValueError, match="no distingeix la pluja"):
         cli.main(args)
-    assert dry.value.code == 3
     assert {f.name: f.read_bytes() for f in shadow.iterdir()} == files
 
     monkeypatch.setattr(train, "save_model", Mock(side_effect=OSError("disk full")))

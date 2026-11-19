@@ -393,7 +393,7 @@ jobs:
           python scripts/train_model.py --shadow --before "$(date -u +%FT%TZ)"
           code=$?
           if [ "$code" -eq 3 ]; then
-            echo "::notice::Not enough observed rain to judge a candidate this week."
+            echo "::notice::No hi ha prou pluja observada per jutjar un candidat aquesta setmana."
             exit 0
           fi
           [ "$code" -eq 0 ] && echo "trained=true" >> "$GITHUB_OUTPUT"

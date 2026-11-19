@@ -337,7 +337,7 @@ def train_shadow_model(
     tn, fp, fn, tp = confusion_matrix(labels, predictions, labels=[0, 1]).ravel()
     auc = float(roc_auc_score(labels, probabilities))
     if not np.isfinite(auc) or auc <= 0.5 or tp == 0:
-        raise InsufficientShadowData(f"El candidat no distingeix la pluja a la validació: AUC={auc:.4f}, TP={tp}.")
+        raise ValueError(f"El candidat no distingeix la pluja a la validació: AUC={auc:.4f}, TP={tp}.")
     metrics.update({
         "calibrated": True,
         "optimal_threshold": threshold,
