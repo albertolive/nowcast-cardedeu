@@ -83,6 +83,8 @@ Fix: el target només es deriva si la columna `will_rain` no existeix; si hi
 és parcialment NaN, error explícit en lloc d'inventar etiquetes. Test de
 regressió: `tests/test_train_target.py`.
 
+## L'entrenament barrejava períodes (novembre de 2026)
+
 L'entrenament antic concatenava l'històric i les verificacions sense ordenar-los per hora d'emissió. Els períodes se superposaven i les mètriques de validació no eren fiables. L'entrenament del candidat separa les mostres per data i deixa una hora de marge perquè la pluja que etiqueta una mostra no entri al període següent.
 
 ## El registre del web havia esborrat les dades d'entrenament (novembre de 2026)

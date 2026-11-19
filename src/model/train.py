@@ -32,6 +32,10 @@ from src.features.engineering import FEATURE_COLUMNS, build_target_column
 logger = logging.getLogger(__name__)
 
 
+class InsufficientShadowData(ValueError):
+    """No hi ha prou pluja observada per jutjar un candidat; no és una avaria."""
+
+
 def prepare_training_data(df: pd.DataFrame) -> tuple[pd.DataFrame, pd.Series]:
     """
     Prepara X (features) i y (target) per a l'entrenament.
@@ -233,6 +237,7 @@ def _shadow_splits(
         raise ValueError("Hi ha verificacions sense data d'emissió.")
     before_migration = times < pd.Timestamp(config.FEEDBACK_UTC_FROM)
     eligible = (times + horizon < cutoff) & ~before_migration
+    pre_utc = int((before_migration & (times + horizon < cutoff)).sum())
     station = feedback.loc[eligible].copy()
     station.index = pd.DatetimeIndex(times[eligible])
     if station.index.has_duplicates:
@@ -290,7 +295,7 @@ def _shadow_splits(
         n_wet = int(observed.will_rain.sum())
         if (min(n_wet, len(observed) - n_wet) < 6
                 or observed.index.normalize().nunique() < 7):
-            raise ValueError(f"{name}: cobertura insuficient amb predictors i etiquetes d'estació "
+            raise InsufficientShadowData(f"{name}: cobertura insuficient amb predictors i etiquetes d'estació "
                              f"({len(observed)} files, {n_wet} amb pluja).")
         stats[name] = {
             "first_issue": frame.index.min().isoformat(),
@@ -305,7 +310,7 @@ def _shadow_splits(
         "training_cutoff": cutoff.isoformat().replace("+00:00", "Z"),
         "embargo_minutes": config.PREDICTION_HORIZON_MIN,
         "feedback_without_predictors": excluded,
-        "feedback_before_utc_migration": int((before_migration & (times + horizon < cutoff)).sum()),
+        "feedback_before_utc_migration": pre_utc,
         "history_columns_masked": xema,
         "splits": stats,
     }
@@ -332,7 +337,7 @@ def train_shadow_model(
     tn, fp, fn, tp = confusion_matrix(labels, predictions, labels=[0, 1]).ravel()
     auc = float(roc_auc_score(labels, probabilities))
     if not np.isfinite(auc) or auc <= 0.5 or tp == 0:
-        raise ValueError(f"El candidat no distingeix la pluja a la validació: AUC={auc:.4f}, TP={tp}.")
+        raise InsufficientShadowData(f"El candidat no distingeix la pluja a la validació: AUC={auc:.4f}, TP={tp}.")
     metrics.update({
         "calibrated": True,
         "optimal_threshold": threshold,

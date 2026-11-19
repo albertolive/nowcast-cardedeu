@@ -80,7 +80,7 @@ def test_bad_recent_coverage_and_one_class_are_rejected():
     with pytest.raises(ValueError, match="99 %"):
         train._shadow_splits(history, empty, CUTOFF)
     feedback.loc[recent, ["will_rain", "actual_rain"]] = 0
-    with pytest.raises(ValueError, match="holdout: cobertura insuficient"):
+    with pytest.raises(train.InsufficientShadowData, match="holdout: cobertura insuficient"):
         train._shadow_splits(history, feedback, CUTOFF)
 
 
@@ -139,8 +139,9 @@ def test_cli_round_trip_no_archive_no_live_writes_and_failed_run_keeps_candidate
     holdout = feedback.datetime >= (CUTOFF - pd.Timedelta(days=14)).tz_localize(None)
     feedback.loc[holdout, ["precipitation", "radar_dbz"]] = [1.0, 0.0]
     feedback.to_parquet(source, index=False)
-    with pytest.raises(ValueError, match="no distingeix la pluja"):
+    with pytest.raises(SystemExit) as dry:
         cli.main(args)
+    assert dry.value.code == 3
     assert {f.name: f.read_bytes() for f in shadow.iterdir()} == files
 
     monkeypatch.setattr(train, "save_model", Mock(side_effect=OSError("disk full")))

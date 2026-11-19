@@ -387,9 +387,20 @@ jobs:
           exit 1
 
       - name: Train a candidate for offline review
-        run: python scripts/train_model.py --shadow --before "$(date -u +%FT%TZ)"
+        id: candidate
+        run: |
+          set +e
+          python scripts/train_model.py --shadow --before "$(date -u +%FT%TZ)"
+          code=$?
+          if [ "$code" -eq 3 ]; then
+            echo "::notice::Not enough observed rain to judge a candidate this week."
+            exit 0
+          fi
+          [ "$code" -eq 0 ] && echo "trained=true" >> "$GITHUB_OUTPUT"
+          exit "$code"
 
       - name: Save the weekly candidate without deploying it
+        if: steps.candidate.outputs.trained == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: weekly-shadow-candidate

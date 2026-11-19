@@ -445,7 +445,13 @@ def _shadow_score(latest, physical_inputs) -> dict:
         model_id = bundle[0].nowcast_model_id
         if not model_id:
             raise ValueError("Falta l'identificador del candidat.")
-        _, _, probability, _ = _score_issued_model(latest, bundle, physical_inputs, strict=True)
+        # Les regles físiques ja s'han registrat per al model actiu; no les repetim.
+        level = logger.level
+        logger.setLevel(logging.ERROR)
+        try:
+            _, _, probability, _ = _score_issued_model(latest, bundle, physical_inputs, strict=True)
+        finally:
+            logger.setLevel(level)
         if not 0 <= probability <= 1:
             raise ValueError("Probabilitat del candidat no vàlida.")
         return {"shadow_probability": round(probability, 4), "shadow_model_id": model_id}

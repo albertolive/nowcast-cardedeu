@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Restore as-issued measurements to verified forecasts without changing their labels."""
+"""Restore as-issued measurements to verified forecasts and apply the latest verified labels from the log."""
 import argparse
 from datetime import datetime, timedelta, timezone
 import io

@@ -167,6 +167,20 @@ def test_slim_reverification_keeps_issued_readings(tmp_paths):
     assert row["brier_component"] == round((0.7543 - 1)**2, 6)
 
 
+def test_reverification_without_correct_keeps_previous_value(tmp_paths):
+    log, path = tmp_paths
+    first = _make_entry("2026-11-14T19:50:44Z", 75, True)
+    _write_jsonl(log, [first])
+    export_mod.export_verified_for_training()
+    other = _make_entry("2026-11-14T20:00:44Z", 10, False)
+    other["correct"] = False
+    compact = {k: first[k] for k in ("timestamp", "verified", "actual_rain")}
+    _write_jsonl(log, [compact, other])
+    export_mod.export_verified_for_training()
+    rows = pd.read_parquet(path).set_index("datetime")["correct"]
+    assert list(rows) == [True, False]
+
+
 def test_corrupt_previous_export_is_not_replaced(tmp_paths):
     log, path = tmp_paths
     path.write_bytes(b"not a parquet")

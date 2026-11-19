@@ -16,8 +16,8 @@ import config
 from src.features.engineering import FEATURE_COLUMNS
 from src.feedback.export import FEEDBACK_TRAINING_PATH
 from src.model.train import (
-    get_feature_importance, prepare_training_data, save_model, save_shadow_model,
-    train_model, train_shadow_model,
+    InsufficientShadowData, get_feature_importance, prepare_training_data, save_model,
+    save_shadow_model, train_model, train_shadow_model,
 )
 
 logging.basicConfig(
@@ -59,7 +59,12 @@ def main(argv=None):
     logger.info(f"Dataset base: {len(df)} mostres")
 
     if args.shadow:
-        model, metrics, calibrator = train_shadow_model(df, pd.read_parquet(FEEDBACK_TRAINING_PATH), cutoff)
+        try:
+            model, metrics, calibrator = train_shadow_model(df, pd.read_parquet(FEEDBACK_TRAINING_PATH), cutoff)
+        except InsufficientShadowData as exc:
+            # Una quinzena seca és normal: no hi ha candidat, però no és una fallada.
+            logger.warning("Sense candidat aquesta setmana: %s", exc)
+            sys.exit(3)
         save_shadow_model(model, metrics, calibrator)
         logger.info("Candidat desat a models/shadow-next/ (tall %s, AUC %.4f, F1 %.4f, Brier %.4f).",
                     metrics["training_cutoff"], metrics["holdout_auc"], metrics["holdout_f1"], metrics["holdout_brier"])

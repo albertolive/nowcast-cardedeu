@@ -44,6 +44,14 @@ jobs:
           python-version: "3.12"
           cache: pip
 
+      - name: Reuse completed gauge days
+        if: steps.trial.outputs.done != 'true'
+        uses: actions/cache@v4
+        with:
+          path: data/raw/rain_warning_station/issued-trial
+          key: trial-gauge-${{ github.run_id }}
+          restore-keys: trial-gauge-
+
       - name: Read issued forecasts and completed local gauge days
         if: steps.trial.outputs.done != 'true'
         run: |

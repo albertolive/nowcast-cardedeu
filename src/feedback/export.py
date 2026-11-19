@@ -50,9 +50,12 @@ def _merge_verified(existing: pd.DataFrame, entries: list[dict]) -> pd.DataFrame
     # must never erase the original reading. An explicitly unscored outcome,
     # on the other hand, must be allowed to replace a previous correctness flag.
     merged = combined.groupby(level=0, sort=True).last()
-    if "correct" in labels:
-        latest = updates[~updates.index.duplicated(keep="last")]
-        merged.loc[latest.index, "correct"] = latest["correct"]
+    if "correct" in merged:
+        merged["correct"] = pd.to_numeric(merged["correct"]).astype(float)
+    explicit = updates.loc[["correct" in e for e in entries]]
+    if "correct" in explicit:
+        latest = explicit[~explicit.index.duplicated(keep="last")]
+        merged.loc[latest.index, "correct"] = pd.to_numeric(latest["correct"]).astype(float)
     if "brier_component" in merged:
         # A compact correction has no Brier field; don't inherit a score for a different outcome.
         changed = combined["actual_rain"].groupby(level=0).nunique().gt(1)

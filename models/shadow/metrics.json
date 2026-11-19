@@ -2,7 +2,7 @@
   "training_cutoff": "2026-11-01T00:00:00Z",
   "embargo_minutes": 60,
   "feedback_without_predictors": 1,
-  "feedback_before_utc_migration": 4204,
+  "feedback_before_utc_migration": 4205,
   "history_columns_masked": [
     "sentinel_temp_diff",
     "sentinel_humidity_diff",
