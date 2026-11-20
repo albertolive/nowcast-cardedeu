@@ -1,14 +1,16 @@
 {
-  "status": "awaiting_activation",
+  "status": "collecting",
   "model_id": "d71cadb0e3d2a3678505c1b48519b2ae3e9de778bd7753c352d5d8a0532d7eb7",
   "not_before": "2026-11-18T19:50:00Z",
-  "first_issued_at": null,
-  "last_shadow_issue": null,
+  "first_issued_at": "2026-11-19T07:30:43.824992Z",
+  "last_shadow_issue": "2026-11-20T13:10:45.443485Z",
   "input_counts": {
-    "before_activation": 70
+    "before_activation": 70,
+    "matched": 177,
+    "unknown_station": 2
   },
-  "git_commit": "80068764c6f8547ea1eb591db3db6754c9cf03b0",
-  "checked_at": "2026-11-19T07:25:27.461016Z",
+  "git_commit": "e38191b9e05776c4c8118552ce29712526008cbf",
+  "checked_at": "2026-11-20T13:12:45.357495Z",
   "goal": 10,
   "minimum_lead_minutes": 10,
   "observable_onsets": 0,
@@ -19,5 +21,50 @@
     "horizon_minutes": 60,
     "threshold_mm": 0.2
   },
-  "notice": "Only originally issued matching scores. Simulated rain alerts, not Telegram deliveries. Review manually when complete; no promotion."
+  "notice": "Only originally issued matching scores. Simulated rain alerts, not Telegram deliveries. Review manually when complete; no promotion.",
+  "scored_until": "2026-11-19T22:00:00Z",
+  "observed_days": 0.55299,
+  "episodes": [],
+  "excluded_onsets": {},
+  "comparison": {
+    "issued": {
+      "storms": 0,
+      "advance": 0,
+      "missed_advance": 0,
+      "timing_uncertain": 0,
+      "lead_minutes_median": null,
+      "short_lead_only": 0,
+      "false_warnings": 0,
+      "false_warning_times": [],
+      "uncertain_windows": [],
+      "false_warnings_per_week": 0.0
+    },
+    "shadow": {
+      "storms": 0,
+      "advance": 0,
+      "missed_advance": 0,
+      "timing_uncertain": 0,
+      "lead_minutes_median": null,
+      "short_lead_only": 0,
+      "false_warnings": 0,
+      "false_warning_times": [],
+      "uncertain_windows": [],
+      "false_warnings_per_week": 0.0
+    },
+    "persistence": {
+      "storms": 0,
+      "advance": 0,
+      "missed_advance": 0,
+      "timing_uncertain": 0,
+      "lead_minutes_median": null,
+      "short_lead_only": 0,
+      "false_warnings": 0,
+      "false_warning_times": [],
+      "uncertain_windows": [],
+      "false_warnings_per_week": 0.0
+    }
+  },
+  "station_day_sha256": {
+    "2026-11-19": "4b600316a19ca9385b17d3ca57c7602a34a88c917dfb8a63465de89f43ca8e4d"
+  }
 }
