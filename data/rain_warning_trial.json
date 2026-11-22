@@ -3,14 +3,14 @@
   "model_id": "d71cadb0e3d2a3678505c1b48519b2ae3e9de778bd7753c352d5d8a0532d7eb7",
   "not_before": "2026-11-18T19:50:00Z",
   "first_issued_at": "2026-11-19T07:30:43.824992Z",
-  "last_shadow_issue": "2026-11-21T12:40:41.956966Z",
+  "last_shadow_issue": "2026-11-22T12:40:57.561743Z",
   "input_counts": {
     "before_activation": 70,
-    "matched": 318,
+    "matched": 462,
     "unknown_station": 2
   },
-  "git_commit": "1d8749c7600aaa7c0daf2ad3967c8354bc3d8969",
-  "checked_at": "2026-11-21T12:49:19.056825Z",
+  "git_commit": "691d74abbd058ea76376acb990e6733b461883be",
+  "checked_at": "2026-11-22T12:42:28.697158Z",
   "goal": 10,
   "minimum_lead_minutes": 10,
   "observable_onsets": 0,
@@ -22,8 +22,8 @@
     "threshold_mm": 0.2
   },
   "notice": "Only originally issued matching scores. Simulated rain alerts, not Telegram deliveries. Review manually when complete; no promotion.",
-  "scored_until": "2026-11-20T22:00:00Z",
-  "observed_days": 1.37868,
+  "scored_until": "2026-11-21T22:00:00Z",
+  "observed_days": 2.33632,
   "episodes": [],
   "excluded_onsets": {},
   "comparison": {
@@ -66,6 +66,7 @@
   },
   "station_day_sha256": {
     "2026-11-19": "4b600316a19ca9385b17d3ca57c7602a34a88c917dfb8a63465de89f43ca8e4d",
-    "2026-11-20": "0b99c88d7f78b2f2215b2394719427dd11b9ce0b1b5ebf18da39395471908844"
+    "2026-11-20": "0b99c88d7f78b2f2215b2394719427dd11b9ce0b1b5ebf18da39395471908844",
+    "2026-11-21": "5bbbd34dbffc40a2e881c92617e31be6ab17f689fcd07f859756b7398fbb503a"
   }
 }
