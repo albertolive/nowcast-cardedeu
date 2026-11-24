@@ -1,16 +1,453 @@
 {
-  "smc_forecast_20261124_06": {
-    "timestamp": 1795496438.9679854,
+  "smc_hourly_20261124_07": {
+    "timestamp": 1795500045.7160077,
+    "data": [
+      {
+        "datetime": "2026-11-24 00:00:00",
+        "smc_prob_precip_1h": 0,
+        "smc_precip_intensity": 0,
+        "smc_prob_precip_6h": 0.0
+      },
+      {
+        "datetime": "2026-11-24 01:00:00",
+        "smc_prob_precip_1h": 0,
+        "smc_precip_intensity": 0,
+        "smc_prob_precip_6h": 0.0
+      },
+      {
+        "datetime": "2026-11-24 02:00:00",
+        "smc_prob_precip_1h": 0,
+        "smc_precip_intensity": 0,
+        "smc_prob_precip_6h": 0.0
+      },
+      {
+        "datetime": "2026-11-24 03:00:00",
+        "smc_prob_precip_1h": 0,
+        "smc_precip_intensity": 0,
+        "smc_prob_precip_6h": 0.0
+      },
+      {
+        "datetime": "2026-11-24 04:00:00",
+        "smc_prob_precip_1h": 0,
+        "smc_precip_intensity": 0,
+        "smc_prob_precip_6h": 0.0
+      },
+      {
+        "datetime": "2026-11-24 05:00:00",
+        "smc_prob_precip_1h": 0,
+        "smc_precip_intensity": 0,
+        "smc_prob_precip_6h": 0.0
+      },
+      {
+        "datetime": "2026-11-24 06:00:00",
+        "smc_prob_precip_1h": 0,
+        "smc_precip_intensity": 0,
+        "smc_prob_precip_6h": 0.0
+      },
+      {
+        "datetime": "2026-11-24 07:00:00",
+        "smc_prob_precip_1h": 0,
+        "smc_precip_intensity": 0,
+        "smc_prob_precip_6h": 0.0
+      },
+      {
+        "datetime": "2026-11-24 08:00:00",
+        "smc_prob_precip_1h": 0,
+        "smc_precip_intensity": 0,
+        "smc_prob_precip_6h": 0.0
+      },
+      {
+        "datetime": "2026-11-24 09:00:00",
+        "smc_prob_precip_1h": 0,
+        "smc_precip_intensity": 0,
+        "smc_prob_precip_6h": 0.0
+      },
+      {
+        "datetime": "2026-11-24 10:00:00",
+        "smc_prob_precip_1h": 0,
+        "smc_precip_intensity": 0,
+        "smc_prob_precip_6h": 0.0
+      },
+      {
+        "datetime": "2026-11-24 11:00:00",
+        "smc_prob_precip_1h": 0,
+        "smc_precip_intensity": 0,
+        "smc_prob_precip_6h": 0.0
+      },
+      {
+        "datetime": "2026-11-24 12:00:00",
+        "smc_prob_precip_1h": 0,
+        "smc_precip_intensity": 0,
+        "smc_prob_precip_6h": 0.0
+      },
+      {
+        "datetime": "2026-11-24 13:00:00",
+        "smc_prob_precip_1h": 0,
+        "smc_precip_intensity": 0,
+        "smc_prob_precip_6h": 0.0
+      },
+      {
+        "datetime": "2026-11-24 14:00:00",
+        "smc_prob_precip_1h": 0,
+        "smc_precip_intensity": 0,
+        "smc_prob_precip_6h": 0.0
+      },
+      {
+        "datetime": "2026-11-24 15:00:00",
+        "smc_prob_precip_1h": 0,
+        "smc_precip_intensity": 0,
+        "smc_prob_precip_6h": 0.0
+      },
+      {
+        "datetime": "2026-11-24 16:00:00",
+        "smc_prob_precip_1h": 0,
+        "smc_precip_intensity": 0,
+        "smc_prob_precip_6h": 0.0
+      },
+      {
+        "datetime": "2026-11-24 17:00:00",
+        "smc_prob_precip_1h": 0,
+        "smc_precip_intensity": 0,
+        "smc_prob_precip_6h": 0.0
+      },
+      {
+        "datetime": "2026-11-24 18:00:00",
+        "smc_prob_precip_1h": 0,
+        "smc_precip_intensity": 0,
+        "smc_prob_precip_6h": 0.0
+      },
+      {
+        "datetime": "2026-11-24 19:00:00",
+        "smc_prob_precip_1h": 0,
+        "smc_precip_intensity": 0,
+        "smc_prob_precip_6h": 0.0
+      },
+      {
+        "datetime": "2026-11-24 20:00:00",
+        "smc_prob_precip_1h": 0,
+        "smc_precip_intensity": 0,
+        "smc_prob_precip_6h": 0.0
+      },
+      {
+        "datetime": "2026-11-24 21:00:00",
+        "smc_prob_precip_1h": 0,
+        "smc_precip_intensity": 0,
+        "smc_prob_precip_6h": 0.0
+      },
+      {
+        "datetime": "2026-11-24 22:00:00",
+        "smc_prob_precip_1h": 0,
+        "smc_precip_intensity": 0,
+        "smc_prob_precip_6h": 0.0
+      },
+      {
+        "datetime": "2026-11-24 23:00:00",
+        "smc_prob_precip_1h": 0,
+        "smc_precip_intensity": 0,
+        "smc_prob_precip_6h": 0.0
+      },
+      {
+        "datetime": "2026-11-25 00:00:00",
+        "smc_prob_precip_1h": 0,
+        "smc_precip_intensity": 0,
+        "smc_prob_precip_6h": 0.0
+      },
+      {
+        "datetime": "2026-11-25 01:00:00",
+        "smc_prob_precip_1h": 0,
+        "smc_precip_intensity": 0,
+        "smc_prob_precip_6h": 0.0
+      },
+      {
+        "datetime": "2026-11-25 02:00:00",
+        "smc_prob_precip_1h": 0,
+        "smc_precip_intensity": 0,
+        "smc_prob_precip_6h": 0.0
+      },
+      {
+        "datetime": "2026-11-25 03:00:00",
+        "smc_prob_precip_1h": 0,
+        "smc_precip_intensity": 0,
+        "smc_prob_precip_6h": 0.0
+      },
+      {
+        "datetime": "2026-11-25 04:00:00",
+        "smc_prob_precip_1h": 0,
+        "smc_precip_intensity": 0,
+        "smc_prob_precip_6h": 0.0
+      },
+      {
+        "datetime": "2026-11-25 05:00:00",
+        "smc_prob_precip_1h": 0,
+        "smc_precip_intensity": 0,
+        "smc_prob_precip_6h": 0.0
+      },
+      {
+        "datetime": "2026-11-25 06:00:00",
+        "smc_prob_precip_1h": 0,
+        "smc_precip_intensity": 0,
+        "smc_prob_precip_6h": 0.0
+      },
+      {
+        "datetime": "2026-11-25 07:00:00",
+        "smc_prob_precip_1h": 0,
+        "smc_precip_intensity": 0,
+        "smc_prob_precip_6h": 0.0
+      },
+      {
+        "datetime": "2026-11-25 08:00:00",
+        "smc_prob_precip_1h": 0,
+        "smc_precip_intensity": 0,
+        "smc_prob_precip_6h": 0.0
+      },
+      {
+        "datetime": "2026-11-25 09:00:00",
+        "smc_prob_precip_1h": 0,
+        "smc_precip_intensity": 0,
+        "smc_prob_precip_6h": 0.0
+      },
+      {
+        "datetime": "2026-11-25 10:00:00",
+        "smc_prob_precip_1h": 0,
+        "smc_precip_intensity": 0,
+        "smc_prob_precip_6h": 0.0
+      },
+      {
+        "datetime": "2026-11-25 11:00:00",
+        "smc_prob_precip_1h": 0,
+        "smc_precip_intensity": 0,
+        "smc_prob_precip_6h": 0.0
+      },
+      {
+        "datetime": "2026-11-25 12:00:00",
+        "smc_prob_precip_1h": 0,
+        "smc_precip_intensity": 0,
+        "smc_prob_precip_6h": 0.0
+      },
+      {
+        "datetime": "2026-11-25 13:00:00",
+        "smc_prob_precip_1h": 0,
+        "smc_precip_intensity": 0,
+        "smc_prob_precip_6h": 0.0
+      },
+      {
+        "datetime": "2026-11-25 14:00:00",
+        "smc_prob_precip_1h": 0,
+        "smc_precip_intensity": 0,
+        "smc_prob_precip_6h": 0.0
+      },
+      {
+        "datetime": "2026-11-25 15:00:00",
+        "smc_prob_precip_1h": 0,
+        "smc_precip_intensity": 0,
+        "smc_prob_precip_6h": 0.0
+      },
+      {
+        "datetime": "2026-11-25 16:00:00",
+        "smc_prob_precip_1h": 0,
+        "smc_precip_intensity": 0,
+        "smc_prob_precip_6h": 0.0
+      },
+      {
+        "datetime": "2026-11-25 17:00:00",
+        "smc_prob_precip_1h": 0,
+        "smc_precip_intensity": 0,
+        "smc_prob_precip_6h": 0.0
+      },
+      {
+        "datetime": "2026-11-25 18:00:00",
+        "smc_prob_precip_1h": 0,
+        "smc_precip_intensity": 0,
+        "smc_prob_precip_6h": 0.0
+      },
+      {
+        "datetime": "2026-11-25 19:00:00",
+        "smc_prob_precip_1h": 0,
+        "smc_precip_intensity": 0,
+        "smc_prob_precip_6h": 0.0
+      },
+      {
+        "datetime": "2026-11-25 20:00:00",
+        "smc_prob_precip_1h": 0,
+        "smc_precip_intensity": 0,
+        "smc_prob_precip_6h": 0.0
+      },
+      {
+        "datetime": "2026-11-25 21:00:00",
+        "smc_prob_precip_1h": 0,
+        "smc_precip_intensity": 0,
+        "smc_prob_precip_6h": 0.0
+      },
+      {
+        "datetime": "2026-11-25 22:00:00",
+        "smc_prob_precip_1h": 0,
+        "smc_precip_intensity": 0,
+        "smc_prob_precip_6h": 0.0
+      },
+      {
+        "datetime": "2026-11-25 23:00:00",
+        "smc_prob_precip_1h": 0,
+        "smc_precip_intensity": 0,
+        "smc_prob_precip_6h": 0.0
+      },
+      {
+        "datetime": "2026-11-26 00:00:00",
+        "smc_prob_precip_1h": 0,
+        "smc_precip_intensity": 0,
+        "smc_prob_precip_6h": 0.0
+      },
+      {
+        "datetime": "2026-11-26 01:00:00",
+        "smc_prob_precip_1h": 0,
+        "smc_precip_intensity": 0,
+        "smc_prob_precip_6h": 0.0
+      },
+      {
+        "datetime": "2026-11-26 02:00:00",
+        "smc_prob_precip_1h": 0,
+        "smc_precip_intensity": 0,
+        "smc_prob_precip_6h": 0.0
+      },
+      {
+        "datetime": "2026-11-26 03:00:00",
+        "smc_prob_precip_1h": 0,
+        "smc_precip_intensity": 0,
+        "smc_prob_precip_6h": 0.0
+      },
+      {
+        "datetime": "2026-11-26 04:00:00",
+        "smc_prob_precip_1h": 0,
+        "smc_precip_intensity": 0,
+        "smc_prob_precip_6h": 0.0
+      },
+      {
+        "datetime": "2026-11-26 05:00:00",
+        "smc_prob_precip_1h": 0,
+        "smc_precip_intensity": 0,
+        "smc_prob_precip_6h": 0.0
+      },
+      {
+        "datetime": "2026-11-26 06:00:00",
+        "smc_prob_precip_1h": 0,
+        "smc_precip_intensity": 0,
+        "smc_prob_precip_6h": 0.0
+      },
+      {
+        "datetime": "2026-11-26 07:00:00",
+        "smc_prob_precip_1h": 0,
+        "smc_precip_intensity": 0,
+        "smc_prob_precip_6h": 0.0
+      },
+      {
+        "datetime": "2026-11-26 08:00:00",
+        "smc_prob_precip_1h": 0,
+        "smc_precip_intensity": 0,
+        "smc_prob_precip_6h": 0.0
+      },
+      {
+        "datetime": "2026-11-26 09:00:00",
+        "smc_prob_precip_1h": 0,
+        "smc_precip_intensity": 0,
+        "smc_prob_precip_6h": 0.0
+      },
+      {
+        "datetime": "2026-11-26 10:00:00",
+        "smc_prob_precip_1h": 0,
+        "smc_precip_intensity": 0,
+        "smc_prob_precip_6h": 0.0
+      },
+      {
+        "datetime": "2026-11-26 11:00:00",
+        "smc_prob_precip_1h": 0,
+        "smc_precip_intensity": 0,
+        "smc_prob_precip_6h": 0.0
+      },
+      {
+        "datetime": "2026-11-26 12:00:00",
+        "smc_prob_precip_1h": 0,
+        "smc_precip_intensity": 0,
+        "smc_prob_precip_6h": 0.0
+      },
+      {
+        "datetime": "2026-11-26 13:00:00",
+        "smc_prob_precip_1h": 0,
+        "smc_precip_intensity": 0,
+        "smc_prob_precip_6h": 0.0
+      },
+      {
+        "datetime": "2026-11-26 14:00:00",
+        "smc_prob_precip_1h": 0,
+        "smc_precip_intensity": 0,
+        "smc_prob_precip_6h": 0.0
+      },
+      {
+        "datetime": "2026-11-26 15:00:00",
+        "smc_prob_precip_1h": 0,
+        "smc_precip_intensity": 0,
+        "smc_prob_precip_6h": 0.0
+      },
+      {
+        "datetime": "2026-11-26 16:00:00",
+        "smc_prob_precip_1h": 0,
+        "smc_precip_intensity": 0,
+        "smc_prob_precip_6h": 0.0
+      },
+      {
+        "datetime": "2026-11-26 17:00:00",
+        "smc_prob_precip_1h": 0,
+        "smc_precip_intensity": 0,
+        "smc_prob_precip_6h": 0.0
+      },
+      {
+        "datetime": "2026-11-26 18:00:00",
+        "smc_prob_precip_1h": 0,
+        "smc_precip_intensity": 0,
+        "smc_prob_precip_6h": 0.0
+      },
+      {
+        "datetime": "2026-11-26 19:00:00",
+        "smc_prob_precip_1h": 0,
+        "smc_precip_intensity": 0,
+        "smc_prob_precip_6h": 0.0
+      },
+      {
+        "datetime": "2026-11-26 20:00:00",
+        "smc_prob_precip_1h": 0,
+        "smc_precip_intensity": 0,
+        "smc_prob_precip_6h": 0.0
+      },
+      {
+        "datetime": "2026-11-26 21:00:00",
+        "smc_prob_precip_1h": 0,
+        "smc_precip_intensity": 0,
+        "smc_prob_precip_6h": 0.0
+      },
+      {
+        "datetime": "2026-11-26 22:00:00",
+        "smc_prob_precip_1h": 0,
+        "smc_precip_intensity": 0,
+        "smc_prob_precip_6h": 0.0
+      },
+      {
+        "datetime": "2026-11-26 23:00:00",
+        "smc_prob_precip_1h": 0,
+        "smc_precip_intensity": 0,
+        "smc_prob_precip_6h": 0.0
+      }
+    ]
+  },
+  "smc_forecast_20261124_07": {
+    "timestamp": 1795500040.5337667,
     "data": {
       "smc_prob_precip_1h": 0,
       "smc_prob_precip_6h": 0,
       "smc_precip_intensity": 0,
-      "smc_temp_forecast": 8.3,
-      "smc_weather_symbol": 2
+      "smc_temp_forecast": 8.8,
+      "smc_weather_symbol": 20
     }
   },
-  "lightning_features_20261124_05": {
-    "timestamp": 1795496437.1512103,
+  "lightning_features_20261124_06": {
+    "timestamp": 1795500038.7465224,
     "data": {
       "lightning_count_30km": 0,
       "lightning_count_15km": 0,
@@ -25,15 +462,9 @@
       "lightning_has_activity": false
     }
   },
-  "smc_forecast_20261124_05": {
-    "timestamp": 1795494035.8500679,
-    "data": {
-      "smc_prob_precip_1h": 0,
-      "smc_prob_precip_6h": 0,
-      "smc_precip_intensity": 0,
-      "smc_temp_forecast": 8.3,
-      "smc_weather_symbol": 2
-    }
+  "meteocat_rate_limit_cooldown_xdde": {
+    "timestamp": 1795500038.57939,
+    "data": true
   },
   "xema_station_KX_2026-11-24": {
     "timestamp": 1795497643.0656211,
@@ -885,6 +1316,42 @@
       }
     ]
   },
+  "smc_forecast_20261124_06": {
+    "timestamp": 1795496438.9679854,
+    "data": {
+      "smc_prob_precip_1h": 0,
+      "smc_prob_precip_6h": 0,
+      "smc_precip_intensity": 0,
+      "smc_temp_forecast": 8.3,
+      "smc_weather_symbol": 2
+    }
+  },
+  "lightning_features_20261124_05": {
+    "timestamp": 1795496437.1512103,
+    "data": {
+      "lightning_count_30km": 0,
+      "lightning_count_15km": 0,
+      "lightning_count_15km_1h": 0,
+      "lightning_count_30km_1h": 0,
+      "lightning_nearest_km": 60,
+      "lightning_nearest_bearing": null,
+      "lightning_nearest_compass": null,
+      "lightning_cloud_ground": 0,
+      "lightning_max_current_ka": 0.0,
+      "lightning_approaching": false,
+      "lightning_has_activity": false
+    }
+  },
+  "smc_forecast_20261124_05": {
+    "timestamp": 1795494035.8500679,
+    "data": {
+      "smc_prob_precip_1h": 0,
+      "smc_prob_precip_6h": 0,
+      "smc_precip_intensity": 0,
+      "smc_temp_forecast": 8.3,
+      "smc_weather_symbol": 2
+    }
+  },
   "lightning_features_20261124_04": {
     "timestamp": 1795492837.4000502,
     "data": {
@@ -900,10 +1367,6 @@
       "lightning_approaching": false,
       "lightning_has_activity": false
     }
-  },
-  "meteocat_rate_limit_cooldown_xdde": {
-    "timestamp": 1795492837.2341967,
-    "data": true
   },
   "lightning_features_20261124_03": {
     "timestamp": 1795489242.3248162,
@@ -31425,54 +31888,6 @@
   },
   "lightning_features_20261117_07": {
     "timestamp": 1794898841.5736039,
-    "data": {
-      "lightning_count_30km": 0,
-      "lightning_count_15km": 0,
-      "lightning_count_15km_1h": 0,
-      "lightning_count_30km_1h": 0,
-      "lightning_nearest_km": 60,
-      "lightning_nearest_bearing": null,
-      "lightning_nearest_compass": null,
-      "lightning_cloud_ground": 0,
-      "lightning_max_current_ka": 0.0,
-      "lightning_approaching": false,
-      "lightning_has_activity": false
-    }
-  },
-  "lightning_features_20261117_06": {
-    "timestamp": 1794895237.9704494,
-    "data": {
-      "lightning_count_30km": 0,
-      "lightning_count_15km": 0,
-      "lightning_count_15km_1h": 0,
-      "lightning_count_30km_1h": 0,
-      "lightning_nearest_km": 60,
-      "lightning_nearest_bearing": null,
-      "lightning_nearest_compass": null,
-      "lightning_cloud_ground": 0,
-      "lightning_max_current_ka": 0.0,
-      "lightning_approaching": false,
-      "lightning_has_activity": false
-    }
-  },
-  "lightning_features_20261117_05": {
-    "timestamp": 1794891639.6518662,
-    "data": {
-      "lightning_count_30km": 0,
-      "lightning_count_15km": 0,
-      "lightning_count_15km_1h": 0,
-      "lightning_count_30km_1h": 0,
-      "lightning_nearest_km": 60,
-      "lightning_nearest_bearing": null,
-      "lightning_nearest_compass": null,
-      "lightning_cloud_ground": 0,
-      "lightning_max_current_ka": 0.0,
-      "lightning_approaching": false,
-      "lightning_has_activity": false
-    }
-  },
-  "lightning_features_20261117_04": {
-    "timestamp": 1794888036.836423,
     "data": {
       "lightning_count_30km": 0,
       "lightning_count_15km": 0,
