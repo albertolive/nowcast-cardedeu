@@ -3,17 +3,17 @@
   "model_id": "d71cadb0e3d2a3678505c1b48519b2ae3e9de778bd7753c352d5d8a0532d7eb7",
   "not_before": "2026-11-18T19:50:00Z",
   "first_issued_at": "2026-11-19T07:30:43.824992Z",
-  "last_shadow_issue": "2026-11-25T14:30:41.188084Z",
+  "last_shadow_issue": "2026-11-26T14:00:45.750741Z",
   "input_counts": {
     "before_activation": 70,
-    "matched": 905,
+    "matched": 1046,
     "unknown_station": 2
   },
-  "git_commit": "a15fc6e8d174228cbb73b90c05ba8b821588f2f9",
-  "checked_at": "2026-11-25T14:38:23.943977Z",
+  "git_commit": "ee3b3e7bf0841ca180b5b47b6f7bc3d061959114",
+  "checked_at": "2026-11-26T14:02:33.333236Z",
   "goal": 10,
   "minimum_lead_minutes": 10,
-  "observable_onsets": 1,
+  "observable_onsets": 3,
   "policy": {
     "up": 0.65,
     "down": 0.3,
@@ -22,8 +22,8 @@
     "threshold_mm": 0.2
   },
   "notice": "Only originally issued matching scores. Simulated rain alerts, not Telegram deliveries. Review manually when complete; no promotion.",
-  "scored_until": "2026-11-24T22:00:00Z",
-  "observed_days": 5.15091,
+  "scored_until": "2026-11-25T22:00:00Z",
+  "observed_days": 6.08841,
   "episodes": [
     {
       "onset": "2026-11-24T19:19:00Z",
@@ -64,16 +64,96 @@
           "short_lead_minutes": null
         }
       }
+    },
+    {
+      "onset": "2026-11-25T12:16:00Z",
+      "after": "2026-11-25T12:15:00Z",
+      "last_tip": "2026-11-25T13:57:00Z",
+      "qualified_at": "2026-11-25T12:16:00Z",
+      "mm": 5.0,
+      "excluded": null,
+      "onset_excluded": null,
+      "outcomes": {
+        "issued": {
+          "lead_minutes": 14.24,
+          "confirmation": null
+        },
+        "shadow": {
+          "lead_minutes": 14.24,
+          "confirmation": null
+        },
+        "persistence": {
+          "lead_minutes": null,
+          "confirmation": "2026-11-25T12:20:51.625338Z"
+        }
+      },
+      "onset_outcomes": {
+        "issued": {
+          "lead_minutes": 14.24,
+          "timing_uncertain": false,
+          "short_lead_minutes": null
+        },
+        "shadow": {
+          "lead_minutes": 14.24,
+          "timing_uncertain": false,
+          "short_lead_minutes": null
+        },
+        "persistence": {
+          "lead_minutes": null,
+          "timing_uncertain": false,
+          "short_lead_minutes": null
+        }
+      }
+    },
+    {
+      "onset": "2026-11-25T15:20:00Z",
+      "after": "2026-11-25T15:19:00Z",
+      "last_tip": "2026-11-25T15:20:00Z",
+      "qualified_at": "2026-11-25T15:20:00Z",
+      "mm": 0.2,
+      "excluded": null,
+      "onset_excluded": null,
+      "outcomes": {
+        "issued": {
+          "lead_minutes": null,
+          "confirmation": null
+        },
+        "shadow": {
+          "lead_minutes": null,
+          "confirmation": null
+        },
+        "persistence": {
+          "lead_minutes": null,
+          "confirmation": "2026-11-25T15:20:47.376136Z"
+        }
+      },
+      "onset_outcomes": {
+        "issued": {
+          "lead_minutes": null,
+          "timing_uncertain": false,
+          "short_lead_minutes": null
+        },
+        "shadow": {
+          "lead_minutes": null,
+          "timing_uncertain": false,
+          "short_lead_minutes": null
+        },
+        "persistence": {
+          "lead_minutes": null,
+          "timing_uncertain": false,
+          "short_lead_minutes": null
+        }
+      }
     }
   ],
   "excluded_onsets": {},
   "comparison": {
     "issued": {
-      "storms": 1,
-      "advance": 0,
-      "missed_advance": 1,
+      "storms": 3,
+      "advance": 1,
+      "missed_advance": 2,
       "timing_uncertain": 0,
-      "lead_minutes_median": null,
+      "lead_minutes_median": 14.24,
       "short_lead_only": 0,
       "false_warnings": 0,
       "false_warning_times": [],
@@ -81,11 +161,11 @@
       "false_warnings_per_week": 0.0
     },
     "shadow": {
-      "storms": 1,
-      "advance": 0,
-      "missed_advance": 1,
+      "storms": 3,
+      "advance": 1,
+      "missed_advance": 2,
       "timing_uncertain": 0,
-      "lead_minutes_median": null,
+      "lead_minutes_median": 14.24,
       "short_lead_only": 0,
       "false_warnings": 0,
       "false_warning_times": [],
@@ -93,9 +173,9 @@
       "false_warnings_per_week": 0.0
     },
     "persistence": {
-      "storms": 1,
+      "storms": 3,
       "advance": 0,
-      "missed_advance": 1,
+      "missed_advance": 3,
       "timing_uncertain": 0,
       "lead_minutes_median": null,
       "short_lead_only": 0,
@@ -111,6 +191,7 @@
     "2026-11-21": "5bbbd34dbffc40a2e881c92617e31be6ab17f689fcd07f859756b7398fbb503a",
     "2026-11-22": "8ca4b58f822a056a4073dcb78f89e305b0866d1750bd20d31a4040781b8a214e",
     "2026-11-23": "28ebd595e30a0adaf1af95337c1d11bc66e4e317b0865c07d3e058fc4618ac60",
-    "2026-11-24": "8f04dfbefe59761c76c150333844d696d529236ef8922bdd8c4a66884016a809"
+    "2026-11-24": "8f04dfbefe59761c76c150333844d696d529236ef8922bdd8c4a66884016a809",
+    "2026-11-25": "1774c50569e4432a5b350f54b55603364c1354a92912940f0be19f1e3bfdd175"
   }
 }
