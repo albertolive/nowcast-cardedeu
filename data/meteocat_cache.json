@@ -1,6 +1,6 @@
 {
-  "lightning_features_20261128_12": {
-    "timestamp": 1795867240.3753767,
+  "lightning_features_20261128_13": {
+    "timestamp": 1795871438.3938968,
     "data": {
       "lightning_count_30km": 0,
       "lightning_count_15km": 0,
@@ -14,6 +14,10 @@
       "lightning_approaching": false,
       "lightning_has_activity": false
     }
+  },
+  "meteocat_rate_limit_cooldown_xdde": {
+    "timestamp": 1795871438.280711,
+    "data": true
   },
   "xema_station_KX_2026-11-28": {
     "timestamp": 1795869039.691302,
@@ -2041,6 +2045,26 @@
       }
     ]
   },
+  "meteocat_rate_limit_cooldown_smc": {
+    "timestamp": 1795871438.8706977,
+    "data": true
+  },
+  "lightning_features_20261128_12": {
+    "timestamp": 1795867240.3753767,
+    "data": {
+      "lightning_count_30km": 0,
+      "lightning_count_15km": 0,
+      "lightning_count_15km_1h": 0,
+      "lightning_count_30km_1h": 0,
+      "lightning_nearest_km": 60,
+      "lightning_nearest_bearing": null,
+      "lightning_nearest_compass": null,
+      "lightning_cloud_ground": 0,
+      "lightning_max_current_ka": 0.0,
+      "lightning_approaching": false,
+      "lightning_has_activity": false
+    }
+  },
   "lightning_features_20261128_11": {
     "timestamp": 1795863640.6155732,
     "data": {
@@ -2056,14 +2080,6 @@
       "lightning_approaching": false,
       "lightning_has_activity": false
     }
-  },
-  "meteocat_rate_limit_cooldown_xdde": {
-    "timestamp": 1795863640.5184934,
-    "data": true
-  },
-  "meteocat_rate_limit_cooldown_smc": {
-    "timestamp": 1795867240.8628848,
-    "data": true
   },
   "lightning_features_20261128_10": {
     "timestamp": 1795860032.3076835,
@@ -22149,16 +22165,6 @@
       "lightning_max_current_ka": 0.0,
       "lightning_approaching": false,
       "lightning_has_activity": false
-    }
-  },
-  "smc_forecast_20261124_05": {
-    "timestamp": 1795494035.8500679,
-    "data": {
-      "smc_prob_precip_1h": 0,
-      "smc_prob_precip_6h": 0,
-      "smc_precip_intensity": 0,
-      "smc_temp_forecast": 8.3,
-      "smc_weather_symbol": 2
     }
   }
 }
